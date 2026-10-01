@@ -5,21 +5,27 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
 <meta name="description" content="Crier Studio: a design studio and campaign service for local businesses.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#0E0F0C">
 <title>Crier Studio</title>
 <style>
 /* Layout: a studio print sheet. Heavy expanded headline, flat colour blocks for example layouts, one column on phone, two to three columns from 760px. */
 :root{
-  --bg:#ffffff;
-  --surface:#eef0f8;
-  --paper:#ffffff;
-  --ink:#12142b;
-  --muted:#4f5474;
-  --line:#d3d6e6;
-  --accent:#2433d1;
-  --accent-ink:#ffffff;
-  --sun:#ffc21a;
-  --coral:#f0644a;
-  --block-ink:#12142b;
+  --bg:#F6F8EF;
+  --surface:#E9EEDA;
+  --paper:#FCFDF8;
+  --ink:#0E0F0C;
+  --muted:#454A3E;
+  --line:#CDD3BC;
+  --accent:#C6FF00;
+  --accent-ink:#0E0F0C;
+  --focus:#0E0F0C;
+  --dia:#B8F000;
+  --sun:#C6FF00;
+  --coral:#6B7060;
+  --block-ink:#0E0F0C;
   --draft-bg:#fff3cc;
   --draft-ink:#5c4400;
   --error:#b3261e;
@@ -28,12 +34,12 @@
   --step--1:0.875rem; --step-0:1rem; --step-1:1.125rem; --step-2:1.375rem; --step-3:clamp(1.6rem,4.5vw,2.4rem); --step-4:clamp(2.35rem,9vw,5.2rem);
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0d0f1f; --surface:#171a33; --paper:#1d2140; --ink:#eef0fb; --muted:#a6abc9; --line:#2c3054;
-  --accent:#8390ff; --accent-ink:#0d0f1f; --sun:#ffcc3d; --coral:#ff8068; --block-ink:#12142b;
+  --bg:#0E0F0C; --surface:#171913; --paper:#1A1C16; --ink:#F6F8EF; --muted:#B7BCA9; --line:#2D3027;
+  --accent:#C6FF00; --accent-ink:#0E0F0C; --focus:#C6FF00; --dia:#C6FF00; --sun:#C6FF00; --coral:#6B7060; --block-ink:#0E0F0C;
   --draft-bg:#3a2f0b; --draft-ink:#ffe08a; --error:#ff8a80; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0d0f1f; --surface:#171a33; --paper:#1d2140; --ink:#eef0fb; --muted:#a6abc9; --line:#2c3054;
-  --accent:#8390ff; --accent-ink:#0d0f1f; --sun:#ffcc3d; --coral:#ff8068; --block-ink:#12142b;
+  --bg:#0E0F0C; --surface:#171913; --paper:#1A1C16; --ink:#F6F8EF; --muted:#B7BCA9; --line:#2D3027;
+  --accent:#C6FF00; --accent-ink:#0E0F0C; --focus:#C6FF00; --dia:#C6FF00; --sun:#C6FF00; --coral:#6B7060; --block-ink:#0E0F0C;
   --draft-bg:#3a2f0b; --draft-ink:#ffe08a; --error:#ff8a80; color-scheme:dark}
 
 *{box-sizing:border-box}
@@ -47,7 +53,7 @@ h3{font-size:var(--step-1);font-weight:750;line-height:1.2;font-stretch:105%}
 p{margin:0;max-width:62ch}
 ul{margin:0;padding:0;list-style:none}
 a{color:inherit}
-:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
 .eyebrow{font:600 var(--step--1)/1.2 var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 .lead{font-size:var(--step-1);color:var(--muted)}
 .ph{background:var(--draft-bg);color:var(--draft-ink);padding:0 .2em;border-radius:2px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
@@ -57,16 +63,15 @@ a{color:inherit}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5em;min-height:52px;padding:.8em 1.3em;border:2px solid var(--accent);background:var(--accent);color:var(--accent-ink);font:700 var(--step-0)/1.1 var(--body);text-decoration:none;border-radius:3px;cursor:pointer;transition:transform .15s ease, box-shadow .15s ease}
 .btn:hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--ink)}
 .btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink)}
-.btn.ghost:hover{box-shadow:4px 4px 0 var(--accent)}
+.btn.ghost:hover{box-shadow:4px 4px 0 var(--accent);border-color:var(--ink)}
 
 /* preview banner + header */
 .banner{background:var(--draft-bg);color:var(--draft-ink);font-size:var(--step--1);padding-block:.55rem}
 .banner .wrap{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
 .top{padding-block:18px;display:flex;justify-content:space-between;align-items:center;gap:12px}
 .logo{font:900 1.6rem/1 var(--display);font-stretch:125%;letter-spacing:-.02em;text-decoration:none;display:inline-flex;align-items:center;gap:.4rem}
-.logo i{display:inline-block;position:relative;width:.9em;height:.9em;border-radius:50%;border:.2em solid var(--accent);font-style:normal;flex:none}
-.logo i::after{content:"";position:absolute;right:-.28em;bottom:-.1em;width:.34em;height:.34em;background:var(--sun)}
-.logo{font-stretch:112%;font-size:1.35rem;white-space:nowrap}
+.logo svg.wm{display:block;height:34px;width:auto;color:var(--ink);overflow:visible}
+.logo{white-space:nowrap}
 .top nav{display:none;gap:22px;font-weight:600}
 .top nav a{text-decoration:none;color:var(--muted)}
 .top nav a:hover{color:var(--ink)}
@@ -97,7 +102,7 @@ section{padding-block:56px;border-top:2px solid var(--ink)}
 .t1 small{position:relative;font-weight:600;font-size:.8rem;margin-bottom:22px}
 .side{grid-column:span 2;display:grid;gap:10px;align-content:start}
 .t2{background:var(--accent);aspect-ratio:1/1}
-.t2::before{content:"";position:absolute;inset:18% 18% auto auto;width:46%;height:46%;background:var(--sun);transform:rotate(45deg)}
+.t2::before{content:"";position:absolute;inset:18% 18% auto auto;width:46%;height:46%;background:var(--block-ink);transform:rotate(45deg)}
 .t3{background:var(--ink);aspect-ratio:9/16}
 .t3::before{content:"";position:absolute;left:14%;right:14%;top:14%;height:6px;background:var(--bg)}
 .t3::after{content:"";position:absolute;left:14%;width:46%;top:calc(14% + 14px);height:6px;background:var(--coral)}
@@ -105,7 +110,7 @@ section{padding-block:56px;border-top:2px solid var(--ink)}
 .t4 .row{display:grid;grid-template-columns:5.2em 1fr;gap:10px;align-items:center;font-size:.8rem;font-weight:600}
 .t4 .bar{height:12px;background:var(--surface)}
 .t4 .bar i{display:block;height:100%;background:var(--muted)}
-.t4 .row.you .bar i{background:var(--accent)}
+.t4 .row.you .bar i{background:var(--accent);box-shadow:inset 0 0 0 2px var(--ink)}
 .t4 .ex{background:var(--surface);color:var(--ink)}
 @media (prefers-reduced-motion: no-preference){
   .board .tile{animation:rise .6s cubic-bezier(.2,.7,.2,1) both}
@@ -126,8 +131,8 @@ section{padding-block:56px;border-top:2px solid var(--ink)}
 .mini.fix span{height:12px;background:var(--line);position:relative;margin-left:22px}
 .mini.fix span::before{content:"";position:absolute;left:-22px;top:0;width:12px;height:12px;background:var(--coral)}
 .mini.posts{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
-.mini.posts span{background:var(--sun)}
-.mini.posts span+span{background:var(--accent)}
+.mini.posts span{background:var(--sun);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.mini.posts span+span{background:var(--ink)}
 .page .ex2{font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 @media (min-width:760px){.pages{grid-template-columns:repeat(2,1fr)}}
 
@@ -139,7 +144,7 @@ section{padding-block:56px;border-top:2px solid var(--ink)}
 .field{display:grid;gap:6px;min-width:0}
 .field label{font-weight:700;font-size:var(--step--1)}
 .field input,.field select{width:100%;min-height:50px;padding:.7em .8em;font:400 var(--step-0)/1.3 var(--body);color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:3px}
-.field input:focus-visible,.field select:focus-visible{outline:3px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.field input:focus-visible,.field select:focus-visible{outline:3px solid var(--focus);outline-offset:1px;border-color:var(--focus)}
 .field input[aria-invalid="true"],.field select[aria-invalid="true"]{border-color:var(--error)}
 .err{color:var(--error);font-size:var(--step--1);font-weight:600;min-height:0}
 .status{padding:14px 16px;border:2px solid var(--ink);background:var(--paper);font-weight:600}
@@ -166,7 +171,7 @@ section{padding-block:56px;border-top:2px solid var(--ink)}
 .inds{display:grid;gap:14px}
 .ind{border:2px solid var(--ink);padding:20px 18px;display:grid;gap:10px;align-content:start;min-width:0;background:var(--paper)}
 .ind .swatch{display:flex;gap:6px}
-.ind .swatch i{width:22px;height:22px;display:block}
+.ind .swatch i{width:22px;height:22px;display:block;box-shadow:inset 0 0 0 1.5px var(--ink)}
 .ind p{color:var(--muted);font-size:var(--step--1)}
 .ind .note{font-size:var(--step--1);font-weight:600;color:var(--ink)}
 @media (min-width:640px){.inds{grid-template-columns:1fr 1fr}}
@@ -175,17 +180,17 @@ section{padding-block:56px;border-top:2px solid var(--ink)}
 /* pricing */
 .plans{display:grid;gap:14px}
 .plan{border:2px solid var(--ink);padding:24px 20px;display:grid;gap:16px;align-content:start;background:var(--paper);min-width:0}
-.plan.feat{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.plan.feat .muted,.plan.feat li{color:var(--bg)}
+.plan.feat{background:#0E0F0C;color:#F6F8EF;border-color:var(--ink)}
+.plan.feat .muted,.plan.feat li{color:#F6F8EF}
 .plan .price{font:900 clamp(2.6rem,10vw,3.4rem)/1 var(--display);font-stretch:110%;display:flex;align-items:baseline;gap:.2em;flex-wrap:wrap;font-variant-numeric:tabular-nums}
 .plan .price small{font:600 var(--step-0)/1 var(--body)}
 .plan .price .ph{font-size:inherit}
 .plan ul{display:grid;gap:8px}
 .plan li{padding-left:20px;position:relative}
-.plan li::before{content:"";position:absolute;left:0;top:.62em;width:9px;height:9px;background:var(--accent)}
-.plan.feat li::before{background:var(--sun)}
-.plan.feat .btn{background:var(--sun);border-color:var(--sun);color:var(--block-ink)}
-.plan.feat .btn:hover{box-shadow:4px 4px 0 var(--accent)}
+.plan li::before{content:"";position:absolute;left:0;top:.62em;width:9px;height:9px;background:var(--accent);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.plan.feat li::before{background:#C6FF00;box-shadow:none}
+.plan.feat .btn{background:#C6FF00;border-color:#C6FF00;color:#0E0F0C}
+.plan.feat .btn:hover{box-shadow:4px 4px 0 #F6F8EF}
 .plan .muted{color:var(--muted);font-size:var(--step--1)}
 .terms{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px 22px;font-weight:600}
 @media (min-width:860px){.plans{grid-template-columns:repeat(3,1fr)}}
@@ -310,7 +315,11 @@ window.SITE_CONTENT = {
 
 <div class="wrap">
   <header class="top">
-    <a class="logo" href="#top" id="top"><i aria-hidden="true"></i><span data-k="brand"></span></a>
+    <a class="logo" href="#top" id="top"><svg class="wm" viewBox="37.55 15.66 364.21 87.63" role="img" aria-label="Crier Studio" xmlns="http://www.w3.org/2000/svg"><g transform="translate(30 -6) scale(1.15)"><path d="M45.75 57.62A18.5 18.5 0 1 0 45.75 82.38" fill="none" stroke="currentColor" stroke-width="13"/>
+<path d="M70 95V70A18.5 18.5 0 0 1 88.5 51.5" fill="none" stroke="currentColor" stroke-width="13"/>
+<rect x="101.5" y="45" width="13" height="50" fill="currentColor"/>
+<path d="M121.5 70H158.5A18.5 18.5 0 1 0 154.58 81.39" fill="none" stroke="currentColor" stroke-width="13"/>
+<path d="M182 95V70A18.5 18.5 0 0 1 200.5 51.5" fill="none" stroke="currentColor" stroke-width="13"/></g><g transform="translate(30 -6) scale(1.15)"><rect x="101" y="22" width="14" height="14" fill="var(--dia)" transform="rotate(45 108 29)"/></g><path d="M306.43 103.36Q304.6 103.36 303.33 102.77Q302.06 102.18 301.4 101.15Q300.74 100.12 300.74 98.8H303.38Q303.38 99.36 303.69 99.88Q303.99 100.4 304.66 100.72Q305.33 101.04 306.43 101.04Q307.43 101.04 308.09 100.76Q308.75 100.48 309.08 100.01Q309.4 99.54 309.4 98.95Q309.4 98.22 308.78 97.78Q308.15 97.33 306.83 97.21L305.61 97.11Q303.62 96.94 302.43 95.87Q301.24 94.79 301.24 93.03Q301.24 91.7 301.87 90.75Q302.5 89.79 303.63 89.26Q304.76 88.73 306.28 88.73Q307.86 88.73 309 89.28Q310.15 89.83 310.77 90.83Q311.39 91.83 311.39 93.18H308.75Q308.75 92.62 308.48 92.13Q308.21 91.65 307.66 91.35Q307.12 91.05 306.28 91.05Q305.48 91.05 304.95 91.32Q304.42 91.59 304.15 92.04Q303.89 92.49 303.89 93.03Q303.89 93.67 304.36 94.16Q304.84 94.64 305.86 94.73L307.08 94.83Q308.57 94.95 309.69 95.47Q310.8 95.98 311.42 96.85Q312.05 97.72 312.05 98.95Q312.05 100.26 311.36 101.26Q310.67 102.26 309.41 102.81Q308.15 103.36 306.43 103.36ZM322.25 103V91.12H324.95V103ZM318.24 91.5V89.13H328.96V91.5ZM341.82 103.36Q339.88 103.36 338.55 102.62Q337.22 101.89 336.53 100.55Q335.84 99.21 335.84 97.4V89.13H338.54V97.56Q338.54 98.54 338.92 99.29Q339.3 100.04 340.03 100.44Q340.76 100.85 341.82 100.85Q342.87 100.85 343.6 100.45Q344.32 100.05 344.7 99.3Q345.07 98.56 345.07 97.56V89.13H347.77V97.4Q347.77 99.21 347.09 100.55Q346.41 101.89 345.09 102.62Q343.76 103.36 341.82 103.36ZM358.24 103.08V100.57H361.11Q362.19 100.57 363.03 100.24Q363.88 99.9 364.47 99.3Q365.06 98.7 365.38 97.87Q365.69 97.03 365.69 96.04Q365.69 94.99 365.38 94.16Q365.06 93.34 364.47 92.75Q363.88 92.16 363.03 91.85Q362.19 91.54 361.11 91.54H358.24V89.03H360.94Q362.82 89.03 364.22 89.59Q365.63 90.15 366.56 91.11Q367.5 92.07 367.96 93.29Q368.43 94.51 368.43 95.83V96.25Q368.43 97.49 367.96 98.71Q367.5 99.93 366.56 100.91Q365.63 101.9 364.22 102.49Q362.82 103.08 360.94 103.08ZM355.93 103.08V89.03H358.62V103.08ZM375.88 103V89.13H378.58V103ZM393.54 103.36Q391.66 103.36 390.28 102.7Q388.91 102.04 388 100.96Q387.1 99.88 386.66 98.64Q386.22 97.39 386.22 96.24V95.82Q386.22 94.55 386.67 93.29Q387.13 92.03 388.05 91Q388.97 89.97 390.34 89.35Q391.71 88.73 393.54 88.73Q395.37 88.73 396.73 89.35Q398.1 89.97 399.02 91Q399.95 92.03 400.41 93.29Q400.87 94.55 400.87 95.82V96.24Q400.87 97.39 400.42 98.64Q399.97 99.88 399.07 100.96Q398.17 102.04 396.79 102.7Q395.41 103.36 393.54 103.36ZM393.54 100.85Q394.61 100.85 395.46 100.47Q396.31 100.09 396.91 99.42Q397.5 98.75 397.82 97.89Q398.13 97.02 398.13 96.05Q398.13 95.01 397.81 94.14Q397.49 93.26 396.9 92.61Q396.3 91.96 395.45 91.6Q394.6 91.24 393.54 91.24Q392.48 91.24 391.63 91.6Q390.78 91.96 390.18 92.61Q389.58 93.26 389.27 94.14Q388.95 95.01 388.95 96.05Q388.95 97.02 389.27 97.89Q389.58 98.75 390.18 99.42Q390.78 100.09 391.63 100.47Q392.48 100.85 393.54 100.85Z" fill="currentColor"/></svg></a>
     <nav aria-label="Sections">
       <a href="#monthly">What you get</a>
       <a href="#how">How it works</a>
@@ -451,7 +460,11 @@ window.SITE_CONTENT = {
   <footer>
     <div class="cols">
       <div style="display:grid;gap:10px">
-        <a class="logo" href="#top"><i aria-hidden="true"></i><span data-k="brand"></span></a>
+        <a class="logo" href="#top"><svg class="wm" viewBox="37.55 15.66 364.21 87.63" role="img" aria-label="Crier Studio" xmlns="http://www.w3.org/2000/svg"><g transform="translate(30 -6) scale(1.15)"><path d="M45.75 57.62A18.5 18.5 0 1 0 45.75 82.38" fill="none" stroke="currentColor" stroke-width="13"/>
+<path d="M70 95V70A18.5 18.5 0 0 1 88.5 51.5" fill="none" stroke="currentColor" stroke-width="13"/>
+<rect x="101.5" y="45" width="13" height="50" fill="currentColor"/>
+<path d="M121.5 70H158.5A18.5 18.5 0 1 0 154.58 81.39" fill="none" stroke="currentColor" stroke-width="13"/>
+<path d="M182 95V70A18.5 18.5 0 0 1 200.5 51.5" fill="none" stroke="currentColor" stroke-width="13"/></g><g transform="translate(30 -6) scale(1.15)"><rect x="101" y="22" width="14" height="14" fill="var(--dia)" transform="rotate(45 108 29)"/></g><path d="M306.43 103.36Q304.6 103.36 303.33 102.77Q302.06 102.18 301.4 101.15Q300.74 100.12 300.74 98.8H303.38Q303.38 99.36 303.69 99.88Q303.99 100.4 304.66 100.72Q305.33 101.04 306.43 101.04Q307.43 101.04 308.09 100.76Q308.75 100.48 309.08 100.01Q309.4 99.54 309.4 98.95Q309.4 98.22 308.78 97.78Q308.15 97.33 306.83 97.21L305.61 97.11Q303.62 96.94 302.43 95.87Q301.24 94.79 301.24 93.03Q301.24 91.7 301.87 90.75Q302.5 89.79 303.63 89.26Q304.76 88.73 306.28 88.73Q307.86 88.73 309 89.28Q310.15 89.83 310.77 90.83Q311.39 91.83 311.39 93.18H308.75Q308.75 92.62 308.48 92.13Q308.21 91.65 307.66 91.35Q307.12 91.05 306.28 91.05Q305.48 91.05 304.95 91.32Q304.42 91.59 304.15 92.04Q303.89 92.49 303.89 93.03Q303.89 93.67 304.36 94.16Q304.84 94.64 305.86 94.73L307.08 94.83Q308.57 94.95 309.69 95.47Q310.8 95.98 311.42 96.85Q312.05 97.72 312.05 98.95Q312.05 100.26 311.36 101.26Q310.67 102.26 309.41 102.81Q308.15 103.36 306.43 103.36ZM322.25 103V91.12H324.95V103ZM318.24 91.5V89.13H328.96V91.5ZM341.82 103.36Q339.88 103.36 338.55 102.62Q337.22 101.89 336.53 100.55Q335.84 99.21 335.84 97.4V89.13H338.54V97.56Q338.54 98.54 338.92 99.29Q339.3 100.04 340.03 100.44Q340.76 100.85 341.82 100.85Q342.87 100.85 343.6 100.45Q344.32 100.05 344.7 99.3Q345.07 98.56 345.07 97.56V89.13H347.77V97.4Q347.77 99.21 347.09 100.55Q346.41 101.89 345.09 102.62Q343.76 103.36 341.82 103.36ZM358.24 103.08V100.57H361.11Q362.19 100.57 363.03 100.24Q363.88 99.9 364.47 99.3Q365.06 98.7 365.38 97.87Q365.69 97.03 365.69 96.04Q365.69 94.99 365.38 94.16Q365.06 93.34 364.47 92.75Q363.88 92.16 363.03 91.85Q362.19 91.54 361.11 91.54H358.24V89.03H360.94Q362.82 89.03 364.22 89.59Q365.63 90.15 366.56 91.11Q367.5 92.07 367.96 93.29Q368.43 94.51 368.43 95.83V96.25Q368.43 97.49 367.96 98.71Q367.5 99.93 366.56 100.91Q365.63 101.9 364.22 102.49Q362.82 103.08 360.94 103.08ZM355.93 103.08V89.03H358.62V103.08ZM375.88 103V89.13H378.58V103ZM393.54 103.36Q391.66 103.36 390.28 102.7Q388.91 102.04 388 100.96Q387.1 99.88 386.66 98.64Q386.22 97.39 386.22 96.24V95.82Q386.22 94.55 386.67 93.29Q387.13 92.03 388.05 91Q388.97 89.97 390.34 89.35Q391.71 88.73 393.54 88.73Q395.37 88.73 396.73 89.35Q398.1 89.97 399.02 91Q399.95 92.03 400.41 93.29Q400.87 94.55 400.87 95.82V96.24Q400.87 97.39 400.42 98.64Q399.97 99.88 399.07 100.96Q398.17 102.04 396.79 102.7Q395.41 103.36 393.54 103.36ZM393.54 100.85Q394.61 100.85 395.46 100.47Q396.31 100.09 396.91 99.42Q397.5 98.75 397.82 97.89Q398.13 97.02 398.13 96.05Q398.13 95.01 397.81 94.14Q397.49 93.26 396.9 92.61Q396.3 91.96 395.45 91.6Q394.6 91.24 393.54 91.24Q392.48 91.24 391.63 91.6Q390.78 91.96 390.18 92.61Q389.58 93.26 389.27 94.14Q388.95 95.01 388.95 96.05Q388.95 97.02 389.27 97.89Q389.58 98.75 390.18 99.42Q390.78 100.09 391.63 100.47Q392.48 100.85 393.54 100.85Z" fill="currentColor"/></svg></a>
         <p data-k="footer.blurb"></p>
       </div>
       <div style="display:grid;gap:6px">
@@ -508,8 +521,8 @@ window.SITE_CONTENT = {
   // how it works: shapes instead of numbers
   var syms = [
     '<svg class="sym" viewBox="0 0 44 44" aria-hidden="true"><rect x="6" y="4" width="32" height="36" fill="none" stroke="currentColor" stroke-width="4"/><rect x="13" y="13" width="18" height="4" fill="currentColor"/><rect x="13" y="22" width="12" height="4" fill="currentColor"/></svg>',
-    '<svg class="sym" viewBox="0 0 44 44" aria-hidden="true"><rect x="4" y="8" width="36" height="30" fill="none" stroke="var(--accent)" stroke-width="4"/><rect x="4" y="8" width="36" height="8" fill="var(--accent)"/><rect x="11" y="22" width="6" height="6" fill="var(--accent)"/><rect x="21" y="22" width="6" height="6" fill="var(--accent)"/></svg>',
-    '<svg class="sym" viewBox="0 0 44 44" aria-hidden="true"><rect x="4" y="4" width="16" height="16" fill="var(--sun)"/><rect x="24" y="4" width="16" height="16" fill="var(--coral)"/><rect x="4" y="24" width="16" height="16" fill="var(--accent)"/><path d="M26 32l5 5 9-11" fill="none" stroke="currentColor" stroke-width="4"/></svg>'
+    '<svg class="sym" viewBox="0 0 44 44" aria-hidden="true"><rect x="4" y="8" width="36" height="30" fill="none" stroke="currentColor" stroke-width="4"/><rect x="4" y="8" width="36" height="8" fill="var(--accent)" stroke="currentColor" stroke-width="2"/><rect x="11" y="22" width="6" height="6" fill="currentColor"/><rect x="21" y="22" width="6" height="6" fill="currentColor"/></svg>',
+    '<svg class="sym" viewBox="0 0 44 44" aria-hidden="true"><rect x="4" y="4" width="16" height="16" fill="var(--sun)" stroke="currentColor" stroke-width="2"/><rect x="24" y="4" width="16" height="16" fill="var(--coral)"/><rect x="4" y="24" width="16" height="16" fill="currentColor"/><path d="M26 32l5 5 9-11" fill="none" stroke="currentColor" stroke-width="4"/></svg>'
   ];
   document.getElementById("flow").innerHTML = C.steps.map(function(s,i){
     return '<div class="stage">'+(syms[i]||"")+'<h3>'+t(s.title)+'</h3><p>'+t(s.text)+'</p></div>';
