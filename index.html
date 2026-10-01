@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="description" content="Crier Studio: a design studio and campaign service for local businesses.">
+<title>Crier Studio</title>
+<style>
+/* Layout: a studio print sheet. Heavy expanded headline, flat colour blocks for example layouts, one column on phone, two to three columns from 760px. */
+:root{
+  --bg:#ffffff;
+  --surface:#eef0f8;
+  --paper:#ffffff;
+  --ink:#12142b;
+  --muted:#4f5474;
+  --line:#d3d6e6;
+  --accent:#2433d1;
+  --accent-ink:#ffffff;
+  --sun:#ffc21a;
+  --coral:#f0644a;
+  --block-ink:#12142b;
+  --draft-bg:#fff3cc;
+  --draft-ink:#5c4400;
+  --error:#b3261e;
+  --display:"Archivo","Arial Black","Helvetica Neue",Arial,sans-serif;
+  --body:"Instrument Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --step--1:0.875rem; --step-0:1rem; --step-1:1.125rem; --step-2:1.375rem; --step-3:clamp(1.6rem,4.5vw,2.4rem); --step-4:clamp(2.35rem,9vw,5.2rem);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d0f1f; --surface:#171a33; --paper:#1d2140; --ink:#eef0fb; --muted:#a6abc9; --line:#2c3054;
+  --accent:#8390ff; --accent-ink:#0d0f1f; --sun:#ffcc3d; --coral:#ff8068; --block-ink:#12142b;
+  --draft-bg:#3a2f0b; --draft-ink:#ffe08a; --error:#ff8a80; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d0f1f; --surface:#171a33; --paper:#1d2140; --ink:#eef0fb; --muted:#a6abc9; --line:#2c3054;
+  --accent:#8390ff; --accent-ink:#0d0f1f; --sun:#ffcc3d; --coral:#ff8068; --block-ink:#12142b;
+  --draft-bg:#3a2f0b; --draft-ink:#ffe08a; --error:#ff8a80; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 var(--step-0)/1.6 var(--body);margin:0;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:16px}
+@media (min-width:760px){.wrap{padding-inline:32px}}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.02;text-wrap:balance;font-stretch:112%;letter-spacing:-0.01em}
+h1{font-size:var(--step-4);font-weight:900;overflow-wrap:break-word}
+h2{font-size:var(--step-3);font-weight:850}
+h3{font-size:var(--step-1);font-weight:750;line-height:1.2;font-stretch:105%}
+p{margin:0;max-width:62ch}
+ul{margin:0;padding:0;list-style:none}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.eyebrow{font:600 var(--step--1)/1.2 var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.lead{font-size:var(--step-1);color:var(--muted)}
+.ph{background:var(--draft-bg);color:var(--draft-ink);padding:0 .2em;border-radius:2px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.tag{display:inline-block;font:600 .72rem/1 var(--body);letter-spacing:.08em;text-transform:uppercase;padding:.35em .5em;border:1px solid currentColor;border-radius:2px}
+
+/* buttons: square corners */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5em;min-height:52px;padding:.8em 1.3em;border:2px solid var(--accent);background:var(--accent);color:var(--accent-ink);font:700 var(--step-0)/1.1 var(--body);text-decoration:none;border-radius:3px;cursor:pointer;transition:transform .15s ease, box-shadow .15s ease}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--ink)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink)}
+.btn.ghost:hover{box-shadow:4px 4px 0 var(--accent)}
+
+/* preview banner + header */
+.banner{background:var(--draft-bg);color:var(--draft-ink);font-size:var(--step--1);padding-block:.55rem}
+.banner .wrap{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.top{padding-block:18px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.logo{font:900 1.6rem/1 var(--display);font-stretch:125%;letter-spacing:-.02em;text-decoration:none;display:inline-flex;align-items:center;gap:.4rem}
+.logo i{display:inline-block;position:relative;width:.9em;height:.9em;border-radius:50%;border:.2em solid var(--accent);font-style:normal;flex:none}
+.logo i::after{content:"";position:absolute;right:-.28em;bottom:-.1em;width:.34em;height:.34em;background:var(--sun)}
+.logo{font-stretch:112%;font-size:1.35rem;white-space:nowrap}
+.top nav{display:none;gap:22px;font-weight:600}
+.top nav a{text-decoration:none;color:var(--muted)}
+.top nav a:hover{color:var(--ink)}
+@media (min-width:860px){.top nav{display:flex}}
+.top .btn{min-height:44px;padding:.6em 1em;font-size:var(--step--1)}
+
+/* sections */
+section{padding-block:56px;border-top:2px solid var(--ink)}
+@media (min-width:760px){section{padding-block:88px}}
+.sec-head{display:grid;gap:14px;margin-bottom:32px}
+
+/* hero */
+.hero{border-top:0;padding-block:28px 56px;display:grid;gap:36px}
+.hero-copy{display:grid;gap:22px;min-width:0}
+.hero h1 .hl{background:var(--sun);color:var(--block-ink);padding:0 .08em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px}
+.fine{font-size:var(--step--1);color:var(--muted)}
+@media (min-width:960px){.hero{grid-template-columns:1.15fr .85fr;align-items:center;padding-block:48px 96px}}
+
+/* example layouts: the studio board */
+.board{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;min-width:0}
+.tile{position:relative;overflow:hidden;color:var(--block-ink);border-radius:2px;min-width:0;aspect-ratio:1/1;max-width:100%}
+.tile .ex{position:absolute;left:8px;bottom:8px;font:600 .62rem/1 var(--body);letter-spacing:.08em;text-transform:uppercase;background:rgba(255,255,255,.88);color:#12142b;padding:.35em .45em}
+.t1{grid-column:span 4;aspect-ratio:4/5;background:var(--sun);padding:16px;display:flex;flex-direction:column;justify-content:space-between}
+.t1 .circ{position:absolute;right:-18%;top:12%;width:72%;aspect-ratio:1;border-radius:50%;background:var(--coral)}
+.t1 .circ2{position:absolute;right:8%;top:30%;width:34%;aspect-ratio:1;border-radius:50%;background:#fff6dc}
+.t1 b{position:relative;font:900 clamp(1.4rem,6vw,2.3rem)/.95 var(--display);font-stretch:118%;max-width:70%}
+.t1 small{position:relative;font-weight:600;font-size:.8rem;margin-bottom:22px}
+.side{grid-column:span 2;display:grid;gap:10px;align-content:start}
+.t2{background:var(--accent);aspect-ratio:1/1}
+.t2::before{content:"";position:absolute;inset:18% 18% auto auto;width:46%;height:46%;background:var(--sun);transform:rotate(45deg)}
+.t3{background:var(--ink);aspect-ratio:9/16}
+.t3::before{content:"";position:absolute;left:14%;right:14%;top:14%;height:6px;background:var(--bg)}
+.t3::after{content:"";position:absolute;left:14%;width:46%;top:calc(14% + 14px);height:6px;background:var(--coral)}
+.t4{grid-column:span 6;aspect-ratio:auto;background:var(--paper);border:2px solid var(--ink);color:var(--ink);padding:14px 14px 34px;display:grid;gap:10px}
+.t4 .row{display:grid;grid-template-columns:5.2em 1fr;gap:10px;align-items:center;font-size:.8rem;font-weight:600}
+.t4 .bar{height:12px;background:var(--surface)}
+.t4 .bar i{display:block;height:100%;background:var(--muted)}
+.t4 .row.you .bar i{background:var(--accent)}
+.t4 .ex{background:var(--surface);color:var(--ink)}
+@media (prefers-reduced-motion: no-preference){
+  .board .tile{animation:rise .6s cubic-bezier(.2,.7,.2,1) both}
+  .board .t2{animation-delay:.08s}.board .t3{animation-delay:.16s}.board .t4{animation-delay:.24s}
+  @keyframes rise{from{transform:translateY(14px)}to{transform:none}}
+}
+
+/* snapshot */
+.snap{display:grid;gap:36px}
+.pages{display:grid;gap:14px}
+.page{background:var(--paper);border:2px solid var(--ink);padding:18px;display:grid;gap:12px;align-content:start;min-width:0}
+.page .pg{font:800 var(--step--1)/1 var(--body);color:var(--muted)}
+.page .mini{height:90px;background:var(--surface);position:relative;overflow:hidden}
+.mini.score{display:flex;align-items:flex-end;gap:10%;padding:0 12%}
+.mini.score span{flex:1;background:var(--muted)}
+.mini.score span:first-child{background:var(--accent)}
+.mini.fix{display:grid;gap:8px;padding:12px;align-content:center}
+.mini.fix span{height:12px;background:var(--line);position:relative;margin-left:22px}
+.mini.fix span::before{content:"";position:absolute;left:-22px;top:0;width:12px;height:12px;background:var(--coral)}
+.mini.posts{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
+.mini.posts span{background:var(--sun)}
+.mini.posts span+span{background:var(--accent)}
+.page .ex2{font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+@media (min-width:760px){.pages{grid-template-columns:repeat(2,1fr)}}
+
+/* form */
+.formbox{background:var(--surface);padding:22px 18px;display:grid;gap:18px;border-left:6px solid var(--accent)}
+@media (min-width:760px){.formbox{padding:32px}}
+.fields{display:grid;gap:14px}
+@media (min-width:760px){.fields{grid-template-columns:1fr 1fr}.fields .full{grid-column:1/-1}}
+.field{display:grid;gap:6px;min-width:0}
+.field label{font-weight:700;font-size:var(--step--1)}
+.field input,.field select{width:100%;min-height:50px;padding:.7em .8em;font:400 var(--step-0)/1.3 var(--body);color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:3px}
+.field input:focus-visible,.field select:focus-visible{outline:3px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.field input[aria-invalid="true"],.field select[aria-invalid="true"]{border-color:var(--error)}
+.err{color:var(--error);font-size:var(--step--1);font-weight:600;min-height:0}
+.status{padding:14px 16px;border:2px solid var(--ink);background:var(--paper);font-weight:600}
+
+/* deliverables */
+.deliv{display:grid;gap:2px;background:var(--ink);border:2px solid var(--ink)}
+.d{background:var(--bg);padding:20px 18px;display:grid;gap:10px;align-content:start;min-width:0}
+.d .tiers{display:flex;flex-wrap:wrap;gap:6px}
+.d .tiers>span{font:700 .72rem/1 var(--body);letter-spacing:.06em;text-transform:uppercase;padding:.4em .5em;border:1.5px solid var(--line);color:var(--muted);border-radius:2px}
+.d .tiers>span.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.d p{color:var(--muted)}
+@media (min-width:640px){.deliv{grid-template-columns:1fr 1fr}}
+@media (min-width:980px){.deliv{grid-template-columns:repeat(3,1fr)}}
+
+/* how it works */
+.flow{display:grid;gap:0}
+.stage{display:grid;gap:10px;padding:22px 0;border-bottom:2px solid var(--line);min-width:0}
+.stage:last-child{border-bottom:0}
+.stage .sym{width:44px;height:44px;display:block}
+.stage p{color:var(--muted)}
+@media (min-width:860px){.flow{grid-template-columns:repeat(3,1fr);gap:28px}.stage{border-bottom:0;border-top:6px solid var(--ink);padding-top:22px}.stage:nth-child(2){border-top-color:var(--accent)}.stage:nth-child(3){border-top-color:var(--sun)}}
+
+/* industries */
+.inds{display:grid;gap:14px}
+.ind{border:2px solid var(--ink);padding:20px 18px;display:grid;gap:10px;align-content:start;min-width:0;background:var(--paper)}
+.ind .swatch{display:flex;gap:6px}
+.ind .swatch i{width:22px;height:22px;display:block}
+.ind p{color:var(--muted);font-size:var(--step--1)}
+.ind .note{font-size:var(--step--1);font-weight:600;color:var(--ink)}
+@media (min-width:640px){.inds{grid-template-columns:1fr 1fr}}
+@media (min-width:980px){.inds{grid-template-columns:repeat(3,1fr)}}
+
+/* pricing */
+.plans{display:grid;gap:14px}
+.plan{border:2px solid var(--ink);padding:24px 20px;display:grid;gap:16px;align-content:start;background:var(--paper);min-width:0}
+.plan.feat{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.plan.feat .muted,.plan.feat li{color:var(--bg)}
+.plan .price{font:900 clamp(2.6rem,10vw,3.4rem)/1 var(--display);font-stretch:110%;display:flex;align-items:baseline;gap:.2em;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.plan .price small{font:600 var(--step-0)/1 var(--body)}
+.plan .price .ph{font-size:inherit}
+.plan ul{display:grid;gap:8px}
+.plan li{padding-left:20px;position:relative}
+.plan li::before{content:"";position:absolute;left:0;top:.62em;width:9px;height:9px;background:var(--accent)}
+.plan.feat li::before{background:var(--sun)}
+.plan.feat .btn{background:var(--sun);border-color:var(--sun);color:var(--block-ink)}
+.plan.feat .btn:hover{box-shadow:4px 4px 0 var(--accent)}
+.plan .muted{color:var(--muted);font-size:var(--step--1)}
+.terms{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px 22px;font-weight:600}
+@media (min-width:860px){.plans{grid-template-columns:repeat(3,1fr)}}
+
+/* faq */
+.faq{display:grid;border-top:2px solid var(--ink)}
+.faq details{border-bottom:2px solid var(--line)}
+.faq summary{cursor:pointer;list-style:none;padding:18px 40px 18px 0;position:relative;font:750 var(--step-1)/1.3 var(--display);font-stretch:105%}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"";position:absolute;right:6px;top:50%;width:14px;height:14px;margin-top:-7px;background:linear-gradient(var(--ink),var(--ink)) center/14px 3px no-repeat,linear-gradient(var(--ink),var(--ink)) center/3px 14px no-repeat}
+.faq details[open] summary::after{background:linear-gradient(var(--ink),var(--ink)) center/14px 3px no-repeat}
+.faq .ans{padding-bottom:20px;color:var(--muted);display:grid;gap:10px}
+
+/* closing + footer */
+.closing{display:grid;gap:22px;justify-items:start}
+footer{border-top:2px solid var(--ink);padding-block:36px 48px;display:grid;gap:22px;font-size:var(--step--1);color:var(--muted)}
+footer .cols{display:grid;gap:18px}
+footer a{color:var(--ink)}
+footer .links{display:flex;flex-wrap:wrap;gap:8px 18px}
+@media (min-width:760px){footer .cols{grid-template-columns:2fr 1fr 1fr}}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+
+</head>
+<body>
+<script>
+/* ==========================================================================
+   CONTENT: edit everything here. Name, prices, tiers and copy all live in
+   this one object. Values marked draft:true render with a yellow highlight
+   so nobody mistakes a placeholder for a decision.
+   ========================================================================== */
+window.SITE_CONTENT = {
+  brand: "Crier Studio",
+  previewBanner: "Preview only. The prices, money-back terms, contact email and legal links are placeholders, and the form is not connected.",
+  currency: "$",
+  billingNote: "a month",
+  hero: {
+    eyebrow: "Design studio and campaigns for local businesses",
+    headlineBefore: "Your posts, campaigns and growth plan, ",
+    headlineHighlight: "designed every month.",
+    sub: "{brand} prepares ready-to-post designs, a content calendar and a monthly growth report in your own brand. You approve everything in your client portal before you use it.",
+    cta: "Get your free Growth Snapshot",
+    secondary: "See plans",
+    fine: "Free. No card needed. A 2-page plan for your business."
+  },
+  snapshot: {
+    eyebrow: "Start here, free",
+    title: "Your free Growth Snapshot",
+    lead: "A 2-page plan prepared for your business from your own website, Google listing and Instagram: the fixes to make first, with proof, and 2 ready-to-post designs made from your own photos. Read it, keep it, use it. No obligation.",
+    pages: [
+      { label: "Page 1", title: "The fixes to make first", text: "The things to fix first, each with the proof we found on your site or profile.", mini: "fix" },
+      { label: "Page 2", title: "2 designs, ready to post", text: "Two post designs with captions in your brand colors, made from your own photos.", mini: "posts" }
+    ],
+    formTitle: "Tell us about your business",
+    formNote: "We use these details only to prepare your snapshot and email it to you.",
+    submit: "Send me my snapshot",
+    previewMessage: "Preview only. This form is not connected yet, so nothing was sent or saved.",
+    privacyLine: "By sending, you agree to our privacy policy (DRAFT)."
+  },
+  // Tier names, prices and contents. Prices are proposals to TEST, not approved.
+  tiers: [
+    { id: "starter", name: "Starter", price: 29, draft: true, for: "One business getting its monthly basics in place.",
+      features: ["Monthly growth report: your top fixes, with a comparison when comparable businesses are found nearby", "Up to 10 ready-to-post designs a month, made from your own photos, with captions", "A monthly content calendar", "Approve or request changes in your client portal", "1 business"] },
+    { id: "growth", name: "Growth", price: 79, draft: true, featured: true, for: "Regular posting plus short video and competitor tracking.",
+      features: ["Everything in Starter", "Up to 10 ready-to-post designs a month, made from your own photos", "Short reels from photos and clips you send", "Google Business posts and review-reply drafts", "Competitor watch (when comparable businesses are found nearby) and a monthly strategy report"] },
+    { id: "multi", name: "Multi", price: 199, draft: true, for: "Owners with several locations or brands.",
+      features: ["Growth for up to 5 businesses or branches", "Each brand kept separate", "One client portal for all of them"] }
+  ],
+  planCta: "Start with a free snapshot",
+  pricingTerms: [
+    { text: "Billed monthly", draft: false },
+    { text: "Cancel anytime", draft: false },
+    { text: "7-day money-back on your first month", draft: true }
+  ],
+  // What you get each month. "tiers" lists which plans include it.
+  deliverables: [
+    { title: "Monthly growth report", text: "The fixes that matter most right now, updated each month. When comparable businesses are found nearby, your score is shown next to theirs.", tiers: ["starter","growth","multi"] },
+    { title: "Ready-to-post designs", text: "Up to 10 post designs a month, with captions, in your colors and made from your own photos.", tiers: ["starter","growth","multi"] },
+    { title: "Content calendar", text: "A month of posts laid out by date and theme, so you know what goes out when.", tiers: ["starter","growth","multi"] },
+    { title: "Short reels", text: "Short vertical reels built from the photos and clips you send us.", tiers: ["growth","multi"] },
+    { title: "Google Business posts and review replies", text: "Posts for your Google listing and draft replies to your reviews, for you to approve.", tiers: ["growth","multi"] },
+    { title: "Competitor watch and strategy report", text: "What comparable nearby businesses changed this month, when we find them, and a short plan for next month.", tiers: ["growth","multi"] }
+  ],
+  steps: [
+    { title: "Snapshot", text: "Send your business name and website or Instagram. We prepare your free 2-page Growth Snapshot and email it to you." },
+    { title: "Plan", text: "Pick a plan. You answer a short questionnaire about your brand and send your logo, photos and clips. Your first month's calendar is built around your top fixes." },
+    { title: "Monthly delivery", text: "Each month your designs, calendar and report arrive in your client portal. Approve each one or ask for changes, then download and post." }
+  ],
+  industries: [
+    { name: "Cafés and dessert shops", text: "Menu highlights, seasonal specials and opening hours. The snapshot checks whether people can order or ask a question from your first screen.", colors: ["sun","coral"] },
+    { name: "Salons", text: "Services, team and booking. The snapshot checks whether your site shows your services and an easy way to book.", colors: ["coral","accent"] },
+    { name: "Gyms and studios", text: "Class schedules, coaches and memberships. The snapshot checks whether a new member can find a class and book.", colors: ["accent","ink"] },
+    { name: "Clinics", text: "Dental, physio and similar. Posts cover your team, space, services, hours and booking.", note: "No health or treatment claims, and no patient photos unless you supply written consent.", colors: ["ink","sun"] },
+    { name: "Local services", text: "Cleaners, repair, trades and other local businesses. Posts cover what you do, where you work and how to book.", colors: ["sun","accent"] }
+  ],
+  otherIndustry: "Other local business",
+  faq: [
+    { q: "What do you need from me?", a: ["For the free snapshot: your business name, website or Instagram, email, city and industry.", "On a paid plan: your logo, brand colors if you have them, your own photos and short clips, and answers to a short questionnaire about your business. We don't use stock photos of strangers in your posts."] },
+    { q: "How do approvals work?", a: ["Everything arrives in your client portal. For each design you can approve it or ask for changes. Each approval is tied to the exact version you saw, so nothing changes after you say yes.", "Nothing is published for you. You download the approved files and post them yourself."] },
+    { q: "Who owns the content?", draft: true, a: ["You own the designs and captions you approve on a paid plan, and you can keep using them after you cancel. [DRAFT: final wording comes from the terms of service.]"] },
+    { q: "Can you promise more customers?", a: ["No. Nobody can honestly promise that. The snapshot shows where you stand and what to fix first, and the monthly plan gives you designs ready to use. Results depend on your business, your market and how you use them."] },
+    { q: "Can I cancel?", a: ["Yes, plans are month to month and you can cancel anytime. The first month has a 7-day money-back period. [DRAFT: refund terms not final.]"] },
+    { q: "What languages do you work in?", a: ["English for now."] },
+    { q: "Where do the competitor numbers come from?", a: ["From public sources only: your site and theirs, Google results and listings, and public Instagram profiles. When comparable businesses are found nearby, we compare you with businesses of a similar size near you, not with national chains. If we can't find comparable ones, we say so instead of guessing."] }
+  ],
+  closing: { title: "See where you stand first.", text: "The snapshot is free and yours to keep, whether or not you choose a plan." },
+  footer: {
+    blurb: "{brand} is a design studio and campaign service for local businesses.",
+    contactLabel: "Contact",
+    email: "hello@crierstudio.com (DRAFT placeholder, email not set up yet)",
+    legal: ["Terms of service (DRAFT)", "Privacy policy (DRAFT)", "Refund policy (DRAFT)"],
+    copyright: "© 2026 Crier Studio. [DRAFT: legal entity name]"
+  }
+};
+</script>
+
+<div class="banner" role="note"><div class="wrap"><span class="tag">Draft</span><span data-k="previewBanner"></span></div></div>
+
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="#top" id="top"><i aria-hidden="true"></i><span data-k="brand"></span></a>
+    <nav aria-label="Sections">
+      <a href="#monthly">What you get</a>
+      <a href="#how">How it works</a>
+      <a href="#industries">Industries</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a class="btn" href="#get-snapshot">Free snapshot</a>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow" data-k="hero.eyebrow"></span>
+        <h1><span data-k="hero.headlineBefore"></span><span class="hl" data-k="hero.headlineHighlight"></span></h1>
+        <p class="lead" data-k="hero.sub"></p>
+        <div class="cta-row">
+          <a class="btn" href="#get-snapshot" data-k="hero.cta"></a>
+          <a class="btn ghost" href="#pricing" data-k="hero.secondary"></a>
+        </div>
+        <p class="fine" data-k="hero.fine"></p>
+      </div>
+      <div class="board" aria-label="Example layouts, not client work">
+        <div class="tile t1"><span class="circ" aria-hidden="true"></span><span class="circ2" aria-hidden="true"></span><b>Pistachio week</b><small>Open late Fridays</small><span class="ex">Example layout</span></div>
+        <div class="side">
+          <div class="tile t2"><span class="ex">Example layout</span></div>
+          <div class="tile t3"><span class="ex">Reel</span></div>
+        </div>
+        <div class="tile t4" aria-label="Example score layout">
+          <div class="row you"><span>You</span><div class="bar"><i style="width:58%"></i></div></div>
+          <div class="row"><span>Nearby A</span><div class="bar"><i style="width:74%"></i></div></div>
+          <div class="row"><span>Nearby B</span><div class="bar"><i style="width:46%"></i></div></div>
+          <div class="row"><span>Nearby C</span><div class="bar"><i style="width:66%"></i></div></div>
+          <span class="ex">Example layout, not real scores</span>
+        </div>
+      </div>
+    </div>
+
+    <section id="get-snapshot" aria-labelledby="snap-title">
+      <div class="snap">
+        <div class="sec-head">
+          <span class="eyebrow" data-k="snapshot.eyebrow"></span>
+          <h2 id="snap-title" data-k="snapshot.title"></h2>
+          <p class="lead" data-k="snapshot.lead"></p>
+        </div>
+        <div class="pages" id="snap-pages"></div>
+
+        <form class="formbox" id="snap-form" novalidate>
+          <h3 data-k="snapshot.formTitle"></h3>
+          <div class="fields">
+            <div class="field">
+              <label for="f-business">Business name</label>
+              <input id="f-business" name="business" type="text" autocomplete="organization" required aria-describedby="e-business">
+              <span class="err" id="e-business" hidden></span>
+            </div>
+            <div class="field">
+              <label for="f-web">Website or Instagram</label>
+              <input id="f-web" name="web" type="text" inputmode="url" placeholder="yourshop.com or @yourshop" required aria-describedby="e-web">
+              <span class="err" id="e-web" hidden></span>
+            </div>
+            <div class="field">
+              <label for="f-email">Email</label>
+              <input id="f-email" name="email" type="email" autocomplete="email" required aria-describedby="e-email">
+              <span class="err" id="e-email" hidden></span>
+            </div>
+            <div class="field">
+              <label for="f-city">City</label>
+              <input id="f-city" name="city" type="text" autocomplete="address-level2" required aria-describedby="e-city">
+              <span class="err" id="e-city" hidden></span>
+            </div>
+            <div class="field full">
+              <label for="f-industry">Industry</label>
+              <select id="f-industry" name="industry" required aria-describedby="e-industry"><option value="">Choose one</option></select>
+              <span class="err" id="e-industry" hidden></span>
+            </div>
+          </div>
+          <p class="fine" data-k="snapshot.formNote"></p>
+          <div class="cta-row"><button class="btn" type="submit" data-k="snapshot.submit"></button></div>
+          <p class="fine"><span class="ph" data-k="snapshot.privacyLine"></span></p>
+          <div class="status" id="snap-status" role="status" aria-live="polite" hidden></div>
+        </form>
+      </div>
+    </section>
+
+    <section id="monthly" aria-labelledby="monthly-title">
+      <div class="sec-head">
+        <span class="eyebrow">Every month</span>
+        <h2 id="monthly-title">What you get each month</h2>
+        <p class="lead">Each item shows which plans include it.</p>
+      </div>
+      <div class="deliv" id="deliv"></div>
+    </section>
+
+    <section id="how" aria-labelledby="how-title">
+      <div class="sec-head">
+        <span class="eyebrow">How it works</span>
+        <h2 id="how-title">From a free snapshot to a monthly plan</h2>
+      </div>
+      <div class="flow" id="flow"></div>
+    </section>
+
+    <section id="industries" aria-labelledby="ind-title">
+      <div class="sec-head">
+        <span class="eyebrow">Who it's for</span>
+        <h2 id="ind-title">Built for local businesses</h2>
+        <p class="lead">Owner-run shops and studios that serve one city.</p>
+      </div>
+      <div class="inds" id="inds"></div>
+    </section>
+
+    <section id="pricing" aria-labelledby="price-title">
+      <div class="sec-head">
+        <span class="eyebrow">Pricing</span>
+        <h2 id="price-title">Monthly plans</h2>
+        <p class="lead">Prices in US dollars. Highlighted values are placeholders.</p>
+      </div>
+      <div class="plans" id="plans"></div>
+      <div class="terms" id="terms"></div>
+    </section>
+
+    <section id="faq" aria-labelledby="faq-title">
+      <div class="sec-head">
+        <span class="eyebrow">Questions</span>
+        <h2 id="faq-title">Straight answers</h2>
+      </div>
+      <div class="faq" id="faq-list"></div>
+    </section>
+
+    <section aria-labelledby="close-title">
+      <div class="closing">
+        <h2 id="close-title" data-k="closing.title"></h2>
+        <p class="lead" data-k="closing.text"></p>
+        <a class="btn" href="#get-snapshot" data-k="hero.cta"></a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="cols">
+      <div style="display:grid;gap:10px">
+        <a class="logo" href="#top"><i aria-hidden="true"></i><span data-k="brand"></span></a>
+        <p data-k="footer.blurb"></p>
+      </div>
+      <div style="display:grid;gap:6px">
+        <strong style="color:var(--ink)" data-k="footer.contactLabel"></strong>
+        <span class="ph" data-k="footer.email"></span>
+      </div>
+      <div style="display:grid;gap:6px">
+        <strong style="color:var(--ink)">Legal</strong>
+        <div class="links" id="legal"></div>
+      </div>
+    </div>
+    <p><span class="ph" data-k="footer.copyright"></span></p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var C = window.SITE_CONTENT;
+  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];});}
+  function brandify(s){return String(s).split("{brand}").join(C.brand);}
+  function get(path){return path.split(".").reduce(function(o,k){return o==null?o:o[k];},C);}
+  function t(s){return esc(brandify(s));}
+
+  document.querySelectorAll("[data-k]").forEach(function(el){
+    var v = get(el.getAttribute("data-k"));
+    if (v != null) el.textContent = brandify(v);
+  });
+  document.title = C.brand;
+
+  // snapshot pages
+  document.getElementById("snap-pages").innerHTML = C.snapshot.pages.map(function(p){
+    var mini = p.mini==="score" ? '<div class="mini score" aria-hidden="true"><span style="height:55%"></span><span style="height:75%"></span><span style="height:40%"></span><span style="height:65%"></span></div>'
+             : p.mini==="fix" ? '<div class="mini fix" aria-hidden="true"><span style="width:80%"></span><span style="width:62%"></span><span style="width:70%"></span></div>'
+             : '<div class="mini posts" aria-hidden="true"><span></span><span></span></div>';
+    return '<article class="page"><span class="pg">'+t(p.label)+'</span>'+mini+'<span class="ex2">Example layout</span><h3>'+t(p.title)+'</h3><p>'+t(p.text)+'</p></article>';
+  }).join("");
+
+  // industry select
+  var sel = document.getElementById("f-industry");
+  C.industries.map(function(i){return i.name;}).concat([C.otherIndustry]).forEach(function(n){
+    var o = document.createElement("option"); o.value = n; o.textContent = n; sel.appendChild(o);
+  });
+
+  // deliverables
+  var tierNames = {}; C.tiers.forEach(function(x){tierNames[x.id]=x.name;});
+  document.getElementById("deliv").innerHTML = C.deliverables.map(function(d){
+    var chips = C.tiers.map(function(x){
+      var on = d.tiers.indexOf(x.id) > -1;
+      return '<span class="'+(on?"on":"")+'">'+(on?"":'<span class="sr" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Not in </span>')+t(x.name)+'</span>';
+    }).join("");
+    return '<div class="d"><h3>'+t(d.title)+'</h3><p>'+t(d.text)+'</p><div class="tiers" aria-label="Included in">'+chips+'</div></div>';
+  }).join("");
+
+  // how it works: shapes instead of numbers
+  var syms = [
+    '<svg class="sym" viewBox="0 0 44 44" aria-hidden="true"><rect x="6" y="4" width="32" height="36" fill="none" stroke="currentColor" stroke-width="4"/><rect x="13" y="13" width="18" height="4" fill="currentColor"/><rect x="13" y="22" width="12" height="4" fill="currentColor"/></svg>',
+    '<svg class="sym" viewBox="0 0 44 44" aria-hidden="true"><rect x="4" y="8" width="36" height="30" fill="none" stroke="var(--accent)" stroke-width="4"/><rect x="4" y="8" width="36" height="8" fill="var(--accent)"/><rect x="11" y="22" width="6" height="6" fill="var(--accent)"/><rect x="21" y="22" width="6" height="6" fill="var(--accent)"/></svg>',
+    '<svg class="sym" viewBox="0 0 44 44" aria-hidden="true"><rect x="4" y="4" width="16" height="16" fill="var(--sun)"/><rect x="24" y="4" width="16" height="16" fill="var(--coral)"/><rect x="4" y="24" width="16" height="16" fill="var(--accent)"/><path d="M26 32l5 5 9-11" fill="none" stroke="currentColor" stroke-width="4"/></svg>'
+  ];
+  document.getElementById("flow").innerHTML = C.steps.map(function(s,i){
+    return '<div class="stage">'+(syms[i]||"")+'<h3>'+t(s.title)+'</h3><p>'+t(s.text)+'</p></div>';
+  }).join("");
+
+  // industries
+  document.getElementById("inds").innerHTML = C.industries.map(function(i){
+    var sw = (i.colors||[]).map(function(c){return '<i style="background:var(--'+c+')"></i>';}).join("");
+    return '<div class="ind"><div class="swatch" aria-hidden="true">'+sw+'</div><h3>'+t(i.name)+'</h3><p>'+t(i.text)+'</p>'+(i.note?'<p class="note">'+t(i.note)+'</p>':"")+'</div>';
+  }).join("");
+
+  // pricing
+  document.getElementById("plans").innerHTML = C.tiers.map(function(x){
+    var price = C.currency + x.price;
+    return '<div class="plan'+(x.featured?" feat":"")+'"><h3>'+t(x.name)+'</h3><p class="muted">'+t(x.for)+'</p>'
+      + '<div class="price"><span class="'+(x.draft?"ph":"")+'">'+t(price)+'</span><small>'+t(C.billingNote)+'</small></div>'
+      + (x.draft?'<span class="muted">Placeholder price, to be tested</span>':"")
+      + '<ul>'+x.features.map(function(f){return "<li>"+t(f)+"</li>";}).join("")+'</ul>'
+      + '<a class="btn" href="#get-snapshot">'+t(C.planCta)+'</a></div>';
+  }).join("");
+  document.getElementById("terms").innerHTML = C.pricingTerms.map(function(p){
+    return '<span class="'+(p.draft?"ph":"")+'">'+t(p.text)+(p.draft?" (placeholder)":"")+'</span>';
+  }).join("");
+
+  // faq
+  document.getElementById("faq-list").innerHTML = C.faq.map(function(f,i){
+    return '<details'+(i===0?" open":"")+'><summary>'+t(f.q)+'</summary><div class="ans">'+f.a.map(function(p){return '<p'+(p.indexOf("[DRAFT")>-1?' class="ph"':'')+'>'+t(p)+'</p>';}).join("")+'</div></details>';
+  }).join("");
+
+  // legal links: placeholders, go nowhere yet
+  document.getElementById("legal").innerHTML = C.footer.legal.map(function(l){
+    return '<a href="#top" class="ph" title="Draft, page not written yet">'+t(l)+'</a>';
+  }).join("");
+
+  // form: stubbed, never submits anywhere
+  var form = document.getElementById("snap-form"), status = document.getElementById("snap-status");
+  var checks = {
+    "f-business": function(v){return v ? "" : "Enter your business name.";},
+    "f-web": function(v){return v ? "" : "Enter your website or Instagram handle.";},
+    "f-email": function(v){return !v ? "Enter your email so we can send the snapshot." : (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? "" : "Check the email address, it looks incomplete.");},
+    "f-city": function(v){return v ? "" : "Enter the city your business is in.";},
+    "f-industry": function(v){return v ? "" : "Choose the closest industry.";}
+  };
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    var firstBad = null;
+    Object.keys(checks).forEach(function(id){
+      var el = document.getElementById(id), msg = checks[id](el.value.trim()), err = document.getElementById("e-"+id.slice(2));
+      el.setAttribute("aria-invalid", msg ? "true" : "false");
+      err.textContent = msg; err.hidden = !msg;
+      if (msg && !firstBad) firstBad = el;
+    });
+    if (firstBad){ status.hidden = true; firstBad.focus(); return; }
+    status.textContent = C.snapshot.previewMessage;
+    status.hidden = false;
+  });
+})();
+</script>
+
+</body>
+</html>
