@@ -2,18 +2,13 @@
    Strings live in /i18n/<code>.json (one file per language, loaded on demand; en.json is the fallback).
    Language: ?lang= override, else the saved choice, else navigator.languages, else en. */
 (function(){
-  var LANGS = [["en","English"],["ar","العربية"],["es","Español"],["fr","Français"],["de","Deutsch"],["it","Italiano"],["pt-BR","Português (Brasil)"],["nl","Nederlands"],["tr","Türkçe"],["ru","Русский"],["uk","Українська"],["pl","Polski"],["ro","Română"],["sv","Svenska"],["el","Ελληνικά"],["he","עברית"],["fa","فارسی"],["ur","اردو"],["hi","हिन्दी"],["bn","বাংলা"],["id","Bahasa Indonesia"],["ms","Bahasa Melayu"],["th","ไทย"],["vi","Tiếng Việt"],["zh-Hans","简体中文"],["zh-Hant","繁體中文"],["ja","日本語"],["ko","한국어"],["sw","Kiswahili"],["fil","Filipino"]];
-  var RTL = {ar:1,he:1,fa:1,ur:1};
+  var LANGS = [["en","English"],["es","Español"],["fr","Français"],["ar","العربية"]];
+  var RTL = {ar:1};
   // Prices and numbers live here (USD, never converted). Page copy refers to them as {price} {regular} {n}.
   var CFG = {brand:"Crier Studio", email:"team@crierstudio.com", currency:"$", price:49, regular:99, founding:20};
   // Extra fonts, loaded only for the language that needs them. Latin (incl. latin-ext) is covered by the base fonts.
   var GF = "https://fonts.googleapis.com/css2?family=";
-  var FONT = {
-    ar:"Noto+Sans+Arabic", fa:"Noto+Sans+Arabic", ur:"Noto+Sans+Arabic", he:"Noto+Sans+Hebrew",
-    hi:"Noto+Sans+Devanagari", bn:"Noto+Sans+Bengali", th:"Noto+Sans+Thai",
-    ja:"Noto+Sans+JP", ko:"Noto+Sans+KR", "zh-Hans":"Noto+Sans+SC", "zh-Hant":"Noto+Sans+TC",
-    ru:"Noto+Sans", uk:"Noto+Sans", el:"Noto+Sans", vi:"Noto+Sans"
-  };
+  var FONT = {ar:"Noto+Sans+Arabic"};
   var codes = LANGS.map(function(l){return l[0];});
   var KEY = "crier.lang";
   var dicts = {}, cur = "en", listeners = [];
@@ -23,12 +18,6 @@
     var t = String(tag).replace(/_/g,"-"), low = t.toLowerCase(), i;
     for (i=0;i<codes.length;i++) if (codes[i].toLowerCase()===low) return codes[i];
     var p = low.split("-");
-    if (p[0]==="zh"){
-      if (p.indexOf("hant")>-1 || p.indexOf("tw")>-1 || p.indexOf("hk")>-1 || p.indexOf("mo")>-1) return "zh-Hant";
-      return "zh-Hans";
-    }
-    var alias = {pt:"pt-BR", tl:"fil", iw:"he", "in":"id", zsm:"ms", nb:null, no:null, nn:null};
-    if (p[0] in alias) return alias[p[0]];
     for (i=0;i<codes.length;i++) if (codes[i].toLowerCase()===p[0]) return codes[i];
     return null;
   }
