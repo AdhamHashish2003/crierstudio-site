@@ -1,0 +1,22 @@
+<footer>
+    <div class="cols">
+      <div style="display:grid;gap:10px">
+        <a class="logo" href="{{=homeHref}}" aria-label="{{a:leg.homeAria}}">{{>logo}}</a>
+        <p>{{t:foot.blurb}}</p>
+      </div>
+      <div style="display:grid;gap:6px">
+        <strong style="color:var(--ink)">{{t:foot.contact}}</strong>
+        <a href="mailto:team@crierstudio.com" dir="ltr">team@crierstudio.com</a>
+        <a href="{{=faqHref}}">{{t:faq.eyebrow}}</a>
+      </div>
+      <div style="display:grid;gap:6px">
+        <strong style="color:var(--ink)">{{t:foot.legal}}</strong>
+        <div class="links" id="legal">
+          <a href="{{=termsHref}}" class="ph">{{t:foot.terms}}</a>
+          <a href="{{=privacyHref}}" class="ph">{{t:foot.privacy}}</a>
+          <a href="{{=refundHref}}" class="ph">{{t:foot.refund}}</a>
+        </div>
+      </div>
+    </div>
+    <p>&copy; 2026 Crier Studio. <span>{{t:foot.unreg}}</span></p>
+  </footer>

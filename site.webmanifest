@@ -1,0 +1,25 @@
+{
+  "name": "Crier Studio",
+  "short_name": "Crier Studio",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#F6F8EF",
+  "theme_color": "#0E0F0C",
+  "icons": [
+    {
+      "src": "/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

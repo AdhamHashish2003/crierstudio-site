@@ -1,0 +1,35 @@
+/* shared: fonts fallback metrics, language links, RTL, per-script typography */
+@font-face{font-family:"Archivo Fallback";src:local("Arial Black"),local("Arial");size-adjust:98%}
+@font-face{font-family:"Instrument Fallback";src:local("Arial");size-adjust:99%}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.top .right{display:flex;align-items:center;gap:10px;min-width:0}
+.langpick{display:flex;gap:0}
+.langpick a{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:0 .3em;font:700 .875rem/1 var(--body);text-decoration:none;color:var(--muted);border-bottom:4px solid transparent}
+.langpick a:hover{color:var(--ink)}
+.langpick a[aria-current]{color:var(--ink);border-bottom-color:var(--ink)}
+@media (max-width:520px){.top .btn{display:none}}
+@media (max-width:380px){.langpick a{min-width:40px}}
+.conv{font-size:.875rem;color:var(--muted)}
+
+/* RTL (ar) */
+[dir=rtl] .formbox{border-left:0;border-right:6px solid var(--accent)}
+[dir=rtl] .faq summary{padding:18px 0 18px 40px}
+[dir=rtl] .faq summary::after{right:auto;left:6px}
+[dir=rtl] .mini.fix span{margin-left:0;margin-right:22px}
+[dir=rtl] .mini.fix span::before{left:auto;right:-22px}
+[dir=rtl] .check input{margin:2px 0 0}
+[dir=rtl] ul{padding-left:0;padding-right:1.2rem}
+[dir=rtl] .draftbar{border-left:0;border-right:6px solid var(--draft-ink)}
+[dir=rtl] .tile .ex{left:auto;right:8px}
+[dir=rtl] .t1 .circ{right:auto;left:-18%}
+[dir=rtl] .t1 .circ2{right:auto;left:8%}
+
+/* Arabic: joined letters, no tracking, no condensed stretch, roomier lines, no forced caps */
+html[lang=ar]{--display:"Noto Sans Arabic","Archivo","Segoe UI",Tahoma,"Geeza Pro",sans-serif;--body:"Noto Sans Arabic","Instrument Sans","Segoe UI",Tahoma,"Geeza Pro",sans-serif}
+html[lang=ar] :is(h1,h2,h3,.logo,.faq summary,.price,.t1 b){letter-spacing:0;font-stretch:normal}
+html[lang=ar] :is(h1,h2,h3,.t1 b){line-height:1.5}
+html[lang=ar] .hero h1 .hl{padding:.05em .15em}
+html[lang=ar] :is(.eyebrow,.tag,.page .ex2,.tile .ex){letter-spacing:0;text-transform:none}
+html[lang=ar] body{line-height:1.75}
+h1,h2,h3,p,li,summary,.btn,.field label{overflow-wrap:anywhere}
+.more{margin-top:22px;font-weight:700}

@@ -1,0 +1,102 @@
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="{{=homeHref}}" id="top" aria-label="{{a:leg.homeAria}}">{{>logo}}</a>
+    <nav aria-label="{{a:nav.label}}">
+      <a href="#how">{{t:nav.how}}</a>
+      <a href="#industries">{{t:nav.ind}}</a>
+      <a href="#faq">{{t:nav.faq}}</a>
+    </nav>
+    <div class="right">{{=langpick}}<a class="btn" href="#get-snapshot">{{t:nav.cta}}</a></div>
+  </header>
+
+  <main>
+    {{>hero}}
+
+    <section id="get-snapshot" aria-labelledby="snap-title">
+      <div class="snap">
+        <div class="sec-head">
+          <span class="eyebrow">{{t:snap.eyebrow}}</span>
+          <h2 id="snap-title">{{t:snap.title}}</h2>
+          <p class="lead">{{t:snap.lead}}</p>
+        </div>
+        <div class="pages" id="snap-pages">{{=snapPages}}</div>
+
+        <form class="formbox" id="snap-form" novalidate data-endpoint="{{=endpoint}}">
+          <h3>{{t:form.title}}</h3>
+          <div class="fields">
+            <div class="field">
+              <label for="f-business">{{t:f.business}}</label>
+              <input id="f-business" name="business" type="text" autocomplete="organization" required aria-describedby="e-business">
+              <span class="err" id="e-business" hidden></span>
+            </div>
+            <div class="field">
+              <label for="f-web">{{t:f.web}}</label>
+              <input id="f-web" name="web" type="text" inputmode="url" dir="auto" placeholder="{{a:f.webPh}}" required aria-describedby="e-web">
+              <span class="err" id="e-web" hidden></span>
+            </div>
+            <div class="field">
+              <label for="f-email">{{t:f.email}}</label>
+              <input id="f-email" name="email" type="email" dir="auto" autocomplete="email" required aria-describedby="e-email">
+              <span class="err" id="e-email" hidden></span>
+            </div>
+            <div class="field">
+              <label for="f-city">{{t:f.city}}</label>
+              <input id="f-city" name="city" type="text" dir="auto" autocomplete="address-level2" required aria-describedby="e-city">
+              <span class="err" id="e-city" hidden></span>
+            </div>
+            <div class="field full">
+              <label for="f-industry">{{t:f.industry}}</label>
+              <select id="f-industry" name="industry" required aria-describedby="e-industry">{{=industryOptions}}</select>
+              <span class="err" id="e-industry" hidden></span>
+            </div>
+          </div>
+          <div class="honey" aria-hidden="true"><label for="f-company">{{t:f.honey}}</label><input id="f-company" name="company_website" type="text" tabindex="-1" autocomplete="off"></div>
+          <p class="fine">{{t:form.note}}</p>
+          <div class="field full">
+            <label class="check" for="f-consent"><input id="f-consent" name="consent" type="checkbox" aria-describedby="e-consent"><span><span>{{t:f.consent}}</span> <a href="{{=privacyHref}}" class="ph">{{t:f.privacy}}</a></span></label>
+            <span class="err" id="e-consent" hidden></span>
+          </div>
+          <div class="cta-row"><button class="btn" type="submit" id="snap-submit">{{t:f.submit}}</button></div>
+          <div class="status" id="snap-status" role="status" aria-live="polite" hidden></div>
+        </form>
+        <script type="application/json" id="form-msgs">{{=formMsgs}}</script>
+      </div>
+    </section>
+
+    <section id="how" aria-labelledby="how-title">
+      <div class="sec-head">
+        <span class="eyebrow">{{t:how.eyebrow}}</span>
+        <h2 id="how-title">{{t:how.title}}</h2>
+      </div>
+      <div class="flow" id="flow">{{=flow}}</div>
+    </section>
+
+    <section id="industries" aria-labelledby="ind-title">
+      <div class="sec-head">
+        <span class="eyebrow">{{t:ind.eyebrow}}</span>
+        <h2 id="ind-title">{{t:ind.title}}</h2>
+        <p class="lead">{{t:ind.lead}}</p>
+      </div>
+      <div class="inds" id="inds">{{=inds}}</div>
+    </section>
+
+    <section id="faq" aria-labelledby="faq-title">
+      <div class="sec-head">
+        <span class="eyebrow">{{t:faq.eyebrow}}</span>
+        <h2 id="faq-title">{{t:faq.title}}</h2>
+      </div>
+      <div class="faq" id="faq-list">{{=faqItems}}</div>
+      <p class="more"><a href="{{=faqHref}}">{{t:faq.all}}</a></p>
+    </section>
+
+    <section aria-labelledby="close-title">
+      <div class="closing">
+        <h2 id="close-title">{{t:close.title}}</h2>
+        <p class="lead">{{t:close.text}}</p>
+        <a class="btn" href="#get-snapshot">{{t:hero.cta}}</a>
+      </div>
+    </section>
+  </main>
+
+  {{>footer}}
+</div>
