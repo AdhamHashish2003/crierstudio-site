@@ -4,7 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
-<meta name="description" content="Crier Studio: a design studio and campaign service for local businesses.">
+<meta name="description" content="Crier Studio is a design studio for local businesses. Get a free Snapshot of your website, search and social, with the fixes written out.">
+<link rel="canonical" href="https://crierstudio.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Crier Studio">
+<meta property="og:title" content="Crier Studio">
+<meta property="og:description" content="A design studio for local businesses. Get a free Snapshot of your website, search and social, with the fixes written out.">
+<meta property="og:url" content="https://crierstudio.com/">
+<meta property="og:image" content="https://crierstudio.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Crier Studio">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Crier Studio">
+<meta name="twitter:description" content="A design studio for local businesses. Get a free Snapshot of your website, search and social, with the fixes written out.">
+<meta name="twitter:image" content="https://crierstudio.com/og.png">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -65,9 +79,7 @@ a{color:inherit}
 .btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink)}
 .btn.ghost:hover{box-shadow:4px 4px 0 var(--accent);border-color:var(--ink)}
 
-/* preview banner + header */
-.banner{background:var(--draft-bg);color:var(--draft-ink);font-size:var(--step--1);padding-block:.55rem}
-.banner .wrap{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+/* header */
 .top{padding-block:18px;display:flex;justify-content:space-between;align-items:center;gap:12px}
 .logo{font:900 1.6rem/1 var(--display);font-stretch:125%;letter-spacing:-.02em;text-decoration:none;display:inline-flex;align-items:center;gap:.4rem}
 .logo svg.wm{display:block;height:34px;width:auto;color:var(--ink);overflow:visible}
@@ -134,7 +146,7 @@ section{padding-block:56px;border-top:2px solid var(--ink)}
 .mini.posts span{background:var(--sun);box-shadow:inset 0 0 0 1.5px var(--ink)}
 .mini.posts span+span{background:var(--ink)}
 .page .ex2{font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-@media (min-width:760px){.pages{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:760px){.pages{grid-template-columns:repeat(3,1fr)}}
 
 /* form */
 .formbox{background:var(--surface);padding:22px 18px;display:grid;gap:18px;border-left:6px solid var(--accent)}
@@ -152,12 +164,10 @@ section{padding-block:56px;border-top:2px solid var(--ink)}
 /* deliverables */
 .deliv{display:grid;gap:2px;background:var(--ink);border:2px solid var(--ink)}
 .d{background:var(--bg);padding:20px 18px;display:grid;gap:10px;align-content:start;min-width:0}
-.d .tiers{display:flex;flex-wrap:wrap;gap:6px}
-.d .tiers>span{font:700 .72rem/1 var(--body);letter-spacing:.06em;text-transform:uppercase;padding:.4em .5em;border:1.5px solid var(--line);color:var(--muted);border-radius:2px}
-.d .tiers>span.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.d .snapnote{font:700 .72rem/1.2 var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .d p{color:var(--muted)}
 @media (min-width:640px){.deliv{grid-template-columns:1fr 1fr}}
-@media (min-width:980px){.deliv{grid-template-columns:repeat(3,1fr)}}
+@media (min-width:980px){.deliv{grid-template-columns:repeat(4,1fr)}}
 
 /* how it works */
 .flow{display:grid;gap:0}
@@ -192,8 +202,14 @@ section{padding-block:56px;border-top:2px solid var(--ink)}
 .plan.feat .btn{background:#C6FF00;border-color:#C6FF00;color:#0E0F0C}
 .plan.feat .btn:hover{box-shadow:4px 4px 0 #F6F8EF}
 .plan .muted{color:var(--muted);font-size:var(--step--1)}
+.plan .found{font-weight:700;color:var(--accent-ink);background:var(--accent);padding:.5em .7em;display:inline-block;justify-self:start}
+.plan.feat .found{background:#C6FF00;color:#0E0F0C}
+.honey{position:absolute!important;left:-10000px;width:1px;height:1px;overflow:hidden}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:var(--step--1)}
+.check input{width:22px;height:22px;margin:2px 0 0;flex:none;accent-color:var(--ink)}
+.check a{font-weight:600}
 .terms{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px 22px;font-weight:600}
-@media (min-width:860px){.plans{grid-template-columns:repeat(3,1fr)}}
+@media (min-width:860px){.plans{grid-template-columns:repeat(2,1fr);max-width:960px}}
 
 /* faq */
 .faq{display:grid;border-top:2px solid var(--ink)}
@@ -222,96 +238,116 @@ html{scroll-behavior:smooth}
 <body>
 <script>
 /* ==========================================================================
-   CONTENT: edit everything here. Name, prices, tiers and copy all live in
-   this one object. Values marked draft:true render with a yellow highlight
-   so nobody mistakes a placeholder for a decision.
+   CONTENT: edit everything here. Name, prices, package contents and copy all live
+   in this one object. Counts and prices come from SITE_CONTENT.packages.
+   Only legal and refund text is marked DRAFT.
    ========================================================================== */
 window.SITE_CONTENT = {
   brand: "Crier Studio",
-  previewBanner: "Preview only. The prices, money-back terms, contact email and legal links are placeholders, and the form is not connected.",
+  email: "hello@crierstudio.com",
   currency: "$",
-  billingNote: "a month",
+  // Packages: the only place counts and prices live. Change a number here and every section follows.
+  packages: {
+    snapshot: {
+      id: "snapshot", name: "Snapshot", price: 0, priceLabel: "Free",
+      for: "A first look at your business online, from your own site and profiles.",
+      items: [
+        { title: "3 findings with proof", text: "Three things holding you back, each with the proof we found on your own site or profile." },
+        { title: "1 fix, written out in full", text: "One of the fixes written out so you can paste it in or hand it to whoever runs your site." },
+        { title: "3 posts in your brand", text: "Three posts with captions, in your brand colors and made from your own photos." }
+      ]
+    },
+    plan: {
+      id: "plan", name: "The Plan", price: 49, billing: "one-time", regularPrice: 99, foundingLimit: 20,
+      for: "The full picture and everything written out, once.",
+      items: [
+        { title: "A full audit", text: "Your website, search results and social profiles checked, with the proof for each finding.", snapshot: "Snapshot: 3 findings" },
+        { title: "Your top 3 fixes, written to paste in", text: "Each fix written out word for word, so you can paste it straight in.", snapshot: "Snapshot: 1 fix" },
+        { title: "A first-screen mock", text: "A mock of the top of your homepage with the changes in place, so you can see what it would look like." },
+        { title: "Rewritten page titles", text: "New titles for your pages, so search results say clearly what you do and where." },
+        { title: "A same-size competitor comparison", text: "Your score next to similar-sized businesses, when comparable nearby businesses are found. If none are found, we say so instead of guessing." },
+        { title: "20 posts with captions", text: "Twenty posts in your brand, each with a caption, made from your own photos.", snapshot: "Snapshot: 3 posts" },
+        { title: "A 15-minute call", text: "A short call to walk through what we found and what to do first." },
+        { title: "A re-check after 30 days", text: "We look again after 30 days and show you a before and after score." }
+      ]
+    }
+  },
   hero: {
-    eyebrow: "Design studio and campaigns for local businesses",
-    headlineBefore: "Your posts, campaigns and growth plan, ",
-    headlineHighlight: "designed every month.",
-    sub: "{brand} prepares ready-to-post designs, a content calendar and a monthly growth report in your own brand. You approve everything in your client portal before you use it.",
-    cta: "Get your free Growth Snapshot",
-    secondary: "See plans",
-    fine: "Free. No card needed. A 2-page plan for your business."
+    eyebrow: "Design studio for local businesses",
+    headlineBefore: "See what to fix first online, ",
+    headlineHighlight: "with the fixes written out.",
+    sub: "{brand} reviews your website, search results and social profiles, then gives you fixes you can paste in and posts in your own brand. Start with a free Snapshot.",
+    cta: "Get your free Snapshot",
+    secondary: "See the packages",
+    fine: "Free. No card needed."
   },
   snapshot: {
     eyebrow: "Start here, free",
-    title: "Your free Growth Snapshot",
-    lead: "A 2-page plan prepared for your business from your own website, Google listing and Instagram: the fixes to make first, with proof, and 2 ready-to-post designs made from your own photos. Read it, keep it, use it. No obligation.",
+    title: "Your free Snapshot",
+    lead: "A short review prepared from your own website and profiles. Read it, keep it, use it. No obligation.",
     pages: [
-      { label: "Page 1", title: "The fixes to make first", text: "The things to fix first, each with the proof we found on your site or profile.", mini: "fix" },
-      { label: "Page 2", title: "2 designs, ready to post", text: "Two post designs with captions in your brand colors, made from your own photos.", mini: "posts" }
+      { label: "Inside", title: "3 findings with proof", text: "Three things to fix, each with the proof we found on your own site or profile.", mini: "score" },
+      { label: "Inside", title: "1 fix, written out in full", text: "One fix written out so you can paste it in.", mini: "fix" },
+      { label: "Inside", title: "3 posts in your brand", text: "Three posts with captions in your brand colors, made from your own photos.", mini: "posts" }
     ],
     formTitle: "Tell us about your business",
-    formNote: "We use these details only to prepare your snapshot and email it to you.",
-    submit: "Send me my snapshot",
-    previewMessage: "Preview only. This form is not connected yet, so nothing was sent or saved.",
-    privacyLine: "By sending, you agree to our privacy policy (DRAFT)."
+    formNote: "We use these details only to prepare your Snapshot and email it to you.",
+    submit: "Send me my Snapshot",
+    consentLabel: "I agree that Crier Studio may use these details to prepare my Snapshot and email it to me.",
+    endpoint: "https://crm-production-d789.up.railway.app/api/public/snapshot-request",
+    thanks: "Thanks. We've got your details and will email your snapshot.",
+    failed: "Sorry, something went wrong and nothing was sent. Please try again in a few minutes, or email hello@crierstudio.com.",
+    tooMany: "Too many tries from this connection. Please try again later.",
+    consentError: "Tick the box so we can use your details for the Snapshot.",
+    sending: "Sending...",
+    privacyLink: "Privacy policy (DRAFT)"
   },
-  // Tier names, prices and contents. Prices are proposals to TEST, not approved.
-  tiers: [
-    { id: "starter", name: "Starter", price: 29, draft: true, for: "One business getting its monthly basics in place.",
-      features: ["Monthly growth report: your top fixes, with a comparison when comparable businesses are found nearby", "Up to 10 ready-to-post designs a month, made from your own photos, with captions", "A monthly content calendar", "Approve or request changes in your client portal", "1 business"] },
-    { id: "growth", name: "Growth", price: 79, draft: true, featured: true, for: "Regular posting plus short video and competitor tracking.",
-      features: ["Everything in Starter", "Up to 10 ready-to-post designs a month, made from your own photos", "Short reels from photos and clips you send", "Google Business posts and review-reply drafts", "Competitor watch (when comparable businesses are found nearby) and a monthly strategy report"] },
-    { id: "multi", name: "Multi", price: 199, draft: true, for: "Owners with several locations or brands.",
-      features: ["Growth for up to 5 businesses or branches", "Each brand kept separate", "One client portal for all of them"] }
-  ],
-  planCta: "Start with a free snapshot",
-  pricingTerms: [
-    { text: "Billed monthly", draft: false },
-    { text: "Cancel anytime", draft: false },
-    { text: "7-day money-back on your first month", draft: true }
-  ],
-  // What you get each month. "tiers" lists which plans include it.
-  deliverables: [
-    { title: "Monthly growth report", text: "The fixes that matter most right now, updated each month. When comparable businesses are found nearby, your score is shown next to theirs.", tiers: ["starter","growth","multi"] },
-    { title: "Ready-to-post designs", text: "Up to 10 post designs a month, with captions, in your colors and made from your own photos.", tiers: ["starter","growth","multi"] },
-    { title: "Content calendar", text: "A month of posts laid out by date and theme, so you know what goes out when.", tiers: ["starter","growth","multi"] },
-    { title: "Short reels", text: "Short vertical reels built from the photos and clips you send us.", tiers: ["growth","multi"] },
-    { title: "Google Business posts and review replies", text: "Posts for your Google listing and draft replies to your reviews, for you to approve.", tiers: ["growth","multi"] },
-    { title: "Competitor watch and strategy report", text: "What comparable nearby businesses changed this month, when we find them, and a short plan for next month.", tiers: ["growth","multi"] }
-  ],
+  planCta: "Start with the free Snapshot",
+  pricing: {
+    lead: "Prices in US dollars.",
+    founding: "Founding price for the first {n} businesses, then {regular}.",
+    terms: [
+      { text: "One-time payment, not a subscription", draft: false },
+      { text: "Refund terms: DRAFT, not final", draft: true, href: "refund.html" }
+    ]
+  },
   steps: [
-    { title: "Snapshot", text: "Send your business name and website or Instagram. We prepare your free 2-page Growth Snapshot and email it to you." },
-    { title: "Plan", text: "Pick a plan. You answer a short questionnaire about your brand and send your logo, photos and clips. Your first month's calendar is built around your top fixes." },
-    { title: "Monthly delivery", text: "Each month your designs, calendar and report arrive in your client portal. Approve each one or ask for changes, then download and post." }
+    { title: "Snapshot", text: "Send your business name, website or Instagram, email, city and industry. We prepare your free Snapshot and email it to you." },
+    { title: "The Plan", text: "If you want the full picture, The Plan is a one-time purchase. Reply to your Snapshot email and we take it from there." },
+    { title: "Delivery", text: "Your audit, fixes, first-screen mock, page titles, comparison and posts come together, with a 15-minute call. After 30 days we re-check and show your before and after score." }
   ],
   industries: [
-    { name: "Cafés and dessert shops", text: "Menu highlights, seasonal specials and opening hours. The snapshot checks whether people can order or ask a question from your first screen.", colors: ["sun","coral"] },
-    { name: "Salons", text: "Services, team and booking. The snapshot checks whether your site shows your services and an easy way to book.", colors: ["coral","accent"] },
-    { name: "Gyms and studios", text: "Class schedules, coaches and memberships. The snapshot checks whether a new member can find a class and book.", colors: ["accent","ink"] },
+    { name: "Cafés and dessert shops", text: "Menu highlights, seasonal specials and opening hours. The Snapshot checks whether people can order or ask a question from your first screen.", colors: ["sun","coral"] },
+    { name: "Salons", text: "Services, team and booking. The Snapshot checks whether your site shows your services and an easy way to book.", colors: ["coral","accent"] },
+    { name: "Gyms and studios", text: "Class schedules, coaches and memberships. The Snapshot checks whether a new member can find a class and book.", colors: ["accent","ink"] },
     { name: "Clinics", text: "Dental, physio and similar. Posts cover your team, space, services, hours and booking.", note: "No health or treatment claims, and no patient photos unless you supply written consent.", colors: ["ink","sun"] },
     { name: "Local services", text: "Cleaners, repair, trades and other local businesses. Posts cover what you do, where you work and how to book.", colors: ["sun","accent"] }
   ],
   otherIndustry: "Other local business",
   faq: [
-    { q: "What do you need from me?", a: ["For the free snapshot: your business name, website or Instagram, email, city and industry.", "On a paid plan: your logo, brand colors if you have them, your own photos and short clips, and answers to a short questionnaire about your business. We don't use stock photos of strangers in your posts."] },
-    { q: "How do approvals work?", a: ["Everything arrives in your client portal. For each design you can approve it or ask for changes. Each approval is tied to the exact version you saw, so nothing changes after you say yes.", "Nothing is published for you. You download the approved files and post them yourself."] },
-    { q: "Who owns the content?", draft: true, a: ["You own the designs and captions you approve on a paid plan, and you can keep using them after you cancel. [DRAFT: final wording comes from the terms of service.]"] },
-    { q: "Can you promise more customers?", a: ["No. Nobody can honestly promise that. The snapshot shows where you stand and what to fix first, and the monthly plan gives you designs ready to use. Results depend on your business, your market and how you use them."] },
-    { q: "Can I cancel?", a: ["Yes, plans are month to month and you can cancel anytime. The first month has a 7-day money-back period. [DRAFT: refund terms not final.]"] },
+    { q: "What do you need from me?", a: ["For the free Snapshot: your business name, website or Instagram, email, city and industry.", "For The Plan: your logo, brand colors if you have them, and your own photos. We don't use stock photos of strangers in your posts."] },
+    { q: "What do I do with the fixes?", a: ["They are written out so you can paste them in, or hand them to whoever looks after your website. The posts are files for you to use. Nothing is published for you."] },
+    { q: "Is there a subscription?", a: ["No. The Plan is a single payment. There is no monthly charge."] },
+    { q: "Who owns the content?", draft: true, a: ["You own the posts and captions made for you in The Plan and can keep using them. [DRAFT: final wording comes from the terms of service.]"] },
+    { q: "Can you promise more customers?", a: ["No. Nobody can honestly promise that. The Snapshot shows where you stand and what to fix first, and The Plan gives you the fixes and posts written out. Results depend on your business, your market and what you do with them."] },
+    { q: "Can I get a refund?", draft: true, a: ["The Plan is a one-time purchase. [DRAFT: refund terms are not final. The wording will be on the refund page before anyone is charged.]"] },
     { q: "What languages do you work in?", a: ["English for now."] },
-    { q: "Where do the competitor numbers come from?", a: ["From public sources only: your site and theirs, Google results and listings, and public Instagram profiles. When comparable businesses are found nearby, we compare you with businesses of a similar size near you, not with national chains. If we can't find comparable ones, we say so instead of guessing."] }
+    { q: "Where do the competitor numbers come from?", a: ["From public sources only: your site and theirs, Google results and listings, and public Instagram profiles. When comparable nearby businesses are found, we compare you with businesses of a similar size near you, not with national chains. If we can't find comparable ones, we say so instead of guessing."] },
+    { q: "What happens to my details?", a: ["We use them to prepare your Snapshot and email it to you. You can ask us to delete them any time at hello@crierstudio.com. See the privacy page (DRAFT) for the details."] }
   ],
-  closing: { title: "See where you stand first.", text: "The snapshot is free and yours to keep, whether or not you choose a plan." },
+  closing: { title: "See where you stand first.", text: "The Snapshot is free and yours to keep, whether or not you choose The Plan." },
   footer: {
-    blurb: "{brand} is a design studio and campaign service for local businesses.",
+    blurb: "{brand} is a design studio for local businesses.",
     contactLabel: "Contact",
-    email: "hello@crierstudio.com (DRAFT placeholder, email not set up yet)",
-    legal: ["Terms of service (DRAFT)", "Privacy policy (DRAFT)", "Refund policy (DRAFT)"],
-    copyright: "© 2026 Crier Studio. [DRAFT: legal entity name]"
+    legal: [
+      { text: "Terms of service (DRAFT)", href: "terms.html" },
+      { text: "Privacy policy (DRAFT)", href: "privacy.html" },
+      { text: "Refund policy (DRAFT)", href: "refund.html" }
+    ],
+    copyright: "© 2026 Crier Studio. [entity name]"
   }
 };
 </script>
-
-<div class="banner" role="note"><div class="wrap"><span class="tag">Draft</span><span data-k="previewBanner"></span></div></div>
 
 <div class="wrap">
   <header class="top">
@@ -396,9 +432,13 @@ window.SITE_CONTENT = {
               <span class="err" id="e-industry" hidden></span>
             </div>
           </div>
+          <div class="honey" aria-hidden="true"><label for="f-company">Leave this empty</label><input id="f-company" name="company_website" type="text" tabindex="-1" autocomplete="off"></div>
           <p class="fine" data-k="snapshot.formNote"></p>
-          <div class="cta-row"><button class="btn" type="submit" data-k="snapshot.submit"></button></div>
-          <p class="fine"><span class="ph" data-k="snapshot.privacyLine"></span></p>
+          <div class="field full">
+            <label class="check" for="f-consent"><input id="f-consent" name="consent" type="checkbox" aria-describedby="e-consent"><span><span data-k="snapshot.consentLabel"></span> <a href="privacy.html" class="ph" data-k="snapshot.privacyLink"></a></span></label>
+            <span class="err" id="e-consent" hidden></span>
+          </div>
+          <div class="cta-row"><button class="btn" type="submit" id="snap-submit" data-k="snapshot.submit"></button></div>
           <div class="status" id="snap-status" role="status" aria-live="polite" hidden></div>
         </form>
       </div>
@@ -406,9 +446,9 @@ window.SITE_CONTENT = {
 
     <section id="monthly" aria-labelledby="monthly-title">
       <div class="sec-head">
-        <span class="eyebrow">Every month</span>
-        <h2 id="monthly-title">What you get each month</h2>
-        <p class="lead">Each item shows which plans include it.</p>
+        <span class="eyebrow">What you get</span>
+        <h2 id="monthly-title">What is in The Plan</h2>
+        <p class="lead" id="deliv-lead"></p>
       </div>
       <div class="deliv" id="deliv"></div>
     </section>
@@ -416,7 +456,7 @@ window.SITE_CONTENT = {
     <section id="how" aria-labelledby="how-title">
       <div class="sec-head">
         <span class="eyebrow">How it works</span>
-        <h2 id="how-title">From a free snapshot to a monthly plan</h2>
+        <h2 id="how-title">From a free Snapshot to The Plan</h2>
       </div>
       <div class="flow" id="flow"></div>
     </section>
@@ -433,8 +473,8 @@ window.SITE_CONTENT = {
     <section id="pricing" aria-labelledby="price-title">
       <div class="sec-head">
         <span class="eyebrow">Pricing</span>
-        <h2 id="price-title">Monthly plans</h2>
-        <p class="lead">Prices in US dollars. Highlighted values are placeholders.</p>
+        <h2 id="price-title">Two ways to start</h2>
+        <p class="lead" data-k="pricing.lead"></p>
       </div>
       <div class="plans" id="plans"></div>
       <div class="terms" id="terms"></div>
@@ -469,14 +509,14 @@ window.SITE_CONTENT = {
       </div>
       <div style="display:grid;gap:6px">
         <strong style="color:var(--ink)" data-k="footer.contactLabel"></strong>
-        <span class="ph" data-k="footer.email"></span>
+        <a id="mail" href="#"></a>
       </div>
       <div style="display:grid;gap:6px">
         <strong style="color:var(--ink)">Legal</strong>
         <div class="links" id="legal"></div>
       </div>
     </div>
-    <p><span class="ph" data-k="footer.copyright"></span></p>
+    <p><span data-k="footer.copyright"></span></p>
   </footer>
 </div>
 
@@ -494,7 +534,12 @@ window.SITE_CONTENT = {
   });
   document.title = C.brand;
 
-  // snapshot pages
+  var PK = C.packages, SN = PK.snapshot, PL = PK.plan;
+  function money(n){return C.currency + n;}
+  document.getElementById("mail").textContent = C.email;
+  document.getElementById("mail").href = "mailto:" + C.email;
+
+  // snapshot pages (what is inside the free Snapshot, from packages.snapshot.items counts)
   document.getElementById("snap-pages").innerHTML = C.snapshot.pages.map(function(p){
     var mini = p.mini==="score" ? '<div class="mini score" aria-hidden="true"><span style="height:55%"></span><span style="height:75%"></span><span style="height:40%"></span><span style="height:65%"></span></div>'
              : p.mini==="fix" ? '<div class="mini fix" aria-hidden="true"><span style="width:80%"></span><span style="width:62%"></span><span style="width:70%"></span></div>'
@@ -508,17 +553,14 @@ window.SITE_CONTENT = {
     var o = document.createElement("option"); o.value = n; o.textContent = n; sel.appendChild(o);
   });
 
-  // deliverables
-  var tierNames = {}; C.tiers.forEach(function(x){tierNames[x.id]=x.name;});
-  document.getElementById("deliv").innerHTML = C.deliverables.map(function(d){
-    var chips = C.tiers.map(function(x){
-      var on = d.tiers.indexOf(x.id) > -1;
-      return '<span class="'+(on?"on":"")+'">'+(on?"":'<span class="sr" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Not in </span>')+t(x.name)+'</span>';
-    }).join("");
-    return '<div class="d"><h3>'+t(d.title)+'</h3><p>'+t(d.text)+'</p><div class="tiers" aria-label="Included in">'+chips+'</div></div>';
+  // what is in the Plan
+  document.getElementById("deliv-lead").textContent = PL.items.length + " things, delivered once for " + money(PL.price) + ". " + PL.name + " includes everything below.";
+  document.getElementById("deliv").innerHTML = PL.items.map(function(d){
+    var chip = d.snapshot ? '<span class="snapnote">'+t(d.snapshot)+'</span>' : '';
+    return '<div class="d"><h3>'+t(d.title)+'</h3><p>'+t(d.text)+'</p>'+chip+'</div>';
   }).join("");
 
-  // how it works: shapes instead of numbers
+  // how it works
   var syms = [
     '<svg class="sym" viewBox="0 0 44 44" aria-hidden="true"><rect x="6" y="4" width="32" height="36" fill="none" stroke="currentColor" stroke-width="4"/><rect x="13" y="13" width="18" height="4" fill="currentColor"/><rect x="13" y="22" width="12" height="4" fill="currentColor"/></svg>',
     '<svg class="sym" viewBox="0 0 44 44" aria-hidden="true"><rect x="4" y="8" width="36" height="30" fill="none" stroke="currentColor" stroke-width="4"/><rect x="4" y="8" width="36" height="8" fill="var(--accent)" stroke="currentColor" stroke-width="2"/><rect x="11" y="22" width="6" height="6" fill="currentColor"/><rect x="21" y="22" width="6" height="6" fill="currentColor"/></svg>',
@@ -534,17 +576,20 @@ window.SITE_CONTENT = {
     return '<div class="ind"><div class="swatch" aria-hidden="true">'+sw+'</div><h3>'+t(i.name)+'</h3><p>'+t(i.text)+'</p>'+(i.note?'<p class="note">'+t(i.note)+'</p>':"")+'</div>';
   }).join("");
 
-  // pricing
-  document.getElementById("plans").innerHTML = C.tiers.map(function(x){
-    var price = C.currency + x.price;
-    return '<div class="plan'+(x.featured?" feat":"")+'"><h3>'+t(x.name)+'</h3><p class="muted">'+t(x.for)+'</p>'
-      + '<div class="price"><span class="'+(x.draft?"ph":"")+'">'+t(price)+'</span><small>'+t(C.billingNote)+'</small></div>'
-      + (x.draft?'<span class="muted">Placeholder price, to be tested</span>':"")
-      + '<ul>'+x.features.map(function(f){return "<li>"+t(f)+"</li>";}).join("")+'</ul>'
-      + '<a class="btn" href="#get-snapshot">'+t(C.planCta)+'</a></div>';
-  }).join("");
-  document.getElementById("terms").innerHTML = C.pricingTerms.map(function(p){
-    return '<span class="'+(p.draft?"ph":"")+'">'+t(p.text)+(p.draft?" (placeholder)":"")+'</span>';
+  // pricing: only the packages that are switched on (the two in SITE_CONTENT.packages)
+  function card(p, feat){
+    var price = p.price ? money(p.price) : p.priceLabel;
+    var small = p.billing ? p.billing : "";
+    var extra = p.regularPrice ? '<span class="found">'+t(C.pricing.founding.replace("{n}", p.foundingLimit).replace("{regular}", money(p.regularPrice)))+'</span>' : "";
+    return '<div class="plan'+(feat?" feat":"")+'"><h3>'+t(p.name)+'</h3><p class="muted">'+t(p.for)+'</p>'
+      + '<div class="price"><span>'+t(price)+'</span>'+(small?'<small>'+t(small)+'</small>':"")+'</div>' + extra
+      + '<ul>'+p.items.map(function(f){return "<li>"+t(f.title)+"</li>";}).join("")+'</ul>'
+      + '<a class="btn" href="#get-snapshot">'+t(p.price ? C.planCta : C.hero.cta)+'</a></div>';
+  }
+  document.getElementById("plans").innerHTML = card(SN, false) + card(PL, true);
+  document.getElementById("terms").innerHTML = C.pricing.terms.map(function(p){
+    var inner = p.href ? '<a href="'+p.href+'">'+t(p.text)+'</a>' : t(p.text);
+    return '<span class="'+(p.draft?"ph":"")+'">'+inner+'</span>';
   }).join("");
 
   // faq
@@ -552,20 +597,21 @@ window.SITE_CONTENT = {
     return '<details'+(i===0?" open":"")+'><summary>'+t(f.q)+'</summary><div class="ans">'+f.a.map(function(p){return '<p'+(p.indexOf("[DRAFT")>-1?' class="ph"':'')+'>'+t(p)+'</p>';}).join("")+'</div></details>';
   }).join("");
 
-  // legal links: placeholders, go nowhere yet
+  // legal links
   document.getElementById("legal").innerHTML = C.footer.legal.map(function(l){
-    return '<a href="#top" class="ph" title="Draft, page not written yet">'+t(l)+'</a>';
+    return '<a href="'+l.href+'" class="ph">'+t(l.text)+'</a>';
   }).join("");
 
-  // form: stubbed, never submits anywhere
-  var form = document.getElementById("snap-form"), status = document.getElementById("snap-status");
+  // form: posts to the Launchpad's public intake; nothing is stored in the browser
+  var form = document.getElementById("snap-form"), status = document.getElementById("snap-status"), btn = document.getElementById("snap-submit");
   var checks = {
     "f-business": function(v){return v ? "" : "Enter your business name.";},
     "f-web": function(v){return v ? "" : "Enter your website or Instagram handle.";},
-    "f-email": function(v){return !v ? "Enter your email so we can send the snapshot." : (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? "" : "Check the email address, it looks incomplete.");},
+    "f-email": function(v){return !v ? "Enter your email so we can send the Snapshot." : (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? "" : "Check the email address, it looks incomplete.");},
     "f-city": function(v){return v ? "" : "Enter the city your business is in.";},
     "f-industry": function(v){return v ? "" : "Choose the closest industry.";}
   };
+  function say(msg, bad){status.textContent = msg; status.hidden = false; status.style.borderColor = bad ? "var(--error)" : "var(--ink)";}
   form.addEventListener("submit", function(e){
     e.preventDefault();
     var firstBad = null;
@@ -575,9 +621,29 @@ window.SITE_CONTENT = {
       err.textContent = msg; err.hidden = !msg;
       if (msg && !firstBad) firstBad = el;
     });
+    var cb = document.getElementById("f-consent"), ce = document.getElementById("e-consent");
+    ce.textContent = cb.checked ? "" : C.snapshot.consentError; ce.hidden = cb.checked;
+    cb.setAttribute("aria-invalid", cb.checked ? "false" : "true");
+    if (!cb.checked && !firstBad) firstBad = cb;
     if (firstBad){ status.hidden = true; firstBad.focus(); return; }
-    status.textContent = C.snapshot.previewMessage;
-    status.hidden = false;
+    var data = {
+      business: document.getElementById("f-business").value.trim(), web: document.getElementById("f-web").value.trim(),
+      email: document.getElementById("f-email").value.trim(), city: document.getElementById("f-city").value.trim(),
+      industry: document.getElementById("f-industry").value, consent: true,
+      company_website: document.getElementById("f-company").value
+    };
+    btn.disabled = true; say(C.snapshot.sending, false);
+    var ctl = ("AbortController" in window) ? new AbortController() : null;
+    var timer = setTimeout(function(){ if (ctl) ctl.abort(); }, 20000);
+    fetch(C.snapshot.endpoint, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(data), signal: ctl ? ctl.signal : undefined})
+      .then(function(r){ return r.json().catch(function(){return {};}).then(function(j){ return {status:r.status, body:j}; }); })
+      .then(function(res){
+        if (res.status === 200 && res.body && res.body.ok === true){ say(C.snapshot.thanks, false); form.reset(); }
+        else if (res.status === 429){ say(C.snapshot.tooMany, true); }
+        else { say(C.snapshot.failed, true); }
+      })
+      .catch(function(){ say(C.snapshot.failed, true); })
+      .then(function(){ clearTimeout(timer); btn.disabled = false; });
   });
 })();
 </script>
