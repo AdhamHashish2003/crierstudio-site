@@ -14,6 +14,7 @@
 "nav.how": "كيف يعمل",
 "nav.ind": "المجالات",
 "nav.faq": "الأسئلة الشائعة",
+"nav.portal": "بوابة العملاء",
 "nav.cta": "Snapshot مجاني",
 
 "hero.eyebrow": "استوديو تصميم للأعمال المحلية",
@@ -120,6 +121,7 @@
 
 "foot.blurb": "{brand} استوديو تصميم للأعمال المحلية.",
 "foot.contact": "تواصل معنا",
+"foot.portal": "بوابة العملاء",
 "foot.unreg": "Crier Studio ليست شركة مسجلة بعد.",
 "foot.legal": "قانوني",
 "foot.terms": "شروط الخدمة (مسودة)",

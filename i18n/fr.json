@@ -14,6 +14,7 @@
 "nav.how": "Comment ça marche",
 "nav.ind": "Secteurs",
 "nav.faq": "FAQ",
+"nav.portal": "Espace client",
 "nav.cta": "Snapshot gratuit",
 
 "hero.eyebrow": "Studio de design pour les commerces locaux",
@@ -120,6 +121,7 @@
 
 "foot.blurb": "{brand} est un studio de design pour les commerces locaux.",
 "foot.contact": "Contact",
+"foot.portal": "Espace client",
 "foot.unreg": "Crier Studio n'est pas encore une société enregistrée.",
 "foot.legal": "Mentions légales",
 "foot.terms": "Conditions d'utilisation (BROUILLON)",

@@ -14,6 +14,7 @@
 "nav.how": "How it works",
 "nav.ind": "Industries",
 "nav.faq": "FAQ",
+"nav.portal": "Client portal",
 "nav.cta": "Free snapshot",
 
 "hero.eyebrow": "Design studio for local businesses",
@@ -120,6 +121,7 @@
 
 "foot.blurb": "{brand} is a design studio for local businesses.",
 "foot.contact": "Contact",
+"foot.portal": "Client portal",
 "foot.unreg": "Crier Studio is not yet a registered company.",
 "foot.legal": "Legal",
 "foot.terms": "Terms of service (DRAFT)",
