@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 // NOINDEX SWITCH: the one place that keeps the whole site out of search results.
 // true  = every page carries <meta name="robots" content="noindex">.
 // false = the tag is left out. Flip it only when the launch trigger in the SEO plan (section 2.4) is met, then rebuild.
-const NOINDEX = true;
+const NOINDEX = false;
 // ============================================================================================
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
