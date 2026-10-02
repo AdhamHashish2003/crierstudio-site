@@ -8,6 +8,5 @@ Rules used: "Crier Studio" and "Snapshot" stay in Latin script; prices come from
 
 The es, fr and ar files were written by an AI translator, not native speakers. Check before the legal pages leave DRAFT:
 
-- ar (medium-high): "الخطة" as the name of The Plan; "{n} أمورًا" count grammar in deliv.lead; neutral Modern Standard Arabic register; Latin placeholder domain in f.webPh.
 - es (high): "El Plan"; informal "tú" used (switch to usted if wanted); "precio de lanzamiento", "rubro".
 - fr (high): "Le Plan"; vous; "Tarif de lancement"; French spacing before colons.
