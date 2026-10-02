@@ -1,0 +1,40 @@
+/* language picker, RTL and per-script typography (loaded by every page) */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.top .right{display:flex;align-items:center;gap:10px;min-width:0}
+.langpick select{font:600 .875rem/1.2 var(--body);color:var(--ink);background:var(--paper);border:2px solid var(--ink);border-radius:3px;min-height:44px;max-width:150px;padding:.5em 1.6em .5em .6em;cursor:pointer;text-overflow:ellipsis}
+[dir=rtl] .langpick select{padding:.5em .6em .5em 1.6em}
+@media (max-width:520px){.top .btn{display:none}.langpick select{max-width:136px}}
+.conv{font-size:.875rem;color:var(--muted)}
+
+/* RTL (ar, he, fa, ur) */
+[dir=rtl] .formbox{border-left:0;border-right:6px solid var(--accent)}
+[dir=rtl] .plan li{padding-left:0;padding-right:20px}
+[dir=rtl] .plan li::before{left:auto;right:0}
+[dir=rtl] .faq summary{padding:18px 0 18px 40px}
+[dir=rtl] .faq summary::after{right:auto;left:6px}
+[dir=rtl] .mini.fix span{margin-left:0;margin-right:22px}
+[dir=rtl] .mini.fix span::before{left:auto;right:-22px}
+[dir=rtl] .check input{margin:2px 0 0}
+[dir=rtl] ul{padding-left:0;padding-right:1.2rem}
+[dir=rtl] .plan ul,[dir=rtl] .deliv ul{padding-right:0}
+[dir=rtl] .draftbar{border-left:0;border-right:6px solid var(--draft-ink)}
+
+/* per-script font stacks (the extra font is loaded by i18n.js only for that language) */
+html[lang=ar],html[lang=fa],html[lang=ur]{--display:"Noto Sans Arabic","Segoe UI",Tahoma,"Geeza Pro",sans-serif;--body:"Noto Sans Arabic","Segoe UI",Tahoma,"Geeza Pro",sans-serif}
+html[lang=he]{--display:"Noto Sans Hebrew","Segoe UI","Arial Hebrew",Arial,sans-serif;--body:"Noto Sans Hebrew","Segoe UI","Arial Hebrew",Arial,sans-serif}
+html[lang=hi]{--display:"Noto Sans Devanagari","Kohinoor Devanagari","Nirmala UI",sans-serif;--body:"Noto Sans Devanagari","Kohinoor Devanagari","Nirmala UI",sans-serif}
+html[lang=bn]{--display:"Noto Sans Bengali","Bangla Sangam MN","Nirmala UI",sans-serif;--body:"Noto Sans Bengali","Bangla Sangam MN","Nirmala UI",sans-serif}
+html[lang=th]{--display:"Noto Sans Thai","Thonburi","Leelawadee UI",sans-serif;--body:"Noto Sans Thai","Thonburi","Leelawadee UI",sans-serif}
+html[lang=ja]{--display:"Noto Sans JP","Hiragino Sans","Yu Gothic",Meiryo,sans-serif;--body:"Noto Sans JP","Hiragino Sans","Yu Gothic",Meiryo,sans-serif}
+html[lang=ko]{--display:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;--body:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+html[lang=zh-Hans]{--display:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;--body:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif}
+html[lang=zh-Hant]{--display:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;--body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+html[lang=ru],html[lang=uk],html[lang=el],html[lang=vi]{--display:"Noto Sans","Archivo","Segoe UI",Arial,sans-serif;--body:"Noto Sans","Instrument Sans","Segoe UI",Arial,sans-serif}
+/* scripts that join or stack letters: no negative tracking, no condensed stretch, roomier lines, no forced caps */
+html:is([lang=ar],[lang=fa],[lang=ur],[lang=he],[lang=hi],[lang=bn],[lang=th],[lang=ja],[lang=ko],[lang=zh-Hans],[lang=zh-Hant]) :is(h1,h2,h3,.logo,.faq summary,.price,.t1 b){letter-spacing:0;font-stretch:normal}
+html:is([lang=ar],[lang=fa],[lang=ur],[lang=he],[lang=hi],[lang=bn],[lang=th],[lang=ja],[lang=ko],[lang=zh-Hans],[lang=zh-Hant]) :is(h1,h2,h3,.t1 b){line-height:1.5}
+html:is([lang=ru],[lang=uk],[lang=el],[lang=vi]) :is(h1,h2,h3,.t1 b){line-height:1.2}
+html:is([lang=ar],[lang=fa],[lang=ur],[lang=he],[lang=hi],[lang=bn],[lang=th],[lang=ja],[lang=ko],[lang=zh-Hans],[lang=zh-Hant]) .hero h1 .hl{padding:.05em .15em}
+html:is([lang=ar],[lang=fa],[lang=ur],[lang=he],[lang=hi],[lang=bn],[lang=th],[lang=ja],[lang=ko],[lang=zh-Hans],[lang=zh-Hant]) :is(.eyebrow,.tag,.d .snapnote,.page .ex2,.tile .ex){letter-spacing:0;text-transform:none}
+html:is([lang=hi],[lang=bn],[lang=th],[lang=ar],[lang=fa],[lang=ur]) body{line-height:1.75}
+h1,h2,h3,p,li,summary,.btn,.field label{overflow-wrap:anywhere}

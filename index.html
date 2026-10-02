@@ -24,6 +24,37 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="theme-color" content="#0E0F0C">
 <title>Crier Studio</title>
+<link rel="alternate" hreflang="en" href="https://crierstudio.com/?lang=en">
+<link rel="alternate" hreflang="ar" href="https://crierstudio.com/?lang=ar">
+<link rel="alternate" hreflang="es" href="https://crierstudio.com/?lang=es">
+<link rel="alternate" hreflang="fr" href="https://crierstudio.com/?lang=fr">
+<link rel="alternate" hreflang="de" href="https://crierstudio.com/?lang=de">
+<link rel="alternate" hreflang="it" href="https://crierstudio.com/?lang=it">
+<link rel="alternate" hreflang="pt-BR" href="https://crierstudio.com/?lang=pt-BR">
+<link rel="alternate" hreflang="nl" href="https://crierstudio.com/?lang=nl">
+<link rel="alternate" hreflang="tr" href="https://crierstudio.com/?lang=tr">
+<link rel="alternate" hreflang="ru" href="https://crierstudio.com/?lang=ru">
+<link rel="alternate" hreflang="uk" href="https://crierstudio.com/?lang=uk">
+<link rel="alternate" hreflang="pl" href="https://crierstudio.com/?lang=pl">
+<link rel="alternate" hreflang="ro" href="https://crierstudio.com/?lang=ro">
+<link rel="alternate" hreflang="sv" href="https://crierstudio.com/?lang=sv">
+<link rel="alternate" hreflang="el" href="https://crierstudio.com/?lang=el">
+<link rel="alternate" hreflang="he" href="https://crierstudio.com/?lang=he">
+<link rel="alternate" hreflang="fa" href="https://crierstudio.com/?lang=fa">
+<link rel="alternate" hreflang="ur" href="https://crierstudio.com/?lang=ur">
+<link rel="alternate" hreflang="hi" href="https://crierstudio.com/?lang=hi">
+<link rel="alternate" hreflang="bn" href="https://crierstudio.com/?lang=bn">
+<link rel="alternate" hreflang="id" href="https://crierstudio.com/?lang=id">
+<link rel="alternate" hreflang="ms" href="https://crierstudio.com/?lang=ms">
+<link rel="alternate" hreflang="th" href="https://crierstudio.com/?lang=th">
+<link rel="alternate" hreflang="vi" href="https://crierstudio.com/?lang=vi">
+<link rel="alternate" hreflang="zh-Hans" href="https://crierstudio.com/?lang=zh-Hans">
+<link rel="alternate" hreflang="zh-Hant" href="https://crierstudio.com/?lang=zh-Hant">
+<link rel="alternate" hreflang="ja" href="https://crierstudio.com/?lang=ja">
+<link rel="alternate" hreflang="ko" href="https://crierstudio.com/?lang=ko">
+<link rel="alternate" hreflang="sw" href="https://crierstudio.com/?lang=sw">
+<link rel="alternate" hreflang="fil" href="https://crierstudio.com/?lang=fil">
+<link rel="alternate" hreflang="x-default" href="https://crierstudio.com/">
 <style>
 /* Layout: a studio print sheet. Heavy expanded headline, flat colour blocks for example layouts, one column on phone, two to three columns from 760px. */
 :root{
@@ -204,7 +235,7 @@ section{padding-block:56px;border-top:2px solid var(--ink)}
 .plan .muted{color:var(--muted);font-size:var(--step--1)}
 .plan .found{font-weight:700;color:var(--accent-ink);background:var(--accent);padding:.5em .7em;display:inline-block;justify-self:start}
 .plan.feat .found{background:#C6FF00;color:#0E0F0C}
-.honey{position:absolute!important;left:-10000px;width:1px;height:1px;overflow:hidden}
+.honey{position:absolute!important;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);opacity:0;pointer-events:none}
 .check{display:flex;gap:10px;align-items:flex-start;font-size:var(--step--1)}
 .check input{width:22px;height:22px;margin:2px 0 0;flex:none;accent-color:var(--ink)}
 .check a{font-weight:600}
@@ -233,119 +264,24 @@ html{scroll-behavior:smooth}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Instrument+Sans:wght@400;500;600;700&display=swap">
-
+<link rel="stylesheet" href="i18n.css">
+<script src="i18n.js"></script>
 </head>
-<body>
+<body data-page="index">
 <script>
-/* ==========================================================================
-   CONTENT: edit everything here. Name, prices, package contents and copy all live
-   in this one object. Counts and prices come from SITE_CONTENT.packages.
-   Only legal and refund text is marked DRAFT.
-   ========================================================================== */
+/* Non-text content only: prices, counts, the intake endpoint. All visible text is in /i18n/<lang>.json.
+   Only Snapshot (free) and The Plan are shown. Prices stay in USD in every language. */
 window.SITE_CONTENT = {
-  brand: "Crier Studio",
-  email: "hello@crierstudio.com",
-  currency: "$",
-  // Packages: the only place counts and prices live. Change a number here and every section follows.
+  brand: CRIER.cfg.brand,
+  email: CRIER.cfg.email,
+  currency: CRIER.cfg.currency,
+  endpoint: "https://crm-production-d789.up.railway.app/api/public/snapshot-request",
   packages: {
-    snapshot: {
-      id: "snapshot", name: "Snapshot", price: 0, priceLabel: "Free",
-      for: "A first look at your business online, from your own site and profiles.",
-      items: [
-        { title: "3 findings with proof", text: "Three things holding you back, each with the proof we found on your own site or profile." },
-        { title: "1 fix, written out in full", text: "One of the fixes written out so you can paste it in or hand it to whoever runs your site." },
-        { title: "3 posts in your brand", text: "Three posts with captions, in your brand colors and made from your own photos." }
-      ]
-    },
-    plan: {
-      id: "plan", name: "The Plan", price: 49, billing: "one-time", regularPrice: 99, foundingLimit: 20,
-      for: "The full picture and everything written out, once.",
-      items: [
-        { title: "A full audit", text: "Your website, search results and social profiles checked, with the proof for each finding.", snapshot: "Snapshot: 3 findings" },
-        { title: "Your top 3 fixes, written to paste in", text: "Each fix written out word for word, so you can paste it straight in.", snapshot: "Snapshot: 1 fix" },
-        { title: "A first-screen mock", text: "A mock of the top of your homepage with the changes in place, so you can see what it would look like." },
-        { title: "Rewritten page titles", text: "New titles for your pages, so search results say clearly what you do and where." },
-        { title: "A same-size competitor comparison", text: "Your score next to similar-sized businesses, when comparable nearby businesses are found. If none are found, we say so instead of guessing." },
-        { title: "20 posts with captions", text: "Twenty posts in your brand, each with a caption, made from your own photos.", snapshot: "Snapshot: 3 posts" },
-        { title: "A 15-minute call", text: "A short call to walk through what we found and what to do first." },
-        { title: "A re-check after 30 days", text: "We look again after 30 days and show you a before and after score." }
-      ]
-    }
+    snapshot: { price: 0, items: 3 },
+    plan: { price: CRIER.cfg.price, regularPrice: CRIER.cfg.regular, foundingLimit: CRIER.cfg.founding, items: 8 }
   },
-  hero: {
-    eyebrow: "Design studio for local businesses",
-    headlineBefore: "See what to fix first online, ",
-    headlineHighlight: "with the fixes written out.",
-    sub: "{brand} reviews your website, search results and social profiles, then gives you fixes you can paste in and posts in your own brand. Start with a free Snapshot.",
-    cta: "Get your free Snapshot",
-    secondary: "See the packages",
-    fine: "Free. No card needed."
-  },
-  snapshot: {
-    eyebrow: "Start here, free",
-    title: "Your free Snapshot",
-    lead: "A short review prepared from your own website and profiles. Read it, keep it, use it. No obligation.",
-    pages: [
-      { label: "Inside", title: "3 findings with proof", text: "Three things to fix, each with the proof we found on your own site or profile.", mini: "score" },
-      { label: "Inside", title: "1 fix, written out in full", text: "One fix written out so you can paste it in.", mini: "fix" },
-      { label: "Inside", title: "3 posts in your brand", text: "Three posts with captions in your brand colors, made from your own photos.", mini: "posts" }
-    ],
-    formTitle: "Tell us about your business",
-    formNote: "We use these details only to prepare your Snapshot and email it to you.",
-    submit: "Send me my Snapshot",
-    consentLabel: "I agree that Crier Studio may use these details to prepare my Snapshot and email it to me.",
-    endpoint: "https://crm-production-d789.up.railway.app/api/public/snapshot-request",
-    thanks: "Thanks. We've got your details and will email your snapshot.",
-    failed: "Sorry, something went wrong and nothing was sent. Please try again in a few minutes, or email hello@crierstudio.com.",
-    tooMany: "Too many tries from this connection. Please try again later.",
-    consentError: "Tick the box so we can use your details for the Snapshot.",
-    sending: "Sending...",
-    privacyLink: "Privacy policy (DRAFT)"
-  },
-  planCta: "Start with the free Snapshot",
-  pricing: {
-    lead: "Prices in US dollars.",
-    founding: "Founding price for the first {n} businesses, then {regular}.",
-    terms: [
-      { text: "One-time payment, not a subscription", draft: false },
-      { text: "Refund terms: DRAFT, not final", draft: true, href: "refund.html" }
-    ]
-  },
-  steps: [
-    { title: "Snapshot", text: "Send your business name, website or Instagram, email, city and industry. We prepare your free Snapshot and email it to you." },
-    { title: "The Plan", text: "If you want the full picture, The Plan is a one-time purchase. Reply to your Snapshot email and we take it from there." },
-    { title: "Delivery", text: "Your audit, fixes, first-screen mock, page titles, comparison and posts come together, with a 15-minute call. After 30 days we re-check and show your before and after score." }
-  ],
-  industries: [
-    { name: "Cafés and dessert shops", text: "Menu highlights, seasonal specials and opening hours. The Snapshot checks whether people can order or ask a question from your first screen.", colors: ["sun","coral"] },
-    { name: "Salons", text: "Services, team and booking. The Snapshot checks whether your site shows your services and an easy way to book.", colors: ["coral","accent"] },
-    { name: "Gyms and studios", text: "Class schedules, coaches and memberships. The Snapshot checks whether a new member can find a class and book.", colors: ["accent","ink"] },
-    { name: "Clinics", text: "Dental, physio and similar. Posts cover your team, space, services, hours and booking.", note: "No health or treatment claims, and no patient photos unless you supply written consent.", colors: ["ink","sun"] },
-    { name: "Local services", text: "Cleaners, repair, trades and other local businesses. Posts cover what you do, where you work and how to book.", colors: ["sun","accent"] }
-  ],
-  otherIndustry: "Other local business",
-  faq: [
-    { q: "What do you need from me?", a: ["For the free Snapshot: your business name, website or Instagram, email, city and industry.", "For The Plan: your logo, brand colors if you have them, and your own photos. We don't use stock photos of strangers in your posts."] },
-    { q: "What do I do with the fixes?", a: ["They are written out so you can paste them in, or hand them to whoever looks after your website. The posts are files for you to use. Nothing is published for you."] },
-    { q: "Is there a subscription?", a: ["No. The Plan is a single payment. There is no monthly charge."] },
-    { q: "Who owns the content?", draft: true, a: ["You own the posts and captions made for you in The Plan and can keep using them. [DRAFT: final wording comes from the terms of service.]"] },
-    { q: "Can you promise more customers?", a: ["No. Nobody can honestly promise that. The Snapshot shows where you stand and what to fix first, and The Plan gives you the fixes and posts written out. Results depend on your business, your market and what you do with them."] },
-    { q: "Can I get a refund?", draft: true, a: ["The Plan is a one-time purchase. [DRAFT: refund terms are not final. The wording will be on the refund page before anyone is charged.]"] },
-    { q: "What languages do you work in?", a: ["English for now."] },
-    { q: "Where do the competitor numbers come from?", a: ["From public sources only: your site and theirs, Google results and listings, and public Instagram profiles. When comparable nearby businesses are found, we compare you with businesses of a similar size near you, not with national chains. If we can't find comparable ones, we say so instead of guessing."] },
-    { q: "What happens to my details?", a: ["We use them to prepare your Snapshot and email it to you. You can ask us to delete them any time at hello@crierstudio.com. See the privacy page (DRAFT) for the details."] }
-  ],
-  closing: { title: "See where you stand first.", text: "The Snapshot is free and yours to keep, whether or not you choose The Plan." },
-  footer: {
-    blurb: "{brand} is a design studio for local businesses.",
-    contactLabel: "Contact",
-    legal: [
-      { text: "Terms of service (DRAFT)", href: "terms.html" },
-      { text: "Privacy policy (DRAFT)", href: "privacy.html" },
-      { text: "Refund policy (DRAFT)", href: "refund.html" }
-    ],
-    copyright: "© 2026 Crier Studio. [entity name]"
-  }
+  // Values sent to the intake API stay the English names (the CRM stores them as-is); only the shown label is translated.
+  industryValues: ["Cafés and dessert shops","Salons","Gyms and studios","Clinics","Local services","Other local business"]
 };
 </script>
 
@@ -356,40 +292,40 @@ window.SITE_CONTENT = {
 <rect x="101.5" y="45" width="13" height="50" fill="currentColor"/>
 <path d="M121.5 70H158.5A18.5 18.5 0 1 0 154.58 81.39" fill="none" stroke="currentColor" stroke-width="13"/>
 <path d="M182 95V70A18.5 18.5 0 0 1 200.5 51.5" fill="none" stroke="currentColor" stroke-width="13"/></g><g transform="translate(30 -6) scale(1.15)"><rect x="101" y="22" width="14" height="14" fill="var(--dia)" transform="rotate(45 108 29)"/></g><path d="M306.43 103.36Q304.6 103.36 303.33 102.77Q302.06 102.18 301.4 101.15Q300.74 100.12 300.74 98.8H303.38Q303.38 99.36 303.69 99.88Q303.99 100.4 304.66 100.72Q305.33 101.04 306.43 101.04Q307.43 101.04 308.09 100.76Q308.75 100.48 309.08 100.01Q309.4 99.54 309.4 98.95Q309.4 98.22 308.78 97.78Q308.15 97.33 306.83 97.21L305.61 97.11Q303.62 96.94 302.43 95.87Q301.24 94.79 301.24 93.03Q301.24 91.7 301.87 90.75Q302.5 89.79 303.63 89.26Q304.76 88.73 306.28 88.73Q307.86 88.73 309 89.28Q310.15 89.83 310.77 90.83Q311.39 91.83 311.39 93.18H308.75Q308.75 92.62 308.48 92.13Q308.21 91.65 307.66 91.35Q307.12 91.05 306.28 91.05Q305.48 91.05 304.95 91.32Q304.42 91.59 304.15 92.04Q303.89 92.49 303.89 93.03Q303.89 93.67 304.36 94.16Q304.84 94.64 305.86 94.73L307.08 94.83Q308.57 94.95 309.69 95.47Q310.8 95.98 311.42 96.85Q312.05 97.72 312.05 98.95Q312.05 100.26 311.36 101.26Q310.67 102.26 309.41 102.81Q308.15 103.36 306.43 103.36ZM322.25 103V91.12H324.95V103ZM318.24 91.5V89.13H328.96V91.5ZM341.82 103.36Q339.88 103.36 338.55 102.62Q337.22 101.89 336.53 100.55Q335.84 99.21 335.84 97.4V89.13H338.54V97.56Q338.54 98.54 338.92 99.29Q339.3 100.04 340.03 100.44Q340.76 100.85 341.82 100.85Q342.87 100.85 343.6 100.45Q344.32 100.05 344.7 99.3Q345.07 98.56 345.07 97.56V89.13H347.77V97.4Q347.77 99.21 347.09 100.55Q346.41 101.89 345.09 102.62Q343.76 103.36 341.82 103.36ZM358.24 103.08V100.57H361.11Q362.19 100.57 363.03 100.24Q363.88 99.9 364.47 99.3Q365.06 98.7 365.38 97.87Q365.69 97.03 365.69 96.04Q365.69 94.99 365.38 94.16Q365.06 93.34 364.47 92.75Q363.88 92.16 363.03 91.85Q362.19 91.54 361.11 91.54H358.24V89.03H360.94Q362.82 89.03 364.22 89.59Q365.63 90.15 366.56 91.11Q367.5 92.07 367.96 93.29Q368.43 94.51 368.43 95.83V96.25Q368.43 97.49 367.96 98.71Q367.5 99.93 366.56 100.91Q365.63 101.9 364.22 102.49Q362.82 103.08 360.94 103.08ZM355.93 103.08V89.03H358.62V103.08ZM375.88 103V89.13H378.58V103ZM393.54 103.36Q391.66 103.36 390.28 102.7Q388.91 102.04 388 100.96Q387.1 99.88 386.66 98.64Q386.22 97.39 386.22 96.24V95.82Q386.22 94.55 386.67 93.29Q387.13 92.03 388.05 91Q388.97 89.97 390.34 89.35Q391.71 88.73 393.54 88.73Q395.37 88.73 396.73 89.35Q398.1 89.97 399.02 91Q399.95 92.03 400.41 93.29Q400.87 94.55 400.87 95.82V96.24Q400.87 97.39 400.42 98.64Q399.97 99.88 399.07 100.96Q398.17 102.04 396.79 102.7Q395.41 103.36 393.54 103.36ZM393.54 100.85Q394.61 100.85 395.46 100.47Q396.31 100.09 396.91 99.42Q397.5 98.75 397.82 97.89Q398.13 97.02 398.13 96.05Q398.13 95.01 397.81 94.14Q397.49 93.26 396.9 92.61Q396.3 91.96 395.45 91.6Q394.6 91.24 393.54 91.24Q392.48 91.24 391.63 91.6Q390.78 91.96 390.18 92.61Q389.58 93.26 389.27 94.14Q388.95 95.01 388.95 96.05Q388.95 97.02 389.27 97.89Q389.58 98.75 390.18 99.42Q390.78 100.09 391.63 100.47Q392.48 100.85 393.54 100.85Z" fill="currentColor"/></svg></a>
-    <nav aria-label="Sections">
-      <a href="#monthly">What you get</a>
-      <a href="#how">How it works</a>
-      <a href="#industries">Industries</a>
-      <a href="#pricing">Pricing</a>
-      <a href="#faq">FAQ</a>
+    <nav data-i18n-attr="aria-label:nav.label" aria-label="Sections">
+      <a href="#monthly" data-i18n="nav.what">What you get</a>
+      <a href="#how" data-i18n="nav.how">How it works</a>
+      <a href="#industries" data-i18n="nav.ind">Industries</a>
+      <a href="#pricing" data-i18n="nav.pricing">Pricing</a>
+      <a href="#faq" data-i18n="nav.faq">FAQ</a>
     </nav>
-    <a class="btn" href="#get-snapshot">Free snapshot</a>
+    <div class="right"><div class="langpick"><label class="sr" for="langsel" data-i18n="lang.label">Language</label><select id="langsel" name="lang" autocomplete="off"></select></div><a class="btn" href="#get-snapshot" data-i18n="nav.cta">Free snapshot</a></div>
   </header>
 
   <main>
     <div class="hero">
       <div class="hero-copy">
-        <span class="eyebrow" data-k="hero.eyebrow"></span>
-        <h1><span data-k="hero.headlineBefore"></span><span class="hl" data-k="hero.headlineHighlight"></span></h1>
-        <p class="lead" data-k="hero.sub"></p>
+        <span class="eyebrow" data-i18n="hero.eyebrow">Design studio for local businesses</span>
+        <h1><span data-i18n="hero.h1a">See what to fix first online, </span><span class="hl" data-i18n="hero.h1b">with the fixes written out.</span></h1>
+        <p class="lead" data-i18n="hero.sub">Crier Studio reviews your website, search results and social profiles, then gives you fixes you can paste in and posts in your own brand. Start with a free Snapshot.</p>
         <div class="cta-row">
-          <a class="btn" href="#get-snapshot" data-k="hero.cta"></a>
-          <a class="btn ghost" href="#pricing" data-k="hero.secondary"></a>
+          <a class="btn" href="#get-snapshot" data-i18n="hero.cta">Get your free Snapshot</a>
+          <a class="btn ghost" href="#pricing" data-i18n="hero.secondary">See the packages</a>
         </div>
-        <p class="fine" data-k="hero.fine"></p>
+        <p class="fine" data-i18n="hero.fine">Free. No card needed.</p>
       </div>
-      <div class="board" aria-label="Example layouts, not client work">
-        <div class="tile t1"><span class="circ" aria-hidden="true"></span><span class="circ2" aria-hidden="true"></span><b>Pistachio week</b><small>Open late Fridays</small><span class="ex">Example layout</span></div>
+      <div class="board" data-i18n-attr="aria-label:board.aria" aria-label="Example layouts, not client work">
+        <div class="tile t1"><span class="circ" aria-hidden="true"></span><span class="circ2" aria-hidden="true"></span><b data-i18n="board.t1b">Pistachio week</b><small data-i18n="board.t1s">Open late Fridays</small><span class="ex" data-i18n="board.ex">Example layout</span></div>
         <div class="side">
-          <div class="tile t2"><span class="ex">Example layout</span></div>
-          <div class="tile t3"><span class="ex">Reel</span></div>
+          <div class="tile t2"><span class="ex" data-i18n="board.ex">Example layout</span></div>
+          <div class="tile t3"><span class="ex" data-i18n="board.reel">Reel</span></div>
         </div>
-        <div class="tile t4" aria-label="Example score layout">
-          <div class="row you"><span>You</span><div class="bar"><i style="width:58%"></i></div></div>
-          <div class="row"><span>Nearby A</span><div class="bar"><i style="width:74%"></i></div></div>
-          <div class="row"><span>Nearby B</span><div class="bar"><i style="width:46%"></i></div></div>
-          <div class="row"><span>Nearby C</span><div class="bar"><i style="width:66%"></i></div></div>
-          <span class="ex">Example layout, not real scores</span>
+        <div class="tile t4" data-i18n-attr="aria-label:board.scoreAria" aria-label="Example score layout">
+          <div class="row you"><span data-i18n="board.you">You</span><div class="bar"><i style="width:58%"></i></div></div>
+          <div class="row"><span data-i18n="board.a">Nearby A</span><div class="bar"><i style="width:74%"></i></div></div>
+          <div class="row"><span data-i18n="board.b">Nearby B</span><div class="bar"><i style="width:46%"></i></div></div>
+          <div class="row"><span data-i18n="board.c">Nearby C</span><div class="bar"><i style="width:66%"></i></div></div>
+          <span class="ex" data-i18n="board.exScore">Example layout, not real scores</span>
         </div>
       </div>
     </div>
@@ -397,48 +333,48 @@ window.SITE_CONTENT = {
     <section id="get-snapshot" aria-labelledby="snap-title">
       <div class="snap">
         <div class="sec-head">
-          <span class="eyebrow" data-k="snapshot.eyebrow"></span>
-          <h2 id="snap-title" data-k="snapshot.title"></h2>
-          <p class="lead" data-k="snapshot.lead"></p>
+          <span class="eyebrow" data-i18n="snap.eyebrow">Start here, free</span>
+          <h2 id="snap-title" data-i18n="snap.title">Your free Snapshot</h2>
+          <p class="lead" data-i18n="snap.lead">A short review prepared from your own website and profiles. Read it, keep it, use it. No obligation.</p>
         </div>
         <div class="pages" id="snap-pages"></div>
 
         <form class="formbox" id="snap-form" novalidate>
-          <h3 data-k="snapshot.formTitle"></h3>
+          <h3 data-i18n="form.title">Tell us about your business</h3>
           <div class="fields">
             <div class="field">
-              <label for="f-business">Business name</label>
+              <label for="f-business" data-i18n="f.business">Business name</label>
               <input id="f-business" name="business" type="text" autocomplete="organization" required aria-describedby="e-business">
               <span class="err" id="e-business" hidden></span>
             </div>
             <div class="field">
-              <label for="f-web">Website or Instagram</label>
-              <input id="f-web" name="web" type="text" inputmode="url" placeholder="yourshop.com or @yourshop" required aria-describedby="e-web">
+              <label for="f-web" data-i18n="f.web">Website or Instagram</label>
+              <input id="f-web" name="web" type="text" inputmode="url" dir="auto" data-i18n-attr="placeholder:f.webPh" placeholder="yourshop.com or @yourshop" required aria-describedby="e-web">
               <span class="err" id="e-web" hidden></span>
             </div>
             <div class="field">
-              <label for="f-email">Email</label>
-              <input id="f-email" name="email" type="email" autocomplete="email" required aria-describedby="e-email">
+              <label for="f-email" data-i18n="f.email">Email</label>
+              <input id="f-email" name="email" type="email" dir="auto" autocomplete="email" required aria-describedby="e-email">
               <span class="err" id="e-email" hidden></span>
             </div>
             <div class="field">
-              <label for="f-city">City</label>
-              <input id="f-city" name="city" type="text" autocomplete="address-level2" required aria-describedby="e-city">
+              <label for="f-city" data-i18n="f.city">City</label>
+              <input id="f-city" name="city" type="text" dir="auto" autocomplete="address-level2" required aria-describedby="e-city">
               <span class="err" id="e-city" hidden></span>
             </div>
             <div class="field full">
-              <label for="f-industry">Industry</label>
-              <select id="f-industry" name="industry" required aria-describedby="e-industry"><option value="">Choose one</option></select>
+              <label for="f-industry" data-i18n="f.industry">Industry</label>
+              <select id="f-industry" name="industry" required aria-describedby="e-industry"><option value=""></option></select>
               <span class="err" id="e-industry" hidden></span>
             </div>
           </div>
-          <div class="honey" aria-hidden="true"><label for="f-company">Leave this empty</label><input id="f-company" name="company_website" type="text" tabindex="-1" autocomplete="off"></div>
-          <p class="fine" data-k="snapshot.formNote"></p>
+          <div class="honey" aria-hidden="true"><label for="f-company" data-i18n="f.honey">Leave this empty</label><input id="f-company" name="company_website" type="text" tabindex="-1" autocomplete="off"></div>
+          <p class="fine" data-i18n="form.note">We use these details only to prepare your Snapshot and email it to you.</p>
           <div class="field full">
-            <label class="check" for="f-consent"><input id="f-consent" name="consent" type="checkbox" aria-describedby="e-consent"><span><span data-k="snapshot.consentLabel"></span> <a href="privacy.html" class="ph" data-k="snapshot.privacyLink"></a></span></label>
+            <label class="check" for="f-consent"><input id="f-consent" name="consent" type="checkbox" aria-describedby="e-consent"><span><span data-i18n="f.consent">I agree that Crier Studio may use these details to prepare my Snapshot and email it to me.</span> <a href="privacy.html" data-page="privacy" class="ph" data-i18n="f.privacy">Privacy policy (DRAFT)</a></span></label>
             <span class="err" id="e-consent" hidden></span>
           </div>
-          <div class="cta-row"><button class="btn" type="submit" id="snap-submit" data-k="snapshot.submit"></button></div>
+          <div class="cta-row"><button class="btn" type="submit" id="snap-submit" data-i18n="f.submit">Send me my Snapshot</button></div>
           <div class="status" id="snap-status" role="status" aria-live="polite" hidden></div>
         </form>
       </div>
@@ -446,8 +382,8 @@ window.SITE_CONTENT = {
 
     <section id="monthly" aria-labelledby="monthly-title">
       <div class="sec-head">
-        <span class="eyebrow">What you get</span>
-        <h2 id="monthly-title">What is in The Plan</h2>
+        <span class="eyebrow" data-i18n="deliv.eyebrow">What you get</span>
+        <h2 id="monthly-title" data-i18n="deliv.title">What is in The Plan</h2>
         <p class="lead" id="deliv-lead"></p>
       </div>
       <div class="deliv" id="deliv"></div>
@@ -455,26 +391,26 @@ window.SITE_CONTENT = {
 
     <section id="how" aria-labelledby="how-title">
       <div class="sec-head">
-        <span class="eyebrow">How it works</span>
-        <h2 id="how-title">From a free Snapshot to The Plan</h2>
+        <span class="eyebrow" data-i18n="how.eyebrow">How it works</span>
+        <h2 id="how-title" data-i18n="how.title">From a free Snapshot to The Plan</h2>
       </div>
       <div class="flow" id="flow"></div>
     </section>
 
     <section id="industries" aria-labelledby="ind-title">
       <div class="sec-head">
-        <span class="eyebrow">Who it's for</span>
-        <h2 id="ind-title">Built for local businesses</h2>
-        <p class="lead">Owner-run shops and studios that serve one city.</p>
+        <span class="eyebrow" data-i18n="ind.eyebrow">Who it&#39;s for</span>
+        <h2 id="ind-title" data-i18n="ind.title">Built for local businesses</h2>
+        <p class="lead" data-i18n="ind.lead">Owner-run shops and studios that serve one city.</p>
       </div>
       <div class="inds" id="inds"></div>
     </section>
 
     <section id="pricing" aria-labelledby="price-title">
       <div class="sec-head">
-        <span class="eyebrow">Pricing</span>
-        <h2 id="price-title">Two ways to start</h2>
-        <p class="lead" data-k="pricing.lead"></p>
+        <span class="eyebrow" data-i18n="price.eyebrow">Pricing</span>
+        <h2 id="price-title" data-i18n="price.title">Two ways to start</h2>
+        <p class="lead" data-i18n="price.lead">Prices in US dollars.</p>
       </div>
       <div class="plans" id="plans"></div>
       <div class="terms" id="terms"></div>
@@ -482,17 +418,17 @@ window.SITE_CONTENT = {
 
     <section id="faq" aria-labelledby="faq-title">
       <div class="sec-head">
-        <span class="eyebrow">Questions</span>
-        <h2 id="faq-title">Straight answers</h2>
+        <span class="eyebrow" data-i18n="faq.eyebrow">Questions</span>
+        <h2 id="faq-title" data-i18n="faq.title">Straight answers</h2>
       </div>
       <div class="faq" id="faq-list"></div>
     </section>
 
     <section aria-labelledby="close-title">
       <div class="closing">
-        <h2 id="close-title" data-k="closing.title"></h2>
-        <p class="lead" data-k="closing.text"></p>
-        <a class="btn" href="#get-snapshot" data-k="hero.cta"></a>
+        <h2 id="close-title" data-i18n="close.title">See where you stand first.</h2>
+        <p class="lead" data-i18n="close.text">The Snapshot is free and yours to keep, whether or not you choose The Plan.</p>
+        <a class="btn" href="#get-snapshot" data-i18n="hero.cta">Get your free Snapshot</a>
       </div>
     </section>
   </main>
@@ -505,148 +441,24 @@ window.SITE_CONTENT = {
 <rect x="101.5" y="45" width="13" height="50" fill="currentColor"/>
 <path d="M121.5 70H158.5A18.5 18.5 0 1 0 154.58 81.39" fill="none" stroke="currentColor" stroke-width="13"/>
 <path d="M182 95V70A18.5 18.5 0 0 1 200.5 51.5" fill="none" stroke="currentColor" stroke-width="13"/></g><g transform="translate(30 -6) scale(1.15)"><rect x="101" y="22" width="14" height="14" fill="var(--dia)" transform="rotate(45 108 29)"/></g><path d="M306.43 103.36Q304.6 103.36 303.33 102.77Q302.06 102.18 301.4 101.15Q300.74 100.12 300.74 98.8H303.38Q303.38 99.36 303.69 99.88Q303.99 100.4 304.66 100.72Q305.33 101.04 306.43 101.04Q307.43 101.04 308.09 100.76Q308.75 100.48 309.08 100.01Q309.4 99.54 309.4 98.95Q309.4 98.22 308.78 97.78Q308.15 97.33 306.83 97.21L305.61 97.11Q303.62 96.94 302.43 95.87Q301.24 94.79 301.24 93.03Q301.24 91.7 301.87 90.75Q302.5 89.79 303.63 89.26Q304.76 88.73 306.28 88.73Q307.86 88.73 309 89.28Q310.15 89.83 310.77 90.83Q311.39 91.83 311.39 93.18H308.75Q308.75 92.62 308.48 92.13Q308.21 91.65 307.66 91.35Q307.12 91.05 306.28 91.05Q305.48 91.05 304.95 91.32Q304.42 91.59 304.15 92.04Q303.89 92.49 303.89 93.03Q303.89 93.67 304.36 94.16Q304.84 94.64 305.86 94.73L307.08 94.83Q308.57 94.95 309.69 95.47Q310.8 95.98 311.42 96.85Q312.05 97.72 312.05 98.95Q312.05 100.26 311.36 101.26Q310.67 102.26 309.41 102.81Q308.15 103.36 306.43 103.36ZM322.25 103V91.12H324.95V103ZM318.24 91.5V89.13H328.96V91.5ZM341.82 103.36Q339.88 103.36 338.55 102.62Q337.22 101.89 336.53 100.55Q335.84 99.21 335.84 97.4V89.13H338.54V97.56Q338.54 98.54 338.92 99.29Q339.3 100.04 340.03 100.44Q340.76 100.85 341.82 100.85Q342.87 100.85 343.6 100.45Q344.32 100.05 344.7 99.3Q345.07 98.56 345.07 97.56V89.13H347.77V97.4Q347.77 99.21 347.09 100.55Q346.41 101.89 345.09 102.62Q343.76 103.36 341.82 103.36ZM358.24 103.08V100.57H361.11Q362.19 100.57 363.03 100.24Q363.88 99.9 364.47 99.3Q365.06 98.7 365.38 97.87Q365.69 97.03 365.69 96.04Q365.69 94.99 365.38 94.16Q365.06 93.34 364.47 92.75Q363.88 92.16 363.03 91.85Q362.19 91.54 361.11 91.54H358.24V89.03H360.94Q362.82 89.03 364.22 89.59Q365.63 90.15 366.56 91.11Q367.5 92.07 367.96 93.29Q368.43 94.51 368.43 95.83V96.25Q368.43 97.49 367.96 98.71Q367.5 99.93 366.56 100.91Q365.63 101.9 364.22 102.49Q362.82 103.08 360.94 103.08ZM355.93 103.08V89.03H358.62V103.08ZM375.88 103V89.13H378.58V103ZM393.54 103.36Q391.66 103.36 390.28 102.7Q388.91 102.04 388 100.96Q387.1 99.88 386.66 98.64Q386.22 97.39 386.22 96.24V95.82Q386.22 94.55 386.67 93.29Q387.13 92.03 388.05 91Q388.97 89.97 390.34 89.35Q391.71 88.73 393.54 88.73Q395.37 88.73 396.73 89.35Q398.1 89.97 399.02 91Q399.95 92.03 400.41 93.29Q400.87 94.55 400.87 95.82V96.24Q400.87 97.39 400.42 98.64Q399.97 99.88 399.07 100.96Q398.17 102.04 396.79 102.7Q395.41 103.36 393.54 103.36ZM393.54 100.85Q394.61 100.85 395.46 100.47Q396.31 100.09 396.91 99.42Q397.5 98.75 397.82 97.89Q398.13 97.02 398.13 96.05Q398.13 95.01 397.81 94.14Q397.49 93.26 396.9 92.61Q396.3 91.96 395.45 91.6Q394.6 91.24 393.54 91.24Q392.48 91.24 391.63 91.6Q390.78 91.96 390.18 92.61Q389.58 93.26 389.27 94.14Q388.95 95.01 388.95 96.05Q388.95 97.02 389.27 97.89Q389.58 98.75 390.18 99.42Q390.78 100.09 391.63 100.47Q392.48 100.85 393.54 100.85Z" fill="currentColor"/></svg></a>
-        <p data-k="footer.blurb"></p>
+        <p data-i18n="foot.blurb">Crier Studio is a design studio for local businesses.</p>
       </div>
       <div style="display:grid;gap:6px">
-        <strong style="color:var(--ink)" data-k="footer.contactLabel"></strong>
-        <a id="mail" href="#"></a>
+        <strong style="color:var(--ink)" data-i18n="foot.contact">Contact</strong>
+        <a data-mail href="mailto:team@crierstudio.com" dir="ltr">team@crierstudio.com</a>
       </div>
       <div style="display:grid;gap:6px">
-        <strong style="color:var(--ink)">Legal</strong>
-        <div class="links" id="legal"></div>
+        <strong style="color:var(--ink)" data-i18n="foot.legal">Legal</strong>
+        <div class="links" id="legal">
+          <a href="terms.html" data-page="terms" class="ph" data-i18n="foot.terms">Terms of service (DRAFT)</a>
+          <a href="privacy.html" data-page="privacy" class="ph" data-i18n="foot.privacy">Privacy policy (DRAFT)</a>
+          <a href="refund.html" data-page="refund" class="ph" data-i18n="foot.refund">Refund policy (DRAFT)</a>
+        </div>
       </div>
     </div>
-    <p><span data-k="footer.copyright"></span></p>
+    <p>&copy; 2026 Crier Studio. [entity name]</p>
   </footer>
 </div>
-
-<script>
-(function(){
-  var C = window.SITE_CONTENT;
-  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];});}
-  function brandify(s){return String(s).split("{brand}").join(C.brand);}
-  function get(path){return path.split(".").reduce(function(o,k){return o==null?o:o[k];},C);}
-  function t(s){return esc(brandify(s));}
-
-  document.querySelectorAll("[data-k]").forEach(function(el){
-    var v = get(el.getAttribute("data-k"));
-    if (v != null) el.textContent = brandify(v);
-  });
-  document.title = C.brand;
-
-  var PK = C.packages, SN = PK.snapshot, PL = PK.plan;
-  function money(n){return C.currency + n;}
-  document.getElementById("mail").textContent = C.email;
-  document.getElementById("mail").href = "mailto:" + C.email;
-
-  // snapshot pages (what is inside the free Snapshot, from packages.snapshot.items counts)
-  document.getElementById("snap-pages").innerHTML = C.snapshot.pages.map(function(p){
-    var mini = p.mini==="score" ? '<div class="mini score" aria-hidden="true"><span style="height:55%"></span><span style="height:75%"></span><span style="height:40%"></span><span style="height:65%"></span></div>'
-             : p.mini==="fix" ? '<div class="mini fix" aria-hidden="true"><span style="width:80%"></span><span style="width:62%"></span><span style="width:70%"></span></div>'
-             : '<div class="mini posts" aria-hidden="true"><span></span><span></span></div>';
-    return '<article class="page"><span class="pg">'+t(p.label)+'</span>'+mini+'<span class="ex2">Example layout</span><h3>'+t(p.title)+'</h3><p>'+t(p.text)+'</p></article>';
-  }).join("");
-
-  // industry select
-  var sel = document.getElementById("f-industry");
-  C.industries.map(function(i){return i.name;}).concat([C.otherIndustry]).forEach(function(n){
-    var o = document.createElement("option"); o.value = n; o.textContent = n; sel.appendChild(o);
-  });
-
-  // what is in the Plan
-  document.getElementById("deliv-lead").textContent = PL.items.length + " things, delivered once for " + money(PL.price) + ". " + PL.name + " includes everything below.";
-  document.getElementById("deliv").innerHTML = PL.items.map(function(d){
-    var chip = d.snapshot ? '<span class="snapnote">'+t(d.snapshot)+'</span>' : '';
-    return '<div class="d"><h3>'+t(d.title)+'</h3><p>'+t(d.text)+'</p>'+chip+'</div>';
-  }).join("");
-
-  // how it works
-  var syms = [
-    '<svg class="sym" viewBox="0 0 44 44" aria-hidden="true"><rect x="6" y="4" width="32" height="36" fill="none" stroke="currentColor" stroke-width="4"/><rect x="13" y="13" width="18" height="4" fill="currentColor"/><rect x="13" y="22" width="12" height="4" fill="currentColor"/></svg>',
-    '<svg class="sym" viewBox="0 0 44 44" aria-hidden="true"><rect x="4" y="8" width="36" height="30" fill="none" stroke="currentColor" stroke-width="4"/><rect x="4" y="8" width="36" height="8" fill="var(--accent)" stroke="currentColor" stroke-width="2"/><rect x="11" y="22" width="6" height="6" fill="currentColor"/><rect x="21" y="22" width="6" height="6" fill="currentColor"/></svg>',
-    '<svg class="sym" viewBox="0 0 44 44" aria-hidden="true"><rect x="4" y="4" width="16" height="16" fill="var(--sun)" stroke="currentColor" stroke-width="2"/><rect x="24" y="4" width="16" height="16" fill="var(--coral)"/><rect x="4" y="24" width="16" height="16" fill="currentColor"/><path d="M26 32l5 5 9-11" fill="none" stroke="currentColor" stroke-width="4"/></svg>'
-  ];
-  document.getElementById("flow").innerHTML = C.steps.map(function(s,i){
-    return '<div class="stage">'+(syms[i]||"")+'<h3>'+t(s.title)+'</h3><p>'+t(s.text)+'</p></div>';
-  }).join("");
-
-  // industries
-  document.getElementById("inds").innerHTML = C.industries.map(function(i){
-    var sw = (i.colors||[]).map(function(c){return '<i style="background:var(--'+c+')"></i>';}).join("");
-    return '<div class="ind"><div class="swatch" aria-hidden="true">'+sw+'</div><h3>'+t(i.name)+'</h3><p>'+t(i.text)+'</p>'+(i.note?'<p class="note">'+t(i.note)+'</p>':"")+'</div>';
-  }).join("");
-
-  // pricing: only the packages that are switched on (the two in SITE_CONTENT.packages)
-  function card(p, feat){
-    var price = p.price ? money(p.price) : p.priceLabel;
-    var small = p.billing ? p.billing : "";
-    var extra = p.regularPrice ? '<span class="found">'+t(C.pricing.founding.replace("{n}", p.foundingLimit).replace("{regular}", money(p.regularPrice)))+'</span>' : "";
-    return '<div class="plan'+(feat?" feat":"")+'"><h3>'+t(p.name)+'</h3><p class="muted">'+t(p.for)+'</p>'
-      + '<div class="price"><span>'+t(price)+'</span>'+(small?'<small>'+t(small)+'</small>':"")+'</div>' + extra
-      + '<ul>'+p.items.map(function(f){return "<li>"+t(f.title)+"</li>";}).join("")+'</ul>'
-      + '<a class="btn" href="#get-snapshot">'+t(p.price ? C.planCta : C.hero.cta)+'</a></div>';
-  }
-  document.getElementById("plans").innerHTML = card(SN, false) + card(PL, true);
-  document.getElementById("terms").innerHTML = C.pricing.terms.map(function(p){
-    var inner = p.href ? '<a href="'+p.href+'">'+t(p.text)+'</a>' : t(p.text);
-    return '<span class="'+(p.draft?"ph":"")+'">'+inner+'</span>';
-  }).join("");
-
-  // faq
-  document.getElementById("faq-list").innerHTML = C.faq.map(function(f,i){
-    return '<details'+(i===0?" open":"")+'><summary>'+t(f.q)+'</summary><div class="ans">'+f.a.map(function(p){return '<p'+(p.indexOf("[DRAFT")>-1?' class="ph"':'')+'>'+t(p)+'</p>';}).join("")+'</div></details>';
-  }).join("");
-
-  // legal links
-  document.getElementById("legal").innerHTML = C.footer.legal.map(function(l){
-    return '<a href="'+l.href+'" class="ph">'+t(l.text)+'</a>';
-  }).join("");
-
-  // form: posts to the Launchpad's public intake; nothing is stored in the browser
-  var form = document.getElementById("snap-form"), status = document.getElementById("snap-status"), btn = document.getElementById("snap-submit");
-  var checks = {
-    "f-business": function(v){return v ? "" : "Enter your business name.";},
-    "f-web": function(v){return v ? "" : "Enter your website or Instagram handle.";},
-    "f-email": function(v){return !v ? "Enter your email so we can send the Snapshot." : (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? "" : "Check the email address, it looks incomplete.");},
-    "f-city": function(v){return v ? "" : "Enter the city your business is in.";},
-    "f-industry": function(v){return v ? "" : "Choose the closest industry.";}
-  };
-  function say(msg, bad){status.textContent = msg; status.hidden = false; status.style.borderColor = bad ? "var(--error)" : "var(--ink)";}
-  form.addEventListener("submit", function(e){
-    e.preventDefault();
-    var firstBad = null;
-    Object.keys(checks).forEach(function(id){
-      var el = document.getElementById(id), msg = checks[id](el.value.trim()), err = document.getElementById("e-"+id.slice(2));
-      el.setAttribute("aria-invalid", msg ? "true" : "false");
-      err.textContent = msg; err.hidden = !msg;
-      if (msg && !firstBad) firstBad = el;
-    });
-    var cb = document.getElementById("f-consent"), ce = document.getElementById("e-consent");
-    ce.textContent = cb.checked ? "" : C.snapshot.consentError; ce.hidden = cb.checked;
-    cb.setAttribute("aria-invalid", cb.checked ? "false" : "true");
-    if (!cb.checked && !firstBad) firstBad = cb;
-    if (firstBad){ status.hidden = true; firstBad.focus(); return; }
-    var data = {
-      business: document.getElementById("f-business").value.trim(), web: document.getElementById("f-web").value.trim(),
-      email: document.getElementById("f-email").value.trim(), city: document.getElementById("f-city").value.trim(),
-      industry: document.getElementById("f-industry").value, consent: true,
-      company_website: document.getElementById("f-company").value
-    };
-    btn.disabled = true; say(C.snapshot.sending, false);
-    var ctl = ("AbortController" in window) ? new AbortController() : null;
-    var timer = setTimeout(function(){ if (ctl) ctl.abort(); }, 20000);
-    fetch(C.snapshot.endpoint, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(data), signal: ctl ? ctl.signal : undefined})
-      .then(function(r){ return r.json().catch(function(){return {};}).then(function(j){ return {status:r.status, body:j}; }); })
-      .then(function(res){
-        if (res.status === 200 && res.body && res.body.ok === true){ say(C.snapshot.thanks, false); form.reset(); }
-        else if (res.status === 429){ say(C.snapshot.tooMany, true); }
-        else { say(C.snapshot.failed, true); }
-      })
-      .catch(function(){ say(C.snapshot.failed, true); })
-      .then(function(){ clearTimeout(timer); btn.disabled = false; });
-  });
-})();
-</script>
-
+<script src="site.js"></script>
 </body>
 </html>
