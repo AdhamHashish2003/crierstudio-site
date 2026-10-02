@@ -1,23 +1,20 @@
 <footer>
-    <div class="cols">
-      <div style="display:grid;gap:10px">
-        <a class="logo" href="{{=homeHref}}" aria-label="{{a:leg.homeAria}}">{{>logo}}</a>
-        <p>{{t:foot.blurb}}</p>
-      </div>
-      <div style="display:grid;gap:6px">
-        <strong style="color:var(--ink)">{{t:foot.contact}}</strong>
-        <a href="mailto:team@crierstudio.com" dir="ltr">team@crierstudio.com</a>
-        <a href="{{=faqHref}}">{{t:faq.eyebrow}}</a>
-        <a href="https://portal.crierstudio.com/">{{t:foot.portal}}</a>
-      </div>
-      <div style="display:grid;gap:6px">
-        <strong style="color:var(--ink)">{{t:foot.legal}}</strong>
-        <div class="links" id="legal">
-          <a href="{{=termsHref}}" class="ph">{{t:foot.terms}}</a>
-          <a href="{{=privacyHref}}" class="ph">{{t:foot.privacy}}</a>
-          <a href="{{=refundHref}}" class="ph">{{t:foot.refund}}</a>
-        </div>
-      </div>
+  <div class="cols">
+    <div class="fcol">
+      <a class="logo" href="{{=homeHref}}" aria-label="{{a:leg.homeAria}}">{{>logo}}</a>
+      <p>{{t:foot.blurb}}</p>
+      <a href="mailto:team@crierstudio.com" dir="ltr">team@crierstudio.com</a>
     </div>
-    <p>&copy; 2026 Crier Studio. <span>{{t:foot.unreg}}</span></p>
-  </footer>
+    <nav class="fcol" aria-label="{{a:foot.explore}}">
+      <strong>{{t:foot.explore}}</strong>
+      {{=navFoot}}
+    </nav>
+    <nav class="fcol" aria-label="{{a:foot.legal}}">
+      <strong>{{t:foot.legal}}</strong>
+      <a href="{{=termsHref}}">{{t:foot.terms}}</a>
+      <a href="{{=privacyHref}}">{{t:foot.privacy}}</a>
+      <a href="{{=refundHref}}">{{t:foot.refund}}</a>
+    </nav>
+  </div>
+  <p>&copy; 2026 Crier Studio. <span>{{t:foot.unreg}}</span></p>
+</footer>

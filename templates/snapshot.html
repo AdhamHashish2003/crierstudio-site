@@ -1,0 +1,81 @@
+<main>
+    {{=crumbs}}
+    <section class="phead" aria-labelledby="snap-title">
+      <span class="eyebrow">{{t:snap.eyebrow}}</span>
+      <h1 id="snap-title">{{t:snap.title}}</h1>
+      <p class="lead">{{t:snap.lead}}</p>
+      <div class="pages" id="snap-pages">{{=snapPages}}</div>
+    </section>
+
+    <section id="request" aria-labelledby="form-title">
+      <form class="formbox" id="snap-form" novalidate data-endpoint="{{=endpoint}}">
+        <h2 id="form-title">{{t:form.title}}</h2>
+        <fieldset class="choice">
+          <legend>{{t:f.what}}</legend>
+          <label class="opt"><input type="radio" name="product" value="snapshot" checked><span>{{t:f.optSnap}}</span></label>
+          <label class="opt"><input type="radio" name="product" value="crier_deck"><span>{{t:f.optDeck}}</span></label>
+        </fieldset>
+        <div class="fields">
+          <div class="field">
+            <label for="f-business">{{t:f.business}}</label>
+            <input id="f-business" name="business" type="text" autocomplete="organization" required aria-describedby="e-business">
+            <span class="err" id="e-business" hidden></span>
+          </div>
+          <div class="field">
+            <label for="f-web">{{t:f.web}}</label>
+            <input id="f-web" name="web" type="text" inputmode="url" dir="auto" placeholder="{{a:f.webPh}}" required aria-describedby="e-web">
+            <span class="err" id="e-web" hidden></span>
+          </div>
+          <div class="field">
+            <label for="f-email">{{t:f.email}}</label>
+            <input id="f-email" name="email" type="email" dir="auto" autocomplete="email" required aria-describedby="e-email">
+            <span class="err" id="e-email" hidden></span>
+          </div>
+          <div class="field">
+            <label for="f-city">{{t:f.city}}</label>
+            <input id="f-city" name="city" type="text" dir="auto" autocomplete="address-level2" required aria-describedby="e-city">
+            <span class="err" id="e-city" hidden></span>
+          </div>
+          <div class="field full">
+            <label for="f-industry">{{t:f.industry}}</label>
+            <select id="f-industry" name="industry" required aria-describedby="e-industry">{{=industryOptions}}</select>
+            <span class="err" id="e-industry" hidden></span>
+          </div>
+          <div class="field full" id="deck-address" hidden>
+            <label for="f-address">{{t:f.address}}</label>
+            <input id="f-address" name="address" type="text" dir="auto" autocomplete="street-address" aria-describedby="e-address">
+            <span class="err" id="e-address" hidden></span>
+          </div>
+          <div class="field full" id="deck-lang" hidden>
+            <label for="f-decklang">{{t:f.deckLang}}</label>
+            <select id="f-decklang" name="deck_lang">{{=deckLangOptions}}</select>
+          </div>
+        </div>
+        <div class="honey" aria-hidden="true"><label for="f-company">{{t:f.honey}}</label><input id="f-company" name="company_website" type="text" tabindex="-1" autocomplete="off"></div>
+        <p class="fine">{{t:form.note}}</p>
+        <div class="field full">
+          <label class="check" for="f-consent"><input id="f-consent" name="consent" type="checkbox" aria-describedby="e-consent"><span><span>{{t:f.consent}}</span> <a href="{{=privacyHref}}">{{t:f.privacy}}</a></span></label>
+          <span class="err" id="e-consent" hidden></span>
+        </div>
+        <div class="cta-row"><button class="btn" type="submit" id="snap-submit" data-snap="{{a:f.submit}}" data-deck="{{a:f.submitDeck}}">{{t:f.submit}}</button></div>
+        <div class="status" id="snap-status" role="status" aria-live="polite" hidden></div>
+      </form>
+      <script type="application/json" id="form-msgs">{{=formMsgs}}</script>
+    </section>
+
+    <section id="how" aria-labelledby="how-title">
+      <div class="sec-head">
+        <span class="eyebrow">{{t:how.eyebrow}}</span>
+        <h2 id="how-title">{{t:how.title}}</h2>
+      </div>
+      <div class="flow" id="flow">{{=flow}}</div>
+    </section>
+
+    <section aria-labelledby="also-title">
+      <div class="closing">
+        <h2 id="also-title">{{t:offer.deck.t}}</h2>
+        <p class="lead">{{t:offer.deck.x}}</p>
+        <a class="btn ghost" href="{{=deckHref}}">{{t:offer.deck.cta}}</a>
+      </div>
+    </section>
+  </main>

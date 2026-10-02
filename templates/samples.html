@@ -1,0 +1,22 @@
+<main>
+    {{=crumbs}}
+    <section class="phead" aria-labelledby="samples-title">
+      <span class="eyebrow">{{t:samples.eyebrow}}</span>
+      <h1 id="samples-title">{{t:samples.h1}}</h1>
+      <p class="lead">{{t:samples.lead}}</p>
+      <p class="fine">{{t:samples.note}}</p>
+    </section>
+    <section aria-label="{{a:samples.h1}}">
+      <div class="sheets">{{=sheets}}</div>
+    </section>
+    <section aria-labelledby="scta-title">
+      <div class="closing">
+        <h2 id="scta-title">{{t:deck.next.title}}</h2>
+        <p class="lead">{{t:deck.next.x}}</p>
+        <div class="cta-row">
+          <a class="btn" href="{{=deckCtaHref}}">{{t:samples.cta}}</a>
+          <a class="btn ghost" href="{{=deckHref}}">{{t:offer.deck.cta}}</a>
+        </div>
+      </div>
+    </section>
+  </main>

@@ -25,30 +25,51 @@
     links[i].addEventListener("click", function () { try { localStorage.setItem(KEY, this.getAttribute("lang")); } catch (e) {} });
   }
 
-  /* ---------------- Snapshot form ---------------- */
+  /* ---------------- request form (free Snapshot or Crier Deck) ---------------- */
   var form = document.getElementById("snap-form");
   if (!form) return;
   var M = {};
   try { M = JSON.parse(document.getElementById("form-msgs").textContent); } catch (e) {}
   function $(id) { return document.getElementById(id); }
   var status = $("snap-status"), btn = $("snap-submit"), endpoint = form.getAttribute("data-endpoint");
+  var radios = form.querySelectorAll('input[name="product"]');
+  function product() { for (var i = 0; i < radios.length; i++) if (radios[i].checked) return radios[i].value; return "snapshot"; }
+  function isDeck() { return product() === "crier_deck"; }
+  function sync() {
+    var deck = isDeck();
+    $("deck-address").hidden = !deck; $("deck-lang").hidden = !deck;
+    $("f-address").required = deck;
+    btn.textContent = btn.getAttribute(deck ? "data-deck" : "data-snap");
+    status.hidden = true;
+  }
+  // /snapshot/?product=crier_deck (the Crier Deck buttons) opens the form with Crier Deck selected
+  var want = null;
+  try { want = new URLSearchParams(location.search).get("product"); } catch (e) {}
+  if (want === "crier_deck") { for (var r = 0; r < radios.length; r++) radios[r].checked = radios[r].value === "crier_deck"; }
+  for (var r2 = 0; r2 < radios.length; r2++) radios[r2].addEventListener("change", sync);
+  sync();
   var FIELDS = [
     ["f-business", function (v) { return v ? "" : "v.business"; }],
     ["f-web", function (v) { return v ? "" : "v.web"; }],
     ["f-email", function (v) { return !v ? "v.emailEmpty" : (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? "" : "v.emailBad"); }],
     ["f-city", function (v) { return v ? "" : "v.city"; }],
-    ["f-industry", function (v) { return v ? "" : "v.industry"; }]
+    ["f-industry", function (v) { return v ? "" : "v.industry"; }],
+    ["f-address", function (v) { return !isDeck() || v ? "" : "v.address"; }]
   ];
   function say(key, bad) { status.textContent = M[key] || key; status.hidden = false; status.style.borderColor = bad ? "var(--error)" : "var(--ink)"; }
   function setErr(id, key) { var e = $("e-" + id.replace(/^f-/, "")); e.textContent = key ? (M[key] || key) : ""; e.hidden = !key; }
-  // the payload is exactly what the live intake API accepts: business, web, email, city, industry, consent, company_website
+  // the payload is what the live intake API accepts: business, web, email, city, industry, consent, company_website,
+  // plus product and lang, and for crier_deck also address and deck_lang
   window.__snapPayload = function () {
-    return {
+    var p = {
       business: $("f-business").value.trim(), web: $("f-web").value.trim(),
       email: $("f-email").value.trim(), city: $("f-city").value.trim(),
       industry: $("f-industry").value, consent: true,
-      company_website: $("f-company").value
+      company_website: $("f-company").value,
+      product: product(), lang: de.lang
     };
+    if (isDeck()) { p.address = $("f-address").value.trim(); p.deck_lang = $("f-decklang").value; }
+    return p;
   };
   form.addEventListener("submit", function (e) {
     e.preventDefault();
@@ -64,14 +85,14 @@
     cb.setAttribute("aria-invalid", cb.checked ? "false" : "true");
     if (!cb.checked && !firstBad) firstBad = cb;
     if (firstBad) { status.hidden = true; firstBad.focus(); return; }
-    var data = window.__snapPayload();
+    var data = window.__snapPayload(), deck = isDeck();
     btn.disabled = true; say("f.sending", false);
     var ctl = ("AbortController" in window) ? new AbortController() : null;
     var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 20000);
     fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data), signal: ctl ? ctl.signal : undefined })
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, body: j }; }); })
       .then(function (res) {
-        if (res.status === 200 && res.body && res.body.ok === true) { say("f.thanks", false); form.reset(); }
+        if (res.status === 200 && res.body && res.body.ok === true) { say(deck ? "f.thanksDeck" : "f.thanks", false); form.reset(); sync(); say(deck ? "f.thanksDeck" : "f.thanks", false); }
         else if (res.status === 429) { say("f.tooMany", true); }
         else { say("f.failed", true); }
       })

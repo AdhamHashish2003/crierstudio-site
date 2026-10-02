@@ -1,0 +1,70 @@
+<main>
+    {{=crumbs}}
+    <section class="phead" aria-labelledby="deck-title">
+      <span class="eyebrow">{{t:deck.eyebrow}}</span>
+      <h1 id="deck-title">{{t:deck.h1}}</h1>
+      <p class="lead">{{t:deck.lead}}</p>
+      <div class="cta-row">
+        <a class="btn" href="{{=deckCtaHref}}">{{t:deck.cta}}</a>
+        <a class="btn ghost" href="{{=samplesHref}}">{{t:deck.cta2}}</a>
+      </div>
+      <p class="fine">{{t:deck.fine}}</p>
+    </section>
+
+    <section aria-labelledby="inside-title">
+      <div class="sec-head">
+        <span class="eyebrow">{{t:deck.in.eyebrow}}</span>
+        <h2 id="inside-title">{{t:deck.in.title}}</h2>
+      </div>
+      <div class="pages">
+        <article class="page"><h3>{{t:deck.in.1t}}</h3><p>{{t:deck.in.1x}}</p></article>
+        <article class="page"><h3>{{t:deck.in.2t}}</h3><p>{{t:deck.in.2x}}</p></article>
+        <article class="page"><h3>{{t:deck.in.3t}}</h3><p>{{t:deck.in.3x}}</p></article>
+      </div>
+    </section>
+
+    <section aria-labelledby="facts-title">
+      <div class="sec-head">
+        <span class="eyebrow">{{t:deck.facts.eyebrow}}</span>
+        <h2 id="facts-title">{{t:deck.facts.title}}</h2>
+      </div>
+      <div class="inds facts">
+        <div class="ind"><h3>{{t:deck.f1t}}</h3><p>{{t:deck.f1x}}</p></div>
+        <div class="ind"><h3>{{t:deck.f2t}}</h3><p>{{t:deck.f2x}}</p></div>
+        <div class="ind"><h3>{{t:deck.f3t}}</h3><p>{{t:deck.f3x}}</p></div>
+        <div class="ind"><h3>{{t:deck.f4t}}</h3><p>{{t:deck.f4x}}</p></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="dhow-title">
+      <div class="sec-head">
+        <span class="eyebrow">{{t:deck.how.eyebrow}}</span>
+        <h2 id="dhow-title">{{t:deck.how.title}}</h2>
+      </div>
+      <div class="flow flow4">{{=deckFlow}}</div>
+      <p class="fine" style="margin-top:20px">{{t:deck.how.note}}</p>
+    </section>
+
+    <section aria-labelledby="dsamples-title">
+      <div class="sec-head">
+        <h2 id="dsamples-title">{{t:deck.samples.title}}</h2>
+        <p class="lead">{{t:deck.samples.x}}</p>
+      </div>
+      <div class="sheets three">{{=sheets}}</div>
+      <p class="more"><a href="{{=samplesHref}}">{{t:deck.samples.link}}</a></p>
+    </section>
+
+    <section aria-labelledby="next-title">
+      <div class="closing">
+        <h2 id="next-title">{{t:deck.next.title}}</h2>
+        <p class="lead">{{t:deck.next.x}}</p>
+        <a class="btn" href="{{=deckCtaHref}}">{{t:deck.cta}}</a>
+      </div>
+    </section>
+
+    <section id="faq" aria-labelledby="dfaq-title">
+      <div class="sec-head"><h2 id="dfaq-title">{{t:deck.faq.title}}</h2></div>
+      <div class="faq" id="faq-list">{{=faqItems}}</div>
+      <p class="more"><a href="{{=faqHref}}">{{t:faq.all}}</a></p>
+    </section>
+  </main>
