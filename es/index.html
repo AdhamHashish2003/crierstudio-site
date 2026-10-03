@@ -219,7 +219,7 @@ html{scroll-behavior:smooth}
 .langpick a:hover{color:var(--ink)}
 .langpick a[aria-current]{color:var(--ink);border-bottom-color:var(--ink)}
 @media (max-width:520px){.top .btn{display:none}}
-@media (max-width:380px){.langpick a{min-width:40px}}
+
 .conv{font-size:.875rem;color:var(--muted)}
 
 /* RTL (ar) */
@@ -316,6 +316,16 @@ html[lang=ar] .sheet .lab{letter-spacing:0;text-transform:none}
 .s-cat .cells i{display:block;box-shadow:inset 0 0 0 1.5px var(--ink)}
 .s-cat .cells em{font-style:normal;color:var(--ink);overflow-wrap:anywhere}
 .c-sun i{background:var(--sun)}.c-ink i{background:var(--ink)}.c-coral i{background:var(--coral)}.c-accent i{background:var(--accent)}.c-paper i{background:var(--surface)}
+/* layout pass: tap targets, phone hero, wide screens */
+.top .logo,footer .logo{display:inline-flex;align-items:center;min-height:44px}
+.main-nav{gap:0 6px}
+.main-nav a{min-width:44px;justify-content:center;padding-inline:8px}
+.crumbs a{min-height:44px;min-width:44px}
+@media (max-width:759px){footer a{min-height:44px;min-width:44px}.check a{display:inline-flex;align-items:center;min-height:44px}footer .fcol{gap:0}footer .fcol>p{margin-block:6px 4px}}
+@media (min-width:900px){.main-nav{gap:0 10px}.crumbs a{min-height:32px;min-width:0}}
+@media (max-width:480px){h1{font-size:clamp(1.9rem,8.4vw,2.35rem)}.hero h1{line-height:1.08}}
+@media (min-width:1500px){.wrap{max-width:1280px}}
+.prose p,.prose li,.faq p,.lead{max-width:68ch}
 
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://crierstudio.com/#organization","name":"Crier Studio","url":"https://crierstudio.com/","logo":"https://crierstudio.com/favicon-512.png","email":"team@crierstudio.com"},{"@type":"WebSite","@id":"https://crierstudio.com/#website","name":"Crier Studio","alternateName":"Crier","url":"https://crierstudio.com/","inLanguage":"es","publisher":{"@id":"https://crierstudio.com/#organization"}}]}</script>

@@ -110,7 +110,7 @@ a{color:inherit}
 .langpick a:hover{color:var(--ink)}
 .langpick a[aria-current]{color:var(--ink);border-bottom-color:var(--ink)}
 @media (max-width:520px){.top .btn{display:none}}
-@media (max-width:380px){.langpick a{min-width:40px}}
+
 .conv{font-size:.875rem;color:var(--muted)}
 
 /* RTL (ar) */
@@ -207,6 +207,16 @@ html[lang=ar] .sheet .lab{letter-spacing:0;text-transform:none}
 .s-cat .cells i{display:block;box-shadow:inset 0 0 0 1.5px var(--ink)}
 .s-cat .cells em{font-style:normal;color:var(--ink);overflow-wrap:anywhere}
 .c-sun i{background:var(--sun)}.c-ink i{background:var(--ink)}.c-coral i{background:var(--coral)}.c-accent i{background:var(--accent)}.c-paper i{background:var(--surface)}
+/* layout pass: tap targets, phone hero, wide screens */
+.top .logo,footer .logo{display:inline-flex;align-items:center;min-height:44px}
+.main-nav{gap:0 6px}
+.main-nav a{min-width:44px;justify-content:center;padding-inline:8px}
+.crumbs a{min-height:44px;min-width:44px}
+@media (max-width:759px){footer a{min-height:44px;min-width:44px}.check a{display:inline-flex;align-items:center;min-height:44px}footer .fcol{gap:0}footer .fcol>p{margin-block:6px 4px}}
+@media (min-width:900px){.main-nav{gap:0 10px}.crumbs a{min-height:32px;min-width:0}}
+@media (max-width:480px){h1{font-size:clamp(1.9rem,8.4vw,2.35rem)}.hero h1{line-height:1.08}}
+@media (min-width:1500px){.wrap{max-width:1280px}}
+.prose p,.prose li,.faq p,.lead{max-width:68ch}
 
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"الرئيسية","item":"https://crierstudio.com/ar/"},{"@type":"ListItem","position":2,"name":"الأسئلة الشائعة","item":"https://crierstudio.com/ar/faq/"}]},{"@type":"FAQPage","inLanguage":"ar","mainEntity":[{"@type":"Question","name":"ما هو Crier Deck؟","acceptedAnswer":{"@type":"Answer","text":"عرض تقديمي لعلامتك التجارية يُعدّ من موقعك مع شعارك. يتضمن صفحة هوية وصفحة لكل منتج وكتالوجًا، ويصلك على شكل ملف PDF للشاشة وملف PDF جاهز للطباعة."}},{"@type":"Question","name":"هل يتغيّر شعاري؟","acceptedAnswer":{"@type":"Answer","text":"لا. Crier Deck ليس إعادة تصميم للشعار. نستخدم شعارك الحالي كما هو."}},{"@type":"Question","name":"ما الملفات التي أستلمها؟","acceptedAnswer":{"@type":"Answer","text":"ملفان بصيغة PDF: ملف للشاشة (A4 أفقي، RGB) وملف جاهز للطباعة (CMYK، هامش قص 3 مم، علامات القص)."}},{"@type":"Question","name":"كم يكلّف Crier Deck؟","acceptedAnswer":{"@type":"Answer","text":"لا ننشر سعرًا على هذا الموقع. اطلب Crier Deck وسنردّ عليك بالبريد الإلكتروني بما يتضمنه وما قد يكلّفه، إن كان له كلفة، قبل أن يبدأ أي شيء. لا يُحصَّل أي مبلغ عبر هذا الموقع."}},{"@type":"Question","name":"كم يستغرق إعداده؟","acceptedAnswer":{"@type":"Answer","text":"لا نَعِد بموعد تسليم مسبقًا. نؤكد الموعد بالبريد الإلكتروني عندما نردّ عليك."}},{"@type":"Question","name":"هل تطبعونه؟","acceptedAnswer":{"@type":"Answer","text":"نعطيك ملفات جاهزة للطباعة. الطباعة نفسها غير مشمولة."}},{"@type":"Question","name":"ماذا تحتاجون مني؟","acceptedAnswer":{"@type":"Answer","text":"لـ Snapshot المجاني: اسم نشاطك، وموقعك أو حسابك على إنستغرام، وبريدك الإلكتروني، ومدينتك، ومجالك. لـ Crier Deck: اسم نشاطك وعنوانه، واللغة التي تريد العرض بها. لمنشورات Snapshot الخاص بك، من المفيد أن تزوّدنا بشعارك وألوان علامتك إن وجدت وصورك أنت. لا نستخدم صورًا جاهزة لغرباء في منشوراتك."}},{"@type":"Question","name":"بأي لغات تعملون؟","acceptedAnswer":{"@type":"Answer","text":"هذا الموقع متوفر بالإنجليزية والإسبانية والفرنسية والعربية، ويمكنك مراسلتنا بأي منها. ويمكن إعداد Crier Deck بالإنجليزية أو الإسبانية أو الفرنسية أو العربية، أو بالعربية والإنجليزية معًا."}},{"@type":"Question","name":"ماذا أفعل بالإصلاحات؟","acceptedAnswer":{"@type":"Answer","text":"هي مكتوبة لتلصقها بنفسك، أو لتسلّمها لمن يتولى موقعك. المنشورات ملفات تستخدمها أنت. لا يُنشر شيء نيابة عنك."}},{"@type":"Question","name":"لمن تعود ملكية ما تصنعونه لي؟","acceptedAnswer":{"@type":"Answer","text":"ملفات العرض والمنشورات والتعليقات التي نسلّمها لك ملك لك لتستخدمها في عملك. يبقى شعارك واسمك وعلامتك لك، ولا نعرض علنًا Crier Deck أُعدّ لك دون موافقتك الكتابية."}},{"@type":"Question","name":"هل يمكنكم أن تعدوني بعملاء أكثر؟","acceptedAnswer":{"@type":"Answer","text":"لا. لا أحد يستطيع أن يعد بذلك بصدق. يُظهر Snapshot موقعك الحالي وما ينبغي إصلاحه أولًا، مع إصلاح واحد وثلاثة منشورات مكتوبة جاهزة. النتائج تعتمد على نشاطك وسوقك وما تفعله بها."}},{"@type":"Question","name":"ما هي بوابة العملاء؟","acceptedAnswer":{"@type":"Answer","text":"صفحة خاصة بالعملاء على portal.crierstudio.com، نشارك فيها عملك ويمكنك مراجعته."}},{"@type":"Question","name":"ماذا يحدث لبياناتي؟","acceptedAnswer":{"@type":"Answer","text":"نستخدمها لإعداد ما طلبته وللتواصل معك بشأنه. يمكنك أن تطلب منا تصديرها أو حذفها في أي وقت عبر team@crierstudio.com. راجع سياسة الخصوصية للتفاصيل."}},{"@type":"Question","name":"هل Crier Studio شركة مسجّلة؟","acceptedAnswer":{"@type":"Answer","text":"ليس بعد. التواصل بالبريد الإلكتروني فقط: team@crierstudio.com."}}]}]}</script>
