@@ -33,6 +33,38 @@
 <xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/"/>
 </url>
 <url>
+<loc>https://crierstudio.com/pricing/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/pricing/"/>
+<xhtml:link rel="alternate" hreflang="es" href="https://crierstudio.com/es/pricing/"/>
+<xhtml:link rel="alternate" hreflang="fr" href="https://crierstudio.com/fr/pricing/"/>
+<xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/ar/pricing/"/>
+<xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/pricing/"/>
+</url>
+<url>
+<loc>https://crierstudio.com/es/pricing/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/pricing/"/>
+<xhtml:link rel="alternate" hreflang="es" href="https://crierstudio.com/es/pricing/"/>
+<xhtml:link rel="alternate" hreflang="fr" href="https://crierstudio.com/fr/pricing/"/>
+<xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/ar/pricing/"/>
+<xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/pricing/"/>
+</url>
+<url>
+<loc>https://crierstudio.com/fr/pricing/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/pricing/"/>
+<xhtml:link rel="alternate" hreflang="es" href="https://crierstudio.com/es/pricing/"/>
+<xhtml:link rel="alternate" hreflang="fr" href="https://crierstudio.com/fr/pricing/"/>
+<xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/ar/pricing/"/>
+<xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/pricing/"/>
+</url>
+<url>
+<loc>https://crierstudio.com/ar/pricing/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/pricing/"/>
+<xhtml:link rel="alternate" hreflang="es" href="https://crierstudio.com/es/pricing/"/>
+<xhtml:link rel="alternate" hreflang="fr" href="https://crierstudio.com/fr/pricing/"/>
+<xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/ar/pricing/"/>
+<xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/pricing/"/>
+</url>
+<url>
 <loc>https://crierstudio.com/crier-deck/</loc>
 <xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/crier-deck/"/>
 <xhtml:link rel="alternate" hreflang="es" href="https://crierstudio.com/es/crier-deck/"/>

@@ -1,0 +1,39 @@
+<main>
+    {{=crumbs}}
+    <section class="phead" aria-labelledby="pricing-title">
+      <span class="eyebrow">{{t:pricing.eyebrow}}</span>
+      <h1 id="pricing-title">{{t:pricing.h1}}</h1>
+      <p class="lead">{{t:pricing.lead}}</p>
+      <p class="fine">{{t:pricing.fine}}</p>
+    </section>
+
+    <section id="plans" aria-labelledby="plans-title">
+      <div class="sec-head">
+        <span class="eyebrow">{{t:pricing.plans.eyebrow}}</span>
+        <h2 id="plans-title">{{t:pricing.plans.title}}</h2>
+      </div>
+      <div class="plans">{{=planCards}}</div>
+    </section>
+
+    <section id="one-time" aria-labelledby="one-title">
+      <div class="sec-head">
+        <span class="eyebrow">{{t:one.eyebrow}}</span>
+        <h2 id="one-title">{{t:one.title}}</h2>
+      </div>
+      <div class="plans">{{=oneCards}}</div>
+    </section>
+
+    <section id="billing" aria-labelledby="bill-title">
+      <div class="sec-head">
+        <span class="eyebrow">{{t:bill.eyebrow}}</span>
+        <h2 id="bill-title">{{t:bill.title}}</h2>
+      </div>
+      <ul class="billing">{{=billItems}}</ul>
+    </section>
+
+    <section id="faq" aria-labelledby="pfaq-title">
+      <div class="sec-head"><h2 id="pfaq-title">{{t:pricing.faq.title}}</h2></div>
+      <div class="faq" id="faq-list">{{=faqItems}}</div>
+      <p class="more"><a href="{{=faqHref}}">{{t:faq.all}}</a></p>
+    </section>
+  </main>

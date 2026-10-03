@@ -5,10 +5,19 @@
       <h1 id="deck-title">{{t:deck.h1}}</h1>
       <p class="lead">{{t:deck.lead}}</p>
       <div class="cta-row">
-        <a class="btn" href="{{=deckCtaHref}}">{{t:deck.cta}}</a>
+        <div class="buyrow">{{=buyDeck}}</div>
         <a class="btn ghost" href="{{=samplesHref}}">{{t:deck.cta2}}</a>
       </div>
       <p class="fine">{{t:deck.fine}}</p>
+    </section>
+
+    <section id="price" aria-labelledby="dprice-title">
+      <div class="sec-head">
+        <span class="eyebrow">{{t:deck.price.eyebrow}}</span>
+        <h2 id="dprice-title">{{t:deck.price.title}}</h2>
+        <p class="lead">{{t:deck.price.note}}</p>
+      </div>
+      <div class="plans deckprices">{{=deckCards}}</div>
     </section>
 
     <section aria-labelledby="inside-title">

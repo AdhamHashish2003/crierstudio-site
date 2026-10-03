@@ -22,14 +22,27 @@ const ENDPOINT = 'https://crm-production-d789.up.railway.app/api/public/snapshot
 const LANGS = [['en', 'English', 'en_US'], ['es', 'Español', 'es_ES'], ['fr', 'Français', 'fr_FR'], ['ar', 'العربية', 'ar_AR']];
 const RTL = new Set(['ar']);
 // every page exists in all 4 languages: / (en), /es/, /fr/, /ar/ and the sub-paths below
-const PAGES = ['index', 'crier-deck', 'snapshot', 'samples', 'faq', 'about', 'terms', 'privacy', 'refund'];
-const WIDE = new Set(['index', 'crier-deck', 'snapshot', 'samples', 'about']); // wide layout; the rest use the narrow reading layout
+const PAGES = ['index', 'pricing', 'crier-deck', 'snapshot', 'samples', 'faq', 'about', 'terms', 'privacy', 'refund'];
+const WIDE = new Set(['index', 'pricing', 'crier-deck', 'snapshot', 'samples', 'about']); // wide layout; the rest use the narrow reading layout
 const LEGAL = ['terms', 'privacy', 'refund'];
-const NAV = [['crier-deck', 'nav.deck'], ['snapshot', 'nav.snapshot'], ['samples', 'nav.samples'], ['faq', 'nav.faq'], ['about', 'nav.about'], [PORTAL, 'nav.portal']];
-const CRUMB_KEY = { 'crier-deck': 'nav.deck', snapshot: 'nav.snapshot', samples: 'nav.samples', faq: 'nav.faq', about: 'nav.about', terms: 'foot.terms', privacy: 'foot.privacy', refund: 'foot.refund' };
+const NAV = [['pricing', 'nav.pricing'], ['crier-deck', 'nav.deck'], ['snapshot', 'nav.snapshot'], ['samples', 'nav.samples'], ['faq', 'nav.faq'], ['about', 'nav.about'], [PORTAL, 'nav.portal']];
+const CRUMB_KEY = { pricing: 'nav.pricing', 'crier-deck': 'nav.deck', snapshot: 'nav.snapshot', samples: 'nav.samples', faq: 'nav.faq', about: 'nav.about', terms: 'foot.terms', privacy: 'foot.privacy', refund: 'foot.refund' };
 const INDUSTRY_VALUES = ['Cafés and dessert shops', 'Salons', 'Gyms and studios', 'Clinics', 'Local services', 'Other local business'];
 
+// ---------- products + payment links ----------
+// payment-links.json (repo root) holds one entry per product. Empty = the Buy button opens the request form with the product
+// preselected ("We'll email you a secure payment link"). A filled-in https:// link (a Stripe Payment Link) = the button goes straight to it.
+const PRICES = { snapshot: 29, starter: 99, growth: 199, pro: 399, deck: 149, deck_print: 249 }; // USD, shown as-is in every language
+const PRODUCT_NAMES = { snapshot: 'Snapshot', starter: 'Starter', growth: 'Growth', pro: 'Pro', deck: 'Crier Deck', deck_print: 'Crier Deck + Print Kit' };
+const PRODUCTS = Object.keys(PRICES);
 const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
+const LINKS = JSON.parse(rd('payment-links.json'));
+for (const k of Object.keys(LINKS)) if (!PRODUCTS.includes(k)) throw new Error('payment-links.json: unknown product ' + k);
+for (const k of PRODUCTS) {
+  const v = LINKS[k];
+  if (typeof v !== 'string') throw new Error('payment-links.json: missing or non-string entry for ' + k);
+  if (v !== '' && !/^https:\/\/[^\s"'<>]+$/.test(v)) throw new Error('payment-links.json: ' + k + ' must be empty or an https:// link');
+}
 const dicts = Object.fromEntries(LANGS.map(([c]) => [c, JSON.parse(rd(`i18n/${c}.json`))]));
 const partials = {
   hero: rd('templates/hero.html'), logo: rd('templates/logo.svg.html'), footer: rd('templates/footer.html'), header: rd('templates/header.html'),
@@ -89,8 +102,9 @@ const minis = [
 ];
 const INDCOLORS = [['sun', 'coral'], ['coral', 'accent'], ['accent', 'ink'], ['ink', 'sun'], ['sun', 'accent']];
 // FAQ ids (keys faq.<id>q, faq.<id>a1, faq.<id>a2)
-const FAQ_ALL = [11, 12, 13, 14, 15, 16, 1, 7, 2, 4, 5, 17, 9, 18];
-const FAQ_HOME = [11, 14, 1, 5];
+const FAQ_ALL = [19, 20, 21, 22, 11, 12, 13, 14, 15, 16, 1, 7, 2, 4, 5, 17, 9, 18];
+const FAQ_HOME = [19, 11, 14, 1, 5];
+const FAQ_PRICING = [19, 20, 21, 22];
 const FAQ_DECK = [11, 12, 13, 14, 15, 16];
 
 function faqAnswers(lang, i) {
@@ -119,7 +133,7 @@ function crumbs(lang, page) {
   return `<nav class="crumbs" aria-label="${esc(t(lang, 'crumb.label'))}"><a href="${pathFor(lang, 'index')}">${esc(t(lang, 'crumb.home'))}</a><span aria-hidden="true">/</span><span aria-current="page">${esc(t(lang, CRUMB_KEY[page]))}</span></nav>`;
 }
 function hrefs(lang) {
-  const o = { homeHref: pathFor(lang, 'index'), snapCtaHref: pathFor(lang, 'snapshot') + '#request', deckCtaHref: pathFor(lang, 'snapshot') + '?product=crier_deck#request' };
+  const o = { homeHref: pathFor(lang, 'index'), snapCtaHref: pathFor(lang, 'snapshot') + '#request', deckCtaHref: pathFor(lang, 'snapshot') + '?product=deck#request' };
   const NAME = { index: 'home', 'crier-deck': 'deck' };
   for (const p of PAGES) o[(NAME[p] || p) + 'Href'] = pathFor(lang, p);
   return o;
@@ -138,15 +152,39 @@ function sheet(lang, n) {
 }
 const fig = (lang, n) => `<figure class="sheetfig">${sheet(lang, n)}<figcaption>${h(lang, `sample.c${n}`)}</figcaption></figure>`;
 
+const money = (p) => `<span class="price" dir="ltr">$${PRICES[p]}</span>`;
+const isLinked = (p) => LINKS[p] !== '';
+function buyHref(lang, p) { return isLinked(p) ? LINKS[p] : `${pathFor(lang, 'snapshot')}?product=${p}#request`; }
+function buyBtn(lang, p, ghost) {
+  const note = isLinked(p) ? '' : `<span class="paynote">${h(lang, 'pay.note')}</span>`;
+  return `<a class="btn${ghost ? ' ghost' : ''}" href="${esc(buyHref(lang, p))}" data-product="${p}" aria-label="${esc(t(lang, 'btn.buy') + ': ' + PRODUCT_NAMES[p])}">${h(lang, 'btn.buy')}</a>${note}`;
+}
+function ticks(lang, prefix) {
+  const out = [];
+  for (let i = 1; dicts[lang][`${prefix}.f${i}`] != null; i++) out.push(`<li>${h(lang, `${prefix}.f${i}`)}</li>`);
+  return `<ul class="ticks">${out.join('')}</ul>`;
+}
+function planCard(lang, p, o) {
+  const popular = o.hot ? `<span class="badge">${h(lang, 'plan.popular')}</span>` : '';
+  const tag = o.tag ? `<p class="pt">${h(lang, o.tag)}</p>` : '';
+  return `<article class="plan${o.hot ? ' hot' : ''}" data-plan="${p}">${popular}<h3>${esc(PRODUCT_NAMES[p])}</h3>${tag}<div class="priceline">${money(p)}<span class="per">${h(lang, o.per)}</span></div>${ticks(lang, o.feat)}<div class="buyrow">${buyBtn(lang, p, !o.hot)}</div></article>`;
+}
+const planCards = (lang) => ['starter', 'growth', 'pro'].map((p) => planCard(lang, p, { hot: p === 'growth', tag: `plan.${p}.tag`, per: 'plan.per', feat: `plan.${p}` })).join('');
+const oneCard = (lang, p, feat) => planCard(lang, p, { per: 'one.per', feat });
+const oneCards = (lang) => [oneCard(lang, 'snapshot', 'one.snap'), oneCard(lang, 'deck', 'one.deck'), oneCard(lang, 'deck_print', 'one.print')].join('');
+const deckCards = (lang) => [oneCard(lang, 'deck', 'one.deck'), oneCard(lang, 'deck_print', 'one.print')].join('');
+const billItems = (lang) => [1, 2, 3, 4, 5, 6].map((i) => `<li>${h(lang, `bill.${i}`)}</li>`).join('');
+
 function pageVars(lang, page) {
   const v = {
     ...hrefs(lang), langpick: langpick(lang, page), nav: navLinks(lang, page, true), navFoot: navLinks(lang, page, false),
     crumbs: crumbs(lang, page), portalHref: PORTAL, emailLink: `<a href="mailto:${EMAIL}" dir="ltr">${EMAIL}</a>`,
-    conv: lang === 'en' ? '' : `<p class="conv">${h(lang, 'leg.conv')}</p>`,
+    buySnap: buyBtn(lang, 'snapshot', false), buyDeck: buyBtn(lang, 'deck', false), conv: lang === 'en' ? '' : `<p class="conv">${h(lang, 'leg.conv')}</p>`,
   };
   if (page === 'index') Object.assign(v, { flow: flow(lang, 3, 'how'), inds: inds(lang), faqItems: faqItems(lang, FAQ_HOME, true) });
   if (page === 'snapshot') Object.assign(v, snapshotVars(lang));
-  if (page === 'crier-deck') Object.assign(v, { deckFlow: flow(lang, 4, 'deck.how'), faqItems: faqItems(lang, FAQ_DECK, true), sheets: [1, 2, 4].map((n) => fig(lang, n)).join('') });
+  if (page === 'pricing') Object.assign(v, { planCards: planCards(lang), oneCards: oneCards(lang), billItems: billItems(lang), faqItems: faqItems(lang, FAQ_PRICING, false) });
+  if (page === 'crier-deck') Object.assign(v, { deckFlow: flow(lang, 4, 'deck.how'), deckCards: deckCards(lang), faqItems: faqItems(lang, FAQ_DECK, true), sheets: [1, 2, 4].map((n) => fig(lang, n)).join('') });
   if (page === 'samples') v.sheets = [1, 2, 3, 4].map((n) => fig(lang, n)).join('');
   if (page === 'faq') v.faqItems = faqItems(lang, FAQ_ALL, false);
   return v;
@@ -171,6 +209,11 @@ function snapshotVars(lang) {
 }
 
 // ---------- head ----------
+function offerNode(lang, p) {
+  const o = { '@type': 'Offer', name: PRODUCT_NAMES[p], price: String(PRICES[p]), priceCurrency: 'USD', url: urlFor(lang, 'pricing') };
+  if (['starter', 'growth', 'pro'].includes(p)) o.priceSpecification = { '@type': 'UnitPriceSpecification', price: String(PRICES[p]), priceCurrency: 'USD', unitCode: 'MON' };
+  return o;
+}
 function jsonLd(lang, page) {
   const orgId = SITE + '/#organization';
   const nodes = [];
@@ -182,8 +225,12 @@ function jsonLd(lang, page) {
       { '@type': 'ListItem', position: 1, name: t(lang, 'crumb.home'), item: urlFor(lang, 'index') },
       { '@type': 'ListItem', position: 2, name: t(lang, CRUMB_KEY[page]), item: urlFor(lang, page) }] });
     if (page === 'crier-deck') {
-      // no offers, no price
-      nodes.push({ '@type': 'Service', name: 'Crier Deck', description: t(lang, 'meta.d.crier-deck'), url: urlFor(lang, page), provider: { '@type': 'Organization', name: BRAND, url: SITE + '/' }, availableLanguage: ['en', 'es', 'fr', 'ar'] });
+      nodes.push({ '@type': 'Service', name: 'Crier Deck', description: t(lang, 'meta.d.crier-deck'), url: urlFor(lang, page), provider: { '@type': 'Organization', name: BRAND, url: SITE + '/' }, availableLanguage: ['en', 'es', 'fr', 'ar'],
+        offers: ['deck', 'deck_print'].map((p) => offerNode(lang, p)) });
+    }
+    if (page === 'pricing') {
+      nodes.push({ '@type': 'ItemList', name: t(lang, 'pricing.h1'), itemListElement: PRODUCTS.map((p, i) => ({ '@type': 'ListItem', position: i + 1,
+        item: { '@type': 'Service', name: PRODUCT_NAMES[p], provider: { '@type': 'Organization', name: BRAND, url: SITE + '/' }, offers: offerNode(lang, p) } })) });
     }
     if (page === 'faq') {
       nodes.push({ '@type': 'FAQPage', inLanguage: lang, mainEntity: FAQ_ALL.map((i) => ({ '@type': 'Question', name: t(lang, `faq.${i}q`),

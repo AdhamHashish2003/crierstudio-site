@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src &#39;self&#39;; script-src &#39;self&#39; https://static.cloudflareinsights.com; connect-src &#39;self&#39; https://crm-production-d789.up.railway.app https://cloudflareinsights.com; img-src &#39;self&#39; data:; style-src &#39;self&#39; &#39;unsafe-inline&#39;; font-src &#39;self&#39;; base-uri &#39;self&#39;; form-action &#39;self&#39;">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Crier Studio : présentations de marque et corrections de site pour commerces locaux</title>
-<meta name="description" content="Un studio de design pour commerces locaux. Demandez un Crier Deck, une présentation de marque faite à partir de votre site, ou commencez par un Snapshot gratuit de votre site, de la recherche et des réseaux.">
+<meta name="description" content="Un studio de design pour commerces locaux. Formules mensuelles dès $99, le Snapshot à $29 de votre site, de la recherche et des réseaux, et Crier Deck, une présentation de marque faite à partir de votre site.">
 <link rel="canonical" href="https://crierstudio.com/fr/">
 <link rel="alternate" hreflang="en" href="https://crierstudio.com/">
 <link rel="alternate" hreflang="es" href="https://crierstudio.com/es/">
@@ -16,7 +16,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Crier Studio">
 <meta property="og:title" content="Crier Studio : présentations de marque et corrections de site pour commerces locaux">
-<meta property="og:description" content="Un studio de design pour commerces locaux. Demandez un Crier Deck, une présentation de marque faite à partir de votre site, ou commencez par un Snapshot gratuit de votre site, de la recherche et des réseaux.">
+<meta property="og:description" content="Un studio de design pour commerces locaux. Formules mensuelles dès $99, le Snapshot à $29 de votre site, de la recherche et des réseaux, et Crier Deck, une présentation de marque faite à partir de votre site.">
 <meta property="og:url" content="https://crierstudio.com/fr/">
 <meta property="og:locale" content="fr_FR">
 <meta property="og:locale:alternate" content="en_US">
@@ -28,7 +28,7 @@
 <meta property="og:image:alt" content="Crier Studio">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Crier Studio : présentations de marque et corrections de site pour commerces locaux">
-<meta name="twitter:description" content="Un studio de design pour commerces locaux. Demandez un Crier Deck, une présentation de marque faite à partir de votre site, ou commencez par un Snapshot gratuit de votre site, de la recherche et des réseaux.">
+<meta name="twitter:description" content="Un studio de design pour commerces locaux. Formules mensuelles dès $99, le Snapshot à $29 de votre site, de la recherche et des réseaux, et Crier Deck, une présentation de marque faite à partir de votre site.">
 <meta name="twitter:image" content="https://crierstudio.com/og.png">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -327,6 +327,31 @@ html[lang=ar] .sheet .lab{letter-spacing:0;text-transform:none}
 @media (min-width:1500px){.wrap{max-width:1280px}}
 .prose p,.prose li,.faq p,.lead{max-width:68ch}
 
+/* pricing */
+.plans{display:grid;gap:14px;align-items:stretch}
+.plan{border:2px solid var(--ink);background:var(--paper);padding:24px 20px;display:grid;gap:14px;align-content:start;min-width:0;position:relative}
+.plan.hot{border-width:4px;box-shadow:6px 6px 0 var(--accent);background:var(--paper)}
+.plan .badge{justify-self:start;background:var(--accent);color:var(--accent-ink);font:800 .72rem/1 var(--body);letter-spacing:.08em;text-transform:uppercase;padding:.45em .7em;border:2px solid var(--ink)}
+.plan h3{font-size:var(--step-2)}
+.plan .pt{color:var(--muted);font-size:var(--step--1)}
+.priceline{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.price{font:900 clamp(2.2rem,7vw,3rem)/1 var(--display);font-stretch:112%;letter-spacing:-.02em}
+.per{color:var(--muted);font-weight:600;font-size:var(--step--1)}
+.ticks{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.ticks li{padding-inline-start:26px;position:relative;font-size:var(--step--1);overflow-wrap:anywhere}
+.ticks li::before{content:"";position:absolute;inset-inline-start:2px;top:.35em;width:12px;height:7px;border-left:3px solid var(--ink);border-bottom:3px solid var(--ink);transform:rotate(-45deg)}
+.buyrow{display:grid;gap:8px;align-self:end;justify-items:start}
+.plan .buyrow .btn{width:100%}
+.paynote{font-size:.8125rem;color:var(--muted)}
+@media (min-width:860px){.plans{grid-template-columns:repeat(3,1fr)}.plan{padding:28px 24px}}
+.plans.one{margin-top:0}
+.billing{display:grid;gap:12px;max-width:760px}
+.billing li{padding-inline-start:22px;position:relative}
+.billing li::before{content:"";position:absolute;inset-inline-start:0;top:.6em;width:10px;height:10px;background:var(--accent);border:2px solid var(--ink)}
+.deckprices{margin-top:8px}
+@media (min-width:640px){.deckprices{grid-template-columns:1fr 1fr;max-width:820px}}
+fieldset.choice{gap:8px}
+
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://crierstudio.com/#organization","name":"Crier Studio","url":"https://crierstudio.com/","logo":"https://crierstudio.com/favicon-512.png","email":"team@crierstudio.com"},{"@type":"WebSite","@id":"https://crierstudio.com/#website","name":"Crier Studio","alternateName":"Crier","url":"https://crierstudio.com/","inLanguage":"fr","publisher":{"@id":"https://crierstudio.com/#organization"}}]}</script>
 </head>
@@ -338,8 +363,8 @@ html[lang=ar] .sheet .lab{letter-spacing:0;text-transform:none}
 <rect x="101.5" y="45" width="13" height="50" fill="currentColor"/>
 <path d="M121.5 70H158.5A18.5 18.5 0 1 0 154.58 81.39" fill="none" stroke="currentColor" stroke-width="13"/>
 <path d="M182 95V70A18.5 18.5 0 0 1 200.5 51.5" fill="none" stroke="currentColor" stroke-width="13"/></g><g transform="translate(30 -6) scale(1.15)"><rect x="101" y="22" width="14" height="14" fill="var(--dia)" transform="rotate(45 108 29)"/></g><path d="M306.43 103.36Q304.6 103.36 303.33 102.77Q302.06 102.18 301.4 101.15Q300.74 100.12 300.74 98.8H303.38Q303.38 99.36 303.69 99.88Q303.99 100.4 304.66 100.72Q305.33 101.04 306.43 101.04Q307.43 101.04 308.09 100.76Q308.75 100.48 309.08 100.01Q309.4 99.54 309.4 98.95Q309.4 98.22 308.78 97.78Q308.15 97.33 306.83 97.21L305.61 97.11Q303.62 96.94 302.43 95.87Q301.24 94.79 301.24 93.03Q301.24 91.7 301.87 90.75Q302.5 89.79 303.63 89.26Q304.76 88.73 306.28 88.73Q307.86 88.73 309 89.28Q310.15 89.83 310.77 90.83Q311.39 91.83 311.39 93.18H308.75Q308.75 92.62 308.48 92.13Q308.21 91.65 307.66 91.35Q307.12 91.05 306.28 91.05Q305.48 91.05 304.95 91.32Q304.42 91.59 304.15 92.04Q303.89 92.49 303.89 93.03Q303.89 93.67 304.36 94.16Q304.84 94.64 305.86 94.73L307.08 94.83Q308.57 94.95 309.69 95.47Q310.8 95.98 311.42 96.85Q312.05 97.72 312.05 98.95Q312.05 100.26 311.36 101.26Q310.67 102.26 309.41 102.81Q308.15 103.36 306.43 103.36ZM322.25 103V91.12H324.95V103ZM318.24 91.5V89.13H328.96V91.5ZM341.82 103.36Q339.88 103.36 338.55 102.62Q337.22 101.89 336.53 100.55Q335.84 99.21 335.84 97.4V89.13H338.54V97.56Q338.54 98.54 338.92 99.29Q339.3 100.04 340.03 100.44Q340.76 100.85 341.82 100.85Q342.87 100.85 343.6 100.45Q344.32 100.05 344.7 99.3Q345.07 98.56 345.07 97.56V89.13H347.77V97.4Q347.77 99.21 347.09 100.55Q346.41 101.89 345.09 102.62Q343.76 103.36 341.82 103.36ZM358.24 103.08V100.57H361.11Q362.19 100.57 363.03 100.24Q363.88 99.9 364.47 99.3Q365.06 98.7 365.38 97.87Q365.69 97.03 365.69 96.04Q365.69 94.99 365.38 94.16Q365.06 93.34 364.47 92.75Q363.88 92.16 363.03 91.85Q362.19 91.54 361.11 91.54H358.24V89.03H360.94Q362.82 89.03 364.22 89.59Q365.63 90.15 366.56 91.11Q367.5 92.07 367.96 93.29Q368.43 94.51 368.43 95.83V96.25Q368.43 97.49 367.96 98.71Q367.5 99.93 366.56 100.91Q365.63 101.9 364.22 102.49Q362.82 103.08 360.94 103.08ZM355.93 103.08V89.03H358.62V103.08ZM375.88 103V89.13H378.58V103ZM393.54 103.36Q391.66 103.36 390.28 102.7Q388.91 102.04 388 100.96Q387.1 99.88 386.66 98.64Q386.22 97.39 386.22 96.24V95.82Q386.22 94.55 386.67 93.29Q387.13 92.03 388.05 91Q388.97 89.97 390.34 89.35Q391.71 88.73 393.54 88.73Q395.37 88.73 396.73 89.35Q398.1 89.97 399.02 91Q399.95 92.03 400.41 93.29Q400.87 94.55 400.87 95.82V96.24Q400.87 97.39 400.42 98.64Q399.97 99.88 399.07 100.96Q398.17 102.04 396.79 102.7Q395.41 103.36 393.54 103.36ZM393.54 100.85Q394.61 100.85 395.46 100.47Q396.31 100.09 396.91 99.42Q397.5 98.75 397.82 97.89Q398.13 97.02 398.13 96.05Q398.13 95.01 397.81 94.14Q397.49 93.26 396.9 92.61Q396.3 91.96 395.45 91.6Q394.6 91.24 393.54 91.24Q392.48 91.24 391.63 91.6Q390.78 91.96 390.18 92.61Q389.58 93.26 389.27 94.14Q388.95 95.01 388.95 96.05Q388.95 97.02 389.27 97.89Q389.58 98.75 390.18 99.42Q390.78 100.09 391.63 100.47Q392.48 100.85 393.54 100.85Z" fill="currentColor"/></svg></a>
-  <nav class="main-nav" aria-label="Menu principal"><a href="/fr/crier-deck/">Crier Deck</a><a href="/fr/snapshot/">Snapshot</a><a href="/fr/samples/">Exemples</a><a href="/fr/faq/">FAQ</a><a href="/fr/about/">À propos</a><a href="https://portal.crierstudio.com/">Espace client</a></nav>
-  <div class="right"><div class="langpick" role="group" aria-label="Langue"><a href="/" lang="en" hreflang="en" aria-label="English">EN</a><a href="/es/" lang="es" hreflang="es" aria-label="Español">ES</a><a href="/fr/" lang="fr" hreflang="fr" aria-label="Français" aria-current="true">FR</a><a href="/ar/" lang="ar" hreflang="ar" aria-label="العربية">AR</a></div><a class="btn" href="/fr/snapshot/#request">Snapshot gratuit</a></div>
+  <nav class="main-nav" aria-label="Menu principal"><a href="/fr/pricing/">Tarifs</a><a href="/fr/crier-deck/">Crier Deck</a><a href="/fr/snapshot/">Snapshot</a><a href="/fr/samples/">Exemples</a><a href="/fr/faq/">FAQ</a><a href="/fr/about/">À propos</a><a href="https://portal.crierstudio.com/">Espace client</a></nav>
+  <div class="right"><div class="langpick" role="group" aria-label="Langue"><a href="/" lang="en" hreflang="en" aria-label="English">EN</a><a href="/es/" lang="es" hreflang="es" aria-label="Español">ES</a><a href="/fr/" lang="fr" hreflang="fr" aria-label="Français" aria-current="true">FR</a><a href="/ar/" lang="ar" hreflang="ar" aria-label="العربية">AR</a></div><a class="btn" href="/fr/snapshot/#request">Snapshot, $29</a></div>
 </header>
 
 <main>
@@ -348,12 +373,12 @@ html[lang=ar] .sheet .lab{letter-spacing:0;text-transform:none}
       <div class="hero-copy">
         <span class="eyebrow">Studio de design pour les commerces locaux</span>
         <h1><span>Voyez quoi corriger en premier en ligne, </span><span class="hl">avec les corrections déjà rédigées.</span></h1>
-        <p class="lead">Crier Studio examine votre site web, vos résultats de recherche et vos profils sur les réseaux sociaux, puis vous remet des corrections à coller et des publications à l&#39;image de votre marque. Commencez par un Snapshot gratuit.</p>
+        <p class="lead">Crier Studio examine votre site web, vos résultats de recherche et vos profils sur les réseaux sociaux, puis vous remet des corrections à coller et des publications à l&#39;image de votre marque. Commencez par un Snapshot à $29.</p>
         <div class="cta-row">
-          <a class="btn" href="/fr/snapshot/#request">Recevoir mon Snapshot gratuit</a>
+          <a class="btn" href="/fr/snapshot/#request">Recevoir mon Snapshot, $29</a>
           <a class="btn ghost" href="#how">Voir comment ça marche</a>
         </div>
-        <p class="fine">Gratuit. Sans carte bancaire.</p>
+        <p class="fine">$29 en paiement unique. Déduit de votre premier mois si vous vous abonnez sous 14 jours.</p>
       </div>
       <div class="board" role="img" aria-label="Exemples de mises en page, pas des travaux de clients">
         <div class="tile t1"><span class="circ" aria-hidden="true"></span><span class="circ2" aria-hidden="true"></span><b>Semaine pistache</b><small>Ouvert tard le vendredi</small><span class="ex">Exemple de mise en page</span></div>
@@ -380,23 +405,24 @@ html[lang=ar] .sheet .lab{letter-spacing:0;text-transform:none}
       <div class="offers">
         <article class="offer">
           <h3>Crier Deck</h3>
-          <p>Une présentation de marque faite à partir de votre site, avec votre logo tel quel. Un PDF écran et un PDF prêt à imprimer, dans votre langue.</p>
+          <p>Une présentation de marque faite à partir de votre site, avec votre logo tel quel. Un PDF écran et un PDF prêt à imprimer, dans votre langue. À partir de $149.</p>
           <a class="btn" href="/fr/crier-deck/">Découvrir Crier Deck</a>
         </article>
         <article class="offer">
-          <h3>Snapshot gratuit</h3>
-          <p>Trois constats avec preuves, une correction rédigée en entier et trois publications à votre image, faits à partir de votre propre site et de vos profils.</p>
-          <a class="btn ghost" href="/fr/snapshot/">Découvrir le Snapshot gratuit</a>
+          <h3>Snapshot, $29</h3>
+          <p>Trois constats avec preuves, une correction rédigée en entier et trois publications à votre image, faits à partir de votre site et de vos profils. $29 en paiement unique.</p>
+          <a class="btn ghost" href="/fr/snapshot/">Découvrir le Snapshot</a>
         </article>
       </div>
+      <p class="more"><a href="/fr/pricing/">Voir les formules mensuelles et tous les tarifs</a></p>
     </section>
 
     <section id="how" aria-labelledby="how-title">
       <div class="sec-head">
         <span class="eyebrow">Comment ça marche</span>
-        <h2 id="how-title">Comment fonctionne le Snapshot gratuit</h2>
+        <h2 id="how-title">Comment fonctionne le Snapshot</h2>
       </div>
-      <div class="flow" id="flow"><div class="stage"><svg class="sym" viewBox="0 0 44 44" aria-hidden="true"><rect x="6" y="4" width="32" height="36" fill="none" stroke="currentColor" stroke-width="4"/><rect x="13" y="13" width="18" height="4" fill="currentColor"/><rect x="13" y="22" width="12" height="4" fill="currentColor"/></svg><h3>Envoyez vos informations</h3><p>Envoyez le nom de votre entreprise, votre site web ou Instagram, votre e-mail, votre ville et votre secteur.</p></div><div class="stage"><svg class="sym" viewBox="0 0 44 44" aria-hidden="true"><rect x="4" y="8" width="36" height="30" fill="none" stroke="currentColor" stroke-width="4"/><rect x="4" y="8" width="36" height="8" fill="var(--accent)" stroke="currentColor" stroke-width="2"/><rect x="11" y="22" width="6" height="6" fill="currentColor"/><rect x="21" y="22" width="6" height="6" fill="currentColor"/></svg><h3>Nous le préparons</h3><p>Nous examinons votre site et vos profils publics et rédigeons votre Snapshot : trois constats avec preuves, une correction rédigée en entier et trois publications à l&#39;image de votre marque.</p></div><div class="stage"><svg class="sym" viewBox="0 0 44 44" aria-hidden="true"><rect x="4" y="4" width="16" height="16" fill="var(--sun)" stroke="currentColor" stroke-width="2"/><rect x="24" y="4" width="16" height="16" fill="var(--coral)"/><rect x="4" y="24" width="16" height="16" fill="currentColor"/><path d="M26 32l5 5 9-11" fill="none" stroke="currentColor" stroke-width="4"/></svg><h3>Vous le recevez par e-mail</h3><p>Il arrive dans votre boîte de réception, gratuit et à vous. Rien n&#39;est publié à votre place et il n&#39;y a aucun engagement.</p></div></div>
+      <div class="flow" id="flow"><div class="stage"><svg class="sym" viewBox="0 0 44 44" aria-hidden="true"><rect x="6" y="4" width="32" height="36" fill="none" stroke="currentColor" stroke-width="4"/><rect x="13" y="13" width="18" height="4" fill="currentColor"/><rect x="13" y="22" width="12" height="4" fill="currentColor"/></svg><h3>Envoyez vos informations</h3><p>Envoyez le nom de votre entreprise, votre site web ou Instagram, votre e-mail, votre ville et votre secteur. Nous vous envoyons par e-mail un lien de paiement sécurisé.</p></div><div class="stage"><svg class="sym" viewBox="0 0 44 44" aria-hidden="true"><rect x="4" y="8" width="36" height="30" fill="none" stroke="currentColor" stroke-width="4"/><rect x="4" y="8" width="36" height="8" fill="var(--accent)" stroke="currentColor" stroke-width="2"/><rect x="11" y="22" width="6" height="6" fill="currentColor"/><rect x="21" y="22" width="6" height="6" fill="currentColor"/></svg><h3>Nous le préparons</h3><p>Nous examinons votre site et vos profils publics et rédigeons votre Snapshot : trois constats avec preuves, une correction rédigée en entier et trois publications à l&#39;image de votre marque.</p></div><div class="stage"><svg class="sym" viewBox="0 0 44 44" aria-hidden="true"><rect x="4" y="4" width="16" height="16" fill="var(--sun)" stroke="currentColor" stroke-width="2"/><rect x="24" y="4" width="16" height="16" fill="var(--coral)"/><rect x="4" y="24" width="16" height="16" fill="currentColor"/><path d="M26 32l5 5 9-11" fill="none" stroke="currentColor" stroke-width="4"/></svg><h3>Vous le recevez par e-mail</h3><p>Il arrive dans votre boîte de réception une fois le paiement effectué, et il vous appartient. Rien n&#39;est publié à votre place.</p></div></div>
     </section>
 
     <section id="industries" aria-labelledby="ind-title">
@@ -413,17 +439,17 @@ html[lang=ar] .sheet .lab{letter-spacing:0;text-transform:none}
         <span class="eyebrow">Questions</span>
         <h2 id="faq-title">Des réponses franches</h2>
       </div>
-      <div class="faq" id="faq-list"><details open><summary>Qu&#39;est-ce qu&#39;un Crier Deck ?</summary><div class="ans"><p>Une présentation de marque faite à partir de votre site, avec votre logo. Elle comprend une page d&#39;identité, une page par produit et un catalogue, et se livre sous forme d&#39;un PDF écran et d&#39;un PDF prêt à imprimer.</p></div></details><details><summary>Combien coûte un Crier Deck ?</summary><div class="ans"><p>Nous n&#39;affichons pas de prix sur ce site. Demandez un Crier Deck et nous répondons par e-mail avec ce qui est inclus et ce que cela coûterait, le cas échéant, avant que quoi que ce soit ne commence. Ce site n&#39;encaisse rien.</p></div></details><details><summary>De quoi avez-vous besoin de ma part ?</summary><div class="ans"><p>Pour le Snapshot gratuit : le nom de votre commerce, votre site ou Instagram, votre e-mail, votre ville et votre secteur. Pour un Crier Deck : le nom et l&#39;adresse de votre commerce, et la langue souhaitée pour la présentation.</p><p>Pour les publications de votre Snapshot, il est utile de nous fournir votre logo, les couleurs de votre marque si vous en avez, et vos propres photos. Nous n&#39;utilisons pas de photos de banque d&#39;images représentant des inconnus dans vos publications.</p></div></details><details><summary>Pouvez-vous me promettre plus de clients ?</summary><div class="ans"><p>Non. Personne ne peut honnêtement le promettre. Le Snapshot montre où vous en êtes et quoi corriger en premier, avec une correction et trois publications rédigées. Les résultats dépendent de votre entreprise, de votre marché et de ce que vous en faites.</p></div></details></div>
+      <div class="faq" id="faq-list"><details open><summary>Comment fonctionne la facturation ?</summary><div class="ans"><p>Les formules mensuelles sont facturées chaque mois d&#39;avance, via un lien de paiement sécurisé que nous vous envoyons par e-mail. Le Snapshot et Crier Deck sont des paiements uniques. Les prix sont en dollars américains.</p></div></details><details><summary>Qu&#39;est-ce qu&#39;un Crier Deck ?</summary><div class="ans"><p>Une présentation de marque faite à partir de votre site, avec votre logo. Elle comprend une page d&#39;identité, une page par produit et un catalogue, et se livre sous forme d&#39;un PDF écran et d&#39;un PDF prêt à imprimer.</p></div></details><details><summary>Combien coûte un Crier Deck ?</summary><div class="ans"><p>$149 en paiement unique, ou $249 avec le Print Kit (un fichier prêt à imprimer pour chaque article et un deuxième tour de révision). Les abonnés Growth et Pro bénéficient de 20 % de réduction. Il n&#39;y a pas d&#39;aperçu avant la commande ; les exemples de ce site sont faits pour un commerce fictif.</p></div></details><details><summary>De quoi avez-vous besoin de ma part ?</summary><div class="ans"><p>Pour un Snapshot : le nom de votre commerce, votre site ou Instagram, votre e-mail, votre ville et votre secteur. Pour un Crier Deck : le nom et l&#39;adresse de votre commerce, et la langue souhaitée pour la présentation. Pour une formule mensuelle : les mêmes informations, et nous vous envoyons un lien de paiement.</p><p>Pour les publications de votre Snapshot, il est utile de nous fournir votre logo, les couleurs de votre marque si vous en avez, et vos propres photos. Nous n&#39;utilisons pas de photos de banque d&#39;images représentant des inconnus dans vos publications.</p></div></details><details><summary>Pouvez-vous me promettre plus de clients ?</summary><div class="ans"><p>Non. Personne ne peut honnêtement le promettre. Le Snapshot montre où vous en êtes et quoi corriger en premier, avec une correction et trois publications rédigées. Les résultats dépendent de votre entreprise, de votre marché et de ce que vous en faites.</p></div></details></div>
       <p class="more"><a href="/fr/faq/">Toutes les questions</a></p>
     </section>
 
     <section aria-labelledby="close-title">
       <div class="closing">
         <h2 id="close-title">Voyez d&#39;abord où vous en êtes.</h2>
-        <p class="lead">Le Snapshot est gratuit et vous appartient.</p>
+        <p class="lead">Le Snapshot coûte $29 et vous appartient.</p>
         <div class="cta-row">
-          <a class="btn" href="/fr/snapshot/#request">Recevoir mon Snapshot gratuit</a>
-          <a class="btn ghost" href="/fr/snapshot/?product=crier_deck#request">Demander un Crier Deck</a>
+          <a class="btn" href="/fr/snapshot/#request">Recevoir mon Snapshot, $29</a>
+          <a class="btn ghost" href="/fr/snapshot/?product=deck#request">Obtenir un Crier Deck</a>
         </div>
       </div>
     </section>
@@ -442,7 +468,7 @@ html[lang=ar] .sheet .lab{letter-spacing:0;text-transform:none}
     </div>
     <nav class="fcol" aria-label="Explorer">
       <strong>Explorer</strong>
-      <a href="/fr/crier-deck/">Crier Deck</a><a href="/fr/snapshot/">Snapshot</a><a href="/fr/samples/">Exemples</a><a href="/fr/faq/">FAQ</a><a href="/fr/about/">À propos</a><a href="https://portal.crierstudio.com/">Espace client</a>
+      <a href="/fr/pricing/">Tarifs</a><a href="/fr/crier-deck/">Crier Deck</a><a href="/fr/snapshot/">Snapshot</a><a href="/fr/samples/">Exemples</a><a href="/fr/faq/">FAQ</a><a href="/fr/about/">À propos</a><a href="https://portal.crierstudio.com/">Espace client</a>
     </nav>
     <nav class="fcol" aria-label="Mentions légales">
       <strong>Mentions légales</strong>

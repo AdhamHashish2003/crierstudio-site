@@ -4,16 +4,22 @@
       <span class="eyebrow">{{t:snap.eyebrow}}</span>
       <h1 id="snap-title">{{t:snap.title}}</h1>
       <p class="lead">{{t:snap.lead}}</p>
+      <div class="buyrow">{{=buySnap}}</div>
       <div class="pages" id="snap-pages">{{=snapPages}}</div>
     </section>
 
     <section id="request" aria-labelledby="form-title">
       <form class="formbox" id="snap-form" novalidate data-endpoint="{{=endpoint}}">
         <h2 id="form-title">{{t:form.title}}</h2>
+        <p class="fine paybox">{{t:pay.note}}</p>
         <fieldset class="choice">
           <legend>{{t:f.what}}</legend>
           <label class="opt"><input type="radio" name="product" value="snapshot" checked><span>{{t:f.optSnap}}</span></label>
-          <label class="opt"><input type="radio" name="product" value="crier_deck"><span>{{t:f.optDeck}}</span></label>
+          <label class="opt"><input type="radio" name="product" value="starter"><span>{{t:f.optStarter}}</span></label>
+          <label class="opt"><input type="radio" name="product" value="growth"><span>{{t:f.optGrowth}}</span></label>
+          <label class="opt"><input type="radio" name="product" value="pro"><span>{{t:f.optPro}}</span></label>
+          <label class="opt"><input type="radio" name="product" value="deck"><span>{{t:f.optDeck}}</span></label>
+          <label class="opt"><input type="radio" name="product" value="deck_print"><span>{{t:f.optPrint}}</span></label>
         </fieldset>
         <div class="fields">
           <div class="field">
@@ -57,7 +63,7 @@
           <label class="check" for="f-consent"><input id="f-consent" name="consent" type="checkbox" aria-describedby="e-consent"><span><span>{{t:f.consent}}</span> <a href="{{=privacyHref}}">{{t:f.privacy}}</a></span></label>
           <span class="err" id="e-consent" hidden></span>
         </div>
-        <div class="cta-row"><button class="btn" type="submit" id="snap-submit" data-snap="{{a:f.submit}}" data-deck="{{a:f.submitDeck}}">{{t:f.submit}}</button></div>
+        <div class="cta-row"><button class="btn" type="submit" id="snap-submit" data-snap="{{a:f.submit}}" data-deck="{{a:f.submitDeck}}" data-plan="{{a:f.submitPlan}}">{{t:f.submit}}</button></div>
         <div class="status" id="snap-status" role="status" aria-live="polite" hidden></div>
       </form>
       <script type="application/json" id="form-msgs">{{=formMsgs}}</script>
