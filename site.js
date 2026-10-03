@@ -106,3 +106,25 @@
       .then(function () { clearTimeout(timer); btn.disabled = false; });
   });
 })();
+
+/* ---------------- home hero: The Deck (3D), a progressive layer ---------------- */
+(function () {
+  "use strict";
+  if (document.body.getAttribute("data-page") !== "index" || !document.getElementById("hero")) return;
+  var nav = navigator, conn = nav.connection || {};
+  // keep the static CSS deck: reduced motion, data saver, small devices
+  if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (conn.saveData || (nav.hardwareConcurrency && nav.hardwareConcurrency < 4)) return;
+  var started = false, evs = ["pointerdown", "pointermove", "scroll", "keydown", "touchstart"];
+  function load() {
+    if (started) return; started = true;
+    for (var i = 0; i < evs.length; i++) removeEventListener(evs[i], load);
+    var s = document.createElement("script"); s.src = "/assets/deck.js"; s.async = true; document.head.appendChild(s);
+  }
+  // after load, once the page is idle: first interaction, or 4 s later at the latest (keeps the 3D out of the first-paint / load window)
+  function arm() {
+    for (var i = 0; i < evs.length; i++) addEventListener(evs[i], load, { passive: true, once: true });
+    setTimeout(function () { if ("requestIdleCallback" in window) requestIdleCallback(load, { timeout: 1500 }); else load(); }, 4000);
+  }
+  if (document.readyState === "complete") arm(); else addEventListener("load", arm);
+})();

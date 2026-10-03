@@ -245,8 +245,8 @@ function head(lang, page, css) {
   const alt = LANGS.map(([c]) => `<link rel="alternate" hreflang="${c}" href="${urlFor(c, page)}">`).join('\n') + `\n<link rel="alternate" hreflang="x-default" href="${urlFor('en', page)}">`;
   const ogAlt = LANGS.filter(([c]) => c !== lang).map(([, , loc]) => `<meta property="og:locale:alternate" content="${loc}">`).join('\n');
   const loc = LANGS.find(([c]) => c === lang)[2];
-  const preload = ['<link rel="preload" href="/fonts/archivo-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>']
-    .concat(lang === 'ar' ? ['<link rel="preload" href="/fonts/noto-sans-arabic-arabic-700-normal.woff2" as="font" type="font/woff2" crossorigin>'] : []).join('\n');
+  const pl = (f) => `<link rel="preload" href="/fonts/${f}.woff2" as="font" type="font/woff2" crossorigin>`;
+  const preload = (lang === 'ar' ? ['noto-sans-arabic-arabic-400-normal', 'noto-sans-arabic-arabic-700-normal'] : ['archivo-latin-wght-normal', 'instrument-sans-latin-400-normal', 'instrument-sans-latin-700-normal']).map(pl).join('\n');
   return `<!doctype html>
 <html lang="${lang}" dir="${RTL.has(lang) ? 'rtl' : 'ltr'}">
 <head>

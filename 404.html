@@ -81,16 +81,13 @@ a{color:inherit}
 [dir=rtl] .mini.fix span::before{left:auto;right:-22px}
 [dir=rtl] .check input{margin:2px 0 0}
 [dir=rtl] ul{padding-left:0;padding-right:1.2rem}
-[dir=rtl] .tile .ex{left:auto;right:8px}
-[dir=rtl] .t1 .circ{right:auto;left:-18%}
-[dir=rtl] .t1 .circ2{right:auto;left:8%}
 
 /* Arabic: joined letters, no tracking, no condensed stretch, roomier lines, no forced caps */
 html[lang=ar]{--display:"Noto Sans Arabic","Archivo","Segoe UI",Tahoma,"Geeza Pro",sans-serif;--body:"Noto Sans Arabic","Instrument Sans","Segoe UI",Tahoma,"Geeza Pro",sans-serif}
-html[lang=ar] :is(h1,h2,h3,.logo,.faq summary,.price,.t1 b){letter-spacing:0;font-stretch:normal}
-html[lang=ar] :is(h1,h2,h3,.t1 b){line-height:1.5}
+html[lang=ar] :is(h1,h2,h3,.logo,.faq summary,.price){letter-spacing:0;font-stretch:normal}
+html[lang=ar] :is(h1,h2,h3){line-height:1.5}
 html[lang=ar] .hero h1 .hl{padding:.05em .15em}
-html[lang=ar] :is(.eyebrow,.tag,.page .ex2,.tile .ex){letter-spacing:0;text-transform:none}
+html[lang=ar] :is(.eyebrow,.tag,.page .ex2){letter-spacing:0;text-transform:none}
 html[lang=ar] body{line-height:1.75}
 h1,h2,h3,p,li,summary,.btn,.field label{overflow-wrap:anywhere}
 .more{margin-top:22px;font-weight:700}
@@ -169,8 +166,8 @@ html[lang=ar] .sheet .lab{letter-spacing:0;text-transform:none}
 .c-sun i{background:var(--sun)}.c-ink i{background:var(--ink)}.c-coral i{background:var(--coral)}.c-accent i{background:var(--accent)}.c-paper i{background:var(--surface)}
 /* layout pass: tap targets, phone hero, wide screens */
 .top .logo,footer .logo{display:inline-flex;align-items:center;min-height:44px}
-.main-nav{gap:0 6px}
-.main-nav a{min-width:44px;justify-content:center;padding-inline:8px}
+.main-nav{gap:0 2px}
+.main-nav a{min-width:44px;justify-content:center;padding-inline:5px}
 .crumbs a{min-height:44px;min-width:44px}
 @media (max-width:759px){footer a{min-height:44px;min-width:44px}.check a{display:inline-flex;align-items:center;min-height:44px}footer .fcol{gap:0}footer .fcol>p{margin-block:6px 4px}}
 @media (min-width:900px){.main-nav{gap:0 10px}.crumbs a{min-height:32px;min-width:0}}
