@@ -1,4 +1,4 @@
-/* Crier Studio: language memory, old-URL redirects and the Snapshot form. All visible text is already in the HTML. */
+/* Crier Studio: language memory, old-URL redirects and the request form. All visible text is already in the HTML. */
 (function () {
   "use strict";
   var KEY = "crier.lang", CODES = ["en", "es", "fr", "ar"];
@@ -11,7 +11,11 @@
   try { q = new URLSearchParams(location.search).get("lang"); } catch (e) {}
   if (CODES.indexOf(q) < 0) q = null;
   if (page === "redirect") {
-    location.replace(pathFor(q || saved() || "en", document.body.getAttribute("data-target")) + location.hash);
+    // renamed pages (/snapshot/ -> /kit/, /crier-deck/ -> /brand-deck/) carry their own language and keep ?product=
+    var own = document.body.getAttribute("data-lang");
+    var keep = "";
+    try { var pr = new URLSearchParams(location.search).get("product"); if (pr) keep = "?product=" + encodeURIComponent(pr); } catch (e) {}
+    location.replace(pathFor(own || q || saved() || "en", document.body.getAttribute("data-target")) + (own ? keep : "") + location.hash);
     return;
   }
   if (page === "index" && location.pathname === "/") {
@@ -25,7 +29,7 @@
     links[i].addEventListener("click", function () { try { localStorage.setItem(KEY, this.getAttribute("lang")); } catch (e) {} });
   }
 
-  /* ---------------- request form (Snapshot, monthly plans, Crier Deck) ---------------- */
+  /* ---------------- request form (The Complete Kit, monthly plans, Brand Deck) ---------------- */
   var form = document.getElementById("snap-form");
   if (!form) return;
   var M = {};
@@ -33,24 +37,25 @@
   function $(id) { return document.getElementById(id); }
   var status = $("snap-status"), btn = $("snap-submit"), endpoint = form.getAttribute("data-endpoint");
   var radios = form.querySelectorAll('input[name="product"]');
-  function product() { for (var i = 0; i < radios.length; i++) if (radios[i].checked) return radios[i].value; return "snapshot"; }
-  function isDeck() { var p = product(); return p === "deck" || p === "deck_print"; }
-  function isPlan() { var p = product(); return p === "starter" || p === "growth" || p === "pro"; }
-  // the intake API accepts product "snapshot" and "crier_deck" only: monthly plans go in as "snapshot" with the plan name added
-  // to the business name (the free-text field), and Crier Deck + Print Kit goes in as "crier_deck" with the same tag.
-  var TAGS = { starter: "Starter plan", growth: "Growth plan", pro: "Pro plan", deck_print: "Crier Deck + Print Kit" };
+  function product() { for (var i = 0; i < radios.length; i++) if (radios[i].checked) return radios[i].value; return "kit"; }
+  function isDeck() { return product() === "deck"; }
+  function isPlan() { var p = product(); return p === "visible" || p === "growing"; }
+  // the intake API accepts product "snapshot" and "crier_deck" only: the kit and the monthly plans go in as "snapshot" with the
+  // package name added to the business name (the free-text field); the Brand Deck goes in as "crier_deck" with the same tag.
+  var TAGS = { kit: "The Complete Kit", visible: "Stay Visible plan", growing: "Keep Growing plan", deck: "Brand Deck" };
   function apiProduct() { return isDeck() ? "crier_deck" : "snapshot"; }
   function sync() {
     var deck = isDeck();
     $("deck-address").hidden = !deck; $("deck-lang").hidden = !deck;
     $("f-address").required = deck;
-    btn.textContent = btn.getAttribute(deck ? "data-deck" : (isPlan() ? "data-plan" : "data-snap"));
+    btn.textContent = btn.getAttribute(deck ? "data-deck" : (isPlan() ? "data-plan" : "data-kit"));
     status.hidden = true;
   }
-  // /snapshot/?product=growth (the Buy buttons) opens the form with that product selected; crier_deck is the old name for deck
+  // /kit/?product=visible (the Buy buttons) opens the form with that product selected; old product ids map to the new packages
   var want = null;
   try { want = new URLSearchParams(location.search).get("product"); } catch (e) {}
-  if (want === "crier_deck") want = "deck";
+  var OLD = { snapshot: "kit", starter: "visible", growth: "growing", pro: "growing", deck_print: "deck", crier_deck: "deck" };
+  if (want && OLD[want]) want = OLD[want];
   if (want) { for (var r = 0; r < radios.length; r++) if (radios[r].value === want) { for (var q2 = 0; q2 < radios.length; q2++) radios[q2].checked = radios[q2].value === want; break; } }
   for (var r2 = 0; r2 < radios.length; r2++) radios[r2].addEventListener("change", sync);
   sync();
@@ -65,7 +70,7 @@
   function say(key, bad) { status.textContent = M[key] || key; status.hidden = false; status.style.borderColor = bad ? "var(--error)" : "var(--ink)"; }
   function setErr(id, key) { var e = $("e-" + id.replace(/^f-/, "")); e.textContent = key ? (M[key] || key) : ""; e.hidden = !key; }
   // the payload is what the live intake API accepts: business, web, email, city, industry, consent, company_website,
-  // plus product and lang, and for crier_deck also address and deck_lang. A plan or the Print Kit adds its name to business.
+  // plus product and lang, and for crier_deck also address and deck_lang. Every package adds its name to business.
   window.__snapPayload = function () {
     var p = {
       business: $("f-business").value.trim() + (TAGS[product()] ? " [" + TAGS[product()] + "]" : ""), web: $("f-web").value.trim(),

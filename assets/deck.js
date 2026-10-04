@@ -1,4 +1,4 @@
-/* Crier Deck: the 3D hero. three.js r128 (self-hosted, /assets/three.r128.min.js) is fetched here, after first paint and idle, by the loader in site.js.
+/* The Deck: the 3D hero. three.js r128 (self-hosted, /assets/three.r128.min.js) is fetched here, after first paint and idle, by the loader in site.js.
    Canvas is decorative (aria-hidden); every message is HTML. DPR capped at 2, loop paused off-screen / hidden tab, static CSS cards stay if anything fails. */
 (function () {
   "use strict";

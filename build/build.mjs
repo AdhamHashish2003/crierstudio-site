@@ -22,18 +22,21 @@ const ENDPOINT = 'https://crm-production-d789.up.railway.app/api/public/snapshot
 const LANGS = [['en', 'English', 'en_US'], ['es', 'Español', 'es_ES'], ['fr', 'Français', 'fr_FR'], ['ar', 'العربية', 'ar_AR']];
 const RTL = new Set(['ar']);
 // every page exists in all 4 languages: / (en), /es/, /fr/, /ar/ and the sub-paths below
-const PAGES = ['index', 'pricing', 'crier-deck', 'snapshot', 'samples', 'faq', 'about', 'terms', 'privacy', 'refund'];
-const WIDE = new Set(['index', 'pricing', 'crier-deck', 'snapshot', 'samples', 'about']); // wide layout; the rest use the narrow reading layout
+const PAGES = ['index', 'pricing', 'brand-deck', 'kit', 'samples', 'faq', 'about', 'terms', 'privacy', 'refund'];
+// renamed pages: the old URLs stay as redirect stubs in every language (query + hash kept), not in the sitemap
+const MOVED = { snapshot: 'kit', 'crier-deck': 'brand-deck' };
+const WIDE = new Set(['index', 'pricing', 'brand-deck', 'kit', 'samples', 'about']); // wide layout; the rest use the narrow reading layout
 const LEGAL = ['terms', 'privacy', 'refund'];
-const NAV = [['pricing', 'nav.pricing'], ['crier-deck', 'nav.deck'], ['snapshot', 'nav.snapshot'], ['samples', 'nav.samples'], ['faq', 'nav.faq'], ['about', 'nav.about'], [PORTAL, 'nav.portal']];
-const CRUMB_KEY = { pricing: 'nav.pricing', 'crier-deck': 'nav.deck', snapshot: 'nav.snapshot', samples: 'nav.samples', faq: 'nav.faq', about: 'nav.about', terms: 'foot.terms', privacy: 'foot.privacy', refund: 'foot.refund' };
+const NAV = [['pricing', 'nav.pricing'], ['kit', 'nav.kit'], ['brand-deck', 'nav.deck'], ['samples', 'nav.samples'], ['faq', 'nav.faq'], ['about', 'nav.about'], [PORTAL, 'nav.portal']];
+const CRUMB_KEY = { pricing: 'nav.pricing', 'brand-deck': 'nav.deck', kit: 'nav.kit', samples: 'nav.samples', faq: 'nav.faq', about: 'nav.about', terms: 'foot.terms', privacy: 'foot.privacy', refund: 'foot.refund' };
 const INDUSTRY_VALUES = ['Cafés and dessert shops', 'Salons', 'Gyms and studios', 'Clinics', 'Local services', 'Other local business'];
 
 // ---------- products + payment links ----------
 // payment-links.json (repo root) holds one entry per product. Empty = the Buy button opens the request form with the product
 // preselected ("We'll email you a secure payment link"). A filled-in https:// link (a Stripe Payment Link) = the button goes straight to it.
-const PRICES = { snapshot: 29, starter: 99, growth: 199, pro: 399, deck: 149, deck_print: 249 }; // USD, shown as-is in every language
-const PRODUCT_NAMES = { snapshot: 'Snapshot', starter: 'Starter', growth: 'Growth', pro: 'Pro', deck: 'Crier Deck', deck_print: 'Crier Deck + Print Kit' };
+const PRICES = { kit: 29, visible: 45, growing: 60, deck: 250 }; // USD, shown as-is in every language
+const MONTHLY = new Set(['visible', 'growing']); // billed monthly; kit and deck are one-time
+// product names are i18n keys (name.<id>) so every language shows its own name
 const PRODUCTS = Object.keys(PRICES);
 const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const LINKS = JSON.parse(rd('payment-links.json'));
@@ -133,8 +136,8 @@ function crumbs(lang, page) {
   return `<nav class="crumbs" aria-label="${esc(t(lang, 'crumb.label'))}"><a href="${pathFor(lang, 'index')}">${esc(t(lang, 'crumb.home'))}</a><span aria-hidden="true">/</span><span aria-current="page">${esc(t(lang, CRUMB_KEY[page]))}</span></nav>`;
 }
 function hrefs(lang) {
-  const o = { homeHref: pathFor(lang, 'index'), snapCtaHref: pathFor(lang, 'snapshot') + '#request', deckCtaHref: pathFor(lang, 'snapshot') + '?product=deck#request' };
-  const NAME = { index: 'home', 'crier-deck': 'deck' };
+  const o = { homeHref: pathFor(lang, 'index'), kitCtaHref: pathFor(lang, 'kit') + '#request', deckCtaHref: pathFor(lang, 'kit') + '?product=deck#request' };
+  const NAME = { index: 'home', 'brand-deck': 'deck' };
   for (const p of PAGES) o[(NAME[p] || p) + 'Href'] = pathFor(lang, p);
   return o;
 }
@@ -153,38 +156,38 @@ function sheet(lang, n) {
 const fig = (lang, n) => `<figure class="sheetfig">${sheet(lang, n)}<figcaption>${h(lang, `sample.c${n}`)}</figcaption></figure>`;
 
 const money = (p) => `<span class="price" dir="ltr">$${PRICES[p]}</span>`;
+const pname = (lang, p) => t(lang, `name.${p}`);
 const isLinked = (p) => LINKS[p] !== '';
-function buyHref(lang, p) { return isLinked(p) ? LINKS[p] : `${pathFor(lang, 'snapshot')}?product=${p}#request`; }
+function buyHref(lang, p) { return isLinked(p) ? LINKS[p] : `${pathFor(lang, 'kit')}?product=${p}#request`; }
 function buyBtn(lang, p, ghost) {
   const note = isLinked(p) ? '' : `<span class="paynote">${h(lang, 'pay.note')}</span>`;
-  return `<a class="btn${ghost ? ' ghost' : ''}" href="${esc(buyHref(lang, p))}" data-product="${p}" aria-label="${esc(t(lang, 'btn.buy') + ': ' + PRODUCT_NAMES[p])}">${h(lang, 'btn.buy')}</a>${note}`;
+  return `<a class="btn${ghost ? ' ghost' : ''}" href="${esc(buyHref(lang, p))}" data-product="${p}">${h(lang, `pkg.${p}.btn`)}</a>${note}`;
 }
-function ticks(lang, prefix) {
+function ticks(lang, prefix, cls) {
   const out = [];
   for (let i = 1; dicts[lang][`${prefix}.f${i}`] != null; i++) out.push(`<li>${h(lang, `${prefix}.f${i}`)}</li>`);
-  return `<ul class="ticks">${out.join('')}</ul>`;
+  return `<ul class="ticks${cls ? ' ' + cls : ''}">${out.join('')}</ul>`;
 }
-function planCard(lang, p, o) {
-  const popular = o.hot ? `<span class="badge">${h(lang, 'plan.popular')}</span>` : '';
-  const tag = o.tag ? `<p class="pt">${h(lang, o.tag)}</p>` : '';
-  return `<article class="plan${o.hot ? ' hot' : ''}" data-plan="${p}">${popular}<h3>${esc(PRODUCT_NAMES[p])}</h3>${tag}<div class="priceline">${money(p)}<span class="per">${h(lang, o.per)}</span></div>${ticks(lang, o.feat)}<div class="buyrow">${buyBtn(lang, p, !o.hot)}</div></article>`;
+// one package card: eyebrow, name, one-line pitch, price, billing line, features, small print, Buy button
+function planCard(lang, p, hot) {
+  const per = MONTHLY.has(p) ? 'plan.per' : 'one.per';
+  const bill = MONTHLY.has(p) ? 'plan.bill' : `pkg.${p}.bill`;
+  return `<article class="plan${hot ? ' hot' : ''}" data-plan="${p}"><span class="badge">${h(lang, `pkg.${p}.eye`)}</span><h3>${esc(pname(lang, p))}</h3><p class="pt">${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(p)}<span class="per">${h(lang, per)}</span></div><p class="billnote">${h(lang, bill)}</p>${ticks(lang, `pkg.${p}`)}<p class="pnote">${h(lang, `pkg.${p}.note`)}</p><div class="buyrow">${buyBtn(lang, p, !hot)}</div></article>`;
 }
-const planCards = (lang) => ['starter', 'growth', 'pro'].map((p) => planCard(lang, p, { hot: p === 'growth', tag: `plan.${p}.tag`, per: 'plan.per', feat: `plan.${p}` })).join('');
-const oneCard = (lang, p, feat) => planCard(lang, p, { per: 'one.per', feat });
-const oneCards = (lang) => [oneCard(lang, 'snapshot', 'one.snap'), oneCard(lang, 'deck', 'one.deck'), oneCard(lang, 'deck_print', 'one.print')].join('');
-const deckCards = (lang) => [oneCard(lang, 'deck', 'one.deck'), oneCard(lang, 'deck_print', 'one.print')].join('');
-const billItems = (lang) => [1, 2, 3, 4, 5, 6].map((i) => `<li>${h(lang, `bill.${i}`)}</li>`).join('');
+const planCards = (lang) => ['kit', 'visible', 'growing'].map((p) => planCard(lang, p, p === 'kit')).join('');
+const deckCards = (lang) => planCard(lang, 'deck', false);
+const billItems = (lang) => { const out = []; for (let i = 1; dicts[lang][`bill.${i}`] != null; i++) out.push(`<li>${h(lang, `bill.${i}`)}</li>`); return out.join(''); };
 
 function pageVars(lang, page) {
   const v = {
     ...hrefs(lang), langpick: langpick(lang, page), nav: navLinks(lang, page, true), navFoot: navLinks(lang, page, false),
     crumbs: crumbs(lang, page), portalHref: PORTAL, emailLink: `<a href="mailto:${EMAIL}" dir="ltr">${EMAIL}</a>`,
-    buySnap: buyBtn(lang, 'snapshot', false), buyDeck: buyBtn(lang, 'deck', false), conv: lang === 'en' ? '' : `<p class="conv">${h(lang, 'leg.conv')}</p>`,
+    buyKit: buyBtn(lang, 'kit', false), buyDeck: buyBtn(lang, 'deck', false), conv: lang === 'en' ? '' : `<p class="conv">${h(lang, 'leg.conv')}</p>`,
   };
   if (page === 'index') Object.assign(v, { flow: flow(lang, 3, 'how'), inds: inds(lang), faqItems: faqItems(lang, FAQ_HOME, true) });
-  if (page === 'snapshot') Object.assign(v, snapshotVars(lang));
-  if (page === 'pricing') Object.assign(v, { planCards: planCards(lang), oneCards: oneCards(lang), billItems: billItems(lang), faqItems: faqItems(lang, FAQ_PRICING, false) });
-  if (page === 'crier-deck') Object.assign(v, { deckFlow: flow(lang, 4, 'deck.how'), deckCards: deckCards(lang), faqItems: faqItems(lang, FAQ_DECK, true), sheets: [1, 2, 4].map((n) => fig(lang, n)).join('') });
+  if (page === 'kit') Object.assign(v, kitVars(lang));
+  if (page === 'pricing') Object.assign(v, { planCards: planCards(lang), deckCards: deckCards(lang), billItems: billItems(lang), faqItems: faqItems(lang, FAQ_PRICING, false) });
+  if (page === 'brand-deck') Object.assign(v, { deckFlow: flow(lang, 4, 'deck.how'), deckCards: deckCards(lang), faqItems: faqItems(lang, FAQ_DECK, true), sheets: [1, 2, 4].map((n) => fig(lang, n)).join('') });
   if (page === 'samples') v.sheets = [1, 2, 3, 4].map((n) => fig(lang, n)).join('');
   if (page === 'faq') v.faqItems = faqItems(lang, FAQ_ALL, false);
   return v;
@@ -198,20 +201,20 @@ function inds(lang) {
     return `<div class="ind"><div class="swatch" aria-hidden="true">${sw}</div><h3>${h(lang, `ind.${i}n`)}</h3><p>${h(lang, `ind.${i}x`)}</p>${i === 4 ? `<p class="note">${h(lang, 'ind.4note')}</p>` : ''}</div>`;
   }).join('');
 }
-function snapshotVars(lang) {
-  const snapPages = [1, 2, 3].map((i) => `<article class="page"><span class="pg">${h(lang, 'snap.label')}</span>${minis[i - 1]}<span class="ex2">${h(lang, 'board.ex')}</span><h3>${h(lang, `snap.p${i}t`)}</h3><p>${h(lang, `snap.p${i}x`)}</p></article>`).join('');
+function kitVars(lang) {
+  const kitPages = [1, 2, 3].map((i) => `<article class="page"><span class="pg">${h(lang, 'kit.label')}</span>${minis[i - 1]}<span class="ex2">${h(lang, 'board.ex')}</span><h3>${h(lang, `kit.p${i}t`)}</h3><p>${h(lang, `kit.p${i}x`)}</p></article>`).join('');
   const industryOptions = `<option value="">${esc(t(lang, 'f.choose'))}</option>` + INDUSTRY_VALUES.map((v, j) => `<option value="${esc(v)}">${esc(t(lang, j < 5 ? `ind.${j + 1}n` : 'ind.other'))}</option>`).join('');
   const deckLangOptions = [['en', 'English'], ['es', 'Español'], ['fr', 'Français'], ['ar', 'العربية'], ['ar-en', t(lang, 'f.deckBi')]]
     .map(([v, n]) => `<option value="${v}"${v === lang ? ' selected' : ''}>${esc(n)}</option>`).join('');
   const msgKeys = ['f.sending', 'f.thanks', 'f.thanksDeck', 'f.failed', 'f.tooMany', 'f.consentErr', 'v.business', 'v.web', 'v.emailEmpty', 'v.emailBad', 'v.city', 'v.industry', 'v.address'];
   const formMsgs = jsonScript(Object.fromEntries(msgKeys.map((k) => [k, t(lang, k)])));
-  return { snapPages, industryOptions, deckLangOptions, formMsgs, endpoint: ENDPOINT, flow: flow(lang, 3, 'how') };
+  return { kitPages, kitList: ticks(lang, 'pkg.kit', 'cols'), industryOptions, deckLangOptions, formMsgs, endpoint: ENDPOINT, flow: flow(lang, 3, 'how') };
 }
 
 // ---------- head ----------
 function offerNode(lang, p) {
-  const o = { '@type': 'Offer', name: PRODUCT_NAMES[p], price: String(PRICES[p]), priceCurrency: 'USD', url: urlFor(lang, 'pricing') };
-  if (['starter', 'growth', 'pro'].includes(p)) o.priceSpecification = { '@type': 'UnitPriceSpecification', price: String(PRICES[p]), priceCurrency: 'USD', unitCode: 'MON' };
+  const o = { '@type': 'Offer', name: pname(lang, p), price: String(PRICES[p]), priceCurrency: 'USD', url: urlFor(lang, 'pricing') };
+  if (MONTHLY.has(p)) o.priceSpecification = { '@type': 'UnitPriceSpecification', price: String(PRICES[p]), priceCurrency: 'USD', unitCode: 'MON' };
   return o;
 }
 function jsonLd(lang, page) {
@@ -224,13 +227,14 @@ function jsonLd(lang, page) {
     nodes.push({ '@type': 'BreadcrumbList', itemListElement: [
       { '@type': 'ListItem', position: 1, name: t(lang, 'crumb.home'), item: urlFor(lang, 'index') },
       { '@type': 'ListItem', position: 2, name: t(lang, CRUMB_KEY[page]), item: urlFor(lang, page) }] });
-    if (page === 'crier-deck') {
-      nodes.push({ '@type': 'Service', name: 'Crier Deck', description: t(lang, 'meta.d.crier-deck'), url: urlFor(lang, page), provider: { '@type': 'Organization', name: BRAND, url: SITE + '/' }, availableLanguage: ['en', 'es', 'fr', 'ar'],
-        offers: ['deck', 'deck_print'].map((p) => offerNode(lang, p)) });
+    if (page === 'brand-deck' || page === 'kit') {
+      const p = page === 'kit' ? 'kit' : 'deck';
+      nodes.push({ '@type': 'Service', name: pname(lang, p), description: t(lang, `meta.d.${page}`), url: urlFor(lang, page), provider: { '@type': 'Organization', name: BRAND, url: SITE + '/' }, availableLanguage: ['en', 'es', 'fr', 'ar'],
+        offers: [offerNode(lang, p)] });
     }
     if (page === 'pricing') {
       nodes.push({ '@type': 'ItemList', name: t(lang, 'pricing.h1'), itemListElement: PRODUCTS.map((p, i) => ({ '@type': 'ListItem', position: i + 1,
-        item: { '@type': 'Service', name: PRODUCT_NAMES[p], provider: { '@type': 'Organization', name: BRAND, url: SITE + '/' }, offers: offerNode(lang, p) } })) });
+        item: { '@type': 'Service', name: pname(lang, p), provider: { '@type': 'Organization', name: BRAND, url: SITE + '/' }, offers: offerNode(lang, p) } })) });
     }
     if (page === 'faq') {
       nodes.push({ '@type': 'FAQPage', inLanguage: lang, mainEntity: FAQ_ALL.map((i) => ({ '@type': 'Question', name: t(lang, `faq.${i}q`),
@@ -325,11 +329,33 @@ ${NOINDEX ? '<meta name="robots" content="noindex">\n' : ''}<meta http-equiv="Co
 `);
 }
 
+// renamed pages: /snapshot/ -> /kit/, /crier-deck/ -> /brand-deck/ in every language. site.js keeps ?product= and the #hash;
+// without JS the meta refresh goes to the new page. Not in the sitemap.
+for (const [lang] of LANGS) for (const [from, to] of Object.entries(MOVED)) {
+  write(dirFor(lang, from) + 'index.html', `<!doctype html>
+<html lang="${lang}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<meta http-equiv="Content-Security-Policy" content="${esc(CSP)}">
+<title>${BRAND}</title>
+<link rel="canonical" href="${urlFor(lang, to)}">
+<noscript><meta http-equiv="refresh" content="0;url=${pathFor(lang, to)}"></noscript>
+</head>
+<body data-page="redirect" data-target="${to}" data-lang="${lang}">
+<p><a href="${pathFor(lang, to)}">${BRAND}</a></p>
+<script src="/site.js"></script>
+</body>
+</html>
+`);
+}
+
 // 404 (one file, four languages; header and footer in English, one block per language)
 {
   const ctx = { lang: 'en', v: { ...pageVars('en', '404'), langpick: '', crumbs: '' } };
   const sections = LANGS.map(([c]) => {
-    const links = [['index', 'crumb.home'], ['crier-deck', 'nav.deck'], ['snapshot', 'nav.snapshot']].map(([p, k]) => `<a href="${pathFor(c, p)}">${esc(t(c, k))}</a>`).join(' · ');
+    const links = [['index', 'crumb.home'], ['pricing', 'nav.pricing'], ['kit', 'nav.kit'], ['brand-deck', 'nav.deck']].map(([p, k]) => `<a href="${pathFor(c, p)}">${esc(t(c, k))}</a>`).join(' · ');
     return `<section lang="${c}" dir="${RTL.has(c) ? 'rtl' : 'ltr'}"><h2>${esc(t(c, 'e404.title'))}</h2><p>${esc(t(c, 'e404.p'))} <a href="${pathFor(c, 'index')}">${esc(t(c, 'e404.home'))}</a></p><p>${esc(t(c, 'e404.nav'))} ${links}</p></section>`;
   }).join('\n');
   ctx.v.sections = sections;
@@ -375,4 +401,4 @@ write('site.webmanifest', JSON.stringify({ name: BRAND, short_name: BRAND, start
 // keys in the JSON that no page used (the check script fails on these)
 const unused = Object.keys(dicts.en).filter((k) => !used.has(k));
 if (unused.length) console.warn('UNUSED i18n keys: ' + unused.join(', '));
-console.log(`built ${built.length} pages + ${LEGAL.length} stubs + 404 + robots/sitemap/manifest (noindex ${NOINDEX ? 'ON' : 'off'})`);
+console.log(`built ${built.length} pages + ${LEGAL.length + LANGS.length * Object.keys(MOVED).length} stubs + 404 + robots/sitemap/manifest (noindex ${NOINDEX ? 'ON' : 'off'})`);

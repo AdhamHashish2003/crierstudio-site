@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src &#39;self&#39;; script-src &#39;self&#39; https://static.cloudflareinsights.com; connect-src &#39;self&#39; https://crm-production-d789.up.railway.app https://cloudflareinsights.com; img-src &#39;self&#39; data:; style-src &#39;self&#39; &#39;unsafe-inline&#39;; font-src &#39;self&#39;; base-uri &#39;self&#39;; form-action &#39;self&#39;">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Conditions d&#39;utilisation | Crier Studio</title>
-<meta name="description" content="Les conditions de crierstudio.com : le Snapshot à $29, Crier Deck, les formules mensuelles (facturées chaque mois d&#39;avance, résiliation à la fin du mois payé) et l&#39;espace client. Crier Studio n&#39;est pas encore une société immatriculée.">
+<meta name="description" content="Les conditions de crierstudio.com : le Kit complet, les formules mensuelles Restez visible et Continuez à grandir (facturation mensuelle, résiliation avant le renouvellement), le Brand Deck et l&#39;espace client. Crier Studio n&#39;est pas encore une société immatriculée.">
 <link rel="canonical" href="https://crierstudio.com/fr/terms/">
 <link rel="alternate" hreflang="en" href="https://crierstudio.com/terms/">
 <link rel="alternate" hreflang="es" href="https://crierstudio.com/es/terms/">
@@ -16,7 +16,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Crier Studio">
 <meta property="og:title" content="Conditions d&#39;utilisation | Crier Studio">
-<meta property="og:description" content="Les conditions de crierstudio.com : le Snapshot à $29, Crier Deck, les formules mensuelles (facturées chaque mois d&#39;avance, résiliation à la fin du mois payé) et l&#39;espace client. Crier Studio n&#39;est pas encore une société immatriculée.">
+<meta property="og:description" content="Les conditions de crierstudio.com : le Kit complet, les formules mensuelles Restez visible et Continuez à grandir (facturation mensuelle, résiliation avant le renouvellement), le Brand Deck et l&#39;espace client. Crier Studio n&#39;est pas encore une société immatriculée.">
 <meta property="og:url" content="https://crierstudio.com/fr/terms/">
 <meta property="og:locale" content="fr_FR">
 <meta property="og:locale:alternate" content="en_US">
@@ -28,7 +28,7 @@
 <meta property="og:image:alt" content="Crier Studio">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Conditions d&#39;utilisation | Crier Studio">
-<meta name="twitter:description" content="Les conditions de crierstudio.com : le Snapshot à $29, Crier Deck, les formules mensuelles (facturées chaque mois d&#39;avance, résiliation à la fin du mois payé) et l&#39;espace client. Crier Studio n&#39;est pas encore une société immatriculée.">
+<meta name="twitter:description" content="Les conditions de crierstudio.com : le Kit complet, les formules mensuelles Restez visible et Continuez à grandir (facturation mensuelle, résiliation avant le renouvellement), le Brand Deck et l&#39;espace client. Crier Studio n&#39;est pas encore une société immatriculée.">
 <meta name="twitter:image" content="https://crierstudio.com/og.png">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -93,6 +93,8 @@ a{color:inherit}
 @font-face{font-family:"Instrument Fallback";src:local("Arial");size-adjust:99%}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .top .right{display:flex;align-items:center;gap:10px;min-width:0}
+.top .right{flex:none}
+.top .right .btn{white-space:nowrap;flex:none;overflow-wrap:normal}
 .langpick{display:flex;gap:0}
 .langpick a{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:0 .3em;font:700 .875rem/1 var(--body);text-decoration:none;color:var(--muted);border-bottom:4px solid transparent}
 .langpick a:hover{color:var(--ink)}
@@ -127,7 +129,7 @@ h1,h2,h3,p,li,summary,.btn,.field label{overflow-wrap:anywhere}
 .main-nav a{text-decoration:none;color:var(--muted);display:inline-flex;align-items:center;min-height:44px}
 .main-nav a:hover,.main-nav a[aria-current]{color:var(--ink)}
 .main-nav a[aria-current]{text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:6px}
-@media (min-width:900px){.top{flex-wrap:nowrap}.main-nav{order:0;flex:0 1 auto;gap:0 22px}}
+@media (min-width:1100px){.top{flex-wrap:nowrap}.main-nav{order:0;flex:0 1 auto;gap:0 22px}}
 .crumbs{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:var(--step--1);color:var(--muted);padding-block:6px}
 .crumbs a{color:var(--muted);display:inline-flex;align-items:center;min-height:32px}
 .crumbs [aria-current]{color:var(--ink);font-weight:600}
@@ -219,6 +221,10 @@ html[lang=ar] .sheet .lab{letter-spacing:0;text-transform:none}
 .buyrow{display:grid;gap:8px;align-self:end;justify-items:start}
 .plan .buyrow .btn{width:100%}
 .paynote{font-size:.8125rem;color:var(--muted)}
+.billnote{font-size:var(--step--1);font-weight:700;margin-top:-6px}
+.pnote{font-size:.8125rem;color:var(--muted)}
+.ticks.cols{gap:10px 28px}
+@media (min-width:860px){.ticks.cols{grid-template-columns:repeat(2,minmax(0,1fr))}.plans.single{grid-template-columns:minmax(0,420px)}}
 @media (min-width:860px){.plans{grid-template-columns:repeat(3,1fr)}.plan{padding:28px 24px}}
 .plans.one{margin-top:0}
 .billing{display:grid;gap:12px;max-width:760px}
@@ -239,37 +245,37 @@ fieldset.choice{gap:8px}
 <rect x="101.5" y="45" width="13" height="50" fill="currentColor"/>
 <path d="M121.5 70H158.5A18.5 18.5 0 1 0 154.58 81.39" fill="none" stroke="currentColor" stroke-width="13"/>
 <path d="M182 95V70A18.5 18.5 0 0 1 200.5 51.5" fill="none" stroke="currentColor" stroke-width="13"/></g><g transform="translate(30 -6) scale(1.15)"><rect x="101" y="22" width="14" height="14" fill="var(--dia)" transform="rotate(45 108 29)"/></g><path d="M306.43 103.36Q304.6 103.36 303.33 102.77Q302.06 102.18 301.4 101.15Q300.74 100.12 300.74 98.8H303.38Q303.38 99.36 303.69 99.88Q303.99 100.4 304.66 100.72Q305.33 101.04 306.43 101.04Q307.43 101.04 308.09 100.76Q308.75 100.48 309.08 100.01Q309.4 99.54 309.4 98.95Q309.4 98.22 308.78 97.78Q308.15 97.33 306.83 97.21L305.61 97.11Q303.62 96.94 302.43 95.87Q301.24 94.79 301.24 93.03Q301.24 91.7 301.87 90.75Q302.5 89.79 303.63 89.26Q304.76 88.73 306.28 88.73Q307.86 88.73 309 89.28Q310.15 89.83 310.77 90.83Q311.39 91.83 311.39 93.18H308.75Q308.75 92.62 308.48 92.13Q308.21 91.65 307.66 91.35Q307.12 91.05 306.28 91.05Q305.48 91.05 304.95 91.32Q304.42 91.59 304.15 92.04Q303.89 92.49 303.89 93.03Q303.89 93.67 304.36 94.16Q304.84 94.64 305.86 94.73L307.08 94.83Q308.57 94.95 309.69 95.47Q310.8 95.98 311.42 96.85Q312.05 97.72 312.05 98.95Q312.05 100.26 311.36 101.26Q310.67 102.26 309.41 102.81Q308.15 103.36 306.43 103.36ZM322.25 103V91.12H324.95V103ZM318.24 91.5V89.13H328.96V91.5ZM341.82 103.36Q339.88 103.36 338.55 102.62Q337.22 101.89 336.53 100.55Q335.84 99.21 335.84 97.4V89.13H338.54V97.56Q338.54 98.54 338.92 99.29Q339.3 100.04 340.03 100.44Q340.76 100.85 341.82 100.85Q342.87 100.85 343.6 100.45Q344.32 100.05 344.7 99.3Q345.07 98.56 345.07 97.56V89.13H347.77V97.4Q347.77 99.21 347.09 100.55Q346.41 101.89 345.09 102.62Q343.76 103.36 341.82 103.36ZM358.24 103.08V100.57H361.11Q362.19 100.57 363.03 100.24Q363.88 99.9 364.47 99.3Q365.06 98.7 365.38 97.87Q365.69 97.03 365.69 96.04Q365.69 94.99 365.38 94.16Q365.06 93.34 364.47 92.75Q363.88 92.16 363.03 91.85Q362.19 91.54 361.11 91.54H358.24V89.03H360.94Q362.82 89.03 364.22 89.59Q365.63 90.15 366.56 91.11Q367.5 92.07 367.96 93.29Q368.43 94.51 368.43 95.83V96.25Q368.43 97.49 367.96 98.71Q367.5 99.93 366.56 100.91Q365.63 101.9 364.22 102.49Q362.82 103.08 360.94 103.08ZM355.93 103.08V89.03H358.62V103.08ZM375.88 103V89.13H378.58V103ZM393.54 103.36Q391.66 103.36 390.28 102.7Q388.91 102.04 388 100.96Q387.1 99.88 386.66 98.64Q386.22 97.39 386.22 96.24V95.82Q386.22 94.55 386.67 93.29Q387.13 92.03 388.05 91Q388.97 89.97 390.34 89.35Q391.71 88.73 393.54 88.73Q395.37 88.73 396.73 89.35Q398.1 89.97 399.02 91Q399.95 92.03 400.41 93.29Q400.87 94.55 400.87 95.82V96.24Q400.87 97.39 400.42 98.64Q399.97 99.88 399.07 100.96Q398.17 102.04 396.79 102.7Q395.41 103.36 393.54 103.36ZM393.54 100.85Q394.61 100.85 395.46 100.47Q396.31 100.09 396.91 99.42Q397.5 98.75 397.82 97.89Q398.13 97.02 398.13 96.05Q398.13 95.01 397.81 94.14Q397.49 93.26 396.9 92.61Q396.3 91.96 395.45 91.6Q394.6 91.24 393.54 91.24Q392.48 91.24 391.63 91.6Q390.78 91.96 390.18 92.61Q389.58 93.26 389.27 94.14Q388.95 95.01 388.95 96.05Q388.95 97.02 389.27 97.89Q389.58 98.75 390.18 99.42Q390.78 100.09 391.63 100.47Q392.48 100.85 393.54 100.85Z" fill="currentColor"/></svg></a>
-  <nav class="main-nav" aria-label="Menu principal"><a href="/fr/pricing/">Tarifs</a><a href="/fr/crier-deck/">Crier Deck</a><a href="/fr/snapshot/">Snapshot</a><a href="/fr/samples/">Exemples</a><a href="/fr/faq/">FAQ</a><a href="/fr/about/">À propos</a><a href="https://portal.crierstudio.com/">Espace client</a></nav>
-  <div class="right"><div class="langpick" role="group" aria-label="Langue"><a href="/terms/" lang="en" hreflang="en" aria-label="English">EN</a><a href="/es/terms/" lang="es" hreflang="es" aria-label="Español">ES</a><a href="/fr/terms/" lang="fr" hreflang="fr" aria-label="Français" aria-current="true">FR</a><a href="/ar/terms/" lang="ar" hreflang="ar" aria-label="العربية">AR</a></div><a class="btn" href="/fr/snapshot/#request">Snapshot, $29</a></div>
+  <nav class="main-nav" aria-label="Menu principal"><a href="/fr/pricing/">Tarifs</a><a href="/fr/kit/">Kit complet</a><a href="/fr/brand-deck/">Brand Deck</a><a href="/fr/samples/">Exemples</a><a href="/fr/faq/">FAQ</a><a href="/fr/about/">À propos</a><a href="https://portal.crierstudio.com/">Espace client</a></nav>
+  <div class="right"><div class="langpick" role="group" aria-label="Langue"><a href="/terms/" lang="en" hreflang="en" aria-label="English">EN</a><a href="/es/terms/" lang="es" hreflang="es" aria-label="Español">ES</a><a href="/fr/terms/" lang="fr" hreflang="fr" aria-label="Français" aria-current="true">FR</a><a href="/ar/terms/" lang="ar" hreflang="ar" aria-label="العربية">AR</a></div><a class="btn" href="/fr/kit/#request">Kit complet, $29</a></div>
 </header>
 
 <main>
 <nav class="crumbs" aria-label="Fil d&#39;Ariane"><a href="/fr/">Accueil</a><span aria-hidden="true">/</span><span aria-current="page">Conditions d&#39;utilisation</span></nav>
 <h1>Conditions d&#39;utilisation</h1>
-<p style="margin-top:14px"><span>Les conditions d&#39;utilisation de crierstudio.com, du Snapshot, de Crier Deck, des formules mensuelles et de l&#39;espace client.</span> <span>Dernière mise à jour le 2 octobre 2026.</span></p>
+<p style="margin-top:14px"><span>Les conditions d&#39;utilisation de crierstudio.com, du Kit complet, des formules mensuelles, du Brand Deck et de l&#39;espace client.</span> <span>Dernière mise à jour le 3 octobre 2026.</span></p>
 <p class="conv">Cette traduction est fournie par commodité ; la version anglaise fait foi.</p>
 <h2>Qui nous sommes</h2>
 <p>Crier Studio n&#39;est pas encore une société enregistrée. Le contact se fait uniquement par e-mail : <a dir="ltr" href="mailto:team@crierstudio.com">team@crierstudio.com</a>.</p>
 <h2>Ce que nous proposons</h2>
-<p><b>Snapshot ($29, paiement unique) :</b> trois constats avec preuves tirées de votre propre site web ou profil, une correction expliquée pas à pas, et trois publications à l&#39;image de votre marque réalisées à partir de vos propres photos.</p>
-<p><b>Crier Deck ($149) et Crier Deck + Print Kit ($249), paiement unique :</b> une présentation de marque faite à partir de vos pages publiques, avec votre logo actuel, pour jusqu&#39;à 11 produits, livrée sous forme d&#39;un PDF écran dans votre espace client (1 tour de révision). Le Print Kit ajoute le PDF prêt à imprimer et 2 tours de révision. Le contenu de chacun est indiqué sur la page Crier Deck. Il n&#39;y a pas d&#39;aperçu avant la commande.</p>
-<p><b>Formules mensuelles :</b> Starter ($99), Growth ($199) et Pro ($399) par mois. Le contenu de chacune est indiqué sur la page des tarifs.</p>
+<p><b>Kit complet ($29, paiement unique, pour une entreprise) :</b> un PDF complet marketing et charte de marque ; une analyse de l&#39;activité et 3 profils de concurrents ; positionnement, hypothèses d&#39;audience et messages clés ; règles d&#39;usage du logo, couleurs, typographie et ton de voix ; 10 visuels pour les réseaux avec légendes ; 1 concept de campagne avec 3 variantes de texte publicitaire ; les maquettes de marque standard pertinentes (jusqu&#39;à 11) ; priorités site web/SEO et un plan sur 30 jours ; et les fichiers créatifs individuels, avec 1 série de corrections. Il est construit autour de votre logo actuel et des éléments que vous validez.</p>
+<p><b>Brand Deck ($250, paiement unique) :</b> une présentation de marque faite à partir de vos pages publiques, avec votre logo actuel, montrant jusqu&#39;à 11 de vos produits, livrée uniquement en fichiers numériques : un PDF écran et un fichier PDF prêt à imprimer, avec 1 série de corrections. Rien n&#39;est imprimé ni expédié. Pas d&#39;aperçu avant la commande.</p>
+<p><b>Formules mensuelles :</b> Restez visible ($45 par mois) et Continuez à grandir ($60 par mois). Les deux incluent le Kit complet le premier mois. Le contenu de chaque formule figure sur la page des tarifs.</p>
 <h2>Paiement et facturation</h2>
 <p>Tous les prix sont en dollars américains. Après votre demande, nous vous envoyons par e-mail un lien de paiement sécurisé, et le travail commence une fois le paiement effectué. Les comptes de l&#39;espace client sont ouverts après le paiement.</p>
-<p>Les formules mensuelles sont facturées chaque mois d&#39;avance. Vous pouvez résilier à tout moment en envoyant un e-mail à <a dir="ltr" href="mailto:team@crierstudio.com">team@crierstudio.com</a>, et la résiliation prend effet à la fin du mois que vous avez payé. Payer 3 mois d&#39;avance donne 10 % de réduction.</p>
-<p>Si vous vous abonnez à une formule mensuelle dans les 14 jours suivant l&#39;achat d&#39;un Snapshot, le prix du Snapshot est déduit de votre premier mois. Les abonnés Growth et Pro bénéficient de 20 % de réduction sur Crier Deck et Crier Deck + Print Kit, et Pro inclut une mise à jour de la présentation par an.</p>
+<p>Les formules mensuelles sont facturées chaque mois. Vous pouvez résilier à tout moment avant le prochain renouvellement en envoyant un e-mail à <a dir="ltr" href="mailto:team@crierstudio.com">team@crierstudio.com</a> ; la résiliation prend effet à la fin du mois que vous avez payé.</p>
+<p>Le Kit complet est inclus le premier mois de Restez visible ou de Continuez à grandir, et ses 10 visuels comptent parmi les visuels de ce mois.</p>
 <h2>Votre logo et vos documents</h2>
-<p>Vous nous autorisez à utiliser votre logo, votre nom, vos photos et vos informations publiques uniquement pour réaliser votre Snapshot ou votre Crier Deck. Vous confirmez avoir le droit de donner cette autorisation. Nous gardons votre logo tel quel et ne le refaisons pas.</p>
+<p>Vous nous autorisez à utiliser votre logo, votre nom, vos photos et vos informations publiques uniquement pour réaliser ce que vous avez commandé. Vous confirmez avoir le droit de donner cette autorisation. Nous gardons votre logo tel quel et ne le redessinons pas.</p>
 <h2>Compte de l&#39;espace client</h2>
 <p>Si nous ouvrons pour vous un compte sur l&#39;espace client à portal.crierstudio.com, il est réservé à votre commerce. Gardez vos identifiants privés et prévenez-nous aussitôt si vous pensez que quelqu&#39;un d&#39;autre les a utilisés. Vous pouvez nous demander de fermer le compte à tout moment.</p>
 <h2>Aucun résultat promis</h2>
-<p>Nous ne promettons ni plus de clients, ni plus de ventes, ni un classement dans les recherches, ni aucun autre résultat. Ce que nous livrons, c&#39;est le bilan, la correction rédigée et les publications décrits ci-dessus. Ce qui se passe ensuite dépend de votre entreprise, de votre marché et de ce que vous en faites.</p>
+<p>Nous ne promettons ni plus de clients, ni plus de ventes, ni un classement dans les moteurs de recherche, ni aucun autre résultat. Ce que nous livrons est ce qui est décrit sur la page des tarifs. La suite dépend de votre activité, de votre marché et de ce que vous en faites.</p>
 <h2>Ce dont nous avons besoin de votre part</h2>
 <p>Des informations exactes, et uniquement des photos, logos et textes que vous avez le droit d&#39;utiliser. Rien n&#39;est publié à votre place : c&#39;est vous qui décidez de ce que vous utilisez.</p>
 <h2>Sources publiques</h2>
 <p>Nous examinons votre site et vos profils et, pour les comparaisons, des informations publiques sur des entreprises similaires. Si nous ne trouvons pas d&#39;entreprises comparables, nous le disons. Les chiffres proviennent de sources publiques et peuvent être incomplets ou dépassés.</p>
 <h2>Propriété de ce que nous réalisons pour vous</h2>
-<p>Les fichiers de la présentation, les publications et les légendes que nous vous livrons sont à vous, pour votre activité. Votre logo, votre nom et votre marque restent à vous. Nous ne montrons pas en public un Crier Deck fait pour vous, ni comme exemple ni autrement, sans votre accord écrit. Les exemples de ce site sont faits pour des commerces fictifs.</p>
+<p>Les fichiers de la présentation, les publications et les légendes que nous vous livrons sont à vous, pour votre activité. Votre logo, votre nom et votre marque restent à vous. Nous ne montrons pas en public un Brand Deck fait pour vous, ni comme exemple ni autrement, sans votre accord écrit. Les exemples de ce site sont faits pour des commerces fictifs.</p>
 <h2>Remboursements</h2>
 <p>Si vous n&#39;êtes pas satisfait de ce que nous livrons, dites-le-nous et nous conviendrons avec vous par écrit d&#39;une correction ou d&#39;un remboursement. Voir la <a href="/fr/refund/">politique de remboursement</a>.</p>
 <h2>Limites</h2>
@@ -293,7 +299,7 @@ fieldset.choice{gap:8px}
     </div>
     <nav class="fcol" aria-label="Explorer">
       <strong>Explorer</strong>
-      <a href="/fr/pricing/">Tarifs</a><a href="/fr/crier-deck/">Crier Deck</a><a href="/fr/snapshot/">Snapshot</a><a href="/fr/samples/">Exemples</a><a href="/fr/faq/">FAQ</a><a href="/fr/about/">À propos</a><a href="https://portal.crierstudio.com/">Espace client</a>
+      <a href="/fr/pricing/">Tarifs</a><a href="/fr/kit/">Kit complet</a><a href="/fr/brand-deck/">Brand Deck</a><a href="/fr/samples/">Exemples</a><a href="/fr/faq/">FAQ</a><a href="/fr/about/">À propos</a><a href="https://portal.crierstudio.com/">Espace client</a>
     </nav>
     <nav class="fcol" aria-label="Mentions légales">
       <strong>Mentions légales</strong>

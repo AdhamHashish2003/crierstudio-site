@@ -1,11 +1,22 @@
 <main>
     {{=crumbs}}
-    <section class="phead" aria-labelledby="snap-title">
-      <span class="eyebrow">{{t:snap.eyebrow}}</span>
-      <h1 id="snap-title">{{t:snap.title}}</h1>
-      <p class="lead">{{t:snap.lead}}</p>
-      <div class="buyrow">{{=buySnap}}</div>
-      <div class="pages" id="snap-pages">{{=snapPages}}</div>
+    <section class="phead" aria-labelledby="kit-title">
+      <span class="eyebrow">{{t:kit.eyebrow}}</span>
+      <h1 id="kit-title">{{t:kit.title}}</h1>
+      <p class="lead">{{t:kit.lead}}</p>
+      <p class="fine">{{t:pkg.kit.bill}}</p>
+      <div class="buyrow">{{=buyKit}}</div>
+      <div class="pages" id="kit-pages">{{=kitPages}}</div>
+    </section>
+
+    <section id="inside" aria-labelledby="all-title">
+      <div class="sec-head">
+        <span class="eyebrow">{{t:kit.all.eyebrow}}</span>
+        <h2 id="all-title">{{t:kit.all.title}}</h2>
+      </div>
+      {{=kitList}}
+      <p class="fine" style="margin-top:16px">{{t:pkg.kit.note}}</p>
+      <p class="more"><a href="{{=pricingHref}}">{{t:offer.plans}}</a></p>
     </section>
 
     <section id="request" aria-labelledby="form-title">
@@ -14,12 +25,10 @@
         <p class="fine paybox">{{t:pay.note}}</p>
         <fieldset class="choice">
           <legend>{{t:f.what}}</legend>
-          <label class="opt"><input type="radio" name="product" value="snapshot" checked><span>{{t:f.optSnap}}</span></label>
-          <label class="opt"><input type="radio" name="product" value="starter"><span>{{t:f.optStarter}}</span></label>
-          <label class="opt"><input type="radio" name="product" value="growth"><span>{{t:f.optGrowth}}</span></label>
-          <label class="opt"><input type="radio" name="product" value="pro"><span>{{t:f.optPro}}</span></label>
+          <label class="opt"><input type="radio" name="product" value="kit" checked><span>{{t:f.optKit}}</span></label>
+          <label class="opt"><input type="radio" name="product" value="visible"><span>{{t:f.optVisible}}</span></label>
+          <label class="opt"><input type="radio" name="product" value="growing"><span>{{t:f.optGrowing}}</span></label>
           <label class="opt"><input type="radio" name="product" value="deck"><span>{{t:f.optDeck}}</span></label>
-          <label class="opt"><input type="radio" name="product" value="deck_print"><span>{{t:f.optPrint}}</span></label>
         </fieldset>
         <div class="fields">
           <div class="field">
@@ -63,7 +72,7 @@
           <label class="check" for="f-consent"><input id="f-consent" name="consent" type="checkbox" aria-describedby="e-consent"><span><span>{{t:f.consent}}</span> <a href="{{=privacyHref}}">{{t:f.privacy}}</a></span></label>
           <span class="err" id="e-consent" hidden></span>
         </div>
-        <div class="cta-row"><button class="btn" type="submit" id="snap-submit" data-snap="{{a:f.submit}}" data-deck="{{a:f.submitDeck}}" data-plan="{{a:f.submitPlan}}">{{t:f.submit}}</button></div>
+        <div class="cta-row"><button class="btn" type="submit" id="snap-submit" data-kit="{{a:f.submit}}" data-deck="{{a:f.submitDeck}}" data-plan="{{a:f.submitPlan}}">{{t:f.submit}}</button></div>
         <div class="status" id="snap-status" role="status" aria-live="polite" hidden></div>
       </form>
       <script type="application/json" id="form-msgs">{{=formMsgs}}</script>
