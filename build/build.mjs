@@ -4,6 +4,7 @@
 // Check: node build/check.mjs       (key sets identical in all 4 languages, no unused keys, no price/UMA/draft text)
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 // ============================================================================================
@@ -49,10 +50,11 @@ for (const k of PRODUCTS) {
 const dicts = Object.fromEntries(LANGS.map(([c]) => [c, JSON.parse(rd(`i18n/${c}.json`))]));
 const partials = {
   hero: rd('templates/hero.html'), logo: rd('templates/logo.svg.html'), footer: rd('templates/footer.html'), header: rd('templates/header.html'),
+  consent: rd('templates/consent.html'),
 };
 const CSS = {
   fonts: rd('templates/fonts.css'), fontsAr: rd('templates/fonts-ar.css'), common: rd('templates/common.css'),
-  home: rd('templates/home.css'), legal: rd('templates/legal.css'),
+  home: rd('templates/home.css'), legal: rd('templates/legal.css'), consent: rd('templates/consent.css'),
 };
 const faqCss = CSS.home.slice(CSS.home.indexOf('/* faq */'), CSS.home.indexOf('/* closing */'));
 
@@ -86,7 +88,7 @@ function render(tpl, ctx) {
   let prev;
   do { prev = tpl; tpl = tpl.replace(/\{\{>([\w-]+)\}\}/g, (_, p) => { if (!(p in partials)) throw new Error('no partial ' + p); return partials[p]; }); } while (tpl !== prev);
   return tpl
-    .replace(/\{\{t:([\w.-]+)(?:@([\w-]+))?\}\}/g, (_, k, pg) => h(ctx.lang, k, pg ? pathFor(ctx.lang, pg) : null))
+    .replace(/\{\{t:([\w.-]+)(?:@([\w-]+)(#[\w-]+)?)?\}\}/g, (_, k, pg, hash) => h(ctx.lang, k, pg ? pathFor(ctx.lang, pg) + (hash || '') : null))
     .replace(/\{\{a:([\w.-]+)\}\}/g, (_, k) => esc(t(ctx.lang, k)))
     .replace(/\{\{=(\w+)\}\}/g, (_, n) => { if (!(n in ctx.v)) throw new Error('no var ' + n); return ctx.v[n]; });
 }
@@ -243,7 +245,19 @@ function jsonLd(lang, page) {
   }
   return `<script type="application/ld+json">${jsonScript({ '@context': 'https://schema.org', '@graph': nodes })}</script>`;
 }
-const CSP = "default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; connect-src 'self' https://crm-production-d789.up.railway.app https://cloudflareinsights.com; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; base-uri 'self'; form-action 'self'";
+// ---------- Google Analytics 4 + Consent Mode v2 ----------
+// Every page (all languages, 404, redirect stubs) carries this once, right after the CSP meta. Consent defaults to denied for
+// everything; only analytics_storage is granted, and only after the visitor presses Accept in the consent bar
+// (templates/consent.html, localStorage 'crier_consent'). Ads signals stay denied always.
+const GA_ID = 'G-QLQ443CQ8E';
+const GA_INLINE = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});try{if(localStorage.getItem('crier_consent')==='granted'){gtag('consent','update',{analytics_storage:'granted'});}}catch(e){}gtag('js',new Date());gtag('config','${GA_ID}');`;
+const GA_HEAD = `<script>${GA_INLINE}</script>\n<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_ID}"></script>`;
+const CONSENT_JS = (partials.consent.match(/<script>([\s\S]*?)<\/script>/) || [])[1];
+if (!CONSENT_JS || CONSENT_JS.includes('{{')) throw new Error('templates/consent.html: one inline <script> without template tags expected');
+// the site allows no 'unsafe-inline' scripts: each inline script is allowed by its sha256 hash (recomputed on every build)
+const sha = (js) => `'sha256-${crypto.createHash('sha256').update(js, 'utf8').digest('base64')}'`;
+const SCRIPT_HASHES = [sha(GA_INLINE), sha(CONSENT_JS)];
+const CSP = "default-src 'self'; script-src 'self' " + SCRIPT_HASHES.join(' ') + " https://static.cloudflareinsights.com https://*.googletagmanager.com; connect-src 'self' https://crm-production-d789.up.railway.app https://cloudflareinsights.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; img-src 'self' data: https://*.google-analytics.com https://*.googletagmanager.com; style-src 'self' 'unsafe-inline'; font-src 'self'; base-uri 'self'; form-action 'self'";
 function head(lang, page, css) {
   const title = t(lang, `meta.t.${page}`), desc = t(lang, `meta.d.${page}`), url = urlFor(lang, page);
   const alt = LANGS.map(([c]) => `<link rel="alternate" hreflang="${c}" href="${urlFor(c, page)}">`).join('\n') + `\n<link rel="alternate" hreflang="x-default" href="${urlFor('en', page)}">`;
@@ -257,6 +271,7 @@ function head(lang, page, css) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 ${NOINDEX ? '<meta name="robots" content="noindex">\n' : ''}<meta http-equiv="Content-Security-Policy" content="${esc(CSP)}">
+${GA_HEAD}
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
@@ -290,10 +305,12 @@ ${css}
 ${jsonLd(lang, page)}
 </head>`;
 }
-const cssFor = (lang, page) => [CSS.fonts, lang === 'ar' ? CSS.fontsAr : '', WIDE.has(page) ? CSS.home : CSS.legal + (page === 'faq' ? '\n' + faqCss : ''), CSS.common].join('\n');
+const cssFor = (lang, page) => [CSS.fonts, lang === 'ar' ? CSS.fontsAr : '', WIDE.has(page) ? CSS.home : CSS.legal + (page === 'faq' ? '\n' + faqCss : ''), CSS.common, CSS.consent].join('\n');
 
 // ---------- build ----------
 function write(rel, content) {
+  // every inline script that runs must be allowed by a CSP hash, or the browser blocks it
+  if (rel.endsWith('.html')) for (const m of content.matchAll(/<script>([\s\S]*?)<\/script>/g)) if (!SCRIPT_HASHES.includes(sha(m[1]))) throw new Error('inline script without a CSP hash in ' + rel);
   const f = path.join(ROOT, rel);
   fs.mkdirSync(path.dirname(f), { recursive: true });
   fs.writeFileSync(f, content);
@@ -303,7 +320,7 @@ for (const [lang] of LANGS) {
   for (const page of PAGES) {
     const ctx = { lang, v: pageVars(lang, page) };
     const body = render(rd(`templates/${page === 'index' ? 'home' : page}.html`), ctx);
-    const html = `${head(lang, page, cssFor(lang, page))}\n<body data-page="${page}">\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n<script src="/site.js" defer></script>\n</body>\n</html>\n`;
+    const html = `${head(lang, page, cssFor(lang, page))}\n<body data-page="${page}">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n<script src="/site.js" defer></script>\n</body>\n</html>\n`;
     write(dirFor(lang, page) + 'index.html', html);
     built.push([lang, page]);
   }
@@ -317,6 +334,7 @@ for (const page of LEGAL) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 ${NOINDEX ? '<meta name="robots" content="noindex">\n' : ''}<meta http-equiv="Content-Security-Policy" content="${esc(CSP)}">
+${GA_HEAD}
 <title>${BRAND}</title>
 <link rel="canonical" href="${urlFor('en', page)}">
 <noscript><meta http-equiv="refresh" content="0;url=${pathFor('en', page)}"></noscript>
@@ -339,6 +357,7 @@ for (const [lang] of LANGS) for (const [from, to] of Object.entries(MOVED)) {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
 <meta http-equiv="Content-Security-Policy" content="${esc(CSP)}">
+${GA_HEAD}
 <title>${BRAND}</title>
 <link rel="canonical" href="${urlFor(lang, to)}">
 <noscript><meta http-equiv="refresh" content="0;url=${pathFor(lang, to)}"></noscript>
@@ -359,13 +378,14 @@ for (const [lang] of LANGS) for (const [from, to] of Object.entries(MOVED)) {
     return `<section lang="${c}" dir="${RTL.has(c) ? 'rtl' : 'ltr'}"><h2>${esc(t(c, 'e404.title'))}</h2><p>${esc(t(c, 'e404.p'))} <a href="${pathFor(c, 'index')}">${esc(t(c, 'e404.home'))}</a></p><p>${esc(t(c, 'e404.nav'))} ${links}</p></section>`;
   }).join('\n');
   ctx.v.sections = sections;
-  const css404 = [CSS.fonts, CSS.fontsAr, CSS.legal, CSS.common, 'section{padding-block:18px;border-top:2px solid var(--line)}section h2{margin-top:0}html[lang=ar] body{line-height:1.75}'].join('\n');
+  const css404 = [CSS.fonts, CSS.fontsAr, CSS.legal, CSS.common, CSS.consent, 'section{padding-block:18px;border-top:2px solid var(--line)}section h2{margin-top:0}html[lang=ar] body{line-height:1.75}'].join('\n');
   write('404.html', `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 ${NOINDEX ? '<meta name="robots" content="noindex">\n' : ''}<meta http-equiv="Content-Security-Policy" content="${esc(CSP)}">
+${GA_HEAD}
 <title>404 | ${BRAND}</title>
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -375,6 +395,7 @@ ${css404}
 </style>
 </head>
 <body data-page="404">
+${render(partials.consent, ctx)}
 <div class="wrap">
 ${render(partials.header, ctx)}
 ${render(rd('templates/404.html'), ctx)}

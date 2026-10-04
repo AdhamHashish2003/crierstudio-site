@@ -8,6 +8,7 @@ Packages (2026-10-04): The Complete Kit $29 one-time (`kit`), Stay Visible $45/m
 
 - Source: `i18n/<lang>.json` (all text) + `templates/` (HTML, CSS). Build: `node build/build.mjs` (Node, no dependencies). The built files are committed.
 - Checks: `node build/check.mjs` (identical key sets in all 4 languages, canonicals, hreflang, sitemap, links, no UMA/draft text, the 4 current prices on /pricing/, no retired package names or prices). `tests/form.mjs`: form and old-URL test with a mocked endpoint (never posts to the live API).
+- Analytics: Google Analytics 4 (`G-QLQ443CQ8E`, constant `GA_ID` in `build/build.mjs`) with Consent Mode v2 sits right after the CSP meta in every built HTML file. Consent defaults to denied; analytics cookies only after Accept in the consent bar (`templates/consent.html` + `consent.css`, saved in localStorage `crier_consent`; the footer "Cookie settings" link reopens it). Ads signals are always denied. The CSP allows the two inline scripts by sha256 hashes that the build recomputes; the build fails if any inline script lacks a hash. `tests/consent.mjs` tests the bar and consent calls in a browser (Google requests are blocked in both browser tests).
 - Never edit generated files by hand (`index.html`, `*/index.html`, `404.html`, `sitemap.xml`, the `terms.html` style stubs). Edit the source and rebuild.
 - The hero is one block: `templates/hero.html`. Keep real HTML text in it (the H1 is the LCP element).
 - The noindex switch is one constant at the top of `build/build.mjs` (`NOINDEX`, currently `false`). Change it and rebuild.

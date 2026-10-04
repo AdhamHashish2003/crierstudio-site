@@ -1,6 +1,7 @@
 // Static checks on the source and the built files. Run after build:  node build/build.mjs && node build/check.mjs
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LANGS = ['en', 'es', 'fr', 'ar'];
@@ -72,5 +73,49 @@ ok(rd('pricing/index.html').includes('"@type":"ItemList"') && rd('pricing/index.
 }
 ok(rd('faq/index.html').includes('"@type":"FAQPage"'), 'FAQPage');
 ok(rd('index.html').includes('"alternateName":"Crier"') && rd('index.html').includes('"@type":"Organization"'), 'Organization + WebSite');
+// Google Analytics 4 + Consent Mode v2: every built HTML file (40 pages, 404, all redirect stubs) has the tag exactly once, early in
+// <head>, with consent defaulting to denied before the config call; ads signals are never granted; the CSP allows Google's hosts
+// and every inline script by its sha256 hash (no 'unsafe-inline' for scripts).
+{
+  const GA = 'G-QLQ443CQ8E';
+  const walk = (dir) => fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true }).flatMap((e) => {
+    const rel = dir ? dir + '/' + e.name : e.name;
+    if (e.isDirectory()) return ['.git', 'node_modules', 'templates', 'build', 'tests', 'i18n', 'fonts', 'assets'].includes(e.name) ? [] : walk(rel);
+    return e.name.endsWith('.html') ? [rel] : [];
+  });
+  const files = walk('');
+  ok(files.length === urls.length + 1 + 3 + LANGS.length * Object.keys(MOVED).length, `GA: expected every built HTML file, found ${files.length}`);
+  for (const f of files) {
+    const h = rd(f), headEnd = h.indexOf('</head>');
+    const tag = `<script async src="https://www.googletagmanager.com/gtag/js?id=${GA}"></script>`;
+    ok(h.split(tag).length === 2 && h.indexOf(tag) < headEnd, `GA: exactly one gtag.js tag in <head> of ${f}`);
+    ok((h.match(/googletagmanager\.com\/gtag\/js/g) || []).length === 1, `GA: no second gtag.js loader in ${f}`);
+    const cfg = `gtag('config','${GA}')`, def = "gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500})";
+    ok(h.split(cfg).length === 2 && h.split(def).length === 2 && h.indexOf(def) < h.indexOf(cfg) && h.indexOf(cfg) < headEnd, `GA: consent default (all denied) before the one config call in ${f}`);
+    ok(h.includes("if(localStorage.getItem('crier_consent')==='granted'){gtag('consent','update',{analytics_storage:'granted'});}"), `GA: returning visitor who accepted gets analytics_storage granted in ${f}`);
+    ok(!/(ad_storage|ad_user_data|ad_personalization)\s*:\s*['"]granted/.test(h), `GA: ads signals never granted in ${f}`);
+    const cspAt = h.indexOf('http-equiv="Content-Security-Policy"');
+    ok(cspAt > -1 && cspAt < h.indexOf('<script'), `GA: CSP meta comes before the first script in ${f}`);
+    const csp = ((h.match(/<meta http-equiv="Content-Security-Policy" content="([^"]+)">/) || [])[1] || '').replace(/&#39;/g, "'");
+    const dir = (n) => (csp.split(';').map((x) => x.trim()).find((x) => x.startsWith(n + ' ')) || '');
+    ok(/https:\/\/(\*|www)\.googletagmanager\.com/.test(dir('script-src')) && !dir('script-src').includes("'unsafe-inline'"), `GA: script-src allows googletagmanager, no unsafe-inline, in ${f}`);
+    for (const host of ['google-analytics.com', 'analytics.google.com', 'googletagmanager.com']) ok(dir('connect-src').includes(host), `GA: connect-src allows ${host} in ${f}`);
+    for (const host of ['google-analytics.com', 'googletagmanager.com']) ok(dir('img-src').includes(host), `GA: img-src allows ${host} in ${f}`);
+    for (const m of h.matchAll(/<script>([\s\S]*?)<\/script>/g)) {
+      const hash = `'sha256-${crypto.createHash('sha256').update(m[1], 'utf8').digest('base64')}'`;
+      ok(dir('script-src').includes(hash), `GA: inline script allowed by CSP hash in ${f}`);
+    }
+    // the consent bar: full pages and 404 (redirect stubs leave at once, so they have only the tag)
+    if (!h.includes('data-page="redirect"')) {
+      ok((h.match(/<div id="consent-bar" class="consent" role="region" aria-label="[^"]{4,}" hidden>/g) || []).length === 1, `consent bar (region, labelled, hidden until JS) once in ${f}`);
+      ok(h.includes('data-consent="granted"') && h.includes('data-consent="denied"'), `consent bar Accept + Decline in ${f}`);
+      ok(/<a href="\/(\w\w\/)?privacy\/#cookie-settings" data-consent-open>[^<]+<\/a>/.test(h), `footer Cookie settings link in ${f}`);
+    }
+  }
+  for (const l of LANGS) {
+    const f = (l === 'en' ? '' : l + '/') + 'privacy/index.html', h = rd(f);
+    ok(h.includes('<h2 id="cookies">') && h.includes('Google LLC') && h.includes('Google Analytics 4') && h.includes('14'), `privacy: Google Analytics section in ${f}`);
+  }
+}
 console.log(fail ? `${fail} FAILED` : `all checks passed (${urls.length} pages, ${LANGS.length} languages)`);
 process.exit(fail ? 1 : 0);

@@ -4,6 +4,9 @@ import { chromium } from 'playwright-core';
 const BASE = process.env.BASE || 'http://localhost:8765';
 const ENDPOINT = 'https://crm-production-d789.up.railway.app/api/public/snapshot-request';
 const b = await chromium.launch({ executablePath: process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
+// Google Analytics requests are blocked in every test context, so test runs never reach the live GA property
+const newCtx = b.newContext.bind(b);
+b.newContext = async (o) => { const c = await newCtx(o); await c.route(/googletagmanager\.com|google-analytics\.com|analytics\.google\.com/, (r) => r.abort()); return c; };
 let fail = 0; const ok = (c, m) => { console.log(c ? 'PASS' : 'FAIL', m); if (!c) fail++; };
 const fillBase = async (pg) => {
   await pg.fill('#f-business', 'Test Cafe'); await pg.fill('#f-web', 'testcafe.example'); await pg.fill('#f-email', 'a@b.co'); await pg.fill('#f-city', 'Cairo');
