@@ -22,7 +22,7 @@
     <section id="request" aria-labelledby="form-title">
       <form class="formbox" id="snap-form" novalidate data-endpoint="{{=endpoint}}"{{=checkoutAttr}}>
         <h2 id="form-title">{{t:form.title}}</h2>
-        <p class="fine paybox">{{t:pay.note}}</p>
+        <p class="fine paybox" id="paynote">{{t:pay.note}}</p>
         <fieldset class="choice">
           <legend>{{t:f.what}}</legend>
           <label class="opt"><input type="radio" name="product" value="kit" checked><span>{{t:f.optKit}}</span></label>

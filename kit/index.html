@@ -162,6 +162,9 @@ section{padding-block:56px;border-top:2px solid var(--ink)}
 .field input[aria-invalid="true"],.field select[aria-invalid="true"]{border-color:var(--error)}
 .err{color:var(--error);font-size:var(--step--1);font-weight:600;min-height:0}
 .status{padding:14px 16px;border:2px solid var(--ink);background:var(--paper);font-weight:600}
+.status.busy::before{content:"";display:inline-block;width:14px;height:14px;margin-inline-end:10px;vertical-align:-2px;border:2px solid currentColor;border-inline-end-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.status.busy::before{animation:none}}
 
 /* how it works */
 .flow{display:grid;gap:0}
@@ -410,7 +413,7 @@ fieldset.choice{gap:8px}
     <section id="request" aria-labelledby="form-title">
       <form class="formbox" id="snap-form" novalidate data-endpoint="https://crm-production-d789.up.railway.app/api/public/snapshot-request" data-checkout="https://crm-production-d789.up.railway.app/api/public/checkout">
         <h2 id="form-title">Tell us about your business</h2>
-        <p class="fine paybox">We&#39;ll email you a secure payment link</p>
+        <p class="fine paybox" id="paynote">We&#39;ll email you a secure payment link</p>
         <fieldset class="choice">
           <legend>What would you like?</legend>
           <label class="opt"><input type="radio" name="product" value="kit" checked><span>The Complete Kit, $29</span></label>
@@ -469,7 +472,7 @@ fieldset.choice{gap:8px}
         <div class="cta-row"><button class="btn" type="submit" id="snap-submit" data-kit="Request my Complete Kit" data-deck="Request my Brand Deck" data-plan="Request my plan">Request my Complete Kit</button></div>
         <div class="status" id="snap-status" role="status" aria-live="polite" hidden></div>
       </form>
-      <script type="application/json" id="form-msgs">{"f.platformsErr":"Pick at least one platform.","f.total":"Total today: {amount}","f.totalMonthly":"Total: {amount} a month","f.toStripe":"Opening secure checkout...","f.pay":"Continue to secure payment","f.sending":"Sending...","f.thanks":"Thanks. We've got your details and will email you a secure payment link.","f.thanksDeck":"Thanks. We've got your request and will email you a secure payment link and what comes next.","f.failed":"Sorry, something went wrong and nothing was sent. Please try again in a few minutes, or email team@crierstudio.com.","f.tooMany":"Too many tries from this connection. Please try again later.","f.consentErr":"Tick the box so we can use your details.","v.business":"Enter your business name.","v.web":"Enter your website or Instagram handle.","v.emailEmpty":"Enter your email so we can send your payment link.","v.emailBad":"Check the email address, it looks incomplete.","v.city":"Enter the city your business is in.","v.industry":"Choose the closest industry.","v.address":"Enter your business address."}</script>
+      <script type="application/json" id="form-msgs">{"pay.note":"We'll email you a secure payment link","pay.noteCheckout":"You'll pay securely on Stripe. Your sign-in link arrives by email right after.","f.platformsErr":"Pick at least one platform.","f.total":"Total today: {amount}","f.totalMonthly":"Total: {amount} a month","f.toStripe":"Opening Stripe's secure checkout. This takes a few seconds...","f.pay":"Continue to secure payment","f.sending":"Sending...","f.thanks":"Thanks. We've got your details and will email you a secure payment link.","f.thanksDeck":"Thanks. We've got your request and will email you a secure payment link and what comes next.","f.failed":"Sorry, something went wrong and nothing was sent. Please try again in a few minutes, or email team@crierstudio.com.","f.tooMany":"Too many tries from this connection. Please try again later.","f.consentErr":"Tick the box so we can use your details.","v.business":"Enter your business name.","v.web":"Enter your website or Instagram handle.","v.emailEmpty":"Enter your email so we can send your payment link.","v.emailBad":"Check the email address, it looks incomplete.","v.city":"Enter the city your business is in.","v.industry":"Choose the closest industry.","v.address":"Enter your business address."}</script>
     </section>
 
     <section id="how" aria-labelledby="how-title">

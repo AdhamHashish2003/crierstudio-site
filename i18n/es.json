@@ -415,7 +415,7 @@
  "f.platformsErr": "Elige al menos una plataforma.",
  "f.total": "Total hoy: {amount}",
  "f.totalMonthly": "Total: {amount} al mes",
- "f.toStripe": "Abriendo el pago seguro...",
+ "f.toStripe": "Abriendo el pago seguro de Stripe. Tarda unos segundos...",
  "f.pay": "Continuar al pago seguro",
  "plat.instagram": "Instagram",
  "plat.tiktok": "TikTok",
@@ -425,5 +425,6 @@
  "plan.live": "{name} · {platforms} · {price}{per}",
  "plan.perShort": "/mes",
  "plan.pickPlatforms": "Tus plataformas",
- "plan.extraNote": "Cada plataforma extra es un segundo juego completo, hecho para esa plataforma."
+ "plan.extraNote": "Cada plataforma extra es un segundo juego completo, hecho para esa plataforma.",
+ "pay.noteCheckout": "Pagarás de forma segura en Stripe. Tu enlace de acceso llega por correo justo después."
 }

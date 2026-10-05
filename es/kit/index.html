@@ -162,6 +162,9 @@ section{padding-block:56px;border-top:2px solid var(--ink)}
 .field input[aria-invalid="true"],.field select[aria-invalid="true"]{border-color:var(--error)}
 .err{color:var(--error);font-size:var(--step--1);font-weight:600;min-height:0}
 .status{padding:14px 16px;border:2px solid var(--ink);background:var(--paper);font-weight:600}
+.status.busy::before{content:"";display:inline-block;width:14px;height:14px;margin-inline-end:10px;vertical-align:-2px;border:2px solid currentColor;border-inline-end-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.status.busy::before{animation:none}}
 
 /* how it works */
 .flow{display:grid;gap:0}
@@ -410,7 +413,7 @@ fieldset.choice{gap:8px}
     <section id="request" aria-labelledby="form-title">
       <form class="formbox" id="snap-form" novalidate data-endpoint="https://crm-production-d789.up.railway.app/api/public/snapshot-request" data-checkout="https://crm-production-d789.up.railway.app/api/public/checkout">
         <h2 id="form-title">Cuéntanos sobre tu negocio</h2>
-        <p class="fine paybox">Te enviaremos por correo un enlace de pago seguro</p>
+        <p class="fine paybox" id="paynote">Te enviaremos por correo un enlace de pago seguro</p>
         <fieldset class="choice">
           <legend>¿Qué te gustaría?</legend>
           <label class="opt"><input type="radio" name="product" value="kit" checked><span>Kit Completo, $29</span></label>
@@ -469,7 +472,7 @@ fieldset.choice{gap:8px}
         <div class="cta-row"><button class="btn" type="submit" id="snap-submit" data-kit="Pide mi Kit Completo" data-deck="Pide mi Brand Deck" data-plan="Pide mi plan">Pide mi Kit Completo</button></div>
         <div class="status" id="snap-status" role="status" aria-live="polite" hidden></div>
       </form>
-      <script type="application/json" id="form-msgs">{"f.platformsErr":"Elige al menos una plataforma.","f.total":"Total hoy: {amount}","f.totalMonthly":"Total: {amount} al mes","f.toStripe":"Abriendo el pago seguro...","f.pay":"Continuar al pago seguro","f.sending":"Enviando...","f.thanks":"Gracias. Recibimos tus datos y te enviaremos por correo un enlace de pago seguro.","f.thanksDeck":"Gracias. Recibimos tu solicitud y te enviaremos por correo un enlace de pago seguro y los pasos siguientes.","f.failed":"Lo sentimos, algo salió mal y no se envió nada. Inténtalo de nuevo en unos minutos o escribe a team@crierstudio.com.","f.tooMany":"Demasiados intentos desde esta conexión. Inténtalo de nuevo más tarde.","f.consentErr":"Marca la casilla para que podamos usar tus datos.","v.business":"Escribe el nombre de tu negocio.","v.web":"Escribe tu sitio web o tu usuario de Instagram.","v.emailEmpty":"Escribe tu correo para que podamos enviarte el enlace de pago.","v.emailBad":"Revisa el correo, parece incompleto.","v.city":"Escribe la ciudad donde está tu negocio.","v.industry":"Elige el rubro más cercano.","v.address":"Escribe la dirección de tu negocio."}</script>
+      <script type="application/json" id="form-msgs">{"pay.note":"Te enviaremos por correo un enlace de pago seguro","pay.noteCheckout":"Pagarás de forma segura en Stripe. Tu enlace de acceso llega por correo justo después.","f.platformsErr":"Elige al menos una plataforma.","f.total":"Total hoy: {amount}","f.totalMonthly":"Total: {amount} al mes","f.toStripe":"Abriendo el pago seguro de Stripe. Tarda unos segundos...","f.pay":"Continuar al pago seguro","f.sending":"Enviando...","f.thanks":"Gracias. Recibimos tus datos y te enviaremos por correo un enlace de pago seguro.","f.thanksDeck":"Gracias. Recibimos tu solicitud y te enviaremos por correo un enlace de pago seguro y los pasos siguientes.","f.failed":"Lo sentimos, algo salió mal y no se envió nada. Inténtalo de nuevo en unos minutos o escribe a team@crierstudio.com.","f.tooMany":"Demasiados intentos desde esta conexión. Inténtalo de nuevo más tarde.","f.consentErr":"Marca la casilla para que podamos usar tus datos.","v.business":"Escribe el nombre de tu negocio.","v.web":"Escribe tu sitio web o tu usuario de Instagram.","v.emailEmpty":"Escribe tu correo para que podamos enviarte el enlace de pago.","v.emailBad":"Revisa el correo, parece incompleto.","v.city":"Escribe la ciudad donde está tu negocio.","v.industry":"Elige el rubro más cercano.","v.address":"Escribe la dirección de tu negocio."}</script>
     </section>
 
     <section id="how" aria-labelledby="how-title">

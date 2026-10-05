@@ -233,7 +233,7 @@ function kitVars(lang) {
   const industryOptions = `<option value="">${esc(t(lang, 'f.choose'))}</option>` + INDUSTRY_VALUES.map((v, j) => `<option value="${esc(v)}">${esc(t(lang, j < 5 ? `ind.${j + 1}n` : 'ind.other'))}</option>`).join('');
   const deckLangOptions = [['en', 'English'], ['es', 'Español'], ['fr', 'Français'], ['ar', 'العربية'], ['ar-en', t(lang, 'f.deckBi')]]
     .map(([v, n]) => `<option value="${v}"${v === lang ? ' selected' : ''}>${esc(n)}</option>`).join('');
-  const msgKeys = ['f.platformsErr', 'f.total', 'f.totalMonthly', 'f.toStripe', 'f.pay', 'f.sending', 'f.thanks', 'f.thanksDeck', 'f.failed', 'f.tooMany', 'f.consentErr', 'v.business', 'v.web', 'v.emailEmpty', 'v.emailBad', 'v.city', 'v.industry', 'v.address'];
+  const msgKeys = ['pay.note', 'pay.noteCheckout', 'f.platformsErr', 'f.total', 'f.totalMonthly', 'f.toStripe', 'f.pay', 'f.sending', 'f.thanks', 'f.thanksDeck', 'f.failed', 'f.tooMany', 'f.consentErr', 'v.business', 'v.web', 'v.emailEmpty', 'v.emailBad', 'v.city', 'v.industry', 'v.address'];
   const formMsgs = jsonScript(Object.fromEntries(msgKeys.map((k) => [k, t(lang, k)])));
   const platformChecks = PRICING.platforms.map((id, i) => `<label class="opt"><input type="checkbox" name="platform" value="${esc(id)}"${i === 0 ? ' checked' : ''}><span>${h(lang, 'plat.' + id)}</span></label>`).join('');
   return { kitPages, kitList: ticks(lang, 'pkg.kit', 'cols'), industryOptions, deckLangOptions, formMsgs, endpoint: ENDPOINT, flow: flow(lang, 3, 'how'),

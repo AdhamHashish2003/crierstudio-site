@@ -415,7 +415,7 @@
  "f.platformsErr": "اختر منصة واحدة على الأقل.",
  "f.total": "الإجمالي اليوم: {amount}",
  "f.totalMonthly": "الإجمالي: {amount} شهريًا",
- "f.toStripe": "جارٍ فتح صفحة الدفع الآمن...",
+ "f.toStripe": "جارٍ فتح صفحة الدفع الآمن في Stripe، يستغرق ذلك بضع ثوانٍ...",
  "f.pay": "المتابعة إلى الدفع الآمن",
  "plat.instagram": "Instagram",
  "plat.tiktok": "TikTok",
@@ -425,5 +425,6 @@
  "plan.live": "{name} · {platforms} · {price}{per}",
  "plan.perShort": "/شهريًا",
  "plan.pickPlatforms": "منصاتك",
- "plan.extraNote": "كل منصة إضافية مجموعة كاملة ثانية مصنوعة لتلك المنصة."
+ "plan.extraNote": "كل منصة إضافية مجموعة كاملة ثانية مصنوعة لتلك المنصة.",
+ "pay.noteCheckout": "ستدفع بأمان عبر Stripe، ويصلك رابط الدخول بالبريد الإلكتروني بعدها مباشرة."
 }

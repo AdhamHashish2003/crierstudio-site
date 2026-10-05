@@ -415,7 +415,7 @@
  "f.platformsErr": "Choisissez au moins une plateforme.",
  "f.total": "Total aujourd'hui : {amount}",
  "f.totalMonthly": "Total : {amount} par mois",
- "f.toStripe": "Ouverture du paiement sécurisé...",
+ "f.toStripe": "Ouverture du paiement sécurisé Stripe. Cela prend quelques secondes...",
  "f.pay": "Continuer vers le paiement sécurisé",
  "plat.instagram": "Instagram",
  "plat.tiktok": "TikTok",
@@ -425,5 +425,6 @@
  "plan.live": "{name} · {platforms} · {price}{per}",
  "plan.perShort": "/mois",
  "plan.pickPlatforms": "Vos plateformes",
- "plan.extraNote": "Chaque plateforme en plus est un second ensemble complet, fait pour elle."
+ "plan.extraNote": "Chaque plateforme en plus est un second ensemble complet, fait pour elle.",
+ "pay.noteCheckout": "Vous payez en toute sécurité sur Stripe. Votre lien de connexion arrive par e-mail juste après."
 }

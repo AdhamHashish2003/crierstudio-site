@@ -164,6 +164,9 @@ section{padding-block:56px;border-top:2px solid var(--ink)}
 .field input[aria-invalid="true"],.field select[aria-invalid="true"]{border-color:var(--error)}
 .err{color:var(--error);font-size:var(--step--1);font-weight:600;min-height:0}
 .status{padding:14px 16px;border:2px solid var(--ink);background:var(--paper);font-weight:600}
+.status.busy::before{content:"";display:inline-block;width:14px;height:14px;margin-inline-end:10px;vertical-align:-2px;border:2px solid currentColor;border-inline-end-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.status.busy::before{animation:none}}
 
 /* how it works */
 .flow{display:grid;gap:0}
@@ -412,7 +415,7 @@ fieldset.choice{gap:8px}
     <section id="request" aria-labelledby="form-title">
       <form class="formbox" id="snap-form" novalidate data-endpoint="https://crm-production-d789.up.railway.app/api/public/snapshot-request" data-checkout="https://crm-production-d789.up.railway.app/api/public/checkout">
         <h2 id="form-title">حدّثنا عن عملك</h2>
-        <p class="fine paybox">سنرسل إليك رابط دفع آمنًا بالبريد الإلكتروني</p>
+        <p class="fine paybox" id="paynote">سنرسل إليك رابط دفع آمنًا بالبريد الإلكتروني</p>
         <fieldset class="choice">
           <legend>ماذا تريد؟</legend>
           <label class="opt"><input type="radio" name="product" value="kit" checked><span>الحزمة الكاملة، $29</span></label>
@@ -471,7 +474,7 @@ fieldset.choice{gap:8px}
         <div class="cta-row"><button class="btn" type="submit" id="snap-submit" data-kit="اطلب الحزمة الكاملة" data-deck="اطلب Brand Deck الخاص بي" data-plan="اطلب باقتي">اطلب الحزمة الكاملة</button></div>
         <div class="status" id="snap-status" role="status" aria-live="polite" hidden></div>
       </form>
-      <script type="application/json" id="form-msgs">{"f.platformsErr":"اختر منصة واحدة على الأقل.","f.total":"الإجمالي اليوم: {amount}","f.totalMonthly":"الإجمالي: {amount} شهريًا","f.toStripe":"جارٍ فتح صفحة الدفع الآمن...","f.pay":"المتابعة إلى الدفع الآمن","f.sending":"جارٍ الإرسال...","f.thanks":"شكرًا لك. وصلتنا بياناتك وسنرسل إليك رابط دفع آمنًا بالبريد الإلكتروني.","f.thanksDeck":"شكرًا لك. وصلنا طلبك وسنرسل إليك رابط دفع آمنًا بالبريد الإلكتروني مع الخطوات التالية.","f.failed":"عذرًا، حدث خطأ ولم يُرسل شيء. يرجى المحاولة مرة أخرى بعد بضع دقائق، أو راسلنا على team@crierstudio.com.","f.tooMany":"محاولات كثيرة جدًا من هذا الاتصال. يرجى المحاولة لاحقًا.","f.consentErr":"ضع علامة في المربع حتى نتمكن من استخدام بياناتك.","v.business":"أدخل اسم نشاطك التجاري.","v.web":"أدخل موقعك الإلكتروني أو حسابك على إنستغرام.","v.emailEmpty":"أدخل بريدك الإلكتروني حتى نرسل إليك رابط الدفع.","v.emailBad":"تحقق من عنوان البريد الإلكتروني، يبدو ناقصًا.","v.city":"أدخل المدينة التي يوجد فيها نشاطك.","v.industry":"اختر أقرب مجال.","v.address":"أدخل عنوان نشاطك التجاري."}</script>
+      <script type="application/json" id="form-msgs">{"pay.note":"سنرسل إليك رابط دفع آمنًا بالبريد الإلكتروني","pay.noteCheckout":"ستدفع بأمان عبر Stripe، ويصلك رابط الدخول بالبريد الإلكتروني بعدها مباشرة.","f.platformsErr":"اختر منصة واحدة على الأقل.","f.total":"الإجمالي اليوم: {amount}","f.totalMonthly":"الإجمالي: {amount} شهريًا","f.toStripe":"جارٍ فتح صفحة الدفع الآمن في Stripe، يستغرق ذلك بضع ثوانٍ...","f.pay":"المتابعة إلى الدفع الآمن","f.sending":"جارٍ الإرسال...","f.thanks":"شكرًا لك. وصلتنا بياناتك وسنرسل إليك رابط دفع آمنًا بالبريد الإلكتروني.","f.thanksDeck":"شكرًا لك. وصلنا طلبك وسنرسل إليك رابط دفع آمنًا بالبريد الإلكتروني مع الخطوات التالية.","f.failed":"عذرًا، حدث خطأ ولم يُرسل شيء. يرجى المحاولة مرة أخرى بعد بضع دقائق، أو راسلنا على team@crierstudio.com.","f.tooMany":"محاولات كثيرة جدًا من هذا الاتصال. يرجى المحاولة لاحقًا.","f.consentErr":"ضع علامة في المربع حتى نتمكن من استخدام بياناتك.","v.business":"أدخل اسم نشاطك التجاري.","v.web":"أدخل موقعك الإلكتروني أو حسابك على إنستغرام.","v.emailEmpty":"أدخل بريدك الإلكتروني حتى نرسل إليك رابط الدفع.","v.emailBad":"تحقق من عنوان البريد الإلكتروني، يبدو ناقصًا.","v.city":"أدخل المدينة التي يوجد فيها نشاطك.","v.industry":"اختر أقرب مجال.","v.address":"أدخل عنوان نشاطك التجاري."}</script>
     </section>
 
     <section id="how" aria-labelledby="how-title">

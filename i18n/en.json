@@ -415,7 +415,7 @@
  "f.platformsErr": "Pick at least one platform.",
  "f.total": "Total today: {amount}",
  "f.totalMonthly": "Total: {amount} a month",
- "f.toStripe": "Opening secure checkout...",
+ "f.toStripe": "Opening Stripe's secure checkout. This takes a few seconds...",
  "f.pay": "Continue to secure payment",
  "plat.instagram": "Instagram",
  "plat.tiktok": "TikTok",
@@ -425,5 +425,6 @@
  "plan.live": "{name} · {platforms} · {price}{per}",
  "plan.perShort": "/mo",
  "plan.pickPlatforms": "Your platforms",
- "plan.extraNote": "Each extra platform is a full second set, made for that platform."
+ "plan.extraNote": "Each extra platform is a full second set, made for that platform.",
+ "pay.noteCheckout": "You'll pay securely on Stripe. Your sign-in link arrives by email right after."
 }

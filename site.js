@@ -85,7 +85,7 @@
     ["f-industry", function (v) { return v ? "" : "v.industry"; }],
     ["f-address", function (v) { return !isDeck() || v ? "" : "v.address"; }]
   ];
-  function say(key, bad) { status.textContent = M[key] || key; status.hidden = false; status.style.borderColor = bad ? "var(--error)" : "var(--ink)"; }
+  function say(key, bad, busy) { status.textContent = M[key] || key; status.hidden = false; status.style.borderColor = bad ? "var(--error)" : "var(--ink)"; status.classList.toggle("busy", !!busy); }
   function setErr(id, key) { var e = $("e-" + id.replace(/^f-/, "")); e.textContent = key ? (M[key] || key) : ""; e.hidden = !key; }
   // the payload is what the live intake API accepts: business, web, email, city, industry, consent, company_website,
   // plus product and lang, and for crier_deck also address and deck_lang. Every package adds its name to business.
@@ -105,7 +105,9 @@
   var checkout = form.getAttribute("data-checkout"), plats = $("plats"), live = $("live-price");
   function picked() { var o = [], c = form.querySelectorAll('input[name="platform"]'); for (var i = 0; i < c.length; i++) if (c[i].checked) o.push(c[i].value); return o; }
   function quote() {
-    if (!checkout || isDeck()) { if (plats) plats.hidden = true; return; }
+    var pn = $("paynote");
+    if (!checkout || isDeck()) { if (plats) plats.hidden = true; if (pn && M["pay.note"]) pn.textContent = M["pay.note"]; return; }
+    if (pn && M["pay.noteCheckout"]) pn.textContent = M["pay.noteCheckout"];
     plats.hidden = false; btn.textContent = M["f.pay"] || btn.textContent;
     if (!picked().length) { live.hidden = true; return; }
     fetch(checkout + "/quote?package=" + encodeURIComponent(product()) + "&platforms=" + encodeURIComponent(picked().join(",")))
@@ -114,6 +116,13 @@
       .catch(function () { live.hidden = true; });
   }
   if (checkout) {
+    // warm the connection to Stripe while the buyer fills the form, so the checkout page opens faster after Pay
+    form.addEventListener("focusin", function warm() {
+      form.removeEventListener("focusin", warm);
+      ["https://checkout.stripe.com", "https://js.stripe.com", "https://m.stripe.network"].forEach(function (u) {
+        var l = document.createElement("link"); l.rel = "preconnect"; l.href = u; l.crossOrigin = ""; document.head.appendChild(l);
+      });
+    });
     var pc = form.querySelectorAll('input[name="platform"]');
     for (var k = 0; k < pc.length; k++) pc[k].addEventListener("change", quote);
     for (var k2 = 0; k2 < radios.length; k2++) radios[k2].addEventListener("change", quote);
@@ -123,7 +132,7 @@
     var ctl2 = ("AbortController" in window) ? new AbortController() : null, t2 = setTimeout(function () { if (ctl2) ctl2.abort(); }, 20000);
     var body = { package: product(), platforms: picked(), language: de.lang, business: $("f-business").value.trim(), email: $("f-email").value.trim(),
       website_or_handle: $("f-web").value.trim(), city: $("f-city").value.trim(), industry: $("f-industry").value, consent: true };
-    btn.disabled = true; say("f.toStripe", false);
+    btn.disabled = true; say("f.toStripe", false, true);
     return fetch(checkout, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: ctl2 ? ctl2.signal : undefined })
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, body: j }; }); })
       .then(function (res) {

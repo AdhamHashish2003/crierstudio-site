@@ -111,6 +111,9 @@ section{padding-block:56px;border-top:2px solid var(--ink)}
 .field input[aria-invalid="true"],.field select[aria-invalid="true"]{border-color:var(--error)}
 .err{color:var(--error);font-size:var(--step--1);font-weight:600;min-height:0}
 .status{padding:14px 16px;border:2px solid var(--ink);background:var(--paper);font-weight:600}
+.status.busy::before{content:"";display:inline-block;width:14px;height:14px;margin-inline-end:10px;vertical-align:-2px;border:2px solid currentColor;border-inline-end-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.status.busy::before{animation:none}}
 
 /* how it works */
 .flow{display:grid;gap:0}
