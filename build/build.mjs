@@ -35,8 +35,13 @@ const INDUSTRY_VALUES = ['Cafés and dessert shops', 'Salons', 'Gyms and studios
 // ---------- products + payment links ----------
 // payment-links.json (repo root) holds one entry per product. Empty = the Buy button opens the request form with the product
 // preselected ("We'll email you a secure payment link"). A filled-in https:// link (a Stripe Payment Link) = the button goes straight to it.
-const PRICES = { kit: 29, visible: 45, growing: 60, deck: 250 }; // USD, shown as-is in every language
-const MONTHLY = new Set(['visible', 'growing']); // billed monthly; kit and deck are one-time
+// Every price and count comes from data/pricing.json, written by the UMA repo's portal/scripts/publish-pricing.cjs from
+// portal/lib/pricing.json (the one price list). Texts use {price:<id>}, {extra:<id>} (extra platform), {plat:<id>}
+// (platforms included) and {n:<id>.<item>} (a count). Never write a price or a count into i18n or templates.
+const PRICING = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'pricing.json'), 'utf8'));
+const PKG = Object.fromEntries(PRICING.packages.map((p) => [p.id, p]));
+const PRICES = Object.fromEntries(PRICING.packages.map((p) => [p.id, p.price])); // USD, shown as-is in every language
+const MONTHLY = new Set(PRICING.packages.filter((p) => p.billing === 'monthly').map((p) => p.id)); // billed monthly; kit and deck are one-time
 // product names are i18n keys (name.<id>) so every language shows its own name
 const PRODUCTS = Object.keys(PRICES);
 const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
@@ -65,9 +70,16 @@ function raw(lang, key) {
   used.add(key);
   const v = dicts[lang][key];
   if (v == null) throw new Error(`missing i18n key ${key} (${lang})`); // strict: no silent fallback to English
-  return v;
+  return fillPricing(v, key);
 }
 const vars = { brand: BRAND, email: EMAIL };
+function fillPricing(v, key) {
+  const need = (x, what) => { if (x == null) throw new Error(`i18n ${key}: ${what} is not in data/pricing.json`); return x; };
+  return v.replace(/\{price:(\w+)\}/g, (m, id) => '$' + need(PKG[id]?.price, 'price ' + id))
+    .replace(/\{extra:(\w+)\}/g, (m, id) => '$' + need(PKG[id]?.extra_platform_price, 'extra platform price ' + id))
+    .replace(/\{plat:(\w+)\}/g, (m, id) => String(need(PKG[id]?.platforms_included, 'platforms of ' + id)))
+    .replace(/\{n:(\w+)\.(\w+)\}/g, (m, id, item) => String(need(PKG[id]?.items?.[item], `count ${id}.${item}`)));
+}
 const t = (lang, key) => raw(lang, key).replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m).replace(/<\/?(?:b|a)>/g, '');
 function h(lang, key, href) {
   let s = raw(lang, key).replace(/\{(\w+)\}/g, (m, k) => (k === 'email' ? '\u0001E\u0001' : vars[k] ?? m));

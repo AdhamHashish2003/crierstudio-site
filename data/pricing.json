@@ -1,0 +1,88 @@
+{
+ "generated_from": "portal/lib/pricing.json sha256 a5240254ce5f91864dba6d3f9fe5966890b41273ec860a3a271f6dcd2e606710",
+ "currency": "USD",
+ "packages": [
+  {
+   "id": "kit",
+   "name": "The Complete Kit",
+   "price": 29,
+   "billing": "once",
+   "platforms_included": 1,
+   "items": {
+    "brand_book": 1,
+    "competitor_profiles": 3,
+    "posts": 10,
+    "stories": 5,
+    "reels": 1,
+    "mockups": 11,
+    "campaign_concepts": 1,
+    "ad_copies": 3,
+    "seo_priorities": 1,
+    "plan_30d": 1,
+    "revision_rounds": 1
+   }
+  },
+  {
+   "id": "visible",
+   "name": "Stay Visible",
+   "price": 45,
+   "billing": "monthly",
+   "platforms_included": 1,
+   "extra_platform_price": 20,
+   "items": {
+    "posts": 10,
+    "stories": 10,
+    "reels": 2,
+    "mockups": 2,
+    "calendar": 1,
+    "recap": 1,
+    "revision_rounds": 1
+   }
+  },
+  {
+   "id": "growing",
+   "name": "Keep Growing",
+   "price": 60,
+   "billing": "monthly",
+   "platforms_included": 1,
+   "extra_platform_price": 30,
+   "items": {
+    "posts": 20,
+    "stories": 20,
+    "reels": 4,
+    "mockups": 4,
+    "campaign_concepts": 1,
+    "ad_copies": 6,
+    "competitor_update": 1,
+    "seo_brief": 1,
+    "performance_review": 1,
+    "calendar": 1,
+    "recap": 1,
+    "revision_rounds": 2
+   }
+  },
+  {
+   "id": "deck",
+   "name": "Brand Deck",
+   "price": 250,
+   "billing": "once",
+   "items": {
+    "deck_screen_pdf": 1,
+    "deck_print_pdf": 1,
+    "products": 11,
+    "revision_rounds": 1
+   }
+  }
+ ],
+ "platforms": [
+  "instagram",
+  "tiktok",
+  "facebook",
+  "youtube_shorts",
+  "linkedin"
+ ],
+ "rules": {
+  "first_month_includes_kit": true,
+  "extra_platform_is_full_adaptation": true
+ }
+}

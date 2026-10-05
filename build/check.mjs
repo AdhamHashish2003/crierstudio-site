@@ -11,6 +11,14 @@ const PRODUCTS = ['kit', 'visible', 'growing', 'deck'];
 let fail = 0; const ok = (c, m) => { if (!c) { fail++; console.log('FAIL', m); } };
 const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const d = Object.fromEntries(LANGS.map((l) => [l, JSON.parse(rd(`i18n/${l}.json`))]));
+// One price list (U1, 2026-10-05): prices and counts come from data/pricing.json (written by the UMA repo's
+// portal/scripts/publish-pricing.cjs from portal/lib/pricing.json). The texts carry placeholders, never a price.
+const PRICING = JSON.parse(rd('data/pricing.json'));
+ok(/^portal\/lib\/pricing\.json sha256 [0-9a-f]{64}$/.test(PRICING.generated_from || ''), 'data/pricing.json was not written by publish-pricing.cjs');
+const PRICE_NUMS = [...new Set(PRICING.packages.flatMap((p) => [p.price, p.extra_platform_price].filter(Boolean)))];
+const PRICE_RE = new RegExp('\\$\\s?(' + PRICE_NUMS.join('|') + ')(?!\\d)|(?<![\\d.,])(' + PRICE_NUMS.join('|') + ')\\s?\\$');
+for (const l of LANGS) for (const [k, v] of Object.entries(d[l])) ok(!PRICE_RE.test(v), `a price is written into i18n ${l}:${k} (use {price:<id>})`);
+for (const f of fs.readdirSync(path.join(ROOT, 'templates'))) ok(!PRICE_RE.test(rd('templates/' + f)), `a price is written into templates/${f}`);
 const en = Object.keys(d.en).sort();
 for (const l of LANGS.slice(1)) { const k = Object.keys(d[l]).sort(); ok(JSON.stringify(k) === JSON.stringify(en), `i18n key set differs in ${l}: ${k.filter((x) => !en.includes(x)).concat(en.filter((x) => !k.includes(x))).join(',')}`); }
 for (const l of LANGS) for (const [k, v] of Object.entries(d[l])) ok(typeof v === 'string' && v.trim() !== '', `empty ${l}:${k}`);
@@ -34,7 +42,10 @@ for (const l of LANGS) for (const p of PAGES) {
   const vis = h.replace(/<style>[\s\S]*?<\/style>/, '').replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ');
   ok(!/\bfree\b|\bgratis\b|gratuit|sin cargo|مجان|بدون مقابل/i.test(vis), `free wording in ${file}`);
   ok(!/Your shop, heard/i.test(h), `tagline in ${file}`);
-  if (p === 'pricing/') for (const pr of ['$29', '$45', '$60', '$250']) ok(vis.includes(pr), `price ${pr} on ${file}`);
+  if (p === 'pricing/') for (const pk of PRICING.packages) {
+    ok(vis.includes('$' + pk.price), `price $${pk.price} (${pk.id}, data/pricing.json) on ${file}`);
+    if (pk.extra_platform_price) ok(vis.includes('$' + pk.extra_platform_price), `extra platform $${pk.extra_platform_price} (${pk.id}) on ${file}`);
+  }
   if (p === 'pricing/') ok((h.match(/data-product="/g) || []).length === 4, `4 buy buttons on ${file}`);
   // retired packages and prices must not come back (Snapshot, Starter/Growth/Pro, Crier Deck + Print Kit, old discounts)
   for (const bad of [/\$(99|199|399|149|249|39)\b/, /Snapshot/, /Starter/, /Growth/, /\bPro\b/, /Print Kit/, /Crier Deck/]) ok(!bad.test(vis + ' ' + (h.match(/<script type="application\/ld\+json">[\s\S]*?<\/script>/) || [''])[0] + ' ' + (h.match(/<meta[^>]+>/g) || []).join(' ')), `retired wording ${bad} in ${file}`);
