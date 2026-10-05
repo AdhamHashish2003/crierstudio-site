@@ -82,8 +82,43 @@
     if (isDeck()) { p.address = $("f-address").value.trim(); p.deck_lang = $("f-decklang").value; }
     return p;
   };
+  // L1 checkout (checkout.json on): the paid packages go to Stripe Checkout with the platforms picked and the live total
+  // (the Launchpad's quote from the one price list); the Brand Deck keeps the request form. Paid is decided by Stripe only.
+  var checkout = form.getAttribute("data-checkout"), plats = $("plats"), live = $("live-price");
+  function picked() { var o = [], c = form.querySelectorAll('input[name="platform"]'); for (var i = 0; i < c.length; i++) if (c[i].checked) o.push(c[i].value); return o; }
+  function quote() {
+    if (!checkout || isDeck()) { if (plats) plats.hidden = true; return; }
+    plats.hidden = false; btn.textContent = M["f.pay"] || btn.textContent;
+    if (!picked().length) { live.hidden = true; return; }
+    fetch(checkout + "/quote?package=" + encodeURIComponent(product()) + "&platforms=" + encodeURIComponent(picked().join(",")))
+      .then(function (r) { return r.json(); })
+      .then(function (q) { if (!q || !q.ok) { live.hidden = true; return; } live.textContent = (M[q.billing === "monthly" ? "f.totalMonthly" : "f.total"] || "{amount}").replace("{amount}", "$" + q.amount_usd); live.hidden = false; })
+      .catch(function () { live.hidden = true; });
+  }
+  if (checkout) {
+    var pc = form.querySelectorAll('input[name="platform"]');
+    for (var k = 0; k < pc.length; k++) pc[k].addEventListener("change", quote);
+    for (var k2 = 0; k2 < radios.length; k2++) radios[k2].addEventListener("change", quote);
+    quote();
+  }
+  function payNow() {
+    var ctl2 = ("AbortController" in window) ? new AbortController() : null, t2 = setTimeout(function () { if (ctl2) ctl2.abort(); }, 20000);
+    var body = { package: product(), platforms: picked(), language: de.lang, business: $("f-business").value.trim(), email: $("f-email").value.trim(),
+      website_or_handle: $("f-web").value.trim(), city: $("f-city").value.trim(), industry: $("f-industry").value, consent: true };
+    btn.disabled = true; say("f.toStripe", false);
+    return fetch(checkout, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: ctl2 ? ctl2.signal : undefined })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, body: j }; }); })
+      .then(function (res) {
+        if (res.status === 200 && res.body && res.body.url) { location.href = res.body.url; return true; }
+        if (res.status === 429) { say("f.tooMany", true); return true; }
+        return false;                              // not configured or refused: the request form still works
+      })
+      .catch(function () { return false; })
+      .then(function (done) { clearTimeout(t2); if (!done) btn.disabled = false; return done; });
+  }
   form.addEventListener("submit", function (e) {
     e.preventDefault();
+    if (checkout && !isDeck() && !picked().length) { setErr("f-platforms", "f.platformsErr"); return; }
     var firstBad = null;
     FIELDS.forEach(function (f) {
       var el = $(f[0]), key = f[1](el.value.trim());
@@ -96,6 +131,9 @@
     cb.setAttribute("aria-invalid", cb.checked ? "false" : "true");
     if (!cb.checked && !firstBad) firstBad = cb;
     if (firstBad) { status.hidden = true; firstBad.focus(); return; }
+    // Pay first; if checkout is not open yet (not configured, refused) the same click sends the request form instead
+    if (checkout && !isDeck() && !form.__noPay) { payNow().then(function (done) { if (!done) { form.__noPay = true; if (form.requestSubmit) form.requestSubmit(); } }); return; }
+    form.__noPay = false;
     var data = window.__snapPayload(), deck = isDeck();
     btn.disabled = true; say("f.sending", false);
     var ctl = ("AbortController" in window) ? new AbortController() : null;

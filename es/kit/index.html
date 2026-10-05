@@ -413,6 +413,12 @@ fieldset.choice{gap:8px}
           <label class="opt"><input type="radio" name="product" value="growing"><span>Sigue Creciendo, $60/mes</span></label>
           <label class="opt"><input type="radio" name="product" value="deck"><span>Brand Deck, $250</span></label>
         </fieldset>
+        <fieldset class="choice" id="plats" hidden>
+          <legend>¿Qué plataformas? La primera está incluida; cada una extra se adapta por completo, nunca se redimensiona.</legend>
+          <label class="opt"><input type="checkbox" name="platform" value="instagram" checked><span>Instagram</span></label><label class="opt"><input type="checkbox" name="platform" value="tiktok"><span>TikTok</span></label><label class="opt"><input type="checkbox" name="platform" value="facebook"><span>Facebook</span></label><label class="opt"><input type="checkbox" name="platform" value="youtube_shorts"><span>YouTube Shorts</span></label><label class="opt"><input type="checkbox" name="platform" value="linkedin"><span>LinkedIn</span></label>
+          <span class="err" id="e-platforms" hidden></span>
+          <p class="fine" id="live-price" aria-live="polite" hidden></p>
+        </fieldset>
         <div class="fields">
           <div class="field">
             <label for="f-business">Nombre del negocio</label>
@@ -458,7 +464,7 @@ fieldset.choice{gap:8px}
         <div class="cta-row"><button class="btn" type="submit" id="snap-submit" data-kit="Pide mi Kit Completo" data-deck="Pide mi Brand Deck" data-plan="Pide mi plan">Pide mi Kit Completo</button></div>
         <div class="status" id="snap-status" role="status" aria-live="polite" hidden></div>
       </form>
-      <script type="application/json" id="form-msgs">{"f.sending":"Enviando...","f.thanks":"Gracias. Recibimos tus datos y te enviaremos por correo un enlace de pago seguro.","f.thanksDeck":"Gracias. Recibimos tu solicitud y te enviaremos por correo un enlace de pago seguro y los pasos siguientes.","f.failed":"Lo sentimos, algo salió mal y no se envió nada. Inténtalo de nuevo en unos minutos o escribe a team@crierstudio.com.","f.tooMany":"Demasiados intentos desde esta conexión. Inténtalo de nuevo más tarde.","f.consentErr":"Marca la casilla para que podamos usar tus datos.","v.business":"Escribe el nombre de tu negocio.","v.web":"Escribe tu sitio web o tu usuario de Instagram.","v.emailEmpty":"Escribe tu correo para que podamos enviarte el enlace de pago.","v.emailBad":"Revisa el correo, parece incompleto.","v.city":"Escribe la ciudad donde está tu negocio.","v.industry":"Elige el rubro más cercano.","v.address":"Escribe la dirección de tu negocio."}</script>
+      <script type="application/json" id="form-msgs">{"f.platformsErr":"Elige al menos una plataforma.","f.total":"Total hoy: {amount}","f.totalMonthly":"Total: {amount} al mes","f.toStripe":"Abriendo el pago seguro...","f.pay":"Continuar al pago seguro","f.sending":"Enviando...","f.thanks":"Gracias. Recibimos tus datos y te enviaremos por correo un enlace de pago seguro.","f.thanksDeck":"Gracias. Recibimos tu solicitud y te enviaremos por correo un enlace de pago seguro y los pasos siguientes.","f.failed":"Lo sentimos, algo salió mal y no se envió nada. Inténtalo de nuevo en unos minutos o escribe a team@crierstudio.com.","f.tooMany":"Demasiados intentos desde esta conexión. Inténtalo de nuevo más tarde.","f.consentErr":"Marca la casilla para que podamos usar tus datos.","v.business":"Escribe el nombre de tu negocio.","v.web":"Escribe tu sitio web o tu usuario de Instagram.","v.emailEmpty":"Escribe tu correo para que podamos enviarte el enlace de pago.","v.emailBad":"Revisa el correo, parece incompleto.","v.city":"Escribe la ciudad donde está tu negocio.","v.industry":"Elige el rubro más cercano.","v.address":"Escribe la dirección de tu negocio."}</script>
     </section>
 
     <section id="how" aria-labelledby="how-title">

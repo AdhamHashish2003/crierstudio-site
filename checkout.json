@@ -1,0 +1,5 @@
+{
+ "enabled": false,
+ "endpoint": "https://crm-production-d789.up.railway.app/api/public/checkout",
+ "about": "L1: when enabled, the request form becomes Pay: the buyer picks platforms, sees the live total (the Launchpad's quote from pricing.json) and goes to Stripe Checkout; the Brand Deck keeps the request form. Off until Adham turns it on (Stripe key set on the Launchpad)."
+}

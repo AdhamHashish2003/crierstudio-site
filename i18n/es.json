@@ -410,5 +410,16 @@
  "foot.cookies": "Configuración de cookies",
  "privacy.ga.h": "Google Analytics y cookies",
  "privacy.ga.p1": "Usamos Google Analytics 4, un servicio de Google LLC, para ver qué páginas de este sitio son útiles para los visitantes. Registra las páginas que visitas y cómo llegaste a ellas, tu ubicación aproximada (país y ciudad, deducidos de la dirección de tu conexión) y tu dispositivo, navegador y tamaño de pantalla. Google Analytics 4 no guarda tu dirección IP. Las funciones publicitarias de Google están desactivadas, así que estos datos no se usan para anuncios. Google puede tratarlos en Estados Unidos y los conserva durante el plazo fijado en nuestra cuenta, como máximo 14 meses.",
- "privacy.ga.p2": "Google Analytics solo instala cookies después de que elijas Aceptar en la barra de cookies. Hasta que elijas, o si eliges Rechazar, no instala cookies; Google solo recibe entonces señales sin cookies (por ejemplo, que se vio una página) que no llevan ningún identificador de cookie. Tu elección se guarda en tu navegador. Para cambiarla, usa el enlace <a>Configuración de cookies</a> al pie de cada página, o borra los datos de este sitio en tu navegador y la barra volverá a preguntarte."
+ "privacy.ga.p2": "Google Analytics solo instala cookies después de que elijas Aceptar en la barra de cookies. Hasta que elijas, o si eliges Rechazar, no instala cookies; Google solo recibe entonces señales sin cookies (por ejemplo, que se vio una página) que no llevan ningún identificador de cookie. Tu elección se guarda en tu navegador. Para cambiarla, usa el enlace <a>Configuración de cookies</a> al pie de cada página, o borra los datos de este sitio en tu navegador y la barra volverá a preguntarte.",
+ "f.platforms": "¿Qué plataformas? La primera está incluida; cada una extra se adapta por completo, nunca se redimensiona.",
+ "f.platformsErr": "Elige al menos una plataforma.",
+ "f.total": "Total hoy: {amount}",
+ "f.totalMonthly": "Total: {amount} al mes",
+ "f.toStripe": "Abriendo el pago seguro...",
+ "f.pay": "Continuar al pago seguro",
+ "plat.instagram": "Instagram",
+ "plat.tiktok": "TikTok",
+ "plat.facebook": "Facebook",
+ "plat.youtube_shorts": "YouTube Shorts",
+ "plat.linkedin": "LinkedIn"
 }

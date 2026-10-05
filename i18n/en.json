@@ -410,5 +410,16 @@
  "foot.cookies": "Cookie settings",
  "privacy.ga.h": "Google Analytics and cookies",
  "privacy.ga.p1": "We use Google Analytics 4, a service of Google LLC, to see which pages of this site help visitors. It records the pages you visit and how you reached them, your approximate location (country and city, worked out from your connection's address) and your device, browser and screen size. Google Analytics 4 does not store your IP address. Google's advertising features are switched off, so this data is not used for ads. Google may process it in the United States and keeps it for the period set in our account, at most 14 months.",
- "privacy.ga.p2": "Google Analytics sets cookies only after you choose Accept in the cookie bar. Until you choose, or if you choose Decline, it sets no cookies; Google then receives only signals without cookies (for example, that a page was viewed) that carry no cookie identifier. Your choice is saved in your browser. To change it, use the <a>Cookie settings</a> link at the bottom of every page, or clear this site's data in your browser and the bar will ask again."
+ "privacy.ga.p2": "Google Analytics sets cookies only after you choose Accept in the cookie bar. Until you choose, or if you choose Decline, it sets no cookies; Google then receives only signals without cookies (for example, that a page was viewed) that carry no cookie identifier. Your choice is saved in your browser. To change it, use the <a>Cookie settings</a> link at the bottom of every page, or clear this site's data in your browser and the bar will ask again.",
+ "f.platforms": "Which platforms? The first is included; each extra one is fully adapted, never resized.",
+ "f.platformsErr": "Pick at least one platform.",
+ "f.total": "Total today: {amount}",
+ "f.totalMonthly": "Total: {amount} a month",
+ "f.toStripe": "Opening secure checkout...",
+ "f.pay": "Continue to secure payment",
+ "plat.instagram": "Instagram",
+ "plat.tiktok": "TikTok",
+ "plat.facebook": "Facebook",
+ "plat.youtube_shorts": "YouTube Shorts",
+ "plat.linkedin": "LinkedIn"
 }

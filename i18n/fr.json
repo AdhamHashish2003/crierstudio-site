@@ -410,5 +410,16 @@
  "foot.cookies": "Paramètres des cookies",
  "privacy.ga.h": "Google Analytics et cookies",
  "privacy.ga.p1": "Nous utilisons Google Analytics 4, un service de Google LLC, pour voir quelles pages de ce site sont utiles aux visiteurs. Il enregistre les pages que vous consultez et la façon dont vous y êtes arrivé, votre position approximative (pays et ville, déduits de l'adresse de votre connexion) ainsi que votre appareil, votre navigateur et la taille de votre écran. Google Analytics 4 ne conserve pas votre adresse IP. Les fonctions publicitaires de Google sont désactivées : ces données ne servent pas à la publicité. Google peut les traiter aux États-Unis et les conserve pendant la durée fixée dans notre compte, 14 mois au maximum.",
- "privacy.ga.p2": "Google Analytics ne dépose des cookies qu'après que vous avez choisi Accepter dans le bandeau des cookies. Tant que vous n'avez pas choisi, ou si vous choisissez Refuser, il ne dépose aucun cookie ; Google ne reçoit alors que des signaux sans cookies (par exemple, qu'une page a été vue) qui ne portent aucun identifiant de cookie. Votre choix est enregistré dans votre navigateur. Pour le modifier, utilisez le lien <a>Paramètres des cookies</a> en bas de chaque page, ou effacez les données de ce site dans votre navigateur et le bandeau vous reposera la question."
+ "privacy.ga.p2": "Google Analytics ne dépose des cookies qu'après que vous avez choisi Accepter dans le bandeau des cookies. Tant que vous n'avez pas choisi, ou si vous choisissez Refuser, il ne dépose aucun cookie ; Google ne reçoit alors que des signaux sans cookies (par exemple, qu'une page a été vue) qui ne portent aucun identifiant de cookie. Votre choix est enregistré dans votre navigateur. Pour le modifier, utilisez le lien <a>Paramètres des cookies</a> en bas de chaque page, ou effacez les données de ce site dans votre navigateur et le bandeau vous reposera la question.",
+ "f.platforms": "Quelles plateformes ? La première est incluse ; chaque plateforme en plus est entièrement adaptée, jamais redimensionnée.",
+ "f.platformsErr": "Choisissez au moins une plateforme.",
+ "f.total": "Total aujourd'hui : {amount}",
+ "f.totalMonthly": "Total : {amount} par mois",
+ "f.toStripe": "Ouverture du paiement sécurisé...",
+ "f.pay": "Continuer vers le paiement sécurisé",
+ "plat.instagram": "Instagram",
+ "plat.tiktok": "TikTok",
+ "plat.facebook": "Facebook",
+ "plat.youtube_shorts": "YouTube Shorts",
+ "plat.linkedin": "LinkedIn"
 }

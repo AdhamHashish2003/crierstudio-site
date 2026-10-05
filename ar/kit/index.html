@@ -415,6 +415,12 @@ fieldset.choice{gap:8px}
           <label class="opt"><input type="radio" name="product" value="growing"><span>نمو مستمر، $60 شهريًا</span></label>
           <label class="opt"><input type="radio" name="product" value="deck"><span>Brand Deck، $250</span></label>
         </fieldset>
+        <fieldset class="choice" id="plats" hidden>
+          <legend>أي المنصات؟ الأولى مشمولة؛ وكل منصة إضافية تُكيَّف بالكامل ولا يُغيَّر حجمها فقط.</legend>
+          <label class="opt"><input type="checkbox" name="platform" value="instagram" checked><span>Instagram</span></label><label class="opt"><input type="checkbox" name="platform" value="tiktok"><span>TikTok</span></label><label class="opt"><input type="checkbox" name="platform" value="facebook"><span>Facebook</span></label><label class="opt"><input type="checkbox" name="platform" value="youtube_shorts"><span>YouTube Shorts</span></label><label class="opt"><input type="checkbox" name="platform" value="linkedin"><span>LinkedIn</span></label>
+          <span class="err" id="e-platforms" hidden></span>
+          <p class="fine" id="live-price" aria-live="polite" hidden></p>
+        </fieldset>
         <div class="fields">
           <div class="field">
             <label for="f-business">اسم النشاط التجاري</label>
@@ -460,7 +466,7 @@ fieldset.choice{gap:8px}
         <div class="cta-row"><button class="btn" type="submit" id="snap-submit" data-kit="اطلب الحزمة الكاملة" data-deck="اطلب Brand Deck الخاص بي" data-plan="اطلب باقتي">اطلب الحزمة الكاملة</button></div>
         <div class="status" id="snap-status" role="status" aria-live="polite" hidden></div>
       </form>
-      <script type="application/json" id="form-msgs">{"f.sending":"جارٍ الإرسال...","f.thanks":"شكرًا لك. وصلتنا بياناتك وسنرسل إليك رابط دفع آمنًا بالبريد الإلكتروني.","f.thanksDeck":"شكرًا لك. وصلنا طلبك وسنرسل إليك رابط دفع آمنًا بالبريد الإلكتروني مع الخطوات التالية.","f.failed":"عذرًا، حدث خطأ ولم يُرسل شيء. يرجى المحاولة مرة أخرى بعد بضع دقائق، أو راسلنا على team@crierstudio.com.","f.tooMany":"محاولات كثيرة جدًا من هذا الاتصال. يرجى المحاولة لاحقًا.","f.consentErr":"ضع علامة في المربع حتى نتمكن من استخدام بياناتك.","v.business":"أدخل اسم نشاطك التجاري.","v.web":"أدخل موقعك الإلكتروني أو حسابك على إنستغرام.","v.emailEmpty":"أدخل بريدك الإلكتروني حتى نرسل إليك رابط الدفع.","v.emailBad":"تحقق من عنوان البريد الإلكتروني، يبدو ناقصًا.","v.city":"أدخل المدينة التي يوجد فيها نشاطك.","v.industry":"اختر أقرب مجال.","v.address":"أدخل عنوان نشاطك التجاري."}</script>
+      <script type="application/json" id="form-msgs">{"f.platformsErr":"اختر منصة واحدة على الأقل.","f.total":"الإجمالي اليوم: {amount}","f.totalMonthly":"الإجمالي: {amount} شهريًا","f.toStripe":"جارٍ فتح صفحة الدفع الآمن...","f.pay":"المتابعة إلى الدفع الآمن","f.sending":"جارٍ الإرسال...","f.thanks":"شكرًا لك. وصلتنا بياناتك وسنرسل إليك رابط دفع آمنًا بالبريد الإلكتروني.","f.thanksDeck":"شكرًا لك. وصلنا طلبك وسنرسل إليك رابط دفع آمنًا بالبريد الإلكتروني مع الخطوات التالية.","f.failed":"عذرًا، حدث خطأ ولم يُرسل شيء. يرجى المحاولة مرة أخرى بعد بضع دقائق، أو راسلنا على team@crierstudio.com.","f.tooMany":"محاولات كثيرة جدًا من هذا الاتصال. يرجى المحاولة لاحقًا.","f.consentErr":"ضع علامة في المربع حتى نتمكن من استخدام بياناتك.","v.business":"أدخل اسم نشاطك التجاري.","v.web":"أدخل موقعك الإلكتروني أو حسابك على إنستغرام.","v.emailEmpty":"أدخل بريدك الإلكتروني حتى نرسل إليك رابط الدفع.","v.emailBad":"تحقق من عنوان البريد الإلكتروني، يبدو ناقصًا.","v.city":"أدخل المدينة التي يوجد فيها نشاطك.","v.industry":"اختر أقرب مجال.","v.address":"أدخل عنوان نشاطك التجاري."}</script>
     </section>
 
     <section id="how" aria-labelledby="how-title">

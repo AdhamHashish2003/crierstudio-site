@@ -413,6 +413,12 @@ fieldset.choice{gap:8px}
           <label class="opt"><input type="radio" name="product" value="growing"><span>Keep Growing, $60/month</span></label>
           <label class="opt"><input type="radio" name="product" value="deck"><span>Brand Deck, $250</span></label>
         </fieldset>
+        <fieldset class="choice" id="plats" hidden>
+          <legend>Which platforms? The first is included; each extra one is fully adapted, never resized.</legend>
+          <label class="opt"><input type="checkbox" name="platform" value="instagram" checked><span>Instagram</span></label><label class="opt"><input type="checkbox" name="platform" value="tiktok"><span>TikTok</span></label><label class="opt"><input type="checkbox" name="platform" value="facebook"><span>Facebook</span></label><label class="opt"><input type="checkbox" name="platform" value="youtube_shorts"><span>YouTube Shorts</span></label><label class="opt"><input type="checkbox" name="platform" value="linkedin"><span>LinkedIn</span></label>
+          <span class="err" id="e-platforms" hidden></span>
+          <p class="fine" id="live-price" aria-live="polite" hidden></p>
+        </fieldset>
         <div class="fields">
           <div class="field">
             <label for="f-business">Business name</label>
@@ -458,7 +464,7 @@ fieldset.choice{gap:8px}
         <div class="cta-row"><button class="btn" type="submit" id="snap-submit" data-kit="Request my Complete Kit" data-deck="Request my Brand Deck" data-plan="Request my plan">Request my Complete Kit</button></div>
         <div class="status" id="snap-status" role="status" aria-live="polite" hidden></div>
       </form>
-      <script type="application/json" id="form-msgs">{"f.sending":"Sending...","f.thanks":"Thanks. We've got your details and will email you a secure payment link.","f.thanksDeck":"Thanks. We've got your request and will email you a secure payment link and what comes next.","f.failed":"Sorry, something went wrong and nothing was sent. Please try again in a few minutes, or email team@crierstudio.com.","f.tooMany":"Too many tries from this connection. Please try again later.","f.consentErr":"Tick the box so we can use your details.","v.business":"Enter your business name.","v.web":"Enter your website or Instagram handle.","v.emailEmpty":"Enter your email so we can send your payment link.","v.emailBad":"Check the email address, it looks incomplete.","v.city":"Enter the city your business is in.","v.industry":"Choose the closest industry.","v.address":"Enter your business address."}</script>
+      <script type="application/json" id="form-msgs">{"f.platformsErr":"Pick at least one platform.","f.total":"Total today: {amount}","f.totalMonthly":"Total: {amount} a month","f.toStripe":"Opening secure checkout...","f.pay":"Continue to secure payment","f.sending":"Sending...","f.thanks":"Thanks. We've got your details and will email you a secure payment link.","f.thanksDeck":"Thanks. We've got your request and will email you a secure payment link and what comes next.","f.failed":"Sorry, something went wrong and nothing was sent. Please try again in a few minutes, or email team@crierstudio.com.","f.tooMany":"Too many tries from this connection. Please try again later.","f.consentErr":"Tick the box so we can use your details.","v.business":"Enter your business name.","v.web":"Enter your website or Instagram handle.","v.emailEmpty":"Enter your email so we can send your payment link.","v.emailBad":"Check the email address, it looks incomplete.","v.city":"Enter the city your business is in.","v.industry":"Choose the closest industry.","v.address":"Enter your business address."}</script>
     </section>
 
     <section id="how" aria-labelledby="how-title">

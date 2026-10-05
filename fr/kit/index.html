@@ -413,6 +413,12 @@ fieldset.choice{gap:8px}
           <label class="opt"><input type="radio" name="product" value="growing"><span>Continuez à grandir, $60/mois</span></label>
           <label class="opt"><input type="radio" name="product" value="deck"><span>Brand Deck, $250</span></label>
         </fieldset>
+        <fieldset class="choice" id="plats" hidden>
+          <legend>Quelles plateformes ? La première est incluse ; chaque plateforme en plus est entièrement adaptée, jamais redimensionnée.</legend>
+          <label class="opt"><input type="checkbox" name="platform" value="instagram" checked><span>Instagram</span></label><label class="opt"><input type="checkbox" name="platform" value="tiktok"><span>TikTok</span></label><label class="opt"><input type="checkbox" name="platform" value="facebook"><span>Facebook</span></label><label class="opt"><input type="checkbox" name="platform" value="youtube_shorts"><span>YouTube Shorts</span></label><label class="opt"><input type="checkbox" name="platform" value="linkedin"><span>LinkedIn</span></label>
+          <span class="err" id="e-platforms" hidden></span>
+          <p class="fine" id="live-price" aria-live="polite" hidden></p>
+        </fieldset>
         <div class="fields">
           <div class="field">
             <label for="f-business">Nom de l&#39;entreprise</label>
@@ -458,7 +464,7 @@ fieldset.choice{gap:8px}
         <div class="cta-row"><button class="btn" type="submit" id="snap-submit" data-kit="Demander mon Kit complet" data-deck="Demander mon Brand Deck" data-plan="Demander ma formule">Demander mon Kit complet</button></div>
         <div class="status" id="snap-status" role="status" aria-live="polite" hidden></div>
       </form>
-      <script type="application/json" id="form-msgs">{"f.sending":"Envoi en cours...","f.thanks":"Merci. Nous avons bien reçu vos informations et vous enverrons un lien de paiement sécurisé par e-mail.","f.thanksDeck":"Merci. Nous avons bien reçu votre demande et vous enverrons par e-mail un lien de paiement sécurisé et la suite.","f.failed":"Désolé, une erreur s'est produite et rien n'a été envoyé. Veuillez réessayer dans quelques minutes ou écrire à team@crierstudio.com.","f.tooMany":"Trop de tentatives depuis cette connexion. Veuillez réessayer plus tard.","f.consentErr":"Cochez la case pour que nous puissions utiliser vos informations.","v.business":"Saisissez le nom de votre entreprise.","v.web":"Saisissez votre site web ou votre identifiant Instagram.","v.emailEmpty":"Saisissez votre e-mail pour que nous puissions vous envoyer le lien de paiement.","v.emailBad":"Vérifiez l'adresse e-mail, elle semble incomplète.","v.city":"Saisissez la ville de votre entreprise.","v.industry":"Choisissez le secteur le plus proche.","v.address":"Saisissez l'adresse de votre commerce."}</script>
+      <script type="application/json" id="form-msgs">{"f.platformsErr":"Choisissez au moins une plateforme.","f.total":"Total aujourd'hui : {amount}","f.totalMonthly":"Total : {amount} par mois","f.toStripe":"Ouverture du paiement sécurisé...","f.pay":"Continuer vers le paiement sécurisé","f.sending":"Envoi en cours...","f.thanks":"Merci. Nous avons bien reçu vos informations et vous enverrons un lien de paiement sécurisé par e-mail.","f.thanksDeck":"Merci. Nous avons bien reçu votre demande et vous enverrons par e-mail un lien de paiement sécurisé et la suite.","f.failed":"Désolé, une erreur s'est produite et rien n'a été envoyé. Veuillez réessayer dans quelques minutes ou écrire à team@crierstudio.com.","f.tooMany":"Trop de tentatives depuis cette connexion. Veuillez réessayer plus tard.","f.consentErr":"Cochez la case pour que nous puissions utiliser vos informations.","v.business":"Saisissez le nom de votre entreprise.","v.web":"Saisissez votre site web ou votre identifiant Instagram.","v.emailEmpty":"Saisissez votre e-mail pour que nous puissions vous envoyer le lien de paiement.","v.emailBad":"Vérifiez l'adresse e-mail, elle semble incomplète.","v.city":"Saisissez la ville de votre entreprise.","v.industry":"Choisissez le secteur le plus proche.","v.address":"Saisissez l'adresse de votre commerce."}</script>
     </section>
 
     <section id="how" aria-labelledby="how-title">

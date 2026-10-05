@@ -20,7 +20,7 @@
     </section>
 
     <section id="request" aria-labelledby="form-title">
-      <form class="formbox" id="snap-form" novalidate data-endpoint="{{=endpoint}}">
+      <form class="formbox" id="snap-form" novalidate data-endpoint="{{=endpoint}}"{{=checkoutAttr}}>
         <h2 id="form-title">{{t:form.title}}</h2>
         <p class="fine paybox">{{t:pay.note}}</p>
         <fieldset class="choice">
@@ -29,6 +29,12 @@
           <label class="opt"><input type="radio" name="product" value="visible"><span>{{t:f.optVisible}}</span></label>
           <label class="opt"><input type="radio" name="product" value="growing"><span>{{t:f.optGrowing}}</span></label>
           <label class="opt"><input type="radio" name="product" value="deck"><span>{{t:f.optDeck}}</span></label>
+        </fieldset>
+        <fieldset class="choice" id="plats" hidden>
+          <legend>{{t:f.platforms}}</legend>
+          {{=platformChecks}}
+          <span class="err" id="e-platforms" hidden></span>
+          <p class="fine" id="live-price" aria-live="polite" hidden></p>
         </fieldset>
         <div class="fields">
           <div class="field">
