@@ -29,6 +29,21 @@
     links[i].addEventListener("click", function () { try { localStorage.setItem(KEY, this.getAttribute("lang")); } catch (e) {} });
   }
 
+  // P1: pricing page cards: pick platforms, the live price follows (numbers from data/pricing.json, written into the card)
+  var picks = document.querySelectorAll(".platpick");
+  for (var pi = 0; pi < picks.length; pi++) (function (fs) {
+    var card = fs.closest(".plan"), buy = card && card.querySelector(".buyrow a"), boxes = fs.querySelectorAll('input[type="checkbox"]'), out = fs.querySelector(".liveprice");
+    function names() { var o = [], v = []; for (var i = 0; i < boxes.length; i++) if (boxes[i].checked) { o.push(boxes[i].parentNode.textContent.trim()); v.push(boxes[i].value); } return { o: o, v: v }; }
+    function update() {
+      var n = names(); if (!n.v.length) { boxes[0].checked = true; n = names(); }
+      var price = +fs.dataset.price + Math.max(0, n.v.length - (+fs.dataset.included || 1)) * +fs.dataset.extra;
+      out.textContent = fs.dataset.tpl.replace("{name}", fs.dataset.name).replace("{platforms}", n.o.join(" + ")).replace("{price}", "$" + price).replace("{per}", fs.dataset.per);
+      if (buy) { try { var u = new URL(buy.getAttribute("href"), location.href); if (u.origin === location.origin) { u.searchParams.set("platforms", n.v.join(",")); buy.setAttribute("href", u.pathname + u.search + u.hash); } } catch (e) {} }
+    }
+    for (var b = 0; b < boxes.length; b++) boxes[b].addEventListener("change", update);
+    update();
+  })(picks[pi]);
+
   /* ---------------- request form (The Complete Kit, monthly plans, Brand Deck) ---------------- */
   var form = document.getElementById("snap-form");
   if (!form) return;
@@ -57,6 +72,9 @@
   var OLD = { snapshot: "kit", starter: "visible", growth: "growing", pro: "growing", deck_print: "deck", crier_deck: "deck" };
   if (want && OLD[want]) want = OLD[want];
   if (want) { for (var r = 0; r < radios.length; r++) if (radios[r].value === want) { for (var q2 = 0; q2 < radios.length; q2++) radios[q2].checked = radios[q2].value === want; break; } }
+  // ?platforms=instagram,tiktok (from a pricing card) ticks those platforms in the form
+  var wantPl = null; try { wantPl = new URLSearchParams(location.search).get("platforms"); } catch (e) {}
+  if (wantPl) { var wl = wantPl.split(","), pcs = form.querySelectorAll('input[name="platform"]'); for (var w = 0; w < pcs.length; w++) pcs[w].checked = wl.indexOf(pcs[w].value) > -1; }
   for (var r2 = 0; r2 < radios.length; r2++) radios[r2].addEventListener("change", sync);
   sync();
   var FIELDS = [

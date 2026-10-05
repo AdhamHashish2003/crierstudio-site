@@ -1,5 +1,5 @@
 {
- "generated_from": "portal/lib/pricing.json sha256 a5240254ce5f91864dba6d3f9fe5966890b41273ec860a3a271f6dcd2e606710",
+ "generated_from": "portal/lib/pricing.json sha256 8618f07ad8b09b4fc4ec31673daae303e5f8cea312ae8b6dead1adfa376233b5",
  "currency": "USD",
  "packages": [
   {
@@ -83,6 +83,12 @@
  ],
  "rules": {
   "first_month_includes_kit": true,
-  "extra_platform_is_full_adaptation": true
+  "extra_platform_is_full_adaptation": true,
+  "per_platform_items": [
+   "posts",
+   "stories",
+   "reels"
+  ],
+  "per_platform_items_why": "platform content is made per platform (a full adaptation, never a resize): a Keep Growing client on 2 platforms gets reels 4 + 4; every other item is per client"
  }
 }

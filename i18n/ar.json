@@ -421,5 +421,9 @@
  "plat.tiktok": "TikTok",
  "plat.facebook": "Facebook",
  "plat.youtube_shorts": "YouTube Shorts",
- "plat.linkedin": "LinkedIn"
+ "plat.linkedin": "LinkedIn",
+ "plan.live": "{name} · {platforms} · {price}{per}",
+ "plan.perShort": "/شهريًا",
+ "plan.pickPlatforms": "منصاتك",
+ "plan.extraNote": "كل منصة إضافية مجموعة كاملة ثانية مصنوعة لتلك المنصة."
 }

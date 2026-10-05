@@ -421,5 +421,9 @@
  "plat.tiktok": "TikTok",
  "plat.facebook": "Facebook",
  "plat.youtube_shorts": "YouTube Shorts",
- "plat.linkedin": "LinkedIn"
+ "plat.linkedin": "LinkedIn",
+ "plan.live": "{name} · {platforms} · {price}{per}",
+ "plan.perShort": "/mes",
+ "plan.pickPlatforms": "Tus plataformas",
+ "plan.extraNote": "Cada plataforma extra es un segundo juego completo, hecho para esa plataforma."
 }

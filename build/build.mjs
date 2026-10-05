@@ -189,7 +189,17 @@ function ticks(lang, prefix, cls) {
 function planCard(lang, p, hot) {
   const per = MONTHLY.has(p) ? 'plan.per' : 'one.per';
   const bill = MONTHLY.has(p) ? 'plan.bill' : `pkg.${p}.bill`;
-  return `<article class="plan${hot ? ' hot' : ''}" data-plan="${p}"><span class="badge">${h(lang, `pkg.${p}.eye`)}</span><h3>${esc(pname(lang, p))}</h3><p class="pt">${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(p)}<span class="per">${h(lang, per)}</span></div><p class="billnote">${h(lang, bill)}</p>${ticks(lang, `pkg.${p}`)}<p class="pnote">${h(lang, `pkg.${p}.note`)}</p><div class="buyrow">${buyBtn(lang, p, !hot)}</div></article>`;
+  return `<article class="plan${hot ? ' hot' : ''}" data-plan="${p}"><span class="badge">${h(lang, `pkg.${p}.eye`)}</span><h3>${esc(pname(lang, p))}</h3><p class="pt">${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(p)}<span class="per">${h(lang, per)}</span></div><p class="billnote">${h(lang, bill)}</p>${platPick(lang, p)}${ticks(lang, `pkg.${p}`)}<p class="pnote">${h(lang, `pkg.${p}.note`)}</p><div class="buyrow">${buyBtn(lang, p, !hot)}</div></article>`;
+}
+// P1: a monthly package picks its platforms on the card; the live line ("Keep Growing · Instagram + TikTok · $90/mo") is computed in
+// the browser from the numbers below (data/pricing.json: price + (platforms - included) × extra_platform_price), never typed.
+// The first platform is ticked; the server-side line is the one-platform price so the page reads right without JavaScript.
+function platPick(lang, p) {
+  const k = PKG[p]; if (!MONTHLY.has(p) || !k.extra_platform_price) return '';
+  const first = PRICING.platforms[0];
+  const line = t(lang, 'plan.live').replace('{name}', pname(lang, p)).replace('{platforms}', t(lang, 'plat.' + first)).replace('{price}', '$' + k.price).replace('{per}', t(lang, 'plan.perShort'));
+  const boxes = PRICING.platforms.map((id) => `<label class="opt"><input type="checkbox" name="pp-${p}" value="${esc(id)}"${id === first ? ' checked' : ''}><span>${h(lang, 'plat.' + id)}</span></label>`).join('');
+  return `<fieldset class="platpick" data-price="${k.price}" data-extra="${k.extra_platform_price}" data-included="${k.platforms_included || 1}" data-name="${esc(pname(lang, p))}" data-tpl="${esc(t(lang, 'plan.live'))}" data-per="${esc(t(lang, 'plan.perShort'))}"><legend>${h(lang, 'plan.pickPlatforms')}</legend><div class="opts">${boxes}</div><p class="liveprice" aria-live="polite" dir="auto">${esc(line)}</p><p class="fine">${h(lang, 'plan.extraNote')}</p></fieldset>`;
 }
 const planCards = (lang) => ['kit', 'visible', 'growing'].map((p) => planCard(lang, p, p === 'kit')).join('');
 const deckCards = (lang) => planCard(lang, 'deck', false);

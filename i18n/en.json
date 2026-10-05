@@ -421,5 +421,9 @@
  "plat.tiktok": "TikTok",
  "plat.facebook": "Facebook",
  "plat.youtube_shorts": "YouTube Shorts",
- "plat.linkedin": "LinkedIn"
+ "plat.linkedin": "LinkedIn",
+ "plan.live": "{name} · {platforms} · {price}{per}",
+ "plan.perShort": "/mo",
+ "plan.pickPlatforms": "Your platforms",
+ "plan.extraNote": "Each extra platform is a full second set, made for that platform."
 }
