@@ -62,7 +62,7 @@ const partials = {
 };
 const CSS = {
   fonts: rd('templates/fonts.css'), fontsAr: rd('templates/fonts-ar.css'), common: rd('templates/common.css'),
-  home: rd('templates/home.css'), legal: rd('templates/legal.css'), consent: rd('templates/consent.css'),
+  home: rd('templates/home.css'), legal: rd('templates/legal.css'), consent: rd('templates/consent.css'), studio: rd('templates/studio-home.css'), chrome: rd('templates/studio-shared.css'),
 };
 const faqCss = CSS.home.slice(CSS.home.indexOf('/* faq */'), CSS.home.indexOf('/* closing */'));
 
@@ -207,7 +207,7 @@ const billItems = (lang) => { const out = []; for (let i = 1; dicts[lang][`bill.
 
 function pageVars(lang, page) {
   const v = {
-    ...hrefs(lang), langpick: langpick(lang, page), nav: navLinks(lang, page, true), navFoot: navLinks(lang, page, false),
+    ...hrefs(lang), studioNav: [ ['#work', 'studio.copy.098'], ['#services', 'studio.copy.099'], ['about', 'studio.copy.100'], ['pricing', 'nav.pricing'] ].map(([p,k]) => `<a href="${p.startsWith('#') ? pathFor(lang,'index')+p : pathFor(lang,p)}">${h(lang,k)}</a>`).join(''), langpick: langpick(lang, page), nav: navLinks(lang, page, true), navFoot: navLinks(lang, page, false),
     crumbs: crumbs(lang, page), portalHref: PORTAL, emailLink: `<a href="mailto:${EMAIL}" dir="ltr">${EMAIL}</a>`,
     buyKit: buyBtn(lang, 'kit', false), buyDeck: buyBtn(lang, 'deck', false), conv: lang === 'en' ? '' : `<p class="conv">${h(lang, 'leg.conv')}</p>`,
   };
@@ -332,7 +332,7 @@ ${css}
 ${jsonLd(lang, page)}
 </head>`;
 }
-const cssFor = (lang, page) => [CSS.fonts, lang === 'ar' ? CSS.fontsAr : '', WIDE.has(page) ? CSS.home : CSS.legal + (page === 'faq' ? '\n' + faqCss : ''), CSS.common, CSS.consent].join('\n');
+const cssFor = (lang, page) => [CSS.fonts, lang === 'ar' ? CSS.fontsAr : '', WIDE.has(page) ? CSS.home : CSS.legal + (page === 'faq' ? '\n' + faqCss : ''), CSS.common, CSS.consent, page === 'index' ? CSS.studio : '', CSS.chrome].join('\n');
 
 // ---------- build ----------
 function write(rel, content) {
@@ -347,11 +347,15 @@ for (const [lang] of LANGS) {
   for (const page of PAGES) {
     const ctx = { lang, v: pageVars(lang, page) };
     const body = render(rd(`templates/${page === 'index' ? 'home' : page}.html`), ctx);
-    const html = `${head(lang, page, cssFor(lang, page))}\n<body data-page="${page}">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n<script src="/site.js" defer></script>\n</body>\n</html>\n`;
+    const html = `${head(lang, page, cssFor(lang, page))}\n<body data-page="${page}" class="${page === 'index' ? 'gallery spatial' : 'studio-inner'}">\n${render(partials.consent, ctx)}\n<div class="${page === 'index' ? 'site-shell' : 'wrap'}">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n<script src="/site.js" defer></script>\n</body>\n</html>\n`;
     write(dirFor(lang, page) + 'index.html', html);
     built.push([lang, page]);
   }
 }
+
+// Editable studio introduction; distinct from the paid Brand Deck product.
+write('assets/studio-deck/index.html', rd('templates/studio-deck.html'));
+write('assets/social-preview.html', rd('templates/social-preview.html'));
 
 // old URL stubs: /terms.html etc. (JS picks the language from ?lang= or the saved choice; no-JS goes to English)
 for (const page of LEGAL) {
@@ -405,7 +409,7 @@ ${GA_HEAD}
     return `<section lang="${c}" dir="${RTL.has(c) ? 'rtl' : 'ltr'}"><h2>${esc(t(c, 'e404.title'))}</h2><p>${esc(t(c, 'e404.p'))} <a href="${pathFor(c, 'index')}">${esc(t(c, 'e404.home'))}</a></p><p>${esc(t(c, 'e404.nav'))} ${links}</p></section>`;
   }).join('\n');
   ctx.v.sections = sections;
-  const css404 = [CSS.fonts, CSS.fontsAr, CSS.legal, CSS.common, CSS.consent, 'section{padding-block:18px;border-top:2px solid var(--line)}section h2{margin-top:0}html[lang=ar] body{line-height:1.75}'].join('\n');
+  const css404 = [CSS.fonts, CSS.fontsAr, CSS.legal, CSS.common, CSS.consent, CSS.chrome, 'section{padding-block:18px;border-top:2px solid var(--line)}section h2{margin-top:0}html[lang=ar] body{line-height:1.75}'].join('\n');
   write('404.html', `<!doctype html>
 <html lang="en">
 <head>
@@ -428,6 +432,7 @@ ${render(partials.header, ctx)}
 ${render(rd('templates/404.html'), ctx)}
 ${render(partials.footer, ctx)}
 </div>
+<script src="/site.js" defer></script>
 </body>
 </html>
 `);

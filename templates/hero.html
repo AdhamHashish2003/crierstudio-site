@@ -1,17 +1,1 @@
-<!-- HERO BLOCK: one swappable block. Real HTML text (the H1 is the LCP element). The Deck (3D) is a progressive layer in .stage, loaded after first paint by site.js -> /assets/deck.js; the CSS cards are the static fallback. -->
-<div class="hero" id="hero">
-      <div class="hero-copy">
-        <span class="eyebrow">{{t:hero.eyebrow}}</span>
-        <h1><span>{{t:hero.h1a}}</span><span class="hl">{{t:hero.h1b}}</span></h1>
-        <p class="lead">{{t:hero.sub}}</p>
-        <div class="cta-row">
-          <a class="btn" href="{{=pricingHref}}">{{t:hero.plans}}</a>
-          <a class="btn ghost" href="{{=deckHref}}">{{t:nav.deck}}</a>
-        </div>
-        <p class="fine">{{t:hero.fine}}</p>
-      </div>
-      <div class="deck-stage" aria-hidden="true">
-        <div class="fallback"><i class="fc"></i><i class="fc"></i><i class="fc"></i><i class="fc"></i></div>
-        <canvas class="gl"></canvas>
-      </div>
-    </div>
+<section class="spatial-hero wrap" id="hero"><div class="spatial-heading"><div class="spatial-copy"><p class="kicker">{{t:studio.copy.001}}</p><h1>{{t:studio.copy.002}}<br>{{t:studio.copy.003}}<br><span>{{t:studio.copy.004}}</span></h1><p class="spatial-intro">{{t:studio.copy.005}}</p><div class="actions"><a class="btn lime" href="#project">{{t:studio.copy.006}} <span>↗</span></a><a class="text-link" href="#work">{{t:studio.copy.007}}</a></div><div class="hero-note"><span class="note-line"></span><p>{{t:studio.copy.008}}<br>{{t:studio.copy.009}}</p></div></div><div class="spatial-exhibit"><div class="exhibit-top"><span class="kicker">{{t:studio.copy.010}}</span><span class="view-indicator">{{t:studio.copy.011}}</span></div><div class="webgl-stage" id="spatial-stage" data-drag="{{a:studio.copy.013}}" data-play="{{a:studio.copy.092}}" data-pause="{{a:studio.copy.014}}" data-static="{{a:studio.copy.093}}" data-perspective="{{a:studio.copy.011}}" data-state="fallback"><div class="stage-fallback"><img src="/assets/spatial-fallback.png" alt="{{a:studio.copy.086}}"></div><canvas id="spatial-canvas" tabindex="0" role="img" aria-label="{{a:studio.copy.087}}"></canvas><span class="stage-note">{{t:studio.copy.012}}</span></div><div class="exhibit-bottom"><span class="drag-hint">{{t:studio.copy.093}}</span><div class="motion-controls"><button disabled id="motion" aria-pressed="false">{{t:studio.copy.014}}</button><button disabled id="reset-view">{{t:studio.copy.015}}</button></div></div><div class="scene-tabs" role="group" aria-label="{{a:studio.copy.088}}"><button disabled data-scene="all" data-description="{{a:studio.copy.020}}" aria-pressed="true"><span>01</span> {{t:studio.copy.016}}</button><button disabled data-scene="identity" data-description="{{a:studio.copy.094}}" aria-pressed="false"><span>02</span> {{t:studio.copy.017}}</button><button disabled data-scene="digital" data-description="{{a:studio.copy.095}}" aria-pressed="false"><span>03</span> {{t:studio.copy.018}}</button><button disabled data-scene="objects" data-description="{{a:studio.copy.096}}" aria-pressed="false"><span>04</span> {{t:studio.copy.019}}</button></div><p class="scene-description" id="scene-description" aria-live="polite">{{t:studio.copy.020}}</p></div></div><div class="spatial-bottom"><p>{{t:studio.copy.021}}</p><a href="#work">{{t:studio.copy.022}}</a></div></section>

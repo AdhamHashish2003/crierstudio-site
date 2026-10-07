@@ -26,6 +26,8 @@
   // the language links remember the choice; crawlers have no storage and are never redirected
   var links = document.querySelectorAll(".langpick a");
   for (var i = 0; i < links.length; i++) {
+    // Keep the selected package/platforms when switching language in the checkout flow.
+    try { var languageURL = new URL(links[i].href); var currentQuery = new URLSearchParams(location.search); currentQuery.delete("lang"); languageURL.search = currentQuery.toString(); languageURL.hash = location.hash; links[i].href = languageURL.href; } catch (e) {}
     links[i].addEventListener("click", function () { try { localStorage.setItem(KEY, this.getAttribute("lang")); } catch (e) {} });
   }
 
@@ -177,24 +179,21 @@
   });
 })();
 
-/* ---------------- home hero: The Deck (3D), a progressive layer ---------------- */
+/* Dimension Studio navigation and progressive 3D. No external libraries or model calls. */
 (function () {
   "use strict";
-  if (document.body.getAttribute("data-page") !== "index" || !document.getElementById("hero")) return;
-  var nav = navigator, conn = nav.connection || {};
-  // keep the static CSS deck: reduced motion, data saver, small devices
-  if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  if (conn.saveData || (nav.hardwareConcurrency && nav.hardwareConcurrency < 4)) return;
-  var started = false, evs = ["pointerdown", "pointermove", "scroll", "keydown", "touchstart"];
-  function load() {
-    if (started) return; started = true;
-    for (var i = 0; i < evs.length; i++) removeEventListener(evs[i], load);
-    var s = document.createElement("script"); s.src = "/assets/deck.js"; s.async = true; document.head.appendChild(s);
+  var toggle=document.querySelector('.menu-toggle'), menu=document.getElementById('main-nav');
+  function close(){if(!toggle||!menu)return;toggle.setAttribute('aria-expanded','false');menu.classList.remove('open');}
+  if(toggle&&menu){
+    toggle.addEventListener('click',function(){var open=toggle.getAttribute('aria-expanded')!=='true';toggle.setAttribute('aria-expanded',String(open));menu.classList.toggle('open',open);});
+    menu.addEventListener('click',function(e){if(e.target.closest('a'))close();});
+    document.addEventListener('keydown',function(e){if(e.key==='Escape'&&toggle.getAttribute('aria-expanded')==='true'){close();toggle.focus();}});
+    document.addEventListener('click',function(e){if(!e.target.closest('.top'))close();});
+    matchMedia('(min-width:801px)').addEventListener('change',close);
   }
-  // after load, once the page is idle: first interaction, or 4 s later at the latest (keeps the 3D out of the first-paint / load window)
-  function arm() {
-    for (var i = 0; i < evs.length; i++) addEventListener(evs[i], load, { passive: true, once: true });
-    setTimeout(function () { if ("requestIdleCallback" in window) requestIdleCallback(load, { timeout: 1500 }); else load(); }, 4000);
-  }
-  if (document.readyState === "complete") arm(); else addEventListener("load", arm);
+  var stage=document.getElementById('spatial-stage');if(!stage)return;
+  var conn=navigator.connection||{};if(conn.saveData)return;
+  function load(src){return new Promise(function(resolve,reject){var script=document.createElement('script');script.src=src;script.onload=resolve;script.onerror=reject;document.head.appendChild(script);});}
+  function start(){load('/assets/three.r128.min.js').then(function(){return load('/assets/studio.js');}).catch(function(){stage.dataset.state='fallback';});}
+  if('requestIdleCallback' in window)requestIdleCallback(start,{timeout:1800});else setTimeout(start,300);
 })();

@@ -1,5 +1,22 @@
 # crierstudio.com
 
+## Dimension Studio frontend
+
+The homepage presents Crier as a branding and design studio across identity, digital, campaigns and physical experiences. The original logo, Archivo / Instrument Sans / Noto Sans Arabic fonts and color values are retained. All new concept applications are labelled as self-initiated studies.
+
+- Homepage source: `templates/hero.html`, `templates/home.html`, `templates/studio-home.css` and the `studio.copy.*` keys in the existing four language dictionaries.
+- Shared navigation, inner-page styling and RTL adjustments: `templates/header.html`, `templates/studio-shared.css`, `templates/common.css` and `site.js`.
+- Interactive scene: `assets/studio.js`, using the existing self-hosted `assets/three.r128.min.js`. The scene supports pointer/keyboard rotation, view selection, pause/reset, reduced motion, visibility suspension, and a static image fallback. The initial HTML remains usable without JavaScript. Only the homepage loads the 3D assets.
+- Editable English studio presentation: `templates/studio-deck.html`; build output `/assets/studio-deck/index.html`. This introduces Crier to prospective clients and is distinct from the paid `/brand-deck/` product.
+- Social preview source: `templates/social-preview.html`, built to `/assets/social-preview.html`. Render that page at 1200 × 630 after fonts/images load to refresh `og.png`.
+- Project inquiries open the existing `team@crierstudio.com` email. Existing package pricing, intake, portal and checkout destinations are retained. Language switching preserves the selected package/platforms.
+
+Run `node build/build.mjs && node build/check.mjs`, then serve this directory with `python3 -m http.server 8767 --bind 127.0.0.1` and open `http://127.0.0.1:8767/`.
+
+Browser checks use the existing `playwright-core` test setup: `BASE=http://127.0.0.1:8767 node tests/form.mjs`, `node tests/consent.mjs` with the same BASE, and `OUTPUT=/path/to/evidence BASE=http://127.0.0.1:8767 node tests/studio.mjs`. The last check captures responsive screenshots and exports the studio deck with Chromium; it does not make live submissions. `CHROME` can override the browser executable. Export verification also requires checking the resulting PDF pages, not only the HTML source.
+
+Public deployment is a separate action. The local design implementation does not establish production deployment or completion of the D3 deck engine.
+
 Public site for Crier Studio. Static HTML served by GitHub Pages, in en (/), es (/es/), fr (/fr/) and ar (/ar/). Indexable: `NOINDEX = false` in `build/build.mjs` (search opened in commit 98d03f7); set it to `true` and rebuild to hide the site from search again.
 
 Pages (each in all 4 languages): `/`, `/pricing/`, `/kit/` (The Complete Kit, $29, + the request form), `/brand-deck/` (Brand Deck, $250, digital only), `/samples/`, `/faq/`, `/about/`, `/terms/`, `/privacy/`, `/refund/`, plus `404.html` and the old-URL stubs (`/?lang=xx`, `/terms.html`, `/privacy.html`, `/refund.html`, and `/snapshot/` -> `/kit/`, `/crier-deck/` -> `/brand-deck/` in every language, keeping `?product=`).

@@ -253,10 +253,98 @@ fieldset.choice{gap:8px}
 .consent :is(a,button):focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 @media (max-width:520px){.consent{padding-block:10px calc(10px + env(safe-area-inset-bottom))}.consent .acts{width:100%}.consent button{flex:1}}
 
+
+/* Dimension Studio: existing palette and typefaces, shared across all routes. */
+html{scroll-padding-top:28px;background:#0E0F0C}
+body{--focus:#C6FF00}
+body.studio-inner{--bg:#0E0F0C;--surface:#171913;--paper:#1A1C16;--ink:#F6F8EF;--muted:#B7BCA9;--line:#2D3027;--accent:#C6FF00;--accent-ink:#0E0F0C;--dia:#C6FF00;--error:#ff8a80;color-scheme:dark}
+.skip-link{position:absolute;inset-inline-start:20px;top:-100px;background:#C6FF00;color:#0E0F0C;padding:12px;z-index:1000}
+.skip-link:focus{top:12px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:24px;min-height:98px;padding-block:20px;border-bottom:1px solid var(--line);position:relative;z-index:30}
+.site-shell>.top{max-width:1430px;margin:auto;padding-inline:60px}
+.top .logo svg{width:145px;height:38px;display:block}
+.top .main-nav{display:flex;align-items:center;gap:26px;flex-wrap:nowrap;margin:0;order:initial;border:0;padding:0}
+.top .main-nav a{font-size:13px;text-decoration:none;font-weight:500;padding-block:12px;color:var(--ink)}
+.top .main-nav a:hover{color:var(--accent)}
+.top .right{display:flex;gap:22px;align-items:center;flex:none}
+.top .right .btn{font-size:12px;min-height:44px;padding:12px 16px;border-radius:0;font-weight:600;box-shadow:none;transform:none}
+.langpick a{min-width:34px;font-size:11px;font-weight:500;border-bottom-width:1px}
+.langpick a[aria-current]{border-color:var(--accent)}
+.menu-toggle{display:none;background:transparent;color:inherit;border:1px solid var(--line);padding:12px;font:inherit;font-size:12px;min-height:44px;cursor:pointer}
+body.studio-inner>.wrap{max-width:1320px;padding-inline:40px}
+.studio-inner h1,.studio-inner h2{font-weight:550;letter-spacing:-.04em}
+.studio-inner h3{font-weight:600}
+.studio-inner .phead{padding-block:76px 54px}
+.studio-inner .phead h1{max-width:17ch;margin-block:20px 28px;font-size:clamp(42px,6vw,78px);line-height:1.04}
+.studio-inner .phead .lead{font-size:18px;line-height:1.65;max-width:65ch}
+.studio-inner section{border-width:1px}
+.studio-inner .btn{border-radius:0;box-shadow:none;min-height:48px;font-weight:600;font-size:14px}
+.studio-inner .btn:hover{transform:none;text-decoration:underline;text-underline-offset:5px}
+.studio-inner .plan,.studio-inner .formbox,.studio-inner .offer{border-width:1px;box-shadow:none}
+.studio-inner .prose{max-width:850px}
+.studio-inner .prose p,.studio-inner .prose li{line-height:1.8}
+.studio-inner .crumbs{padding-block:20px}
+.site-shell>footer{max-width:1310px;margin:auto;padding:60px 0 30px}
+footer{border-top:1px solid var(--line);font-size:13px;color:var(--muted);margin-top:60px}
+footer .cols{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:50px;margin-bottom:48px}
+footer .fcol{display:flex;flex-direction:column;align-items:flex-start;gap:12px;max-width:370px}
+footer .logo{color:var(--ink);margin-bottom:16px}footer .logo svg{width:145px;height:38px}
+footer strong{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);margin-bottom:6px}
+footer a{color:inherit;text-decoration:none}footer a:hover{text-decoration:underline}
+.studio-home>section{border:0}.studio-home .spatial-hero{border:0}
+.studio-home .scene{border:0}.studio-home h2,.studio-home h3{font-stretch:normal}
+.studio-home .services{max-width:none}.studio-home .services summary{list-style:none}
+.studio-home .btn{min-height:48px;border-radius:0;box-shadow:none;transform:none}
+.studio-home .btn:hover{text-decoration:underline;text-underline-offset:5px}
+.studio-home p{max-width:none}.studio-home .physical-feature{border:0;scroll-margin-top:30px}
+.studio-home .studio-perspective{display:grid;grid-template-columns:1fr 1.5fr;gap:24px 70px;border-top:1px solid var(--line)}
+.studio-perspective .kicker{grid-column:1/-1}.studio-perspective h2{font-size:clamp(36px,5vw,66px);font-weight:500;max-width:12ch}
+.studio-perspective p:not(.kicker){font-size:20px;line-height:1.65;max-width:44ch;color:var(--muted)}
+.studio-perspective .text-link{width:fit-content;font-size:13px;text-decoration:underline;text-underline-offset:5px}
+.studio-home .studio-packages{border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:70px}
+.studio-packages h2{font-size:38px;line-height:1.12;max-width:18ch;margin-top:18px;font-weight:500}
+.studio-packages p{max-width:45ch;font-size:15px;line-height:1.7}.studio-packages .btn{margin-top:24px}
+.project-categories{display:flex;flex-wrap:wrap;gap:8px 16px;margin-bottom:22px}
+.project-categories a{font-size:12px;text-decoration:underline;text-underline-offset:4px;min-height:30px;display:flex;align-items:center}
+.studio-home .contact .contact-info{max-width:400px}
+.studio-home .stage-fallback img{display:block}.studio-home .stage-loader{display:none}
+.studio-home .motion-controls button{min-height:44px;font-size:11px}
+.studio-home .scene-tabs button{text-align:start;white-space:normal;line-height:1.4}
+.studio-home .stage-note{inset-inline-start:0;left:auto;max-width:100%;font-size:9px;letter-spacing:.025em}
+.studio-home .webgl-stage:has(canvas:focus-visible){outline:2px solid var(--accent)}
+.studio-home .scene-tabs button:disabled{opacity:.55;cursor:default}
+[dir=rtl] .studio-home{font-family:var(--body)}
+[dir=rtl] .studio-home h1,[dir=rtl] .studio-home h2,[dir=rtl] .studio-home h3{font-family:var(--body);letter-spacing:0;line-height:1.3}
+[dir=rtl] .studio-home .spatial-copy h1{font-size:clamp(56px,6.4vw,88px)}
+[dir=rtl] .studio-home .services details p{padding-left:20px;padding-right:55px}
+[dir=rtl] .studio-home .path{direction:rtl}
+[dir=rtl] .studio-home .physical-scene svg,[dir=rtl] .studio-home .scene{direction:ltr}
+.consent{z-index:100}.consent p{max-width:65ch}
+@media(min-width:1600px){.site-shell>.top{max-width:1530px}.site-shell>footer{max-width:1410px}}
+@media(max-width:1200px){.top .main-nav{gap:18px}.top .right{gap:14px}.top .right>.btn{display:none}.site-shell>.top{padding-inline:30px}.site-shell>footer{margin-inline:30px}}
+@media(max-width:800px){
+ .top{min-height:88px;gap:12px;flex-wrap:nowrap;padding-block:16px}.site-shell>.top{padding-inline:22px}
+ .top .logo svg{width:120px;height:32px}.top .right{gap:8px}.langpick a{min-width:29px;min-height:44px;font-size:10px}
+ .menu-toggle{display:block}.top .main-nav{position:absolute;top:100%;inset-inline:0;display:none;flex-direction:column;align-items:stretch;gap:0;padding:16px 22px;background:var(--bg);border-bottom:1px solid var(--line)}
+ .top .main-nav.open{display:flex}.top .main-nav a{padding:14px;font-size:16px}
+ .site-shell>footer{margin-inline:22px;padding-top:45px}.studio-inner>.wrap{padding-inline:22px}
+ footer .cols{grid-template-columns:1fr 1fr;gap:35px}footer .fcol:first-child{grid-column:1/-1;max-width:450px}
+ .studio-home .studio-perspective,.studio-home .studio-packages{grid-template-columns:1fr;gap:26px}
+ .studio-perspective p:not(.kicker){font-size:17px}.studio-home .contact h2{font-size:clamp(48px,11vw,65px)}
+ [dir=rtl] .studio-home .spatial-copy h1{font-size:clamp(50px,10vw,70px)}
+}
+@media(max-width:370px){.top .logo svg{width:102px}.top .right{gap:4px}.langpick a{min-width:26px}.menu-toggle{padding:10px 8px;font-size:11px}.site-shell>.top{padding-inline:16px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* Keep the concept book typography composed on narrow screens. */
+@media(max-width:760px){.studio-home .identity-scene .folio{width:64%;padding:24px;left:13%}.studio-home .identity-scene .folio h3{font-size:clamp(26px,7.5vw,32px);line-height:1.03;overflow-wrap:normal}.studio-home .identity-scene .sample-card{right:7%;width:34%}}
+
+.studio-home .physical-scene .concept-label{color:#B7BCA9}
+
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://crierstudio.com/"},{"@type":"ListItem","position":2,"name":"Terms of service","item":"https://crierstudio.com/terms/"}]}]}</script>
 </head>
-<body data-page="terms">
+<body data-page="terms" class="studio-inner">
 <div id="consent-bar" class="consent" role="region" aria-label="Cookie choice" hidden>
 <div class="in">
 <p>We use Google Analytics to see which pages help. OK to set analytics cookies? <a href="/privacy/#cookies">How we use it</a></p>
@@ -266,17 +354,18 @@ fieldset.choice{gap:8px}
 <script>(function(){var K="crier_consent",b=document.getElementById("consent-bar");if(!b)return;function get(){try{return localStorage.getItem(K)}catch(e){return null}}function put(v){try{localStorage.setItem(K,v)}catch(e){}}function pad(){var v=b.hidden?"":b.offsetHeight+"px";document.body.style.paddingBottom=v;document.documentElement.style.scrollPaddingBottom=v}function show(f){b.hidden=false;pad();if(f){var x=b.querySelector("button");if(x)x.focus()}}function hide(){b.hidden=true;pad()}function wipe(){var h=location.hostname.split("."),d=h.slice(-2).join("."),c=document.cookie.split(";");for(var i=0;i<c.length;i++){var n=c[i].split("=")[0].trim();if(/^_ga/.test(n)){document.cookie=n+"=; Max-Age=0; path=/";document.cookie=n+"=; Max-Age=0; path=/; domain=."+d}}}b.addEventListener("click",function(e){var t=e.target.closest("[data-consent]");if(!t)return;var v=t.getAttribute("data-consent")==="granted"?"granted":"denied";put(v);if(typeof gtag==="function")gtag("consent","update",{analytics_storage:v});if(v==="denied")wipe();hide()});document.addEventListener("click",function(e){var t=e.target.closest&&e.target.closest('[data-consent-open],a[href$="#cookie-settings"]');if(!t)return;e.preventDefault();show(true)});window.addEventListener("resize",function(){if(!b.hidden)pad()});var s=get();if(s!=="granted"&&s!=="denied")show(false)})();</script>
 
 <div class="wrap">
+<a class="skip-link" href="#main-content">Skip to content</a>
 <header class="top">
   <a class="logo" href="/" aria-label="Crier Studio, home"><svg class="wm" viewBox="37.55 15.66 364.21 87.63" role="img" aria-label="Crier Studio" xmlns="http://www.w3.org/2000/svg"><g transform="translate(30 -6) scale(1.15)"><path d="M45.75 57.62A18.5 18.5 0 1 0 45.75 82.38" fill="none" stroke="currentColor" stroke-width="13"/>
 <path d="M70 95V70A18.5 18.5 0 0 1 88.5 51.5" fill="none" stroke="currentColor" stroke-width="13"/>
 <rect x="101.5" y="45" width="13" height="50" fill="currentColor"/>
 <path d="M121.5 70H158.5A18.5 18.5 0 1 0 154.58 81.39" fill="none" stroke="currentColor" stroke-width="13"/>
 <path d="M182 95V70A18.5 18.5 0 0 1 200.5 51.5" fill="none" stroke="currentColor" stroke-width="13"/></g><g transform="translate(30 -6) scale(1.15)"><rect x="101" y="22" width="14" height="14" fill="var(--dia)" transform="rotate(45 108 29)"/></g><path d="M306.43 103.36Q304.6 103.36 303.33 102.77Q302.06 102.18 301.4 101.15Q300.74 100.12 300.74 98.8H303.38Q303.38 99.36 303.69 99.88Q303.99 100.4 304.66 100.72Q305.33 101.04 306.43 101.04Q307.43 101.04 308.09 100.76Q308.75 100.48 309.08 100.01Q309.4 99.54 309.4 98.95Q309.4 98.22 308.78 97.78Q308.15 97.33 306.83 97.21L305.61 97.11Q303.62 96.94 302.43 95.87Q301.24 94.79 301.24 93.03Q301.24 91.7 301.87 90.75Q302.5 89.79 303.63 89.26Q304.76 88.73 306.28 88.73Q307.86 88.73 309 89.28Q310.15 89.83 310.77 90.83Q311.39 91.83 311.39 93.18H308.75Q308.75 92.62 308.48 92.13Q308.21 91.65 307.66 91.35Q307.12 91.05 306.28 91.05Q305.48 91.05 304.95 91.32Q304.42 91.59 304.15 92.04Q303.89 92.49 303.89 93.03Q303.89 93.67 304.36 94.16Q304.84 94.64 305.86 94.73L307.08 94.83Q308.57 94.95 309.69 95.47Q310.8 95.98 311.42 96.85Q312.05 97.72 312.05 98.95Q312.05 100.26 311.36 101.26Q310.67 102.26 309.41 102.81Q308.15 103.36 306.43 103.36ZM322.25 103V91.12H324.95V103ZM318.24 91.5V89.13H328.96V91.5ZM341.82 103.36Q339.88 103.36 338.55 102.62Q337.22 101.89 336.53 100.55Q335.84 99.21 335.84 97.4V89.13H338.54V97.56Q338.54 98.54 338.92 99.29Q339.3 100.04 340.03 100.44Q340.76 100.85 341.82 100.85Q342.87 100.85 343.6 100.45Q344.32 100.05 344.7 99.3Q345.07 98.56 345.07 97.56V89.13H347.77V97.4Q347.77 99.21 347.09 100.55Q346.41 101.89 345.09 102.62Q343.76 103.36 341.82 103.36ZM358.24 103.08V100.57H361.11Q362.19 100.57 363.03 100.24Q363.88 99.9 364.47 99.3Q365.06 98.7 365.38 97.87Q365.69 97.03 365.69 96.04Q365.69 94.99 365.38 94.16Q365.06 93.34 364.47 92.75Q363.88 92.16 363.03 91.85Q362.19 91.54 361.11 91.54H358.24V89.03H360.94Q362.82 89.03 364.22 89.59Q365.63 90.15 366.56 91.11Q367.5 92.07 367.96 93.29Q368.43 94.51 368.43 95.83V96.25Q368.43 97.49 367.96 98.71Q367.5 99.93 366.56 100.91Q365.63 101.9 364.22 102.49Q362.82 103.08 360.94 103.08ZM355.93 103.08V89.03H358.62V103.08ZM375.88 103V89.13H378.58V103ZM393.54 103.36Q391.66 103.36 390.28 102.7Q388.91 102.04 388 100.96Q387.1 99.88 386.66 98.64Q386.22 97.39 386.22 96.24V95.82Q386.22 94.55 386.67 93.29Q387.13 92.03 388.05 91Q388.97 89.97 390.34 89.35Q391.71 88.73 393.54 88.73Q395.37 88.73 396.73 89.35Q398.1 89.97 399.02 91Q399.95 92.03 400.41 93.29Q400.87 94.55 400.87 95.82V96.24Q400.87 97.39 400.42 98.64Q399.97 99.88 399.07 100.96Q398.17 102.04 396.79 102.7Q395.41 103.36 393.54 103.36ZM393.54 100.85Q394.61 100.85 395.46 100.47Q396.31 100.09 396.91 99.42Q397.5 98.75 397.82 97.89Q398.13 97.02 398.13 96.05Q398.13 95.01 397.81 94.14Q397.49 93.26 396.9 92.61Q396.3 91.96 395.45 91.6Q394.6 91.24 393.54 91.24Q392.48 91.24 391.63 91.6Q390.78 91.96 390.18 92.61Q389.58 93.26 389.27 94.14Q388.95 95.01 388.95 96.05Q388.95 97.02 389.27 97.89Q389.58 98.75 390.18 99.42Q390.78 100.09 391.63 100.47Q392.48 100.85 393.54 100.85Z" fill="currentColor"/></svg></a>
-  <nav class="main-nav" aria-label="Main menu"><a href="/pricing/">Pricing</a><a href="/kit/">Complete Kit</a><a href="/brand-deck/">Brand Deck</a><a href="/samples/">Samples</a><a href="/faq/">FAQ</a><a href="/about/">About</a><a href="https://portal.crierstudio.com/">Client portal</a></nav>
-  <div class="right"><div class="langpick" role="group" aria-label="Language"><a href="/terms/" lang="en" hreflang="en" aria-label="English" aria-current="true">EN</a><a href="/es/terms/" lang="es" hreflang="es" aria-label="Español">ES</a><a href="/fr/terms/" lang="fr" hreflang="fr" aria-label="Français">FR</a><a href="/ar/terms/" lang="ar" hreflang="ar" aria-label="العربية">AR</a></div><a class="btn" href="/kit/#request">Complete Kit, $29</a></div>
+  <nav class="main-nav" id="main-nav" aria-label="Main menu"><a href="/#work">Work</a><a href="/#services">Services</a><a href="/about/">Studio</a><a href="/pricing/">Pricing</a></nav>
+  <div class="right"><div class="langpick" role="group" aria-label="Language"><a href="/terms/" lang="en" hreflang="en" aria-label="English" aria-current="true">EN</a><a href="/es/terms/" lang="es" hreflang="es" aria-label="Español">ES</a><a href="/fr/terms/" lang="fr" hreflang="fr" aria-label="Français">FR</a><a href="/ar/terms/" lang="ar" hreflang="ar" aria-label="العربية">AR</a></div><a class="btn" href="/#project">Start a project ↗</a><button class="menu-toggle" aria-expanded="false" aria-controls="main-nav">Menu</button></div>
 </header>
 
-<main>
+<main id="main-content">
 <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span aria-current="page">Terms of service</span></nav>
 <h1>Terms of service</h1>
 <p style="margin-top:14px"><span>The terms for using crierstudio.com, The Complete Kit, the monthly plans, the Brand Deck and the client portal.</span> <span>Last updated 3 October 2026.</span></p>
@@ -321,7 +410,7 @@ fieldset.choice{gap:8px}
 <rect x="101.5" y="45" width="13" height="50" fill="currentColor"/>
 <path d="M121.5 70H158.5A18.5 18.5 0 1 0 154.58 81.39" fill="none" stroke="currentColor" stroke-width="13"/>
 <path d="M182 95V70A18.5 18.5 0 0 1 200.5 51.5" fill="none" stroke="currentColor" stroke-width="13"/></g><g transform="translate(30 -6) scale(1.15)"><rect x="101" y="22" width="14" height="14" fill="var(--dia)" transform="rotate(45 108 29)"/></g><path d="M306.43 103.36Q304.6 103.36 303.33 102.77Q302.06 102.18 301.4 101.15Q300.74 100.12 300.74 98.8H303.38Q303.38 99.36 303.69 99.88Q303.99 100.4 304.66 100.72Q305.33 101.04 306.43 101.04Q307.43 101.04 308.09 100.76Q308.75 100.48 309.08 100.01Q309.4 99.54 309.4 98.95Q309.4 98.22 308.78 97.78Q308.15 97.33 306.83 97.21L305.61 97.11Q303.62 96.94 302.43 95.87Q301.24 94.79 301.24 93.03Q301.24 91.7 301.87 90.75Q302.5 89.79 303.63 89.26Q304.76 88.73 306.28 88.73Q307.86 88.73 309 89.28Q310.15 89.83 310.77 90.83Q311.39 91.83 311.39 93.18H308.75Q308.75 92.62 308.48 92.13Q308.21 91.65 307.66 91.35Q307.12 91.05 306.28 91.05Q305.48 91.05 304.95 91.32Q304.42 91.59 304.15 92.04Q303.89 92.49 303.89 93.03Q303.89 93.67 304.36 94.16Q304.84 94.64 305.86 94.73L307.08 94.83Q308.57 94.95 309.69 95.47Q310.8 95.98 311.42 96.85Q312.05 97.72 312.05 98.95Q312.05 100.26 311.36 101.26Q310.67 102.26 309.41 102.81Q308.15 103.36 306.43 103.36ZM322.25 103V91.12H324.95V103ZM318.24 91.5V89.13H328.96V91.5ZM341.82 103.36Q339.88 103.36 338.55 102.62Q337.22 101.89 336.53 100.55Q335.84 99.21 335.84 97.4V89.13H338.54V97.56Q338.54 98.54 338.92 99.29Q339.3 100.04 340.03 100.44Q340.76 100.85 341.82 100.85Q342.87 100.85 343.6 100.45Q344.32 100.05 344.7 99.3Q345.07 98.56 345.07 97.56V89.13H347.77V97.4Q347.77 99.21 347.09 100.55Q346.41 101.89 345.09 102.62Q343.76 103.36 341.82 103.36ZM358.24 103.08V100.57H361.11Q362.19 100.57 363.03 100.24Q363.88 99.9 364.47 99.3Q365.06 98.7 365.38 97.87Q365.69 97.03 365.69 96.04Q365.69 94.99 365.38 94.16Q365.06 93.34 364.47 92.75Q363.88 92.16 363.03 91.85Q362.19 91.54 361.11 91.54H358.24V89.03H360.94Q362.82 89.03 364.22 89.59Q365.63 90.15 366.56 91.11Q367.5 92.07 367.96 93.29Q368.43 94.51 368.43 95.83V96.25Q368.43 97.49 367.96 98.71Q367.5 99.93 366.56 100.91Q365.63 101.9 364.22 102.49Q362.82 103.08 360.94 103.08ZM355.93 103.08V89.03H358.62V103.08ZM375.88 103V89.13H378.58V103ZM393.54 103.36Q391.66 103.36 390.28 102.7Q388.91 102.04 388 100.96Q387.1 99.88 386.66 98.64Q386.22 97.39 386.22 96.24V95.82Q386.22 94.55 386.67 93.29Q387.13 92.03 388.05 91Q388.97 89.97 390.34 89.35Q391.71 88.73 393.54 88.73Q395.37 88.73 396.73 89.35Q398.1 89.97 399.02 91Q399.95 92.03 400.41 93.29Q400.87 94.55 400.87 95.82V96.24Q400.87 97.39 400.42 98.64Q399.97 99.88 399.07 100.96Q398.17 102.04 396.79 102.7Q395.41 103.36 393.54 103.36ZM393.54 100.85Q394.61 100.85 395.46 100.47Q396.31 100.09 396.91 99.42Q397.5 98.75 397.82 97.89Q398.13 97.02 398.13 96.05Q398.13 95.01 397.81 94.14Q397.49 93.26 396.9 92.61Q396.3 91.96 395.45 91.6Q394.6 91.24 393.54 91.24Q392.48 91.24 391.63 91.6Q390.78 91.96 390.18 92.61Q389.58 93.26 389.27 94.14Q388.95 95.01 388.95 96.05Q388.95 97.02 389.27 97.89Q389.58 98.75 390.18 99.42Q390.78 100.09 391.63 100.47Q392.48 100.85 393.54 100.85Z" fill="currentColor"/></svg></a>
-      <p>Crier Studio is a design studio for local businesses.</p>
+      <p>We connect your identity, digital presence and physical touchpoints through a clear creative direction.</p>
       <a href="mailto:team@crierstudio.com" dir="ltr">team@crierstudio.com</a>
     </div>
     <nav class="fcol" aria-label="Explore">
