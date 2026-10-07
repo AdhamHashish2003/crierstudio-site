@@ -11,7 +11,7 @@ const results=[],errors=[];
 const check=(name,pass,details)=>{results.push({name,pass,details});if(!pass)console.log('FAIL',name,JSON.stringify(details));};
 async function page(options={}){
  const p=await browser.newPage(options);
- await p.route(/google-analytics|googletagmanager/,r=>r.abort());
+ await p.route(/google-analytics|googletagmanager|crm-production-d789/,r=>r.abort());
  await p.addInitScript(()=>localStorage.setItem('crier_consent','denied'));
  p.on('pageerror',e=>errors.push(e.message));return p;
 }
@@ -38,12 +38,12 @@ try{
   if(lang==='en'&&name==='desktop')await q.screenshot({path:path.join(OUTPUT,'homepage.png')});
   if(name==='mobile'){
    await q.locator('.menu-toggle').click();check(`Mobile menu opens ${lang}`,await q.locator('.main-nav').isVisible());await q.keyboard.press('Escape');check(`Mobile menu keyboard closes ${lang}`,!await q.locator('.main-nav').isVisible());
-   await q.locator('.menu-toggle').click();await q.locator('.main-nav a').filter({hasText:/./}).nth(1).click();check(`Services navigation ${lang}`,q.url().endsWith('#services')&&!await q.locator('.main-nav').isVisible());
+   await q.locator('.menu-toggle').click();await q.locator('.main-nav a').filter({hasText:/./}).nth(1).click();await q.waitForLoadState('load');check(`Complete Kit navigation ${lang}`,new URL(q.url()).pathname.endsWith('/kit/')&&!await q.locator('.main-nav').isVisible());
   }
   await q.close();
  }
  const inner=await page({viewport:{width:390,height:844},reducedMotion:'reduce'});
- for(const lang of ['en','es','fr','ar'])for(const route of ['pricing','kit','brand-deck','samples','faq','about','terms','privacy','refund']){
+ for(const lang of ['en','es','fr','ar'])for(const route of ['pricing','kit','brand-deck','samples','faq','about','terms','privacy','refund','physical']){
   await inner.goto(BASE+'/'+(lang==='en'?'':lang+'/')+route+'/');
   check(`Inner route ${lang}/${route}`,await inner.evaluate(()=>document.documentElement.scrollWidth===innerWidth&&!!document.querySelector('main')&&!!document.querySelector('h1')));
   if(['pricing','kit','about'].includes(route)&&['en','ar'].includes(lang))await inner.screenshot({path:path.join(OUTPUT,`${lang}-${route}-mobile.png`),fullPage:true});

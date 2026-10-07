@@ -5,7 +5,7 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LANGS = ['en', 'es', 'fr', 'ar'];
-const PAGES = ['', 'pricing/', 'brand-deck/', 'kit/', 'samples/', 'faq/', 'about/', 'terms/', 'privacy/', 'refund/'];
+const PAGES = ['', 'pricing/', 'brand-deck/', 'kit/', 'samples/', 'faq/', 'about/', 'physical/', 'terms/', 'privacy/', 'refund/'];
 const MOVED = { 'snapshot/': 'kit/', 'crier-deck/': 'brand-deck/' }; // old URLs: redirect stubs, not in the sitemap
 const PRODUCTS = ['kit', 'visible', 'growing', 'deck'];
 let fail = 0; const ok = (c, m) => { if (!c) { fail++; console.log('FAIL', m); } };
@@ -32,8 +32,9 @@ for (const l of LANGS) for (const p of PAGES) {
   ok(h.includes(`<html lang="${l}" dir="${l === 'ar' ? 'rtl' : 'ltr'}">`), `html lang/dir ${file}`);
   ok((h.match(/<link rel="alternate" hreflang="/g) || []).length === 5, `hreflang ${file}`);
   ok(/<title>[^<]{8,}<\/title>/.test(h) && /<meta name="description" content="[^"]{40,}">/.test(h), `title/description ${file}`);
-  for (const nav of ['pricing/', 'kit/', 'brand-deck/', 'samples/', 'faq/', 'about/']) ok(h.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `nav link ${nav} in ${file}`);
-  ok(h.includes('href="https://portal.crierstudio.com/"'), `portal link ${file}`);
+  const headerNav = (h.match(/<nav class="main-nav"[\s\S]*?<\/nav>/) || [''])[0];
+  for (const nav of ['pricing/', 'kit/', 'brand-deck/', 'samples/', 'faq/', 'about/', 'physical/']) ok(headerNav.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `nav link ${nav} in ${file}`);
+  ok(headerNav.includes('href="https://portal.crierstudio.com/"'), `portal link ${file}`);
   ok(h.includes('team@crierstudio.com'), `email in ${file}`);
   for (const lp of LANGS.filter((x) => x !== 'en')) { /* sibling links exist */ }
   ok(!/\bUMA\b/i.test(h), `UMA in ${file}`);
@@ -46,7 +47,7 @@ for (const l of LANGS) for (const p of PAGES) {
     ok(vis.includes('$' + pk.price), `price $${pk.price} (${pk.id}, data/pricing.json) on ${file}`);
     if (pk.extra_platform_price) ok(vis.includes('$' + pk.extra_platform_price), `extra platform $${pk.extra_platform_price} (${pk.id}) on ${file}`);
   }
-  if (p === 'pricing/') ok((h.match(/data-product="/g) || []).length === 4, `4 buy buttons on ${file}`);
+  if (p === 'pricing/') ok((h.match(/data-product="/g) || []).length === 3 && h.includes('disabled data-unavailable="deck"'), `3 buy buttons and unavailable Brand Deck on ${file}`);
   // retired packages and prices must not come back (Snapshot, Starter/Growth/Pro, Crier Deck + Print Kit, old discounts)
   for (const bad of [/\$(99|199|399|149|249|39)\b/, /Snapshot/, /Starter/, /Growth/, /\bPro\b/, /Print Kit/, /Crier Deck/]) ok(!bad.test(vis + ' ' + (h.match(/<script type="application\/ld\+json">[\s\S]*?<\/script>/) || [''])[0] + ' ' + (h.match(/<meta[^>]+>/g) || []).join(' ')), `retired wording ${bad} in ${file}`);
   ok(/<meta name="robots" content="noindex">/.test(h) === /const NOINDEX = true/.test(rd('build/build.mjs')), `noindex consistency ${file}`);
@@ -56,9 +57,9 @@ for (const l of LANGS) for (const p of PAGES) {
 const sm = rd('sitemap.xml');
 ok((sm.match(/<url>/g) || []).length === urls.length, 'sitemap url count');
 for (const u of urls) ok(sm.includes(`<loc>${u}</loc>`), 'sitemap missing ' + u);
-ok(rd('brand-deck/index.html').includes('"@type":"Service"') && rd('brand-deck/index.html').includes('"price":"250"'), 'Service JSON-LD with the Brand Deck offer');
+ok(rd('brand-deck/index.html').includes('"@type":"Service"') && !rd('brand-deck/index.html').includes('"@type":"Offer"'), 'Brand Deck Service is informational, without an active offer');
 ok(rd('kit/index.html').includes('"@type":"Service"') && rd('kit/index.html').includes('"price":"29"'), 'Service JSON-LD with the kit offer');
-for (const pr of ['"price":"29"', '"price":"45"', '"price":"60"', '"price":"250"', '"unitCode":"MON"']) ok(rd('pricing/index.html').includes(pr), 'pricing JSON-LD ' + pr);
+for (const pr of ['"price":"29"', '"price":"45"', '"price":"60"', '"unitCode":"MON"']) ok(rd('pricing/index.html').includes(pr), 'pricing JSON-LD ' + pr);
 // renamed pages: every old URL is a noindex redirect stub to the new page in the same language
 for (const l of LANGS) for (const [from, to] of Object.entries(MOVED)) {
   const pre = l === 'en' ? '' : l + '/', f = pre + from + 'index.html';
@@ -77,6 +78,7 @@ ok(rd('pricing/index.html').includes('"@type":"ItemList"') && rd('pricing/index.
     for (const l of LANGS) {
       const hh = rd((l === 'en' ? '' : l + '/') + 'pricing/index.html');
       const m = hh.match(new RegExp(`<a class="btn[^"]*" href="([^"]*)" data-product="${k}"`));
+      if (k === 'deck') { ok(!m && hh.includes('disabled data-unavailable="deck"'), `Brand Deck unavailable (${l})`); continue; }
       const want = links[k] || `/${l === 'en' ? '' : l + '/'}kit/?product=${k}#request`;
       ok(m && m[1].replace(/&amp;/g, '&') === want, `buy button ${k} (${l}) href`);
     }

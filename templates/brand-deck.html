@@ -1,6 +1,6 @@
 <main id="main-content">
     {{=crumbs}}
-    <section class="phead" aria-labelledby="deck-title">
+    <section class="phead" id="availability" aria-labelledby="deck-title">
       <span class="eyebrow">{{t:deck.eyebrow}}</span>
       <h1 id="deck-title">{{t:deck.h1}}</h1>
       <p class="lead">{{t:deck.lead}}</p>
@@ -67,7 +67,7 @@
       <div class="closing">
         <h2 id="next-title">{{t:deck.next.title}}</h2>
         <p class="lead">{{t:deck.next.x}}</p>
-        <a class="btn" href="{{=deckCtaHref}}">{{t:deck.cta}}</a>
+        <div class="buyrow">{{=buyDeck}}</div>
       </div>
     </section>
 

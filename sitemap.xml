@@ -225,6 +225,38 @@
 <xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/about/"/>
 </url>
 <url>
+<loc>https://crierstudio.com/physical/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/physical/"/>
+<xhtml:link rel="alternate" hreflang="es" href="https://crierstudio.com/es/physical/"/>
+<xhtml:link rel="alternate" hreflang="fr" href="https://crierstudio.com/fr/physical/"/>
+<xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/ar/physical/"/>
+<xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/physical/"/>
+</url>
+<url>
+<loc>https://crierstudio.com/es/physical/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/physical/"/>
+<xhtml:link rel="alternate" hreflang="es" href="https://crierstudio.com/es/physical/"/>
+<xhtml:link rel="alternate" hreflang="fr" href="https://crierstudio.com/fr/physical/"/>
+<xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/ar/physical/"/>
+<xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/physical/"/>
+</url>
+<url>
+<loc>https://crierstudio.com/fr/physical/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/physical/"/>
+<xhtml:link rel="alternate" hreflang="es" href="https://crierstudio.com/es/physical/"/>
+<xhtml:link rel="alternate" hreflang="fr" href="https://crierstudio.com/fr/physical/"/>
+<xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/ar/physical/"/>
+<xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/physical/"/>
+</url>
+<url>
+<loc>https://crierstudio.com/ar/physical/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/physical/"/>
+<xhtml:link rel="alternate" hreflang="es" href="https://crierstudio.com/es/physical/"/>
+<xhtml:link rel="alternate" hreflang="fr" href="https://crierstudio.com/fr/physical/"/>
+<xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/ar/physical/"/>
+<xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/physical/"/>
+</url>
+<url>
 <loc>https://crierstudio.com/terms/</loc>
 <xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/terms/"/>
 <xhtml:link rel="alternate" hreflang="es" href="https://crierstudio.com/es/terms/"/>

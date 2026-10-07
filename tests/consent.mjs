@@ -8,6 +8,7 @@ async function page(viewport) {
   const ctx = await b.newContext(viewport ? { viewport } : {});
   const google = [];
   await ctx.route(/googletagmanager\.com|google-analytics\.com|analytics\.google\.com/, (r) => { google.push(r.request().url()); r.abort(); });
+  await ctx.route(/crm-production-d789\.up\.railway\.app/, r => r.abort());
   const pg = await ctx.newPage();
   const csp = [];
   pg.on('console', (m) => { if (/Content Security Policy|Refused to/i.test(m.text())) csp.push(m.text()); });
@@ -48,15 +49,15 @@ for (const [l, p] of [['en', '/'], ['es', '/es/pricing/'], ['fr', '/fr/kit/'], [
   ok(csp.length === 0, `${p} no CSP violations ${csp.join(' | ')}`);
   await pg.context().close();
 }
-// phones: the bar never hides the last Buy button (the page gets bottom padding equal to the bar height)
+// phones: the bar never hides the last package action (the page gets bottom padding equal to the bar height)
 for (const p of ['/pricing/', '/ar/pricing/', '/es/brand-deck/']) {
   const { pg } = await page({ width: 360, height: 740 });
   await pg.goto(BASE + p);
   const r = await pg.evaluate(async () => {
     const bar = document.getElementById('consent-bar');
-    const btns = [...document.querySelectorAll('[data-product]')].filter((x) => x.offsetParent);
+    const btns = [...document.querySelectorAll('[data-product], [data-unavailable]')].filter((x) => x.offsetParent);
     const last = btns[btns.length - 1];
-    // worst case: the last Buy button sits at the very bottom of the screen when the page is scrolled to its end
+    // worst case: the last package action sits at the very bottom of the screen when the page is scrolled to its end
     window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
     await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
     const foot = document.querySelector('footer').getBoundingClientRect(), bb = bar.getBoundingClientRect();
@@ -67,7 +68,7 @@ for (const p of ['/pricing/', '/ar/pricing/', '/es/brand-deck/']) {
   });
   ok(r.barH < 200 && r.pad === r.barH + 'px', `${p} phone: bar ${r.barH}px tall, body padded ${r.pad}`);
   ok(r.footBottom <= r.barTop + 1, `${p} phone: at the end of the page the footer (bottom ${r.footBottom}) ends above the bar (top ${r.barTop})`);
-  ok(r.n > 0 && r.lastBottom <= r.barTop + 1, `${p} phone: last Buy button scrolled into view stops above the bar (scroll-padding): bottom ${r.lastBottom}, bar top ${r.barTop}`);
+  ok(r.n > 0 && r.lastBottom <= r.barTop + 1, `${p} phone: last package action scrolled into view stops above the bar (scroll-padding): bottom ${r.lastBottom}, bar top ${r.barTop}`);
   ok(r.sw <= r.vw, `${p} phone: no horizontal scroll (${r.sw} <= ${r.vw})`);
   await pg.context().close();
 }

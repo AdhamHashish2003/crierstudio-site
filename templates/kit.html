@@ -28,8 +28,9 @@
           <label class="opt"><input type="radio" name="product" value="kit" checked><span>{{t:f.optKit}}</span></label>
           <label class="opt"><input type="radio" name="product" value="visible"><span>{{t:f.optVisible}}</span></label>
           <label class="opt"><input type="radio" name="product" value="growing"><span>{{t:f.optGrowing}}</span></label>
-          <label class="opt"><input type="radio" name="product" value="deck"><span>{{t:f.optDeck}}</span></label>
+          <label class="opt"><input type="radio" name="product" value="deck" disabled aria-describedby="deck-availability"><span>{{t:f.optDeck}} · {{t:availability.soon}}</span></label>
         </fieldset>
+        <p class="availability-note" id="deck-availability">{{t:availability.deck}}</p>
         <fieldset class="choice" id="plats" hidden>
           <legend>{{t:f.platforms}}</legend>
           {{=platformChecks}}

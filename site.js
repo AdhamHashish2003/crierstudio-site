@@ -63,10 +63,12 @@
   function apiProduct() { return isDeck() ? "crier_deck" : "snapshot"; }
   function sync() {
     var deck = isDeck();
-    $("deck-address").hidden = !deck; $("deck-lang").hidden = !deck;
-    $("f-address").required = deck;
+    $("deck-address").hidden = true; $("deck-lang").hidden = true;
+    $("f-address").required = false;
+    btn.disabled = deck;
     btn.textContent = btn.getAttribute(deck ? "data-deck" : (isPlan() ? "data-plan" : "data-kit"));
     status.hidden = true;
+    if (deck) { btn.textContent = M["availability.soon"]; say("availability.deck", false); }
   }
   // /kit/?product=visible (the Buy buttons) opens the form with that product selected; old product ids map to the new packages
   var want = null;
@@ -108,7 +110,7 @@
   function picked() { var o = [], c = form.querySelectorAll('input[name="platform"]'); for (var i = 0; i < c.length; i++) if (c[i].checked) o.push(c[i].value); return o; }
   function quote() {
     var pn = $("paynote");
-    if (!checkout || isDeck()) { if (plats) plats.hidden = true; if (pn && M["pay.note"]) pn.textContent = M["pay.note"]; return; }
+    if (!checkout || isDeck()) { if (plats) plats.hidden = true; if (live) live.hidden = true; if (pn) pn.textContent = M[isDeck() ? "availability.deck" : "pay.note"]; return; }
     if (pn && M["pay.noteCheckout"]) pn.textContent = M["pay.noteCheckout"];
     plats.hidden = false; btn.textContent = M["f.pay"] || btn.textContent;
     if (!picked().length) { live.hidden = true; return; }
@@ -147,6 +149,7 @@
   }
   form.addEventListener("submit", function (e) {
     e.preventDefault();
+    if (isDeck()) { btn.disabled = true; say("availability.deck", false); return; }
     if (checkout && !isDeck() && !picked().length) { setErr("f-platforms", "f.platformsErr"); return; }
     var firstBad = null;
     FIELDS.forEach(function (f) {
