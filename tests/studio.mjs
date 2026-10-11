@@ -28,12 +28,17 @@ try{
  await p.locator('#spatial-canvas').focus();await p.keyboard.press('Home');await p.waitForFunction(()=>Math.abs(crier3d.getState().yaw)<.01);await p.keyboard.press('ArrowLeft');await p.waitForFunction(()=>crier3d.getState().yaw<-.05);check('Keyboard rotation and reset',true);
  await p.locator('#motion').click();await p.locator('#project').scrollIntoViewIfNeeded();await p.waitForFunction(()=>!crier3d.getState().visible);a=await p.evaluate(()=>crier3d.getState().frames);await p.waitForTimeout(200);z=await p.evaluate(()=>crier3d.getState().frames);check('Offscreen scene stops rendering',a===z);await p.close();
  for(const lang of ['en','es','fr','ar'])for(const [name,width,height] of [['desktop',1440,1050],['tablet',834,1112],['mobile',390,844]]){
-  const q=await page({viewport:{width,height},reducedMotion:'reduce'});await q.goto(BASE+(lang==='en'?'/':'/'+lang+'/'));await q.waitForFunction(()=>window.crier3d?.getState().frames>0);
-  await q.waitForTimeout(150);a=await q.evaluate(()=>crier3d.getState().frames);await q.waitForTimeout(150);z=await q.evaluate(()=>crier3d.getState().frames);
-  check(`Reduced motion ${lang} ${name}`,a===z&&await q.evaluate(()=>crier3d.getState().paused));
+  // 3D loads only on larger screens without reduced motion; phones and reduced-motion visitors keep the static image and never download three.js.
+  const three=[];
+  const q=await page({viewport:{width,height},reducedMotion:'reduce'});q.on('request',r=>{if(/three\.r128|studio\.js/.test(r.url()))three.push(r.url());});await q.goto(BASE+(lang==='en'?'/':'/'+lang+'/'));await q.waitForLoadState('load');await q.waitForTimeout(2200);
+  check(`Reduced motion ${lang} ${name}: static image, no 3D download`,three.length===0&&await q.evaluate(()=>document.getElementById('spatial-stage').dataset.state==='fallback'&&document.querySelector('.stage-fallback img').naturalWidth>0&&document.getElementById('motion').disabled));
+  if(name!=='mobile'){const m=await page({viewport:{width,height}});await m.goto(BASE+(lang==='en'?'/':'/'+lang+'/'));await m.waitForFunction(()=>window.crier3d?.getState().frames>0,null,{timeout:15000});
+   check(`3D ${lang} ${name}`,await m.evaluate(()=>document.getElementById('spatial-stage').dataset.state==='ready'&&document.getElementById('motion').textContent===document.getElementById('spatial-stage').dataset.pause));await m.close();}
+  else{const m=await page({viewport:{width,height}});const req=[];m.on('request',r=>{if(/three\.r128/.test(r.url()))req.push(r.url());});await m.goto(BASE+(lang==='en'?'/':'/'+lang+'/'));await m.waitForLoadState('load');await m.waitForTimeout(2200);
+   check(`Phone ${lang}: static image, no 3D download`,req.length===0&&await m.evaluate(()=>document.getElementById('spatial-stage').dataset.state==='fallback'&&document.querySelector('.stage-fallback img').naturalWidth>0));await m.close();}
   const metrics=await q.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth,h1s:document.querySelectorAll('h1').length,brokenImages:[...document.images].filter(i=>!i.complete||!i.naturalWidth).map(i=>i.src),badAnchors:[...document.querySelectorAll('a[href^="#"]')].map(a=>a.getAttribute('href')).filter(h=>h.length>1&&!document.getElementById(h.slice(1)))}));
   check(`Responsive page ${lang} ${name}`,!metrics.overflow&&metrics.h1s===1&&!metrics.brokenImages.length&&!metrics.badAnchors.length,metrics);
-  check(`Localized 3D controls ${lang} ${name}`,await q.evaluate(()=>document.getElementById('motion').textContent===document.getElementById('spatial-stage').dataset.play));
+  check(`Localized 3D controls ${lang} ${name}`,await q.evaluate(()=>document.getElementById('motion').textContent===document.getElementById('spatial-stage').dataset.pause&&document.querySelector('.drag-hint').textContent===document.getElementById('spatial-stage').dataset.static));
   await q.screenshot({path:path.join(OUTPUT,`${lang}-${name}.png`),fullPage:true});
   if(lang==='en'&&name==='desktop')await q.screenshot({path:path.join(OUTPUT,'homepage.png')});
   if(name==='mobile'){
@@ -51,7 +56,7 @@ try{
  await inner.goto(BASE+'/kit/?product=growing&platforms=instagram,tiktok#request');await inner.locator('.langpick a[lang=es]').click();await inner.waitForLoadState('load');
  check('Language switch preserves checkout package/platforms',await inner.evaluate(()=>new URLSearchParams(location.search).get('product')==='growing'&&new URLSearchParams(location.search).get('platforms')==='instagram,tiktok'&&document.querySelector('input[name=product]:checked').value==='growing'));
  await inner.close();
- const fallback=await page({viewport:{width:390,height:844}});await fallback.route('**/three.r128.min.js',r=>r.fulfill({status:200,contentType:'application/javascript',body:''}));await fallback.goto(BASE+'/');await fallback.waitForTimeout(1200);
+ const fallback=await page({viewport:{width:1440,height:1050}});await fallback.route('**/three.r128.min.js',r=>r.fulfill({status:200,contentType:'application/javascript',body:''}));await fallback.goto(BASE+'/');await fallback.waitForTimeout(1200);
  check('Blocked WebGL retains real image and disabled controls',await fallback.evaluate(()=>document.getElementById('spatial-stage').dataset.state==='fallback'&&document.querySelector('.stage-fallback img').naturalWidth>0&&document.getElementById('motion').disabled));await fallback.close();
  const nojs=await page({viewport:{width:390,height:844},javaScriptEnabled:false});await nojs.goto(BASE+'/');check('No-JS contact and static scene remain usable',await nojs.locator('a[href^="mailto:team@crierstudio.com"]').count()>0&&await nojs.locator('.stage-fallback img').isVisible());await nojs.close();
  const deck=await page({viewport:{width:1280,height:1000}});await deck.goto(BASE+'/assets/studio-deck/index.html');await deck.evaluate(()=>document.fonts.ready);await deck.emulateMedia({media:'print'});

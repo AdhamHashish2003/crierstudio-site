@@ -195,8 +195,16 @@
     matchMedia('(min-width:801px)').addEventListener('change',close);
   }
   var stage=document.getElementById('spatial-stage');if(!stage)return;
-  var conn=navigator.connection||{};if(conn.saveData)return;
+  // The 3D scene (three.js, ~600 KB) never blocks first paint and is skipped where it costs more than it gives:
+  // phones/small screens, reduced motion, data saver, slow connections and low-memory/low-core devices keep the static image.
+  var conn=navigator.connection||{};
+  if(conn.saveData||/(^|-)2g|3g/.test(conn.effectiveType||''))return;
+  if(!window.matchMedia||matchMedia('(prefers-reduced-motion: reduce)').matches||!matchMedia('(min-width:761px)').matches)return;
+  if((navigator.deviceMemory&&navigator.deviceMemory<4)||(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<4))return;
   function load(src){return new Promise(function(resolve,reject){var script=document.createElement('script');script.src=src;script.onload=resolve;script.onerror=reject;document.head.appendChild(script);});}
-  function start(){load('/assets/three.r128.min.js').then(function(){return load('/assets/studio.js');}).catch(function(){stage.dataset.state='fallback';});}
-  if('requestIdleCallback' in window)requestIdleCallback(start,{timeout:1800});else setTimeout(start,300);
+  var started=false;
+  function start(){if(started)return;started=true;load('/assets/three.r128.min.js').then(function(){return load('/assets/studio.js');}).catch(function(){stage.dataset.state='fallback';});}
+  function idle(){if('requestIdleCallback' in window)requestIdleCallback(start,{timeout:1800});else setTimeout(start,300);}
+  function whenVisible(){if(!('IntersectionObserver' in window)){idle();return;}var io=new IntersectionObserver(function(es){if(es.some(function(e){return e.isIntersecting;})){io.disconnect();idle();}},{rootMargin:'200px'});io.observe(stage);}
+  if(document.readyState==='complete')whenVisible();else addEventListener('load',whenVisible,{once:true});
 })();
