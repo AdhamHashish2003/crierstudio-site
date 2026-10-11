@@ -277,9 +277,18 @@ function jsonLd(lang, page) {
 // Every page (all languages, 404, redirect stubs) carries this once, right after the CSP meta. Consent defaults to denied for
 // everything; only analytics_storage is granted, and only after the visitor presses Accept in the consent bar
 // (templates/consent.html, localStorage 'crier_consent'). Ads signals stay denied always.
+// Speed (2026-10-11, owner approved "delay Analytics"): gtag.js (~176 KB) is NOT a <script src> in <head>. The inline script
+// sets the consent defaults and queues js/config in dataLayer right away, then injects gtag.js after the window 'load' event
+// (requestIdleCallback, at most 3 s later; setTimeout where rIC is missing), or at once when the visitor uses the consent bar
+// or the Cookie settings link. gtag.js replays the queue on arrival, so nothing is lost and page_view fires once.
+// Trade-off: visitors who leave before the page has loaded are not counted.
 const GA_ID = 'G-QLQ443CQ8E';
-const GA_INLINE = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});try{if(localStorage.getItem('crier_consent')==='granted'){gtag('consent','update',{analytics_storage:'granted'});}}catch(e){}gtag('js',new Date());gtag('config','${GA_ID}');`;
-const GA_HEAD = `<script>${GA_INLINE}</script>\n<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_ID}"></script>`;
+const GA_INLINE = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});try{if(localStorage.getItem('crier_consent')==='granted'){gtag('consent','update',{analytics_storage:'granted'});}}catch(e){}gtag('js',new Date());gtag('config','${GA_ID}');` +
+  `(function(){var w=window,d=document,n=0;function L(){if(n)return;n=1;var s=d.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=${GA_ID}';d.head.appendChild(s);}` +
+  `function I(){if(w.requestIdleCallback)w.requestIdleCallback(L,{timeout:3000});else setTimeout(L,1);}` +
+  `if(d.readyState==='complete')I();else w.addEventListener('load',I);` +
+  `d.addEventListener('click',function(e){var t=e.target;if(t&&t.closest&&t.closest('#consent-bar,[data-consent-open],a[href$="#cookie-settings"]'))L();},true);})();`;
+const GA_HEAD = `<script>${GA_INLINE}</script>`;
 const CONSENT_JS = (partials.consent.match(/<script>([\s\S]*?)<\/script>/) || [])[1];
 if (!CONSENT_JS || CONSENT_JS.includes('{{')) throw new Error('templates/consent.html: one inline <script> without template tags expected');
 // the site allows no 'unsafe-inline' scripts: each inline script is allowed by its sha256 hash (recomputed on every build)

@@ -17,9 +17,17 @@ async function page(viewport) {
 const consentCalls = (pg) => pg.evaluate(() => (window.dataLayer || []).filter((a) => a[0] === 'consent').map((a) => [a[1], a[2]]));
 for (const [l, p] of [['en', '/'], ['es', '/es/pricing/'], ['fr', '/fr/kit/'], ['ar', '/ar/'], ['en', '/404.html'], ['ar', '/ar/privacy/']]) {
   const { pg, google, csp } = await page();
-  await pg.goto(BASE + p);
+  // delayed gtag.js: not requested while the page loads (DOMContentLoaded), only after window load; no Google request before then
+  await pg.goto(BASE + p, { waitUntil: 'domcontentloaded' });
+  const atDcl = await pg.evaluate(() => ({ rs: document.readyState, tag: !!document.querySelector('script[src*="googletagmanager.com/gtag/js"]') }));
+  ok(atDcl.rs === 'complete' || (!atDcl.tag && google.length === 0), `${p} gtag.js not requested before window load (${JSON.stringify(atDcl)}, ${google.length} Google requests)`);
+  await pg.waitForLoadState('load');
+  await pg.waitForFunction(() => !!document.querySelector('script[src*="googletagmanager.com/gtag/js?id=G-QLQ443CQ8E"]'), null, { timeout: 5000 }).catch(() => {});
+  const timing = await pg.evaluate(() => { const n = performance.getEntriesByType('navigation')[0]; const r = performance.getEntriesByType('resource').find((e) => e.name.includes('gtag/js')); return { loadEnd: n.loadEventEnd, gtagStart: r ? r.startTime : -1 }; });
+  ok(google.filter((u) => u.includes('gtag/js?id=G-QLQ443CQ8E')).length === 1 && timing.gtagStart >= timing.loadEnd - 1, `${p} gtag.js requested once, after window load (${JSON.stringify(timing)})`);
   ok(await pg.isVisible('#consent-bar'), `${p} bar shown on first visit`);
-  ok(google.some((u) => u.includes('gtag/js?id=G-QLQ443CQ8E')), `${p} gtag.js requested`);
+  ok(!google.some((u) => /collect|google-analytics|analytics\.google/.test(u)), `${p} no GA hit sent before consent`);
+  ok(await pg.evaluate(() => (window.dataLayer || []).filter((a) => a[0] === 'config').length === 1), `${p} exactly one config call (one page_view)`);
   const c0 = await consentCalls(pg);
   ok(c0.length === 1 && c0[0][0] === 'default' && c0[0][1].analytics_storage === 'denied' && c0[0][1].ad_storage === 'denied' && c0[0][1].ad_user_data === 'denied' && c0[0][1].ad_personalization === 'denied', `${p} consent default all denied: ${JSON.stringify(c0)}`);
   ok(await pg.evaluate(() => document.getElementById('consent-bar').getAttribute('role') === 'region' && /\S/.test(document.getElementById('consent-bar').getAttribute('aria-label'))), `${p} bar is a labelled region`);
@@ -49,6 +57,20 @@ for (const [l, p] of [['en', '/'], ['es', '/es/pricing/'], ['fr', '/fr/kit/'], [
   ok(csp.length === 0, `${p} no CSP violations ${csp.join(' | ')}`);
   await pg.context().close();
 }
+// clicking the consent bar loads gtag.js at once (no wait for idle); the consent update queued before it arrives is kept
+{
+  const { pg, google } = await page();
+  await pg.route('**/assets/**', async (r) => { await new Promise((res) => setTimeout(res, 4000)); r.continue().catch(() => {}); }); // hold window load
+  await pg.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
+  const before = await pg.evaluate(() => document.readyState);
+  await pg.click('#consent-bar [data-consent=granted]');
+  const tagged = await pg.evaluate(() => !!document.querySelector('script[src*="googletagmanager.com/gtag/js"]'));
+  const dl = await consentCalls(pg);
+  ok(before !== 'complete' && tagged && dl.length === 2 && dl[1][1].analytics_storage === 'granted', `consent click before load injects gtag.js at once (readyState ${before}) and keeps the update queued: ${JSON.stringify(dl)}`);
+  await pg.waitForLoadState('load'); await pg.waitForTimeout(3500);
+  ok(google.filter((u) => u.includes('gtag/js')).length === 1, 'gtag.js requested once even after load fires later');
+  await pg.context().close();
+}
 // phones: the bar never hides the last package action (the page gets bottom padding equal to the bar height)
 for (const p of ['/pricing/', '/ar/pricing/', '/es/brand-deck/']) {
   const { pg } = await page({ width: 360, height: 740 });
@@ -76,6 +98,7 @@ for (const p of ['/pricing/', '/ar/pricing/', '/es/brand-deck/']) {
 {
   const { pg, google } = await page();
   await pg.goto(BASE + '/es/snapshot/'); await pg.waitForFunction(() => location.pathname === '/es/kit/', null, { timeout: 5000 }).catch(() => {});
-  ok(new URL(pg.url()).pathname === '/es/kit/' && google.length > 0, '/es/snapshot/ stub still redirects, tag loaded');
+  await pg.waitForLoadState('load'); await pg.waitForTimeout(3500);
+  ok(new URL(pg.url()).pathname === '/es/kit/' && google.length > 0, '/es/snapshot/ stub still redirects, tag loaded on the target page');
 }
 await b.close(); process.exit(fail ? 1 : 0);

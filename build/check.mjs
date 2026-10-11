@@ -86,8 +86,8 @@ ok(rd('pricing/index.html').includes('"@type":"ItemList"') && rd('pricing/index.
 }
 ok(rd('faq/index.html').includes('"@type":"FAQPage"'), 'FAQPage');
 ok(rd('index.html').includes('"alternateName":"Crier"') && rd('index.html').includes('"@type":"Organization"'), 'Organization + WebSite');
-// Google Analytics 4 + Consent Mode v2: every built HTML file (40 pages, 404, all redirect stubs) has the tag exactly once, early in
-// <head>, with consent defaulting to denied before the config call; ads signals are never granted; the CSP allows Google's hosts
+// Google Analytics 4 + Consent Mode v2: every built HTML file (40 pages, 404, all redirect stubs) has the inline tag exactly once,
+// early in <head>, with consent defaulting to denied before the config call, and gtag.js loaded only after page load; ads signals are never granted; the CSP allows Google's hosts
 // and every inline script by its sha256 hash (no 'unsafe-inline' for scripts).
 {
   const GA = 'G-QLQ443CQ8E';
@@ -100,9 +100,16 @@ ok(rd('index.html').includes('"alternateName":"Crier"') && rd('index.html').incl
   ok(files.length === urls.length + 1 + 3 + LANGS.length * Object.keys(MOVED).length, `GA: expected every built HTML file, found ${files.length}`);
   for (const f of files) {
     const h = rd(f), headEnd = h.indexOf('</head>');
-    const tag = `<script async src="https://www.googletagmanager.com/gtag/js?id=${GA}"></script>`;
-    ok(h.split(tag).length === 2 && h.indexOf(tag) < headEnd, `GA: exactly one gtag.js tag in <head> of ${f}`);
+    // delayed load (2026-10-11): no blocking/parsed gtag.js <script src> anywhere; the inline head script injects it after
+    // window load (requestIdleCallback, 3 s timeout) or at once on a consent-bar / Cookie settings click
+    ok(!/<script[^>]*\ssrc="[^"]*googletagmanager\.com/.test(h), `GA: no gtag.js <script src> in the HTML of ${f} (it is injected after load)`);
+    const loader = `s.src='https://www.googletagmanager.com/gtag/js?id=${GA}';d.head.appendChild(s);`;
+    ok(h.split(loader).length === 2 && h.indexOf(loader) < headEnd, `GA: exactly one delayed gtag.js loader inline in <head> of ${f}`);
     ok((h.match(/googletagmanager\.com\/gtag\/js/g) || []).length === 1, `GA: no second gtag.js loader in ${f}`);
+    ok(h.includes("if(d.readyState==='complete')I();else w.addEventListener('load',I);") && h.includes('w.requestIdleCallback(L,{timeout:3000})'), `GA: loader waits for window load + idle (<= 3 s) in ${f}`);
+    ok(h.includes(`t.closest('#consent-bar,[data-consent-open],a[href$="#cookie-settings"]'))L();},true)`), `GA: loader runs at once on consent-bar interaction in ${f}`);
+    const inl = h.slice(0, headEnd).match(/<script>([\s\S]*?)<\/script>/);
+    ok(inl && inl[1].indexOf("gtag('consent','default'") > -1 && inl[1].indexOf("gtag('consent','default'") < inl[1].indexOf('d.createElement'), `GA: consent defaults set inline in <head> before the loader in ${f}`);
     const cfg = `gtag('config','${GA}')`, def = "gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500})";
     ok(h.split(cfg).length === 2 && h.split(def).length === 2 && h.indexOf(def) < h.indexOf(cfg) && h.indexOf(cfg) < headEnd, `GA: consent default (all denied) before the one config call in ${f}`);
     ok(h.includes("if(localStorage.getItem('crier_consent')==='granted'){gtag('consent','update',{analytics_storage:'granted'});}"), `GA: returning visitor who accepted gets analytics_storage granted in ${f}`);
