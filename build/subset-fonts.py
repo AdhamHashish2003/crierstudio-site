@@ -7,7 +7,7 @@ uses them); this writes fonts/*.subset.woff2 and fonts/subset-coverage.json. bui
 character that the subset files do not contain, so a forgotten re-run cannot ship a missing glyph.
 
 - Archivo (variable, wght 100-900) and Noto Sans Arabic 400/700: same fonts, only the characters the site uses
-  (plus printable ASCII and common punctuation; for Arabic the whole basic Arabic block).
+  (plus printable ASCII and common punctuation; for Arabic every basic letter, haraka, digit and punctuation mark).
 - Instrument Sans: the four static files (400/500/600/700) are one design interpolated along weight, so they are rebuilt
   as one variable file with 400 and 700 as masters. 500 and 600 come out identical to the static files (the script stops
   if any point or advance width differs by more than 1 font unit). fonts.css keeps four @font-face rules (400/500/600/700)
@@ -56,6 +56,7 @@ def do_subset(src, dst, text, keep_vf=True):
     s.populate(text=text)
     s.subset(font)
     font.flavor = 'woff2'
+    font.recalcTimestamp = False  # same input, same bytes (stable hashed file names)
     font.save(dst)
     return sorted({chr(u) for u in font.getBestCmap()})
 
@@ -65,7 +66,7 @@ def instrument_variable(text, dst):
     for w in (400, 500, 600, 700):
         p = os.path.join(tmp, f'is{w}.woff2')
         do_subset(F(f'instrument-sans-latin-{w}-normal.woff2'), p, text)
-        f = TTFont(p); f.flavor = None; f.save(os.path.join(tmp, f'is{w}.ttf')); statics[w] = TTFont(os.path.join(tmp, f'is{w}.ttf'))
+        f = TTFont(p); f.flavor = None; f.recalcTimestamp = False; f.save(os.path.join(tmp, f'is{w}.ttf')); statics[w] = TTFont(os.path.join(tmp, f'is{w}.ttf'))
     # the intermediate weights must be the straight-line blend of 400 and 700, or the variable file would change them
     a, b = statics[400], statics[700]
     for w in (500, 600):
@@ -84,12 +85,16 @@ def instrument_variable(text, dst):
         sd = SourceDescriptor(); sd.path = os.path.join(tmp, f'is{w}.ttf'); sd.name = f'w{w}'; sd.location = {'Weight': w}; ds.addSource(sd)
     vf, _, _ = varLib.build(ds)
     vf.flavor = 'woff2'
+    vf.recalcTimestamp = False
     vf.save(dst)
     return sorted({chr(u) for u in vf.getBestCmap()})
 
 chars = site_text()
 latin = {c for c in chars if is_latin(c)} | {chr(i) for i in range(0x20, 0x7F)} | set(' –—‘’“”…•€™©®°×·«»')
-arabic = {c for c in chars if is_arabic(c)} | {chr(i) for i in range(0x600, 0x700)} | set('‌‍‎‏')
+# Arabic: what the site uses + every basic Arabic letter, haraka, digit and punctuation mark (so names typed into the forms
+# keep joined letters); the Persian/Urdu extensions of the block are left out (a missing glyph falls back to the system font)
+arabic = {c for c in chars if is_arabic(c)} | {chr(i) for i in range(0x621, 0x653)} | {chr(i) for i in range(0x660, 0x66E)} \
+    | {chr(i) for i in (0x60C, 0x61B, 0x61F, 0x640, 0x670, 0x200C, 0x200D, 0x200E, 0x200F)}
 lt, at = ''.join(sorted(latin)), ''.join(sorted(arabic))
 cov = {
     'archivo': do_subset(F('archivo-latin-wght-normal.woff2'), F('archivo-latin-wght-normal.subset.woff2'), lt),
