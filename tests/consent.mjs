@@ -17,14 +17,20 @@ async function page(viewport) {
 const consentCalls = (pg) => pg.evaluate(() => (window.dataLayer || []).filter((a) => a[0] === 'consent').map((a) => [a[1], a[2]]));
 for (const [l, p] of [['en', '/'], ['es', '/es/pricing/'], ['fr', '/fr/kit/'], ['ar', '/ar/'], ['en', '/404.html'], ['ar', '/ar/privacy/']]) {
   const { pg, google, csp } = await page();
-  // delayed gtag.js: not requested while the page loads (DOMContentLoaded), only after window load; no Google request before then
+  // delayed gtag.js: not requested while the page loads (DOMContentLoaded); only on the first interaction or 6 s after window load
   await pg.goto(BASE + p, { waitUntil: 'domcontentloaded' });
   const atDcl = await pg.evaluate(() => ({ rs: document.readyState, tag: !!document.querySelector('script[src*="googletagmanager.com/gtag/js"]') }));
   ok(atDcl.rs === 'complete' || (!atDcl.tag && google.length === 0), `${p} gtag.js not requested before window load (${JSON.stringify(atDcl)}, ${google.length} Google requests)`);
   await pg.waitForLoadState('load');
+  // after load, gtag.js still waits for the visitor's first interaction (or 6 s): none yet, so no Google request
+  await pg.waitForTimeout(1500);
+  ok(google.length === 0 && !(await pg.evaluate(() => !!document.querySelector('script[src*="googletagmanager.com/gtag/js"]'))), `${p} no gtag.js without an interaction in the first seconds after load (${google.length} Google requests)`);
+  await pg.mouse.wheel(0, 40); // first interaction (wheel/scroll) loads it
   await pg.waitForFunction(() => !!document.querySelector('script[src*="googletagmanager.com/gtag/js?id=G-QLQ443CQ8E"]'), null, { timeout: 5000 }).catch(() => {});
+  await pg.waitForTimeout(300);
   const timing = await pg.evaluate(() => { const n = performance.getEntriesByType('navigation')[0]; const r = performance.getEntriesByType('resource').find((e) => e.name.includes('gtag/js')); return { loadEnd: n.loadEventEnd, gtagStart: r ? r.startTime : -1 }; });
-  ok(google.filter((u) => u.includes('gtag/js?id=G-QLQ443CQ8E')).length === 1 && timing.gtagStart >= timing.loadEnd - 1, `${p} gtag.js requested once, after window load (${JSON.stringify(timing)})`);
+  ok(google.filter((u) => u.includes('gtag/js?id=G-QLQ443CQ8E')).length === 1 && timing.gtagStart >= timing.loadEnd - 1, `${p} gtag.js requested once, on the first interaction after window load (${JSON.stringify(timing)})`);
+  await pg.evaluate(() => scrollTo(0, 0));
   ok(await pg.isVisible('#consent-bar'), `${p} bar shown on first visit`);
   ok(!google.some((u) => /collect|google-analytics|analytics\.google/.test(u)), `${p} no GA hit sent before consent`);
   ok(await pg.evaluate(() => (window.dataLayer || []).filter((a) => a[0] === 'config').length === 1), `${p} exactly one config call (one page_view)`);
@@ -57,10 +63,22 @@ for (const [l, p] of [['en', '/'], ['es', '/es/pricing/'], ['fr', '/fr/kit/'], [
   ok(csp.length === 0, `${p} no CSP violations ${csp.join(' | ')}`);
   await pg.context().close();
 }
+// no interaction at all: gtag.js is requested once, about 6 s after window load
+{
+  const { pg, google } = await page();
+  await pg.goto(BASE + '/'); await pg.waitForLoadState('load');
+  await pg.waitForTimeout(4500);
+  const early = google.filter((u) => u.includes('gtag/js')).length;
+  await pg.waitForFunction(() => !!document.querySelector('script[src*="googletagmanager.com/gtag/js"]'), null, { timeout: 4000 }).catch(() => {});
+  await pg.waitForTimeout(300);
+  const t = await pg.evaluate(() => { const n = performance.getEntriesByType('navigation')[0]; const r = performance.getEntriesByType('resource').find((e) => e.name.includes('gtag/js')); return { loadEnd: Math.round(n.loadEventEnd), gtagStart: r ? Math.round(r.startTime) : -1 }; });
+  ok(early === 0 && google.filter((u) => u.includes('gtag/js')).length === 1 && t.gtagStart >= t.loadEnd + 5900, `no interaction: gtag.js requested once, 6 s after window load (${JSON.stringify(t)})`);
+  await pg.context().close();
+}
 // clicking the consent bar loads gtag.js at once (no wait for idle); the consent update queued before it arrives is kept
 {
   const { pg, google } = await page();
-  await pg.route('**/assets/**', async (r) => { await new Promise((res) => setTimeout(res, 4000)); r.continue().catch(() => {}); }); // hold window load
+  await pg.route('**/*spatial-fallback*', async (r) => { await new Promise((res) => setTimeout(res, 4000)); r.continue().catch(() => {}); }); // hold window load (hero image)
   await pg.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
   const before = await pg.evaluate(() => document.readyState);
   await pg.click('#consent-bar [data-consent=granted]');
@@ -98,7 +116,7 @@ for (const p of ['/pricing/', '/ar/pricing/', '/es/brand-deck/']) {
 {
   const { pg, google } = await page();
   await pg.goto(BASE + '/es/snapshot/'); await pg.waitForFunction(() => location.pathname === '/es/kit/', null, { timeout: 5000 }).catch(() => {});
-  await pg.waitForLoadState('load'); await pg.waitForTimeout(3500);
+  await pg.waitForLoadState('load'); await pg.mouse.wheel(0, 40); await pg.waitForTimeout(2000);
   ok(new URL(pg.url()).pathname === '/es/kit/' && google.length > 0, '/es/snapshot/ stub still redirects, tag loaded on the target page');
 }
 await b.close(); process.exit(fail ? 1 : 0);

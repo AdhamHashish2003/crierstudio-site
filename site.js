@@ -107,6 +107,9 @@
   // L1 checkout (checkout.json on): the paid packages go to Stripe Checkout with the platforms picked and the live total
   // (the Launchpad's quote from the one price list); the Brand Deck keeps the request form. Paid is decided by Stripe only.
   var checkout = form.getAttribute("data-checkout"), plats = $("plats"), live = $("live-price");
+  // the live total is fetched from the checkout API only once the form comes near the screen (or the buyer changes a choice),
+  // so opening the page does not wait on a call to the API (mobile PageSpeed, 2026-10-11)
+  var quoteOn = !("IntersectionObserver" in window);
   function picked() { var o = [], c = form.querySelectorAll('input[name="platform"]'); for (var i = 0; i < c.length; i++) if (c[i].checked) o.push(c[i].value); return o; }
   function quote() {
     var pn = $("paynote");
@@ -114,6 +117,7 @@
     if (pn && M["pay.noteCheckout"]) pn.textContent = M["pay.noteCheckout"];
     plats.hidden = false; btn.textContent = M["f.pay"] || btn.textContent;
     if (!picked().length) { live.hidden = true; return; }
+    if (!quoteOn) return;
     fetch(checkout + "/quote?package=" + encodeURIComponent(product()) + "&platforms=" + encodeURIComponent(picked().join(",")))
       .then(function (r) { return r.json(); })
       .then(function (q) { if (!q || !q.ok) { live.hidden = true; return; } live.textContent = (M[q.billing === "monthly" ? "f.totalMonthly" : "f.total"] || "{amount}").replace("{amount}", "$" + q.amount_usd); live.hidden = false; })
@@ -128,9 +132,11 @@
       });
     });
     var pc = form.querySelectorAll('input[name="platform"]');
-    for (var k = 0; k < pc.length; k++) pc[k].addEventListener("change", quote);
-    for (var k2 = 0; k2 < radios.length; k2++) radios[k2].addEventListener("change", quote);
+    function requote() { quoteOn = true; quote(); }
+    for (var k = 0; k < pc.length; k++) pc[k].addEventListener("change", requote);
+    for (var k2 = 0; k2 < radios.length; k2++) radios[k2].addEventListener("change", requote);
     quote();
+    if (!quoteOn) { var qio = new IntersectionObserver(function (es) { for (var i = 0; i < es.length; i++) if (es[i].isIntersecting) { qio.disconnect(); if (!quoteOn) requote(); return; } }, { rootMargin: "600px 0px" }); qio.observe(form); }
   }
   function payNow() {
     var ctl2 = ("AbortController" in window) ? new AbortController() : null, t2 = setTimeout(function () { if (ctl2) ctl2.abort(); }, 20000);

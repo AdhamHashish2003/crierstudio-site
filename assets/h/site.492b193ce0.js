@@ -1,0 +1,216 @@
+/* Crier Studio: language memory, old-URL redirects and the request form. All visible text is already in the HTML. */
+(function () {
+  "use strict";
+  var KEY = "crier.lang", CODES = ["en", "es", "fr", "ar"];
+  var de = document.documentElement, page = document.body.getAttribute("data-page");
+  function saved() { try { var s = localStorage.getItem(KEY); return CODES.indexOf(s) > -1 ? s : null; } catch (e) { return null; } }
+  function pathFor(lang, p) { return "/" + (lang === "en" ? "" : lang + "/") + (p === "index" ? "" : p + "/"); }
+
+  // old URLs: /?lang=xx and /terms.html?lang=xx
+  var q = null;
+  try { q = new URLSearchParams(location.search).get("lang"); } catch (e) {}
+  if (CODES.indexOf(q) < 0) q = null;
+  if (page === "redirect") {
+    // renamed pages (/snapshot/ -> /kit/, /crier-deck/ -> /brand-deck/) carry their own language and keep ?product=
+    var own = document.body.getAttribute("data-lang");
+    var keep = "";
+    try { var pr = new URLSearchParams(location.search).get("product"); if (pr) keep = "?product=" + encodeURIComponent(pr); } catch (e) {}
+    location.replace(pathFor(own || q || saved() || "en", document.body.getAttribute("data-target")) + (own ? keep : "") + location.hash);
+    return;
+  }
+  if (page === "index" && location.pathname === "/") {
+    var want = q || (location.search ? null : saved());
+    if (want && want !== de.lang) { location.replace(pathFor(want, "index") + location.hash); return; }
+  }
+
+  // the language links remember the choice; crawlers have no storage and are never redirected
+  var links = document.querySelectorAll(".langpick a");
+  for (var i = 0; i < links.length; i++) {
+    // Keep the selected package/platforms when switching language in the checkout flow.
+    try { var languageURL = new URL(links[i].href); var currentQuery = new URLSearchParams(location.search); currentQuery.delete("lang"); languageURL.search = currentQuery.toString(); languageURL.hash = location.hash; links[i].href = languageURL.href; } catch (e) {}
+    links[i].addEventListener("click", function () { try { localStorage.setItem(KEY, this.getAttribute("lang")); } catch (e) {} });
+  }
+
+  // P1: pricing page cards: pick platforms, the live price follows (numbers from data/pricing.json, written into the card)
+  var picks = document.querySelectorAll(".platpick");
+  for (var pi = 0; pi < picks.length; pi++) (function (fs) {
+    var card = fs.closest(".plan"), buy = card && card.querySelector(".buyrow a"), boxes = fs.querySelectorAll('input[type="checkbox"]'), out = fs.querySelector(".liveprice");
+    function names() { var o = [], v = []; for (var i = 0; i < boxes.length; i++) if (boxes[i].checked) { o.push(boxes[i].parentNode.textContent.trim()); v.push(boxes[i].value); } return { o: o, v: v }; }
+    function update() {
+      var n = names(); if (!n.v.length) { boxes[0].checked = true; n = names(); }
+      var price = +fs.dataset.price + Math.max(0, n.v.length - (+fs.dataset.included || 1)) * +fs.dataset.extra;
+      out.textContent = fs.dataset.tpl.replace("{name}", fs.dataset.name).replace("{platforms}", n.o.join(" + ")).replace("{price}", "$" + price).replace("{per}", fs.dataset.per);
+      if (buy) { try { var u = new URL(buy.getAttribute("href"), location.href); if (u.origin === location.origin) { u.searchParams.set("platforms", n.v.join(",")); buy.setAttribute("href", u.pathname + u.search + u.hash); } } catch (e) {} }
+    }
+    for (var b = 0; b < boxes.length; b++) boxes[b].addEventListener("change", update);
+    update();
+  })(picks[pi]);
+
+  /* ---------------- request form (The Complete Kit, monthly plans, Brand Deck) ---------------- */
+  var form = document.getElementById("snap-form");
+  if (!form) return;
+  var M = {};
+  try { M = JSON.parse(document.getElementById("form-msgs").textContent); } catch (e) {}
+  function $(id) { return document.getElementById(id); }
+  var status = $("snap-status"), btn = $("snap-submit"), endpoint = form.getAttribute("data-endpoint");
+  var radios = form.querySelectorAll('input[name="product"]');
+  function product() { for (var i = 0; i < radios.length; i++) if (radios[i].checked) return radios[i].value; return "kit"; }
+  function isDeck() { return product() === "deck"; }
+  function isPlan() { var p = product(); return p === "visible" || p === "growing"; }
+  // the intake API accepts product "snapshot" and "crier_deck" only: the kit and the monthly plans go in as "snapshot" with the
+  // package name added to the business name (the free-text field); the Brand Deck goes in as "crier_deck" with the same tag.
+  var TAGS = { kit: "The Complete Kit", visible: "Stay Visible plan", growing: "Keep Growing plan", deck: "Brand Deck" };
+  function apiProduct() { return isDeck() ? "crier_deck" : "snapshot"; }
+  function sync() {
+    var deck = isDeck();
+    $("deck-address").hidden = true; $("deck-lang").hidden = true;
+    $("f-address").required = false;
+    btn.disabled = deck;
+    btn.textContent = btn.getAttribute(deck ? "data-deck" : (isPlan() ? "data-plan" : "data-kit"));
+    status.hidden = true;
+    if (deck) { btn.textContent = M["availability.soon"]; say("availability.deck", false); }
+  }
+  // /kit/?product=visible (the Buy buttons) opens the form with that product selected; old product ids map to the new packages
+  var want = null;
+  try { want = new URLSearchParams(location.search).get("product"); } catch (e) {}
+  var OLD = { snapshot: "kit", starter: "visible", growth: "growing", pro: "growing", deck_print: "deck", crier_deck: "deck" };
+  if (want && OLD[want]) want = OLD[want];
+  if (want) { for (var r = 0; r < radios.length; r++) if (radios[r].value === want) { for (var q2 = 0; q2 < radios.length; q2++) radios[q2].checked = radios[q2].value === want; break; } }
+  // ?platforms=instagram,tiktok (from a pricing card) ticks those platforms in the form
+  var wantPl = null; try { wantPl = new URLSearchParams(location.search).get("platforms"); } catch (e) {}
+  if (wantPl) { var wl = wantPl.split(","), pcs = form.querySelectorAll('input[name="platform"]'); for (var w = 0; w < pcs.length; w++) pcs[w].checked = wl.indexOf(pcs[w].value) > -1; }
+  for (var r2 = 0; r2 < radios.length; r2++) radios[r2].addEventListener("change", sync);
+  sync();
+  var FIELDS = [
+    ["f-business", function (v) { return v ? "" : "v.business"; }],
+    ["f-web", function (v) { return v ? "" : "v.web"; }],
+    ["f-email", function (v) { return !v ? "v.emailEmpty" : (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? "" : "v.emailBad"); }],
+    ["f-city", function (v) { return v ? "" : "v.city"; }],
+    ["f-industry", function (v) { return v ? "" : "v.industry"; }],
+    ["f-address", function (v) { return !isDeck() || v ? "" : "v.address"; }]
+  ];
+  function say(key, bad, busy) { status.textContent = M[key] || key; status.hidden = false; status.style.borderColor = bad ? "var(--error)" : "var(--ink)"; status.classList.toggle("busy", !!busy); }
+  function setErr(id, key) { var e = $("e-" + id.replace(/^f-/, "")); e.textContent = key ? (M[key] || key) : ""; e.hidden = !key; }
+  // the payload is what the live intake API accepts: business, web, email, city, industry, consent, company_website,
+  // plus product and lang, and for crier_deck also address and deck_lang. Every package adds its name to business.
+  window.__snapPayload = function () {
+    var p = {
+      business: $("f-business").value.trim() + (TAGS[product()] ? " [" + TAGS[product()] + "]" : ""), web: $("f-web").value.trim(),
+      email: $("f-email").value.trim(), city: $("f-city").value.trim(),
+      industry: $("f-industry").value, consent: true,
+      company_website: $("f-company").value,
+      product: apiProduct(), lang: de.lang
+    };
+    if (isDeck()) { p.address = $("f-address").value.trim(); p.deck_lang = $("f-decklang").value; }
+    return p;
+  };
+  // L1 checkout (checkout.json on): the paid packages go to Stripe Checkout with the platforms picked and the live total
+  // (the Launchpad's quote from the one price list); the Brand Deck keeps the request form. Paid is decided by Stripe only.
+  var checkout = form.getAttribute("data-checkout"), plats = $("plats"), live = $("live-price");
+  // the live total is fetched from the checkout API only once the form comes near the screen (or the buyer changes a choice),
+  // so opening the page does not wait on a call to the API (mobile PageSpeed, 2026-10-11)
+  var quoteOn = !("IntersectionObserver" in window);
+  function picked() { var o = [], c = form.querySelectorAll('input[name="platform"]'); for (var i = 0; i < c.length; i++) if (c[i].checked) o.push(c[i].value); return o; }
+  function quote() {
+    var pn = $("paynote");
+    if (!checkout || isDeck()) { if (plats) plats.hidden = true; if (live) live.hidden = true; if (pn) pn.textContent = M[isDeck() ? "availability.deck" : "pay.note"]; return; }
+    if (pn && M["pay.noteCheckout"]) pn.textContent = M["pay.noteCheckout"];
+    plats.hidden = false; btn.textContent = M["f.pay"] || btn.textContent;
+    if (!picked().length) { live.hidden = true; return; }
+    if (!quoteOn) return;
+    fetch(checkout + "/quote?package=" + encodeURIComponent(product()) + "&platforms=" + encodeURIComponent(picked().join(",")))
+      .then(function (r) { return r.json(); })
+      .then(function (q) { if (!q || !q.ok) { live.hidden = true; return; } live.textContent = (M[q.billing === "monthly" ? "f.totalMonthly" : "f.total"] || "{amount}").replace("{amount}", "$" + q.amount_usd); live.hidden = false; })
+      .catch(function () { live.hidden = true; });
+  }
+  if (checkout) {
+    // warm the connection to Stripe while the buyer fills the form, so the checkout page opens faster after Pay
+    form.addEventListener("focusin", function warm() {
+      form.removeEventListener("focusin", warm);
+      ["https://checkout.stripe.com", "https://js.stripe.com", "https://m.stripe.network"].forEach(function (u) {
+        var l = document.createElement("link"); l.rel = "preconnect"; l.href = u; l.crossOrigin = ""; document.head.appendChild(l);
+      });
+    });
+    var pc = form.querySelectorAll('input[name="platform"]');
+    function requote() { quoteOn = true; quote(); }
+    for (var k = 0; k < pc.length; k++) pc[k].addEventListener("change", requote);
+    for (var k2 = 0; k2 < radios.length; k2++) radios[k2].addEventListener("change", requote);
+    quote();
+    if (!quoteOn) { var qio = new IntersectionObserver(function (es) { for (var i = 0; i < es.length; i++) if (es[i].isIntersecting) { qio.disconnect(); if (!quoteOn) requote(); return; } }, { rootMargin: "600px 0px" }); qio.observe(form); }
+  }
+  function payNow() {
+    var ctl2 = ("AbortController" in window) ? new AbortController() : null, t2 = setTimeout(function () { if (ctl2) ctl2.abort(); }, 20000);
+    var body = { package: product(), platforms: picked(), language: de.lang, business: $("f-business").value.trim(), email: $("f-email").value.trim(),
+      website_or_handle: $("f-web").value.trim(), city: $("f-city").value.trim(), industry: $("f-industry").value, consent: true };
+    btn.disabled = true; say("f.toStripe", false, true);
+    return fetch(checkout, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: ctl2 ? ctl2.signal : undefined })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, body: j }; }); })
+      .then(function (res) {
+        if (res.status === 200 && res.body && res.body.url) { location.href = res.body.url; return true; }
+        if (res.status === 429) { say("f.tooMany", true); return true; }
+        return false;                              // not configured or refused: the request form still works
+      })
+      .catch(function () { return false; })
+      .then(function (done) { clearTimeout(t2); if (!done) btn.disabled = false; return done; });
+  }
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (isDeck()) { btn.disabled = true; say("availability.deck", false); return; }
+    if (checkout && !isDeck() && !picked().length) { setErr("f-platforms", "f.platformsErr"); return; }
+    var firstBad = null;
+    FIELDS.forEach(function (f) {
+      var el = $(f[0]), key = f[1](el.value.trim());
+      el.setAttribute("aria-invalid", key ? "true" : "false");
+      setErr(f[0], key);
+      if (key && !firstBad) firstBad = el;
+    });
+    var cb = $("f-consent");
+    setErr("f-consent", cb.checked ? "" : "f.consentErr");
+    cb.setAttribute("aria-invalid", cb.checked ? "false" : "true");
+    if (!cb.checked && !firstBad) firstBad = cb;
+    if (firstBad) { status.hidden = true; firstBad.focus(); return; }
+    // Pay first; if checkout is not open yet (not configured, refused) the same click sends the request form instead
+    if (checkout && !isDeck() && !form.__noPay) { payNow().then(function (done) { if (!done) { form.__noPay = true; if (form.requestSubmit) form.requestSubmit(); } }); return; }
+    form.__noPay = false;
+    var data = window.__snapPayload(), deck = isDeck();
+    btn.disabled = true; say("f.sending", false);
+    var ctl = ("AbortController" in window) ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 20000);
+    fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data), signal: ctl ? ctl.signal : undefined })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, body: j }; }); })
+      .then(function (res) {
+        if (res.status === 200 && res.body && res.body.ok === true) { say(deck ? "f.thanksDeck" : "f.thanks", false); form.reset(); sync(); say(deck ? "f.thanksDeck" : "f.thanks", false); }
+        else if (res.status === 429) { say("f.tooMany", true); }
+        else { say("f.failed", true); }
+      })
+      .catch(function () { say("f.failed", true); })
+      .then(function () { clearTimeout(timer); btn.disabled = false; });
+  });
+})();
+
+/* Dimension Studio navigation and progressive 3D. No external libraries or model calls. */
+(function () {
+  "use strict";
+  var toggle=document.querySelector('.menu-toggle'), menu=document.getElementById('main-nav');
+  function close(){if(!toggle||!menu)return;toggle.setAttribute('aria-expanded','false');menu.classList.remove('open');}
+  if(toggle&&menu){
+    toggle.addEventListener('click',function(){var open=toggle.getAttribute('aria-expanded')!=='true';toggle.setAttribute('aria-expanded',String(open));menu.classList.toggle('open',open);});
+    menu.addEventListener('click',function(e){if(e.target.closest('a'))close();});
+    document.addEventListener('keydown',function(e){if(e.key==='Escape'&&toggle.getAttribute('aria-expanded')==='true'){close();toggle.focus();}});
+    document.addEventListener('click',function(e){if(!e.target.closest('.top'))close();});
+    matchMedia('(min-width:801px)').addEventListener('change',close);
+  }
+  var stage=document.getElementById('spatial-stage');if(!stage)return;
+  // The 3D scene (three.js, ~600 KB) never blocks first paint and is skipped where it costs more than it gives:
+  // phones/small screens, reduced motion, data saver, slow connections and low-memory/low-core devices keep the static image.
+  var conn=navigator.connection||{};
+  if(conn.saveData||/(^|-)2g|3g/.test(conn.effectiveType||''))return;
+  if(!window.matchMedia||matchMedia('(prefers-reduced-motion: reduce)').matches||!matchMedia('(min-width:761px)').matches)return;
+  if((navigator.deviceMemory&&navigator.deviceMemory<4)||(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<4))return;
+  function load(src){return new Promise(function(resolve,reject){var script=document.createElement('script');script.src=src;script.onload=resolve;script.onerror=reject;document.head.appendChild(script);});}
+  var started=false;
+  function start(){if(started)return;started=true;load('/assets/three.r128.min.js').then(function(){return load('/assets/studio.js');}).catch(function(){stage.dataset.state='fallback';});}
+  function idle(){if('requestIdleCallback' in window)requestIdleCallback(start,{timeout:1800});else setTimeout(start,300);}
+  function whenVisible(){if(!('IntersectionObserver' in window)){idle();return;}var io=new IntersectionObserver(function(es){if(es.some(function(e){return e.isIntersecting;})){io.disconnect();idle();}},{rootMargin:'200px'});io.observe(stage);}
+  if(document.readyState==='complete')whenVisible();else addEventListener('load',whenVisible,{once:true});
+})();

@@ -278,15 +278,19 @@ function jsonLd(lang, page) {
 // everything; only analytics_storage is granted, and only after the visitor presses Accept in the consent bar
 // (templates/consent.html, localStorage 'crier_consent'). Ads signals stay denied always.
 // Speed (2026-10-11, owner approved "delay Analytics"): gtag.js (~176 KB) is NOT a <script src> in <head>. The inline script
-// sets the consent defaults and queues js/config in dataLayer right away, then injects gtag.js after the window 'load' event
-// (requestIdleCallback, at most 3 s later; setTimeout where rIC is missing), or at once when the visitor uses the consent bar
-// or the Cookie settings link. gtag.js replays the queue on arrival, so nothing is lost and page_view fires once.
-// Trade-off: visitors who leave before the page has loaded are not counted.
+// sets the consent defaults and queues js/config in dataLayer right away. gtag.js itself is injected on the visitor's first
+// interaction (pointerdown, touchstart, keydown, scroll or wheel), or 6 s after the window 'load' event if there is none, or at
+// once when the visitor uses the consent bar or the Cookie settings link. gtag.js replays the queue on arrival, so nothing is
+// lost and page_view fires once. (2026-10-11, mobile PageSpeed 100: the earlier "after load + idle, at most 3 s" still ran
+// gtag.js's ~300 ms of script inside the PageSpeed test window, costing Total Blocking Time and Speed Index.)
+// Trade-off: visitors who leave within about 6 s of the page loading without scrolling, tapping or typing are not counted.
 const GA_ID = 'G-QLQ443CQ8E';
 const GA_INLINE = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});try{if(localStorage.getItem('crier_consent')==='granted'){gtag('consent','update',{analytics_storage:'granted'});}}catch(e){}gtag('js',new Date());gtag('config','${GA_ID}');` +
-  `(function(){var w=window,d=document,n=0;function L(){if(n)return;n=1;var s=d.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=${GA_ID}';d.head.appendChild(s);}` +
-  `function I(){if(w.requestIdleCallback)w.requestIdleCallback(L,{timeout:3000});else setTimeout(L,1);}` +
-  `if(d.readyState==='complete')I();else w.addEventListener('load',I);` +
+  `(function(){var w=window,d=document,n=0,E=['pointerdown','touchstart','keydown','scroll','wheel'],O={passive:true,capture:true};` +
+  `function L(){if(n)return;n=1;for(var i=0;i<E.length;i++)w.removeEventListener(E[i],L,O);var s=d.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=${GA_ID}';d.head.appendChild(s);}` +
+  `for(var i=0;i<E.length;i++)w.addEventListener(E[i],L,O);` +
+  `function T(){setTimeout(L,6000);}` +
+  `if(d.readyState==='complete')T();else w.addEventListener('load',T);` +
   `d.addEventListener('click',function(e){var t=e.target;if(t&&t.closest&&t.closest('#consent-bar,[data-consent-open],a[href$="#cookie-settings"]'))L();},true);})();`;
 const GA_HEAD = `<script>${GA_INLINE}</script>`;
 const CONSENT_JS = (partials.consent.match(/<script>([\s\S]*?)<\/script>/) || [])[1];
@@ -301,7 +305,12 @@ function head(lang, page, css) {
   const ogAlt = LANGS.filter(([c]) => c !== lang).map(([, , loc]) => `<meta property="og:locale:alternate" content="${loc}">`).join('\n');
   const loc = LANGS.find(([c]) => c === lang)[2];
   const pl = (f) => `<link rel="preload" href="/fonts/${f}.woff2" as="font" type="font/woff2" crossorigin>`;
-  const preload = (lang === 'ar' ? ['noto-sans-arabic-arabic-400-normal', 'noto-sans-arabic-arabic-700-normal'] : ['archivo-latin-wght-normal', 'instrument-sans-latin-400-normal', 'instrument-sans-latin-700-normal']).map(pl).join('\n');
+  // Speed (mobile PageSpeed, 2026-10-11): on the homepage the hero image is preloaded first (it is the LCP element on phones), then
+  // every font file its first screen uses, so none is discovered late at top priority. Preload media/type match the <picture>.
+  // Other pages keep the three main fonts (preloading 500/600 there made the simulated LCP slower).
+  const heroImg = page === 'index' ? '<link rel="preload" as="image" href="/assets/spatial-fallback-mobile.avif" type="image/avif" media="(max-width:760px)" fetchpriority="high">\n<link rel="preload" as="image" href="/assets/spatial-fallback.avif" type="image/avif" media="(min-width:761px)" fetchpriority="high">\n' : '';
+  const latin = page === 'index' ? ['archivo-latin-wght-normal', 'instrument-sans-latin-400-normal', 'instrument-sans-latin-500-normal', 'instrument-sans-latin-600-normal', 'instrument-sans-latin-700-normal'] : ['archivo-latin-wght-normal', 'instrument-sans-latin-400-normal', 'instrument-sans-latin-700-normal'];
+  const preload = heroImg + (lang === 'ar' ? ['noto-sans-arabic-arabic-400-normal', 'noto-sans-arabic-arabic-700-normal'] : latin).map(pl).join('\n');
   return `<!doctype html>
 <html lang="${lang}" dir="${RTL.has(lang) ? 'rtl' : 'ltr'}">
 <head>
@@ -347,6 +356,25 @@ const minCss = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '').split(/("[^"\n]*"|'
   : part.replace(/\s+/g, ' ').replace(/\s*([{};,])\s*/g, '$1').replace(/;}/g, '}')).join('').trim();
 const cssFor = (lang, page) => minCss([CSS.fonts, lang === 'ar' ? CSS.fontsAr : '', WIDE.has(page) ? CSS.home : CSS.legal + (page === 'faq' ? '\n' + faqCss : ''), CSS.common, CSS.consent, page === 'index' ? CSS.studio : '', CSS.chrome].join('\n'));
 
+// ---------- content-hashed asset copies (long browser cache) ----------
+// GitHub Pages sends every file with max-age=600. The pages therefore reference copies of the fonts, the hero images and
+// site.js whose names carry a hash of their content: /assets/h/<name>.<sha256:10>.<ext>. A changed file gets a new name, so a
+// Cloudflare Cache Rule can let browsers keep everything under /assets/h/ for a year (the rule is in README.md). The folder is
+// rebuilt from scratch on every build; the original files stay where they are for anything else that links to them.
+const HASHED_DIR = 'assets/h';
+fs.rmSync(path.join(ROOT, HASHED_DIR), { recursive: true, force: true });
+const hashedUrls = new Map();
+function hashed(url) {
+  if (hashedUrls.has(url)) return hashedUrls.get(url);
+  const src = path.join(ROOT, url.slice(1)), buf = fs.readFileSync(src);
+  const ext = path.extname(url), out = `/${HASHED_DIR}/${path.basename(url, ext)}.${crypto.createHash('sha256').update(buf).digest('hex').slice(0, 10)}${ext}`;
+  fs.mkdirSync(path.join(ROOT, HASHED_DIR), { recursive: true });
+  fs.writeFileSync(path.join(ROOT, out.slice(1)), buf);
+  hashedUrls.set(url, out);
+  return out;
+}
+const hashUrls = (html) => html.replace(/\/(?:fonts|assets)\/[\w.-]+\.(?:woff2|avif|webp|png)\b|\/site\.js\b/g, hashed);
+
 // ---------- build ----------
 function write(rel, content) {
   // every inline script that runs must be allowed by a CSP hash, or the browser blocks it
@@ -361,7 +389,7 @@ for (const [lang] of LANGS) {
     const ctx = { lang, v: pageVars(lang, page) };
     const body = render(rd(`templates/${page === 'index' ? 'home' : page}.html`), ctx);
     const html = `${head(lang, page, cssFor(lang, page))}\n<body data-page="${page}" class="${page === 'index' ? 'gallery spatial' : 'studio-inner'}">\n${render(partials.consent, ctx)}\n<div class="${page === 'index' ? 'site-shell' : 'wrap'}">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n<script src="/site.js" defer></script>\n</body>\n</html>\n`;
-    write(dirFor(lang, page) + 'index.html', html);
+    write(dirFor(lang, page) + 'index.html', hashUrls(html));
     built.push([lang, page]);
   }
 }
@@ -372,7 +400,7 @@ write('assets/social-preview.html', rd('templates/social-preview.html'));
 
 // old URL stubs: /terms.html etc. (JS picks the language from ?lang= or the saved choice; no-JS goes to English)
 for (const page of LEGAL) {
-  write(`${page}.html`, `<!doctype html>
+  write(`${page}.html`, hashUrls(`<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -388,13 +416,13 @@ ${GA_HEAD}
 <script src="/site.js"></script>
 </body>
 </html>
-`);
+`));
 }
 
 // renamed pages: /snapshot/ -> /kit/, /crier-deck/ -> /brand-deck/ in every language. site.js keeps ?product= and the #hash;
 // without JS the meta refresh goes to the new page. Not in the sitemap.
 for (const [lang] of LANGS) for (const [from, to] of Object.entries(MOVED)) {
-  write(dirFor(lang, from) + 'index.html', `<!doctype html>
+  write(dirFor(lang, from) + 'index.html', hashUrls(`<!doctype html>
 <html lang="${lang}">
 <head>
 <meta charset="utf-8">
@@ -411,7 +439,7 @@ ${GA_HEAD}
 <script src="/site.js"></script>
 </body>
 </html>
-`);
+`));
 }
 
 // 404 (one file, four languages; header and footer in English, one block per language)
@@ -423,7 +451,7 @@ ${GA_HEAD}
   }).join('\n');
   ctx.v.sections = sections;
   const css404 = minCss([CSS.fonts, CSS.fontsAr, CSS.legal, CSS.common, CSS.consent, CSS.chrome, 'section{padding-block:18px;border-top:2px solid var(--line)}section h2{margin-top:0}html[lang=ar] body{line-height:1.75}'].join('\n'));
-  write('404.html', `<!doctype html>
+  write('404.html', hashUrls(`<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -448,7 +476,7 @@ ${render(partials.footer, ctx)}
 <script src="/site.js" defer></script>
 </body>
 </html>
-`);
+`));
 }
 
 // robots.txt, sitemap.xml, webmanifest
