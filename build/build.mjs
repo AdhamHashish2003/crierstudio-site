@@ -304,13 +304,14 @@ function head(lang, page, css) {
   const alt = LANGS.map(([c]) => `<link rel="alternate" hreflang="${c}" href="${urlFor(c, page)}">`).join('\n') + `\n<link rel="alternate" hreflang="x-default" href="${urlFor('en', page)}">`;
   const ogAlt = LANGS.filter(([c]) => c !== lang).map(([, , loc]) => `<meta property="og:locale:alternate" content="${loc}">`).join('\n');
   const loc = LANGS.find(([c]) => c === lang)[2];
-  const pl = (f) => `<link rel="preload" href="/fonts/${f}.woff2" as="font" type="font/woff2" crossorigin>`;
+  const pl = (f) => `<link rel="preload" href="/fonts/${f}.subset.woff2" as="font" type="font/woff2" crossorigin>`;
   // Speed (mobile PageSpeed, 2026-10-11): on the homepage the hero image is preloaded first (it is the LCP element on phones), then
-  // every font file its first screen uses, so none is discovered late at top priority. Preload media/type match the <picture>.
-  // Other pages keep the three main fonts (preloading 500/600 there made the simulated LCP slower).
+  // every font file the page uses, so none is discovered late at top priority. Preload media/type match the <picture>.
+  // Since the second pass the Latin fonts are two files (Archivo + one variable Instrument Sans for all four weights), and
+  // Arabic pages preload their two Arabic files plus those two (Latin words such as the brand name use them).
   const heroImg = page === 'index' ? '<link rel="preload" as="image" href="/assets/spatial-fallback-mobile.avif" type="image/avif" media="(max-width:760px)" fetchpriority="high">\n<link rel="preload" as="image" href="/assets/spatial-fallback.avif" type="image/avif" media="(min-width:761px)" fetchpriority="high">\n' : '';
-  const latin = page === 'index' ? ['archivo-latin-wght-normal', 'instrument-sans-latin-400-normal', 'instrument-sans-latin-500-normal', 'instrument-sans-latin-600-normal', 'instrument-sans-latin-700-normal'] : ['archivo-latin-wght-normal', 'instrument-sans-latin-400-normal', 'instrument-sans-latin-700-normal'];
-  const preload = heroImg + (lang === 'ar' ? ['noto-sans-arabic-arabic-400-normal', 'noto-sans-arabic-arabic-700-normal'] : latin).map(pl).join('\n');
+  const latin = ['archivo-latin-wght-normal', 'instrument-sans-latin-var'];
+  const preload = heroImg + (lang === 'ar' ? ['noto-sans-arabic-arabic-400-normal', 'noto-sans-arabic-arabic-700-normal', ...latin] : latin).map(pl).join('\n');
   return `<!doctype html>
 <html lang="${lang}" dir="${RTL.has(lang) ? 'rtl' : 'ltr'}">
 <head>
@@ -354,6 +355,40 @@ ${jsonLd(lang, page)}
 // Inline CSS is minified at build time (comments and spare whitespace only; strings and calc() spacing kept). Sources in templates/ stay readable.
 const minCss = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '').split(/("[^"\n]*"|'[^'\n]*')/).map((part, i) => i % 2 ? part
   : part.replace(/\s+/g, ' ').replace(/\s*([{};,])\s*/g, '$1').replace(/;}/g, '}')).join('').trim();
+// Each page inlines only the CSS rules it can use: a rule is dropped when every selector in it needs a class or id that is
+// neither in the page's HTML nor a word in the site's JavaScript (scripts that add classes keep their rules). Selectors
+// inside :not()/:is()/:where()/:has() and [attribute] tests are not checked, so those rules stay. @font-face, @keyframes
+// and the like are kept as they are; @media/@supports blocks are filtered inside and dropped when empty.
+const JS_WORDS = new Set([rd('site.js'), rd('assets/studio.js'), rd('assets/deck.js'), CONSENT_JS].join('\n').match(/[A-Za-z_][\w-]*/g));
+function cssBlocks(css) {
+  const out = []; let start = 0, depth = 0, q = null, pre = '';
+  for (let i = 0; i < css.length; i++) {
+    const c = css[i];
+    if (q) { if (c === '\\') i++; else if (c === q) q = null; continue; }
+    if (c === '"' || c === "'") q = c;
+    else if (c === '{') { if (depth++ === 0) { pre = css.slice(start, i).trim(); start = i + 1; } }
+    else if (c === '}') { if (--depth === 0) { out.push({ pre, body: css.slice(start, i) }); start = i + 1; } }
+    else if (c === ';' && depth === 0) { out.push({ stmt: css.slice(start, i + 1) }); start = i + 1; }
+  }
+  if (depth || q) throw new Error('purgeCss: unbalanced CSS');
+  return out;
+}
+function purgeCss(css, html) {
+  const have = new Set(JS_WORDS);
+  for (const m of html.matchAll(/\sclass="([^"]*)"/g)) for (const c of m[1].split(/\s+/)) have.add(c);
+  for (const m of html.matchAll(/\sid="([^"]*)"/g)) have.add(m[1]);
+  const split = (s) => { const r = []; let d = 0, st = 0; for (let i = 0; i < s.length; i++) { const c = s[i]; if (c === '(' || c === '[') d++; else if (c === ')' || c === ']') d--; else if (c === ',' && !d) { r.push(s.slice(st, i)); st = i + 1; } } r.push(s.slice(st)); return r; };
+  const outer = (sel) => { let o = '', d = 0; for (const c of sel) { if (c === '(' || c === '[') d++; else if (c === ')' || c === ']') d--; else if (!d) o += c; } return o; };
+  const keep = (sel) => [...outer(sel).matchAll(/[.#](-?[_a-zA-Z][\w-]*)/g)].every((m) => have.has(m[1]));
+  const walk = (css) => cssBlocks(css).map((b) => {
+    if (b.stmt) return b.stmt;
+    if (/^@(media|supports|container|layer)\b/.test(b.pre)) { const inner = walk(b.body); return inner ? `${b.pre}{${inner}}` : ''; }
+    if (b.pre.startsWith('@')) return `${b.pre}{${b.body}}`;
+    const sels = split(b.pre).filter(keep);
+    return sels.length ? `${sels.join(',')}{${b.body}}` : '';
+  }).join('');
+  return walk(css);
+}
 const cssFor = (lang, page) => minCss([CSS.fonts, lang === 'ar' ? CSS.fontsAr : '', WIDE.has(page) ? CSS.home : CSS.legal + (page === 'faq' ? '\n' + faqCss : ''), CSS.common, CSS.consent, page === 'index' ? CSS.studio : '', CSS.chrome].join('\n'));
 
 // ---------- content-hashed asset copies (long browser cache) ----------
@@ -388,7 +423,8 @@ for (const [lang] of LANGS) {
   for (const page of PAGES) {
     const ctx = { lang, v: pageVars(lang, page) };
     const body = render(rd(`templates/${page === 'index' ? 'home' : page}.html`), ctx);
-    const html = `${head(lang, page, cssFor(lang, page))}\n<body data-page="${page}" class="${page === 'index' ? 'gallery spatial' : 'studio-inner'}">\n${render(partials.consent, ctx)}\n<div class="${page === 'index' ? 'site-shell' : 'wrap'}">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n<script src="/site.js" defer></script>\n</body>\n</html>\n`;
+    const bodyHtml = `<body data-page="${page}" class="${page === 'index' ? 'gallery spatial' : 'studio-inner'}">\n${render(partials.consent, ctx)}\n<div class="${page === 'index' ? 'site-shell' : 'wrap'}">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n<script src="/site.js" defer></script>\n</body>\n</html>\n`;
+    const html = `${head(lang, page, purgeCss(cssFor(lang, page), bodyHtml))}\n${bodyHtml}`;
     write(dirFor(lang, page) + 'index.html', hashUrls(html));
     built.push([lang, page]);
   }
@@ -451,6 +487,17 @@ ${GA_HEAD}
   }).join('\n');
   ctx.v.sections = sections;
   const css404 = minCss([CSS.fonts, CSS.fontsAr, CSS.legal, CSS.common, CSS.consent, CSS.chrome, 'section{padding-block:18px;border-top:2px solid var(--line)}section h2{margin-top:0}html[lang=ar] body{line-height:1.75}'].join('\n'));
+  const body404 = `<body data-page="404">
+${render(partials.consent, ctx)}
+<div class="wrap">
+${render(partials.header, ctx)}
+${render(rd('templates/404.html'), ctx)}
+${render(partials.footer, ctx)}
+</div>
+<script src="/site.js" defer></script>
+</body>
+</html>
+`;
   write('404.html', hashUrls(`<!doctype html>
 <html lang="en">
 <head>
@@ -463,20 +510,10 @@ ${GA_HEAD}
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#0E0F0C">
 <style>
-${css404}
+${purgeCss(css404, body404)}
 </style>
 </head>
-<body data-page="404">
-${render(partials.consent, ctx)}
-<div class="wrap">
-${render(partials.header, ctx)}
-${render(rd('templates/404.html'), ctx)}
-${render(partials.footer, ctx)}
-</div>
-<script src="/site.js" defer></script>
-</body>
-</html>
-`));
+${body404}`));
 }
 
 // robots.txt, sitemap.xml, webmanifest

@@ -137,5 +137,27 @@ ok(rd('index.html').includes('"alternateName":"Crier"') && rd('index.html').incl
     ok(h.includes('<h2 id="cookies">') && h.includes('Google LLC') && h.includes('Google Analytics 4') && h.includes('14'), `privacy: Google Analytics section in ${f}`);
   }
 }
+// Web fonts: the pages use small subset files (build/subset-fonts.py). Every character a page shows inside a font's
+// unicode-range must be in that subset, or it would be drawn in a fallback font. Re-run the subset script after text changes.
+{
+  const cov = JSON.parse(rd('fonts/subset-coverage.json'));
+  const ranges = (css, family) => {
+    const m = css.match(new RegExp(`font-family:"${family}"[^}]*unicode-range:([^;}]+)`));
+    return m[1].split(',').map((r) => r.trim().replace(/^U\+/i, '').split('-').map((x) => parseInt(x, 16))).map(([a, b]) => [a, b ?? a]);
+  };
+  const inR = (rs, c) => rs.some(([a, b]) => c >= a && c <= b);
+  const fonts = [[ranges(rd('templates/fonts.css'), 'Archivo'), new Set(cov.archivo), 'Archivo'], [ranges(rd('templates/fonts.css'), 'Instrument Sans'), new Set(cov.instrument), 'Instrument Sans'],
+    [ranges(rd('templates/fonts-ar.css'), 'Noto Sans Arabic'), new Set(cov.arabic400), 'Noto Sans Arabic 400'], [ranges(rd('templates/fonts-ar.css'), 'Noto Sans Arabic'), new Set(cov.arabic700), 'Noto Sans Arabic 700']];
+  const ent = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', copy: '©', middot: '·', rarr: '→', larr: '←', mdash: '—', ndash: '–', hellip: '…', laquo: '«', raquo: '»', rsquo: '’', lsquo: '‘', ldquo: '“', rdquo: '”', times: '×' };
+  const missing = new Map();
+  const files = [];
+  const walkHtml = (dir) => { for (const e of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) { const rel = path.join(dir, e.name); if (e.isDirectory()) { if (!['.git', 'node_modules', 'templates', 'build', 'tests', 'i18n', 'fonts', 'assets'].includes(e.name)) walkHtml(rel); } else if (e.name.endsWith('.html')) files.push(rel); } };
+  walkHtml('');
+  for (const f of files) {
+    const text = rd(f).replace(/<(style|script|svg)\b[\s\S]*?<\/\1>/g, ' ').replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n)).replace(/&(\w+);/g, (m, n) => ent[n] ?? m);
+    for (const ch of new Set(text)) { const c = ch.codePointAt(0); if (c < 0x20) continue; for (const [rs, set, name] of fonts) if (inR(rs, c) && !set.has(ch)) missing.set(`${name} U+${c.toString(16).toUpperCase().padStart(4, '0')} (${ch})`, f); }
+  }
+  for (const [k, f] of missing) ok(false, `font subset lacks ${k}, used in ${f}: run python3 build/subset-fonts.py`);
+}
 console.log(fail ? `${fail} FAILED` : `all checks passed (${urls.length} pages, ${LANGS.length} languages)`);
 process.exit(fail ? 1 : 0);
