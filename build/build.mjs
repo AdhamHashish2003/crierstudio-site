@@ -389,6 +389,9 @@ function purgeCss(css, html) {
   }).join('');
   return walk(css);
 }
+// Template indentation is dropped from the page body (a line break renders the same as the spaces that followed it);
+// <script>, <style>, <pre> and <textarea> contents are left exactly as they are (inline scripts are allowed by hash).
+const trimIndent = (html) => html.split(/(<(script|style|pre|textarea)\b[\s\S]*?<\/\2>)/).map((part, i) => i % 3 === 0 ? part.replace(/\n[ \t]+/g, '\n') : i % 3 === 1 ? part : '').join('');
 const cssFor = (lang, page) => minCss([CSS.fonts, lang === 'ar' ? CSS.fontsAr : '', WIDE.has(page) ? CSS.home : CSS.legal + (page === 'faq' ? '\n' + faqCss : ''), CSS.common, CSS.consent, page === 'index' ? CSS.studio : '', CSS.chrome].join('\n'));
 
 // ---------- content-hashed asset copies (long browser cache) ----------
@@ -424,7 +427,7 @@ for (const [lang] of LANGS) {
     const ctx = { lang, v: pageVars(lang, page) };
     const body = render(rd(`templates/${page === 'index' ? 'home' : page}.html`), ctx);
     const bodyHtml = `<body data-page="${page}" class="${page === 'index' ? 'gallery spatial' : 'studio-inner'}">\n${render(partials.consent, ctx)}\n<div class="${page === 'index' ? 'site-shell' : 'wrap'}">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n<script src="/site.js" defer></script>\n</body>\n</html>\n`;
-    const html = `${head(lang, page, purgeCss(cssFor(lang, page), bodyHtml))}\n${bodyHtml}`;
+    const html = `${head(lang, page, purgeCss(cssFor(lang, page), bodyHtml))}\n${trimIndent(bodyHtml)}`;
     write(dirFor(lang, page) + 'index.html', hashUrls(html));
     built.push([lang, page]);
   }
@@ -513,7 +516,7 @@ ${GA_HEAD}
 ${purgeCss(css404, body404)}
 </style>
 </head>
-${body404}`));
+${trimIndent(body404)}`));
 }
 
 // robots.txt, sitemap.xml, webmanifest
