@@ -1,5 +1,5 @@
 {
- "generated_from": "portal/lib/pricing.json sha256 8618f07ad8b09b4fc4ec31673daae303e5f8cea312ae8b6dead1adfa376233b5",
+ "generated_from": "portal/lib/pricing.json sha256 dec2f38d2e5a04f48a8575122b94381b55b712cc18ab45c157e06b5a6c68f324",
  "currency": "USD",
  "packages": [
   {
@@ -13,7 +13,6 @@
     "competitor_profiles": 3,
     "posts": 10,
     "stories": 5,
-    "reels": 1,
     "mockups": 11,
     "campaign_concepts": 1,
     "ad_copies": 3,
@@ -32,7 +31,6 @@
    "items": {
     "posts": 10,
     "stories": 10,
-    "reels": 2,
     "mockups": 2,
     "calendar": 1,
     "recap": 1,
@@ -49,7 +47,6 @@
    "items": {
     "posts": 20,
     "stories": 20,
-    "reels": 4,
     "mockups": 4,
     "campaign_concepts": 1,
     "ad_copies": 6,
@@ -86,9 +83,8 @@
   "extra_platform_is_full_adaptation": true,
   "per_platform_items": [
    "posts",
-   "stories",
-   "reels"
+   "stories"
   ],
-  "per_platform_items_why": "platform content is made per platform (a full adaptation, never a resize): a Keep Growing client on 2 platforms gets reels 4 + 4; every other item is per client"
+  "per_platform_items_why": "platform content is made per platform (a full adaptation, never a resize): a Keep Growing client on 2 platforms gets posts 20 + 20; every other item is per client"
  }
 }
