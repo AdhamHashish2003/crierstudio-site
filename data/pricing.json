@@ -1,11 +1,42 @@
 {
- "generated_from": "portal/lib/pricing.json sha256 dec2f38d2e5a04f48a8575122b94381b55b712cc18ab45c157e06b5a6c68f324",
+ "generated_from": "portal/lib/pricing.json sha256 d9815e63b1730e2995e383dc406ca6311ab701c09e2e28de996a2ad7a439e8ac",
  "currency": "USD",
+ "display_currencies": {
+  "about": "Display only (MENA, 2026-10-14): the site shows each price in the visitor's local currency next to the USD price list above. Clients are always charged the USD price; these numbers never change what is charged. SAR and AED use the fixed pegs below and are rounded to the nearest whole price ending in 9; EGP uses egp_per_usd and is rounded to the nearest 10. Every display price is VAT-inclusive at the country rate below. Change a rate here, rerun the rounding (test/pricing.test.cjs checks it) and republish.",
+  "sar_per_usd": 3.75,
+  "aed_per_usd": 3.67,
+  "egp_per_usd": 49,
+  "rounding": {
+   "SAR": "nearest_ending_9",
+   "AED": "nearest_ending_9",
+   "EGP": "nearest_10"
+  },
+  "countries": {
+   "SA": {
+    "currency": "SAR",
+    "vat_pct": 15
+   },
+   "AE": {
+    "currency": "AED",
+    "vat_pct": 5
+   },
+   "EG": {
+    "currency": "EGP",
+    "vat_pct": 14
+   }
+  },
+  "vat_included": true
+ },
  "packages": [
   {
    "id": "kit",
    "name": "The Complete Kit",
    "price": 29,
+   "display_prices": {
+    "SAR": 109,
+    "AED": 109,
+    "EGP": 1420
+   },
    "billing": "once",
    "platforms_included": 1,
    "items": {
@@ -25,9 +56,19 @@
    "id": "visible",
    "name": "Stay Visible",
    "price": 45,
+   "display_prices": {
+    "SAR": 169,
+    "AED": 169,
+    "EGP": 2210
+   },
    "billing": "monthly",
    "platforms_included": 1,
    "extra_platform_price": 20,
+   "extra_platform_display_prices": {
+    "SAR": 79,
+    "AED": 69,
+    "EGP": 980
+   },
    "items": {
     "posts": 10,
     "stories": 10,
@@ -41,9 +82,19 @@
    "id": "growing",
    "name": "Keep Growing",
    "price": 60,
+   "display_prices": {
+    "SAR": 229,
+    "AED": 219,
+    "EGP": 2940
+   },
    "billing": "monthly",
    "platforms_included": 1,
    "extra_platform_price": 30,
+   "extra_platform_display_prices": {
+    "SAR": 109,
+    "AED": 109,
+    "EGP": 1470
+   },
    "items": {
     "posts": 20,
     "stories": 20,
@@ -62,6 +113,11 @@
    "id": "deck",
    "name": "Brand Deck",
    "price": 250,
+   "display_prices": {
+    "SAR": 939,
+    "AED": 919,
+    "EGP": 12250
+   },
    "billing": "once",
    "items": {
     "deck_screen_pdf": 1,

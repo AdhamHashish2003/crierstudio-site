@@ -31,15 +31,65 @@
     links[i].addEventListener("click", function () { try { localStorage.setItem(KEY, this.getAttribute("lang")); } catch (e) {} });
   }
 
+  // MENA: local currency. Everything is charged in US dollars (the HTML shows $); every price also carries its SAR, AED and
+  // EGP display price (VAT included, data/pricing.json). Which one shows: the visitor's own pick (saved), else their country
+  // (Cloudflare's /cdn-cgi/trace, then the time zone or the browser's language region), else the site language
+  // (Arabic: SAR), else USD. The legal pages keep US dollars.
+  var CUR_KEY = "crier.cur", CD = null, cur = "USD", curPicked = null, curHooks = [];
+  try { CD = JSON.parse(document.getElementById("cur-data").textContent); } catch (e) {}
+  var CC = CD ? CD.countries : {};
+  function curOf(country) { return country && CC[country] ? CC[country].currency : null; }
+  function curOk(c) { return !!CD && typeof c === "string" && CD["sym" + c] != null; }
+  try { curPicked = localStorage.getItem(CUR_KEY); if (!curOk(curPicked)) curPicked = null; } catch (e) {}
+  function guessCountry() {
+    var TZ = { "Asia/Riyadh": "SA", "Asia/Dubai": "AE", "Africa/Cairo": "EG" };
+    try { var z = Intl.DateTimeFormat().resolvedOptions().timeZone; if (TZ[z]) return TZ[z]; } catch (e) {}
+    var ls = navigator.languages || [navigator.language || ""];
+    for (var i = 0; i < ls.length; i++) { var m = /-([a-z]{2})(?:-|$)/i.exec(ls[i] || ""); if (m && CC[m[1].toUpperCase()]) return m[1].toUpperCase(); }
+    return null;
+  }
+  function money(c, n) {
+    if (c === "USD") return "$" + n;
+    var sep = { es: ".", fr: " " }[de.lang] || ",";
+    return CD.fmt.replace("{n}", String(n).replace(/\B(?=(\d{3})+(?!\d))/g, sep)).replace("{cur}", CD["sym" + c]);
+  }
+  function vatOf(c) { for (var k in CC) if (CC[k].currency === c) return CC[k].vat_pct; return ""; }
+  function applyCur(c) {
+    cur = c;
+    var ps = document.querySelectorAll(".amt[data-usd]");
+    for (var i = 0; i < ps.length; i++) {
+      var v = ps[i].getAttribute(c === "USD" ? "data-usd" : "data-" + c.toLowerCase()); if (v == null) continue;
+      ps[i].textContent = money(c, +v); ps[i].dir = c !== "USD" && de.dir === "rtl" ? "rtl" : "ltr";
+    }
+    var us = document.querySelectorAll(".usdnote");
+    for (var j = 0; j < us.length; j++) { us[j].hidden = c === "USD"; us[j].textContent = c === "USD" ? "" : CD.charged.replace("{usd}", "⁦$" + us[j].getAttribute("data-usd") + "⁩"); }
+    var note = document.getElementById("vat-note"); if (note) note.textContent = (CD["note" + c] || "").replace("{vat}", vatOf(c));
+    var sel = document.getElementById("cur-select"); if (sel) sel.value = c;
+    for (var k = 0; k < curHooks.length; k++) curHooks[k]();
+  }
+  if (CD && !/^(terms|privacy|refund)$/.test(page) && document.querySelector(".amt[data-usd]")) {
+    var box = document.getElementById("curbox"), sel = document.getElementById("cur-select");
+    if (box && sel) { box.hidden = false; sel.addEventListener("change", function () { curPicked = sel.value; try { localStorage.setItem(CUR_KEY, curPicked); } catch (e) {} applyCur(curPicked); }); }
+    var first = curPicked || curOf(guessCountry()) || (de.lang === "ar" ? "SAR" : "USD");
+    if (first !== "USD") applyCur(first); else applyCur("USD");
+    // the country from Cloudflare (it serves crierstudio.com) wins over the guess, unless the visitor picked a currency
+    if (!curPicked && window.fetch) fetch("/cdn-cgi/trace").then(function (r) { return r.ok ? r.text() : ""; }).then(function (tx) {
+      var m = /(?:^|\n)loc=([A-Z]{2})/.exec(tx || ""), c = m && curOf(m[1]);
+      if (c && c !== cur && !curPicked) applyCur(c);
+    }).catch(function () {});
+  }
+
   // P1: pricing page cards: pick platforms, the live price follows (numbers from data/pricing.json, written into the card)
   var picks = document.querySelectorAll(".platpick");
   for (var pi = 0; pi < picks.length; pi++) (function (fs) {
     var card = fs.closest(".plan"), buy = card && card.querySelector(".buyrow a"), boxes = fs.querySelectorAll('input[type="checkbox"]'), out = fs.querySelector(".liveprice");
+    var local = {}; try { local = JSON.parse(fs.dataset.local || "{}"); } catch (e) {}
     function names() { var o = [], v = []; for (var i = 0; i < boxes.length; i++) if (boxes[i].checked) { o.push(boxes[i].parentNode.textContent.trim()); v.push(boxes[i].value); } return { o: o, v: v }; }
     function update() {
       var n = names(); if (!n.v.length) { boxes[0].checked = true; n = names(); }
-      var price = +fs.dataset.price + Math.max(0, n.v.length - (+fs.dataset.included || 1)) * +fs.dataset.extra;
-      out.textContent = fs.dataset.tpl.replace("{name}", fs.dataset.name).replace("{platforms}", n.o.join(" + ")).replace("{price}", "$" + price).replace("{per}", fs.dataset.per);
+      var extras = Math.max(0, n.v.length - (+fs.dataset.included || 1)), lp = cur !== "USD" && local[cur];
+      var price = lp ? lp[0] + extras * lp[1] : +fs.dataset.price + extras * +fs.dataset.extra;
+      out.textContent = fs.dataset.tpl.replace("{name}", fs.dataset.name).replace("{platforms}", n.o.join(" + ")).replace("{price}", money(lp ? cur : "USD", price)).replace("{per}", fs.dataset.per);
       if (buy) { try { var u = new URL(buy.getAttribute("href"), location.href); if (u.origin === location.origin) { u.searchParams.set("platforms", n.v.join(",")); buy.setAttribute("href", u.pathname + u.search + u.hash); } } catch (e) {} }
     }
     for (var b = 0; b < boxes.length; b++) boxes[b].addEventListener("change", update);

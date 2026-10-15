@@ -30,7 +30,12 @@ const WIDE = new Set(['index', 'pricing', 'brand-deck', 'kit', 'samples', 'about
 const LEGAL = ['terms', 'privacy', 'refund'];
 const NAV = [['pricing', 'nav.pricing'], ['kit', 'nav.kit'], ['brand-deck', 'nav.deck'], ['samples', 'nav.samples'], ['faq', 'nav.faq'], ['about', 'nav.about'], ['physical', 'nav.physical'], [PORTAL, 'nav.portal']];
 const CRUMB_KEY = { pricing: 'nav.pricing', 'brand-deck': 'nav.deck', kit: 'nav.kit', samples: 'nav.samples', faq: 'nav.faq', about: 'nav.about', physical: 'nav.physical', terms: 'foot.terms', privacy: 'foot.privacy', refund: 'foot.refund' };
-const INDUSTRY_VALUES = ['Cafés and dessert shops', 'Salons', 'Gyms and studios', 'Clinics', 'Local services', 'Other local business'];
+// MENA (2026-10-14): Gulf and Egyptian business types. The value goes to the intake API as free text (the CRM's industry field).
+const INDUSTRY_VALUES = ['Cafés and dessert shops', 'Restaurants', 'Abayas and fashion', 'Perfume and oud', 'Salons', 'Clinics', 'Real estate', 'Other local business'];
+const IND_N = INDUSTRY_VALUES.length - 1; // ind.1n … ind.<IND_N>n, then ind.other
+const IND_NOTE = 6; // clinics carry the "no health claims" note (ind.<IND_NOTE>note)
+// the seasons the monthly content follows (keys season.<id>t / season.<id>x)
+const SEASONS = ['ramadan', 'eids', 'national', 'white'];
 
 // ---------- products + payment links ----------
 // payment-links.json (repo root) holds one entry per product. Empty = the Buy button opens the request form with the product
@@ -40,7 +45,11 @@ const INDUSTRY_VALUES = ['Cafés and dessert shops', 'Salons', 'Gyms and studios
 // (platforms included) and {n:<id>.<item>} (a count). Never write a price or a count into i18n or templates.
 const PRICING = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'pricing.json'), 'utf8'));
 const PKG = Object.fromEntries(PRICING.packages.map((p) => [p.id, p]));
-const PRICES = Object.fromEntries(PRICING.packages.map((p) => [p.id, p.price])); // USD, shown as-is in every language
+const PRICES = Object.fromEntries(PRICING.packages.map((p) => [p.id, p.price])); // USD: the charged price, in the HTML of every language
+// MENA (2026-10-14): every price also carries its local display prices (SAR, AED, EGP, VAT-inclusive; display_currencies in
+// data/pricing.json). site.js shows the visitor's currency (country, else language) on every page but the legal ones.
+const CUR = PRICING.display_currencies;
+const CURS = ['USD', ...new Set(Object.values(CUR.countries).map((c) => c.currency))];
 const MONTHLY = new Set(PRICING.packages.filter((p) => p.billing === 'monthly').map((p) => p.id)); // billed monthly; kit and deck are one-time
 // product names are i18n keys (name.<id>) so every language shows its own name
 const PRODUCTS = Object.keys(PRICES);
@@ -78,17 +87,24 @@ function raw(lang, key) {
 const vars = { brand: BRAND, email: EMAIL };
 function fillPricing(v, key) {
   const need = (x, what) => { if (x == null) throw new Error(`i18n ${key}: ${what} is not in data/pricing.json`); return x; };
-  return v.replace(/\{price:(\w+)\}/g, (m, id) => '$' + need(PKG[id]?.price, 'price ' + id))
-    .replace(/\{extra:(\w+)\}/g, (m, id) => '$' + need(PKG[id]?.extra_platform_price, 'extra platform price ' + id))
+  // a price becomes a marker \u0002<usd>|<SAR>|<AED>|<EGP>\u0002: t() writes it as $<usd>, h() as a <span> site.js can localise
+  const mark = (usd, loc, what) => '\u0002' + [need(usd, what), ...CURS.slice(1).map((c) => need(loc?.[c], what + ' ' + c))].join('|') + '\u0002';
+  return v.replace(/\{price:(\w+)\}/g, (m, id) => mark(PKG[id]?.price, PKG[id]?.display_prices, 'price ' + id))
+    .replace(/\{extra:(\w+)\}/g, (m, id) => mark(PKG[id]?.extra_platform_price, PKG[id]?.extra_platform_display_prices, 'extra platform price ' + id))
     .replace(/\{plat:(\w+)\}/g, (m, id) => String(need(PKG[id]?.platforms_included, 'platforms of ' + id)))
     .replace(/\{n:(\w+)\.(\w+)\}/g, (m, id, item) => String(need(PKG[id]?.items?.[item], `count ${id}.${item}`)));
 }
-const t = (lang, key) => raw(lang, key).replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m).replace(/<\/?(?:b|a)>/g, '');
+const PRICE_MARK = /\u0002([\d.|]+)\u0002/g;
+function priceSpan(vals, cls = 'amt') {
+  const [usd, ...loc] = String(vals).split('|');
+  return `<span class="${cls}" dir="ltr" data-usd="${usd}"${CURS.slice(1).map((c, i) => ` data-${c.toLowerCase()}="${loc[i]}"`).join('')}>$${usd}</span>`;
+}
+const t = (lang, key) => raw(lang, key).replace(PRICE_MARK, (m, vals) => '$' + vals.split('|')[0]).replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m).replace(/<\/?(?:b|a)>/g, '');
 function h(lang, key, href) {
   let s = raw(lang, key).replace(/\{(\w+)\}/g, (m, k) => (k === 'email' ? '\u0001E\u0001' : vars[k] ?? m));
   s = esc(s).replace(/&lt;(\/?)b&gt;/g, '<$1b>')
     .replace(/&lt;a&gt;/g, href ? `<a href="${esc(href)}">` : '<a>').replace(/&lt;\/a&gt;/g, '</a>')
-    .replace(/\u0001E\u0001/g, `<a dir="ltr" href="mailto:${EMAIL}">${EMAIL}</a>`);
+    .replace(/\u0001E\u0001/g, `<a dir="ltr" href="mailto:${EMAIL}">${EMAIL}</a>`).replace(PRICE_MARK, (m, vals) => priceSpan(vals));
   return s;
 }
 const jsonScript = (o) => JSON.stringify(o).replace(/</g, '\\u003c');
@@ -172,7 +188,18 @@ function sheet(lang, n) {
 }
 const fig = (lang, n) => `<figure class="sheetfig">${sheet(lang, n)}<figcaption>${h(lang, `sample.c${n}`)}</figcaption></figure>`;
 
-const money = (p) => `<span class="price" dir="ltr">$${PRICES[p]}</span>`;
+const money = (p) => priceSpan([PRICES[p], ...CURS.slice(1).map((c) => PKG[p].display_prices[c])].join('|'), 'price amt');
+// "Prices in" picker + VAT note (pricing and kit pages) and the currency data site.js reads. Hidden until site.js runs:
+// without JavaScript every price stays in US dollars, the currency that is charged.
+function curPick(lang) {
+  const opts = CURS.map((c) => `<option value="${c}">${esc(t(lang, 'cur.name' + c))}</option>`).join('');
+  return `<div class="curbox" id="curbox" hidden><label class="curpick"><span>${h(lang, 'cur.label')}</span><select id="cur-select">${opts}</select></label><p class="fine vatnote" id="vat-note" aria-live="polite"></p></div>`;
+}
+function curData(lang) {
+  const o = { countries: CUR.countries, fmt: t(lang, 'cur.fmt'), charged: t(lang, 'cur.charged') };
+  for (const c of CURS) Object.assign(o, { ['sym' + c]: t(lang, 'cur.sym' + c), ['note' + c]: t(lang, 'cur.note' + c) });
+  return `<script type="application/json" id="cur-data">${jsonScript(o)}</script>`;
+}
 const pname = (lang, p) => t(lang, `name.${p}`);
 const isLinked = (p) => LINKS[p] !== '';
 function buyHref(lang, p) { return isLinked(p) ? LINKS[p] : `${pathFor(lang, 'kit')}?product=${p}#request`; }
@@ -190,7 +217,7 @@ function ticks(lang, prefix, cls) {
 function planCard(lang, p, hot) {
   const per = MONTHLY.has(p) ? 'plan.per' : 'one.per';
   const bill = MONTHLY.has(p) ? 'plan.bill' : `pkg.${p}.bill`;
-  return `<article class="plan${hot ? ' hot' : ''}" data-plan="${p}"><span class="badge">${h(lang, `pkg.${p}.eye`)}</span><h3>${esc(pname(lang, p))}</h3><p class="pt">${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(p)}<span class="per">${h(lang, per)}</span></div><p class="billnote">${h(lang, bill)}</p>${platPick(lang, p)}${ticks(lang, `pkg.${p}`)}<p class="pnote">${h(lang, `pkg.${p}.note`)}</p><div class="buyrow">${buyBtn(lang, p, !hot)}</div></article>`;
+  return `<article class="plan${hot ? ' hot' : ''}" data-plan="${p}"><span class="badge">${h(lang, `pkg.${p}.eye`)}</span><h3>${esc(pname(lang, p))}</h3><p class="pt">${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(p)}<span class="per">${h(lang, per)}</span></div><p class="usdnote" data-usd="${PRICES[p]}" hidden></p><p class="billnote">${h(lang, bill)}</p>${platPick(lang, p)}${ticks(lang, `pkg.${p}`)}<p class="pnote">${h(lang, `pkg.${p}.note`)}</p><div class="buyrow">${buyBtn(lang, p, !hot)}</div></article>`;
 }
 // P1: a monthly package picks its platforms on the card; the live line ("Keep Growing · Instagram + TikTok · $90/mo") is computed in
 // the browser from the numbers below (data/pricing.json: price + (platforms - included) × extra_platform_price), never typed.
@@ -200,7 +227,9 @@ function platPick(lang, p) {
   const first = PRICING.platforms[0];
   const line = t(lang, 'plan.live').replace('{name}', pname(lang, p)).replace('{platforms}', t(lang, 'plat.' + first)).replace('{price}', '$' + k.price).replace('{per}', t(lang, 'plan.perShort'));
   const boxes = PRICING.platforms.map((id) => `<label class="opt"><input type="checkbox" name="pp-${p}" value="${esc(id)}"${id === first ? ' checked' : ''}><span>${h(lang, 'plat.' + id)}</span></label>`).join('');
-  return `<fieldset class="platpick" data-price="${k.price}" data-extra="${k.extra_platform_price}" data-included="${k.platforms_included || 1}" data-name="${esc(pname(lang, p))}" data-tpl="${esc(t(lang, 'plan.live'))}" data-per="${esc(t(lang, 'plan.perShort'))}"><legend>${h(lang, 'plan.pickPlatforms')}</legend><div class="opts">${boxes}</div><p class="liveprice" aria-live="polite" dir="auto">${esc(line)}</p><p class="fine">${h(lang, 'plan.extraNote')}</p></fieldset>`;
+  // local display prices for the live line: { SAR: [price, extra platform], AED: …, EGP: … }
+  const local = Object.fromEntries(CURS.slice(1).map((c) => [c, [k.display_prices[c], k.extra_platform_display_prices[c]]]));
+  return `<fieldset class="platpick" data-price="${k.price}" data-extra="${k.extra_platform_price}" data-local="${esc(JSON.stringify(local))}" data-included="${k.platforms_included || 1}"data-name="${esc(pname(lang, p))}" data-tpl="${esc(t(lang, 'plan.live'))}" data-per="${esc(t(lang, 'plan.perShort'))}"><legend>${h(lang, 'plan.pickPlatforms')}</legend><div class="opts">${boxes}</div><p class="liveprice" aria-live="polite" dir="auto">${esc(line)}</p><p class="fine">${h(lang, 'plan.extraNote')}</p></fieldset>`;
 }
 const planCards = (lang) => ['kit', 'visible', 'growing'].map((p) => planCard(lang, p, p === 'kit')).join('');
 const deckCards = (lang) => planCard(lang, 'deck', false);
@@ -214,7 +243,7 @@ function pageVars(lang, page) {
   };
   if (page === 'index') Object.assign(v, { flow: flow(lang, 3, 'how'), inds: inds(lang), faqItems: faqItems(lang, FAQ_HOME, true) });
   if (page === 'kit') Object.assign(v, kitVars(lang));
-  if (page === 'pricing') Object.assign(v, { planCards: planCards(lang), deckCards: deckCards(lang), billItems: billItems(lang), faqItems: faqItems(lang, FAQ_PRICING, false) });
+  if (page === 'pricing') Object.assign(v, { planCards: planCards(lang), deckCards: deckCards(lang), billItems: billItems(lang), faqItems: faqItems(lang, FAQ_PRICING, false), inds: inds(lang), seasons: seasons(lang), curPick: curPick(lang) });
   if (page === 'brand-deck') Object.assign(v, { deckFlow: flow(lang, 4, 'deck.how'), deckCards: deckCards(lang), faqItems: faqItems(lang, FAQ_DECK, true), sheets: [1, 2, 4].map((n) => fig(lang, n)).join('') });
   if (page === 'samples') v.sheets = [1, 2, 3, 4].map((n) => fig(lang, n)).join('');
   if (page === 'faq') v.faqItems = faqItems(lang, FAQ_ALL, false);
@@ -224,20 +253,27 @@ function flow(lang, n, prefix) {
   return Array.from({ length: n }, (_, i) => i + 1).map((i) => `<div class="stage">${syms[i - 1]}<h3>${h(lang, `${prefix}.${i}t`)}</h3><p>${h(lang, `${prefix}.${i}x`)}</p></div>`).join('');
 }
 function inds(lang) {
-  return [1, 2, 3, 4, 5].map((i) => {
-    const sw = INDCOLORS[i - 1].map((c) => `<i style="background:var(--${c})"></i>`).join('');
-    return `<div class="ind"><div class="swatch" aria-hidden="true">${sw}</div><h3>${h(lang, `ind.${i}n`)}</h3><p>${h(lang, `ind.${i}x`)}</p>${i === 4 ? `<p class="note">${h(lang, 'ind.4note')}</p>` : ''}</div>`;
+  return Array.from({ length: IND_N }, (_, i) => i + 1).map((i) => {
+    const sw = INDCOLORS[(i - 1) % INDCOLORS.length].map((c) => `<i style="background:var(--${c})"></i>`).join('');
+    return `<div class="ind"><div class="swatch" aria-hidden="true">${sw}</div><h3>${h(lang, `ind.${i}n`)}</h3><p>${h(lang, `ind.${i}x`)}</p>${i === IND_NOTE ? `<p class="note">${h(lang, `ind.${IND_NOTE}note`)}</p>` : ''}</div>`;
+  }).join('');
+}
+// "Seasons we cover": drawn cards (colour swatches only, no photos)
+function seasons(lang) {
+  return SEASONS.map((id, i) => {
+    const sw = INDCOLORS[i % INDCOLORS.length].map((c) => `<i style="background:var(--${c})"></i>`).join('');
+    return `<div class="ind season"><div class="swatch" aria-hidden="true">${sw}</div><h3>${h(lang, `season.${id}t`)}</h3><p>${h(lang, `season.${id}x`)}</p></div>`;
   }).join('');
 }
 function kitVars(lang) {
   const kitPages = [1, 2, 3].map((i) => `<article class="page"><span class="pg">${h(lang, 'kit.label')}</span>${minis[i - 1]}<span class="ex2">${h(lang, 'board.ex')}</span><h3>${h(lang, `kit.p${i}t`)}</h3><p>${h(lang, `kit.p${i}x`)}</p></article>`).join('');
-  const industryOptions = `<option value="">${esc(t(lang, 'f.choose'))}</option>` + INDUSTRY_VALUES.map((v, j) => `<option value="${esc(v)}">${esc(t(lang, j < 5 ? `ind.${j + 1}n` : 'ind.other'))}</option>`).join('');
+  const industryOptions = `<option value="">${esc(t(lang, 'f.choose'))}</option>` + INDUSTRY_VALUES.map((v, j) => `<option value="${esc(v)}">${esc(t(lang, j < IND_N ? `ind.${j + 1}n` : 'ind.other'))}</option>`).join('');
   const deckLangOptions = [['en', 'English'], ['es', 'Español'], ['fr', 'Français'], ['ar', 'العربية'], ['ar-en', t(lang, 'f.deckBi')]]
     .map(([v, n]) => `<option value="${v}"${v === lang ? ' selected' : ''}>${esc(n)}</option>`).join('');
   const msgKeys = ['availability.soon', 'availability.deck', 'pay.note', 'pay.noteCheckout', 'f.platformsErr', 'f.total', 'f.totalMonthly', 'f.toStripe', 'f.pay', 'f.sending', 'f.thanks', 'f.thanksDeck', 'f.failed', 'f.tooMany', 'f.consentErr', 'v.business', 'v.web', 'v.emailEmpty', 'v.emailBad', 'v.city', 'v.industry', 'v.address'];
   const formMsgs = jsonScript(Object.fromEntries(msgKeys.map((k) => [k, t(lang, k)])));
   const platformChecks = PRICING.platforms.map((id, i) => `<label class="opt"><input type="checkbox" name="platform" value="${esc(id)}"${i === 0 ? ' checked' : ''}><span>${h(lang, 'plat.' + id)}</span></label>`).join('');
-  return { kitPages, kitList: ticks(lang, 'pkg.kit', 'cols'), industryOptions, deckLangOptions, formMsgs, endpoint: ENDPOINT, flow: flow(lang, 3, 'how'),
+  return { kitPages, kitList: ticks(lang, 'pkg.kit', 'cols'), industryOptions, curPick: curPick(lang), deckLangOptions, formMsgs, endpoint: ENDPOINT, flow: flow(lang, 3, 'how'),
     platformChecks, checkoutAttr: CHECKOUT.enabled ? ` data-checkout="${esc(CHECKOUT.endpoint)}"` : '' };
 }
 
@@ -426,7 +462,7 @@ for (const [lang] of LANGS) {
   for (const page of PAGES) {
     const ctx = { lang, v: pageVars(lang, page) };
     const body = render(rd(`templates/${page === 'index' ? 'home' : page}.html`), ctx);
-    const bodyHtml = `<body data-page="${page}" class="${page === 'index' ? 'gallery spatial' : 'studio-inner'}">\n${render(partials.consent, ctx)}\n<div class="${page === 'index' ? 'site-shell' : 'wrap'}">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n<script src="/site.js" defer></script>\n</body>\n</html>\n`;
+    const bodyHtml = `<body data-page="${page}" class="${page === 'index' ? 'gallery spatial' : 'studio-inner'}">\n${render(partials.consent, ctx)}\n<div class="${page === 'index' ? 'site-shell' : 'wrap'}">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${!LEGAL.includes(page) && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n</body>\n</html>\n`;
     const html = `${head(lang, page, purgeCss(cssFor(lang, page), bodyHtml))}\n${trimIndent(bodyHtml)}`;
     write(dirFor(lang, page) + 'index.html', hashUrls(html));
     built.push([lang, page]);

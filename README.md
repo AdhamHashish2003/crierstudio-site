@@ -56,3 +56,7 @@ Cloudflare rule (owner, one time; Cloudflare dashboard > crierstudio.com > Cachi
 - Browser TTL: Override origin and use this TTL, 1 year
 - Deploy
 
+
+## Local currency (MENA, 2026-10-14)
+
+Prices are charged in US dollars. Every price also carries SAR, AED and EGP display prices (VAT-inclusive: SA 15%, AE 5%, EG 14%) from `display_currencies` / `display_prices` in `data/pricing.json` (published from the UMA repo like the rest of the price list). The HTML shows USD; `site.js` switches the prices to the visitor's currency: their pick in the "Prices in" selector (pricing and kit pages, saved in localStorage `crier.cur`), else their country (Cloudflare's `/cdn-cgi/trace`, then the time zone or the browser's language region), else Arabic pages show SAR. Cards then add "You pay $X (US dollars)" and the selector shows the VAT note. Terms, privacy and refund always show USD. The checkout's live total stays in USD (the charged amount).
