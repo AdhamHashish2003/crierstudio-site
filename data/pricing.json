@@ -2,7 +2,7 @@
  "generated_from": "portal/lib/pricing.json sha256 7700c64938a514ec2f725dc7533af709f32e41355c94371e965afa2c45145291",
  "currency": "USD",
  "local": {
-  "about": "Launch pricing (Adham, 2026-10-15): a buyer in Saudi Arabia, the UAE or Egypt is quoted and charged in their own currency, with VAT ADDED on top of the package's local price: total = net + VAT, shown as \"price + VAT = total\". packages[].prices.<CUR> and extra_platform_prices.<CUR> are the NET prices before VAT. VAT = net x vat_pct / 100, computed in integer cents and rounded half-up (vat_minor = floor((net_minor x vat_pct + 50) / 100)) on the whole order (base + extra platforms). The country is picked from a dropdown (Saudi Arabia / UAE / Egypt / Other), never typed; any other country pays the USD price (packages[].price, extra_platform_price) with no VAT. vat_registration: PLACEHOLDER, Adham supplies each country's VAT / tax registration number; null = not registered, nothing is printed.",
+  "about": "Launch pricing (Adham, 2026-10-15): a buyer in Saudi Arabia, the UAE or Egypt is quoted and charged in their own currency, with VAT ADDED on top of the package's local price: total = net + VAT, shown as \"price + VAT = total\". packages[].prices.<CUR> and extra_platform_prices.<CUR> are the NET prices before VAT. VAT = net x vat_pct / 100, rounded half-up to 0.01 on the whole order (base + extra platforms). The country comes from the client (SA / AE / EG only, never typed free text); any other country pays the USD price above with no VAT. Read by mena-batch/app/core/local-price.mjs (engine, portal), the Launchpad's pricing.py (checkout, a byte-for-byte copy of this file) and the site's data/pricing.json (republished from this file). vat_registration: PLACEHOLDER, Adham supplies each country's VAT / tax registration number before it is printed or sent to Stripe; null = not registered yet, nothing is printed.",
   "countries": {
    "SA": {
     "currency": "SAR",
@@ -118,7 +118,7 @@
    },
    "billing": "once",
    "coming_soon": true,
-   "coming_soon_why": "Brand Deck is shown as coming soon and is never payable on the site (disabled buttons, no structured-data offer, the form refuses it).",
+   "coming_soon_why": "Brand Deck is shown as coming soon and is never payable: checkout, quotes, Payment Links, Mark paid and packageFromPayment all refuse it (Adham, 2026-10-14)",
    "items": {
     "deck_screen_pdf": 1,
     "deck_print_pdf": 1,
@@ -131,7 +131,6 @@
   "instagram",
   "facebook"
  ],
- "platforms_why": "Only platforms we make posts AND stories for. YouTube Shorts is video-only and LinkedIn and TikTok get no posts, so none of them is sold (no reels or video; launch audit H4, 2026-10-15).",
  "rules": {
   "first_month_includes_kit": true,
   "extra_platform_is_full_adaptation": true,
