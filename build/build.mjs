@@ -1,7 +1,7 @@
 // Crier Studio static site build. Node only, no dependencies.
 // Reads i18n/<lang>.json + templates/*, writes static HTML for en (/), es, fr, ar into the repo root.
 // Run:  node build/build.mjs        (the built files are committed; GitHub Pages serves it as-is)
-// Check: node build/check.mjs       (key sets identical in all 4 languages, no unused keys, no price/UMA/draft text)
+// Check: node build/check.mjs       (key sets identical in all 4 languages, no unused keys, no price/internal-name/draft text)
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -38,18 +38,38 @@ const IND_NOTE = 6; // clinics carry the "no health claims" note (ind.<IND_NOTE>
 const SEASONS = ['ramadan', 'eids', 'national', 'white'];
 
 // ---------- products + payment links ----------
-// payment-links.json (repo root) holds one entry per product. Empty = the Buy button opens the request form with the product
-// preselected ("We'll email you a secure payment link"). A filled-in https:// link (a Stripe Payment Link) = the button goes straight to it.
-// Every price and count comes from data/pricing.json, written by the UMA repo's portal/scripts/publish-pricing.cjs from
-// portal/lib/pricing.json (the one price list). Texts use {price:<id>}, {extra:<id>} (extra platform), {plat:<id>}
+// payment-links.json (repo root) holds one entry per product. Empty = the Buy button opens the order form with the product
+// preselected (Stripe checkout in the buyer's currency). Keep them empty: a Stripe Payment Link has one fixed currency and no
+// VAT line, so it cannot follow the country rule below.
+// Every price and count comes from data/pricing.json, a copy of the studio's master price list (portal/lib/pricing.json,
+// republished by hand on 2026-10-15). Texts use {price:<id>}, {extra:<id>} (extra platform), {plat:<id>}
 // (platforms included) and {n:<id>.<item>} (a count). Never write a price or a count into i18n or templates.
 const PRICING = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'pricing.json'), 'utf8'));
 const PKG = Object.fromEntries(PRICING.packages.map((p) => [p.id, p]));
-const PRICES = Object.fromEntries(PRICING.packages.map((p) => [p.id, p.price])); // USD: the charged price, in the HTML of every language
-// MENA (2026-10-14): every price also carries its local display prices (SAR, AED, EGP, VAT-inclusive; display_currencies in
-// data/pricing.json). site.js shows the visitor's currency (country, else language) on every page but the legal ones.
-const CUR = PRICING.display_currencies;
-const CURS = ['USD', ...new Set(Object.values(CUR.countries).map((c) => c.currency))];
+const PRICES = Object.fromEntries(PRICING.packages.map((p) => [p.id, p.price])); // USD: the international price, in the HTML of every language
+// Launch pricing (Adham, 2026-10-15): buyers in Saudi Arabia, the UAE and Egypt pay in SAR / AED / EGP with VAT ADDED
+// (local.countries in data/pricing.json; packages[].prices / extra_platform_prices are NET before VAT); every other country
+// pays the USD price with no VAT. Every price carries its local net prices; site.js shows the buyer's currency (by country,
+// never by page language) with "price + VAT = total" on every page but the legal ones.
+const COUNTRIES = PRICING.local.countries;
+const CURS = ['USD', ...new Set(Object.values(COUNTRIES).map((c) => c.currency))];
+// the same arithmetic as the checkout server and site.js: VAT on the whole order, in integer cents, rounded half-up
+function localQuote(id, cc, extra = 0) {
+  const k = PKG[id], L = COUNTRIES[cc];
+  const base = k.prices?.[L.currency], each = extra ? k.extra_platform_prices?.[L.currency] : 0;
+  if (typeof base !== 'number' || (extra && typeof each !== 'number')) throw new Error(`data/pricing.json: no ${L.currency} price for ${id}`);
+  const net = Math.round(base * 100) + extra * Math.round((each || 0) * 100), vat = Math.floor((net * L.vat_pct + 50) / 100);
+  return { currency: L.currency, vat_pct: L.vat_pct, net, vat, total: net + vat }; // minor units (cents)
+}
+const minorStr = (m) => `${Math.floor(m / 100)}.${String(m % 100).padStart(2, '0')}`;
+// the per-package numbers site.js needs for the order form total: { kit: { inc, billing, USD: [price, extra], SAR: [...], ... } }
+const PKGDATA = Object.fromEntries(PRICING.packages.filter((p) => !p.coming_soon).map((p) => [p.id, Object.fromEntries([
+  ['inc', p.platforms_included || 1], ['billing', p.billing], ['USD', [p.price, p.extra_platform_price || 0]],
+  ...CURS.slice(1).map((c) => [c, [p.prices[c], p.extra_platform_prices?.[c] || 0]])])]));
+// WhatsApp (M14): data/contact.json. Empty = no WhatsApp link anywhere (never a broken wa.me link). ADHAM supplies the number.
+const CONTACT = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'contact.json'), 'utf8'));
+const WA = String(CONTACT.whatsapp || '').replace(/[\s+()-]/g, '');
+if (WA && !/^[1-9]\d{7,14}$/.test(WA)) throw new Error('data/contact.json: whatsapp must be the number in international format, digits only');
 const MONTHLY = new Set(PRICING.packages.filter((p) => p.billing === 'monthly').map((p) => p.id)); // billed monthly; kit and deck are one-time
 // product names are i18n keys (name.<id>) so every language shows its own name
 const PRODUCTS = Object.keys(PRICES);
@@ -89,8 +109,8 @@ function fillPricing(v, key) {
   const need = (x, what) => { if (x == null) throw new Error(`i18n ${key}: ${what} is not in data/pricing.json`); return x; };
   // a price becomes a marker \u0002<usd>|<SAR>|<AED>|<EGP>\u0002: t() writes it as $<usd>, h() as a <span> site.js can localise
   const mark = (usd, loc, what) => '\u0002' + [need(usd, what), ...CURS.slice(1).map((c) => need(loc?.[c], what + ' ' + c))].join('|') + '\u0002';
-  return v.replace(/\{price:(\w+)\}/g, (m, id) => mark(PKG[id]?.price, PKG[id]?.display_prices, 'price ' + id))
-    .replace(/\{extra:(\w+)\}/g, (m, id) => mark(PKG[id]?.extra_platform_price, PKG[id]?.extra_platform_display_prices, 'extra platform price ' + id))
+  return v.replace(/\{price:(\w+)\}/g, (m, id) => mark(PKG[id]?.price, PKG[id]?.prices, 'price ' + id))
+    .replace(/\{extra:(\w+)\}/g, (m, id) => mark(PKG[id]?.extra_platform_price, PKG[id]?.extra_platform_prices, 'extra platform price ' + id))
     .replace(/\{plat:(\w+)\}/g, (m, id) => String(need(PKG[id]?.platforms_included, 'platforms of ' + id)))
     .replace(/\{n:(\w+)\.(\w+)\}/g, (m, id, item) => String(need(PKG[id]?.items?.[item], `count ${id}.${item}`)));
 }
@@ -169,7 +189,8 @@ function crumbs(lang, page) {
   return `<nav class="crumbs" aria-label="${esc(t(lang, 'crumb.label'))}"><a href="${pathFor(lang, 'index')}">${esc(t(lang, 'crumb.home'))}</a><span aria-hidden="true">/</span><span aria-current="page">${esc(t(lang, CRUMB_KEY[page]))}</span></nav>`;
 }
 function hrefs(lang) {
-  const o = { homeHref: pathFor(lang, 'index'), kitCtaHref: pathFor(lang, 'kit') + '#request', deckCtaHref: pathFor(lang, 'brand-deck') + '#availability' };
+  const o = { homeHref: pathFor(lang, 'index'), kitCtaHref: pathFor(lang, 'kit') + '#request', deckCtaHref: pathFor(lang, 'brand-deck') + '#availability',
+    deckWaitHref: `mailto:${EMAIL}?subject=Brand%20Deck%20waitlist` };
   const NAME = { index: 'home', 'brand-deck': 'deck' };
   for (const p of PAGES) o[(NAME[p] || p) + 'Href'] = pathFor(lang, p);
   return o;
@@ -188,18 +209,24 @@ function sheet(lang, n) {
 }
 const fig = (lang, n) => `<figure class="sheetfig">${sheet(lang, n)}<figcaption>${h(lang, `sample.c${n}`)}</figcaption></figure>`;
 
-const money = (p) => priceSpan([PRICES[p], ...CURS.slice(1).map((c) => PKG[p].display_prices[c])].join('|'), 'price amt');
-// "Prices in" picker + VAT note (pricing and kit pages) and the currency data site.js reads. Hidden until site.js runs:
-// without JavaScript every price stays in US dollars, the currency that is charged.
+const money = (p) => priceSpan([PRICES[p], ...CURS.slice(1).map((c) => PKG[p].prices[c])].join('|'), 'price amt');
+// "Your country" dropdown: Saudi Arabia / UAE / Egypt / Other (never free text). Used above the prices (pricing and kit pages)
+// and in the order form; site.js keeps every one of them on the same country and sends that country to the checkout.
+const CC_OPTS = [...Object.keys(COUNTRIES), 'other'];
+const ccOptions = (lang) => CC_OPTS.map((c) => `<option value="${c}"${c === 'other' ? ' selected' : ''}>${esc(t(lang, 'cc.' + c))}</option>`).join('');
+// Country picker + VAT note (pricing and kit pages) and the currency data site.js reads. Hidden until site.js runs:
+// without JavaScript every price stays in US dollars, the international price.
 function curPick(lang) {
-  const opts = CURS.map((c) => `<option value="${c}">${esc(t(lang, 'cur.name' + c))}</option>`).join('');
-  return `<div class="curbox" id="curbox" hidden><label class="curpick"><span>${h(lang, 'cur.label')}</span><select id="cur-select">${opts}</select></label><p class="fine vatnote" id="vat-note" aria-live="polite"></p></div>`;
+  return `<div class="curbox" id="curbox" hidden><label class="curpick"><span>${h(lang, 'cur.label')}</span><select id="cur-select" data-cc>${ccOptions(lang)}</select></label><p class="fine vatnote" id="vat-note" aria-live="polite"></p></div>`;
 }
 function curData(lang) {
-  const o = { countries: CUR.countries, fmt: t(lang, 'cur.fmt'), charged: t(lang, 'cur.charged') };
+  const countries = Object.fromEntries(Object.entries(COUNTRIES).map(([cc, c]) => [cc, { currency: c.currency, vat_pct: c.vat_pct }]));
+  const o = { countries, fmt: t(lang, 'cur.fmt'), vatLine: t(lang, 'cur.vatLine'), plusVat: t(lang, 'cur.plusVat'), pk: PKGDATA };
   for (const c of CURS) Object.assign(o, { ['sym' + c]: t(lang, 'cur.sym' + c), ['note' + c]: t(lang, 'cur.note' + c) });
   return `<script type="application/json" id="cur-data">${jsonScript(o)}</script>`;
 }
+// M14: a WhatsApp link only when data/contact.json has a number (the label key is always read, so it is never "unused")
+function waLink(lang) { const label = t(lang, 'contact.wa'); return WA ? `<a href="https://wa.me/${WA}" dir="ltr" rel="noopener">${esc(label)}</a>` : ''; }
 const pname = (lang, p) => t(lang, `name.${p}`);
 const isLinked = (p) => LINKS[p] !== '';
 function buyHref(lang, p) { return isLinked(p) ? LINKS[p] : `${pathFor(lang, 'kit')}?product=${p}#request`; }
@@ -217,9 +244,12 @@ function ticks(lang, prefix, cls) {
 function planCard(lang, p, hot) {
   const per = MONTHLY.has(p) ? 'plan.per' : 'one.per';
   const bill = MONTHLY.has(p) ? 'plan.bill' : `pkg.${p}.bill`;
-  return `<article class="plan${hot ? ' hot' : ''}" data-plan="${p}"><span class="badge">${h(lang, `pkg.${p}.eye`)}</span><h3>${esc(pname(lang, p))}</h3><p class="pt">${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(p)}<span class="per">${h(lang, per)}</span></div><p class="usdnote" data-usd="${PRICES[p]}" hidden></p><p class="billnote">${h(lang, bill)}</p>${platPick(lang, p)}${ticks(lang, `pkg.${p}`)}<p class="pnote">${h(lang, `pkg.${p}.note`)}</p><div class="buyrow">${buyBtn(lang, p, !hot)}</div></article>`;
+  // the VAT line ("SAR 109 + VAT 15% SAR 16.35 = SAR 125.35") is filled in by site.js for Saudi Arabia, the UAE and Egypt; it
+  // stays hidden in US dollars (no VAT). The Brand Deck is coming soon and is never payable, so its card has no such line.
+  const vatLine = PKG[p].coming_soon ? '' : `<p class="usdnote" data-pkg="${p}" hidden></p>`;
+  return `<article class="plan${hot ? ' hot' : ''}" data-plan="${p}"><span class="badge">${h(lang, `pkg.${p}.eye`)}</span><h3>${esc(pname(lang, p))}</h3><p class="pt">${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(p)}<span class="per">${h(lang, per)}</span></div>${vatLine}<p class="billnote">${h(lang, bill)}</p>${platPick(lang, p)}${ticks(lang, `pkg.${p}`)}<p class="pnote">${h(lang, `pkg.${p}.note`)}</p><div class="buyrow">${buyBtn(lang, p, !hot)}</div></article>`;
 }
-// P1: a monthly package picks its platforms on the card; the live line ("Keep Growing · Instagram + TikTok · $90/mo") is computed in
+// P1: a monthly package picks its platforms on the card; the live line ("Keep Growing · Instagram + Facebook · $90/mo") is computed in
 // the browser from the numbers below (data/pricing.json: price + (platforms - included) × extra_platform_price), never typed.
 // The first platform is ticked; the server-side line is the one-platform price so the page reads right without JavaScript.
 function platPick(lang, p) {
@@ -227,9 +257,9 @@ function platPick(lang, p) {
   const first = PRICING.platforms[0];
   const line = t(lang, 'plan.live').replace('{name}', pname(lang, p)).replace('{platforms}', t(lang, 'plat.' + first)).replace('{price}', '$' + k.price).replace('{per}', t(lang, 'plan.perShort'));
   const boxes = PRICING.platforms.map((id) => `<label class="opt"><input type="checkbox" name="pp-${p}" value="${esc(id)}"${id === first ? ' checked' : ''}><span>${h(lang, 'plat.' + id)}</span></label>`).join('');
-  // local display prices for the live line: { SAR: [price, extra platform], AED: …, EGP: … }
-  const local = Object.fromEntries(CURS.slice(1).map((c) => [c, [k.display_prices[c], k.extra_platform_display_prices[c]]]));
-  return `<fieldset class="platpick" data-price="${k.price}" data-extra="${k.extra_platform_price}" data-local="${esc(JSON.stringify(local))}" data-included="${k.platforms_included || 1}"data-name="${esc(pname(lang, p))}" data-tpl="${esc(t(lang, 'plan.live'))}" data-per="${esc(t(lang, 'plan.perShort'))}"><legend>${h(lang, 'plan.pickPlatforms')}</legend><div class="opts">${boxes}</div><p class="liveprice" aria-live="polite" dir="auto">${esc(line)}</p><p class="fine">${h(lang, 'plan.extraNote')}</p></fieldset>`;
+  // local NET prices (before VAT) for the live line: { SAR: [price, extra platform], AED: …, EGP: … }
+  const local = Object.fromEntries(CURS.slice(1).map((c) => [c, [k.prices[c], k.extra_platform_prices[c]]]));
+  return `<fieldset class="platpick" data-pkg="${p}" data-price="${k.price}" data-extra="${k.extra_platform_price}" data-local="${esc(JSON.stringify(local))}" data-included="${k.platforms_included || 1}" data-name="${esc(pname(lang, p))}" data-tpl="${esc(t(lang, 'plan.live'))}" data-per="${esc(t(lang, 'plan.perShort'))}"><legend>${h(lang, 'plan.pickPlatforms')}</legend><div class="opts">${boxes}</div><p class="liveprice" aria-live="polite" dir="auto">${esc(line)}</p><p class="fine">${h(lang, 'plan.extraNote')}</p></fieldset>`;
 }
 const planCards = (lang) => ['kit', 'visible', 'growing'].map((p) => planCard(lang, p, p === 'kit')).join('');
 const deckCards = (lang) => planCard(lang, 'deck', false);
@@ -240,6 +270,7 @@ function pageVars(lang, page) {
     ...hrefs(lang), studioNav: [ ['#work', 'studio.copy.098'], ['#services', 'studio.copy.099'], ['about', 'studio.copy.100'], ['pricing', 'nav.pricing'] ].map(([p,k]) => `<a href="${p.startsWith('#') ? pathFor(lang,'index')+p : pathFor(lang,p)}">${h(lang,k)}</a>`).join(''), langpick: langpick(lang, page), nav: navLinks(lang, page, true), navFoot: navLinks(lang, page, false),
     crumbs: crumbs(lang, page), portalHref: PORTAL, emailLink: `<a href="mailto:${EMAIL}" dir="ltr">${EMAIL}</a>`,
     buyKit: buyBtn(lang, 'kit', false), buyDeck: buyBtn(lang, 'deck', false), conv: lang === 'en' ? '' : `<p class="conv">${h(lang, 'leg.conv')}</p>`,
+    waFoot: waLink(lang), waAbout: WA ? `<p>${waLink(lang)}</p>` : '',
   };
   if (page === 'index') Object.assign(v, { flow: flow(lang, 3, 'how'), inds: inds(lang), faqItems: faqItems(lang, FAQ_HOME, true) });
   if (page === 'kit') Object.assign(v, kitVars(lang));
@@ -270,18 +301,30 @@ function kitVars(lang) {
   const industryOptions = `<option value="">${esc(t(lang, 'f.choose'))}</option>` + INDUSTRY_VALUES.map((v, j) => `<option value="${esc(v)}">${esc(t(lang, j < IND_N ? `ind.${j + 1}n` : 'ind.other'))}</option>`).join('');
   const deckLangOptions = [['en', 'English'], ['es', 'Español'], ['fr', 'Français'], ['ar', 'العربية'], ['ar-en', t(lang, 'f.deckBi')]]
     .map(([v, n]) => `<option value="${v}"${v === lang ? ' selected' : ''}>${esc(n)}</option>`).join('');
-  const msgKeys = ['availability.soon', 'availability.deck', 'pay.note', 'pay.noteCheckout', 'f.platformsErr', 'f.total', 'f.totalMonthly', 'f.toStripe', 'f.pay', 'f.sending', 'f.thanks', 'f.thanksDeck', 'f.failed', 'f.tooMany', 'f.consentErr', 'v.business', 'v.web', 'v.emailEmpty', 'v.emailBad', 'v.city', 'v.industry', 'v.address'];
+  const msgKeys = ['availability.soon', 'availability.deck', 'pay.note', 'pay.noteCheckout', 'f.platforms', 'f.platformKit', 'f.platformsErr', 'f.total', 'f.totalMonthly', 'f.toStripe', 'f.pay', 'f.sending', 'f.thanks', 'f.thanksDeck', 'f.failed', 'f.tooMany', 'f.consentErr', 'v.business', 'v.web', 'v.emailEmpty', 'v.emailBad', 'v.city', 'v.industry', 'v.address'];
   const formMsgs = jsonScript(Object.fromEntries(msgKeys.map((k) => [k, t(lang, k)])));
-  const platformChecks = PRICING.platforms.map((id, i) => `<label class="opt"><input type="checkbox" name="platform" value="${esc(id)}"${i === 0 ? ' checked' : ''}><span>${h(lang, 'plat.' + id)}</span></label>`).join('');
+  // Low 15: The Complete Kit (selected first) is made for exactly one platform: radio buttons. site.js turns them into
+  // checkboxes for the monthly plans (first platform included, each extra one charged) and back for the kit.
+  const platformChecks = PRICING.platforms.map((id, i) => `<label class="opt"><input type="radio" name="platform" value="${esc(id)}"${i === 0 ? ' checked' : ''}><span>${h(lang, 'plat.' + id)}</span></label>`).join('');
   return { kitPages, kitList: ticks(lang, 'pkg.kit', 'cols'), industryOptions, curPick: curPick(lang), deckLangOptions, formMsgs, endpoint: ENDPOINT, flow: flow(lang, 3, 'how'),
-    platformChecks, checkoutAttr: CHECKOUT.enabled ? ` data-checkout="${esc(CHECKOUT.endpoint)}"` : '' };
+    platformChecks, countryOptions: ccOptions(lang), checkoutAttr: CHECKOUT.enabled ? ` data-checkout="${esc(CHECKOUT.endpoint)}"` : '' };
 }
 
 // ---------- head ----------
+// Structured data (launch pricing, 2026-10-15): one Offer per market, the same on every language page (the currency follows
+// the buyer's country, not the page language). Saudi Arabia, the UAE and Egypt each get an Offer in their currency, limited to
+// that country (eligibleRegion), priced at the total the buyer pays with VAT added (valueAddedTaxIncluded: true). The last
+// Offer is the US-dollar price for every other country, with no VAT, labelled as the international price.
 function offerNode(lang, p) {
-  const o = { '@type': 'Offer', name: pname(lang, p), price: String(PRICES[p]), priceCurrency: 'USD', url: urlFor(lang, 'pricing') };
-  if (MONTHLY.has(p)) o.priceSpecification = { '@type': 'UnitPriceSpecification', price: String(PRICES[p]), priceCurrency: 'USD', unitCode: 'MON' };
-  return o;
+  const monthly = MONTHLY.has(p), url = urlFor(lang, 'pricing');
+  const local = Object.keys(COUNTRIES).map((cc) => {
+    const q = localQuote(p, cc), price = minorStr(q.total);
+    return { '@type': 'Offer', name: pname(lang, p), price, priceCurrency: q.currency, eligibleRegion: { '@type': 'Country', name: cc },
+      priceSpecification: { '@type': 'UnitPriceSpecification', price, priceCurrency: q.currency, valueAddedTaxIncluded: true, ...(monthly ? { unitCode: 'MON' } : {}) }, url };
+  });
+  const o = { '@type': 'Offer', name: pname(lang, p), description: t(lang, 'ld.intl'), price: String(PRICES[p]), priceCurrency: 'USD', url };
+  if (monthly) o.priceSpecification = { '@type': 'UnitPriceSpecification', price: String(PRICES[p]), priceCurrency: 'USD', unitCode: 'MON' };
+  return [...local, o];
 }
 function jsonLd(lang, page) {
   const orgId = SITE + '/#organization';
@@ -296,7 +339,7 @@ function jsonLd(lang, page) {
     if (page === 'brand-deck' || page === 'kit') {
       const p = page === 'kit' ? 'kit' : 'deck';
       nodes.push({ '@type': 'Service', name: pname(lang, p), description: t(lang, `meta.d.${page}`), url: urlFor(lang, page), provider: { '@type': 'Organization', name: BRAND, url: SITE + '/' }, availableLanguage: ['en', 'es', 'fr', 'ar'],
-        ...(p === 'deck' ? {} : { offers: [offerNode(lang, p)] }) });
+        ...(p === 'deck' ? {} : { offers: offerNode(lang, p) }) });
     }
     if (page === 'pricing') {
       nodes.push({ '@type': 'ItemList', name: t(lang, 'pricing.h1'), itemListElement: PRODUCTS.map((p, i) => ({ '@type': 'ListItem', position: i + 1,
@@ -498,7 +541,7 @@ ${GA_HEAD}
 // without JS the meta refresh goes to the new page. Not in the sitemap.
 for (const [lang] of LANGS) for (const [from, to] of Object.entries(MOVED)) {
   write(dirFor(lang, from) + 'index.html', hashUrls(`<!doctype html>
-<html lang="${lang}">
+<html lang="${lang}"${RTL.has(lang) ? ' dir="rtl"' : ''}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">

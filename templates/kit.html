@@ -33,7 +33,7 @@
         </fieldset>
         <p class="availability-note" id="deck-availability">{{t:availability.deck}}</p>
         <fieldset class="choice" id="plats" hidden>
-          <legend>{{t:f.platforms}}</legend>
+          <legend id="plats-legend">{{t:f.platformKit}}</legend>
           {{=platformChecks}}
           <span class="err" id="e-platforms" hidden></span>
           <p class="fine" id="live-price" aria-live="polite" hidden></p>
@@ -58,6 +58,10 @@
             <label for="f-city">{{t:f.city}}</label>
             <input id="f-city" name="city" type="text" dir="auto" autocomplete="address-level2" required aria-describedby="e-city">
             <span class="err" id="e-city" hidden></span>
+          </div>
+          <div class="field full">
+            <label for="f-country">{{t:f.country}}</label>
+            <select id="f-country" name="country" data-cc required>{{=countryOptions}}</select>
           </div>
           <div class="field full">
             <label for="f-industry">{{t:f.industry}}</label>

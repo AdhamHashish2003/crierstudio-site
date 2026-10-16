@@ -1,38 +1,36 @@
 {
- "generated_from": "portal/lib/pricing.json sha256 d9815e63b1730e2995e383dc406ca6311ab701c09e2e28de996a2ad7a439e8ac",
+ "generated_from": "portal/lib/pricing.json sha256 7700c64938a514ec2f725dc7533af709f32e41355c94371e965afa2c45145291",
  "currency": "USD",
- "display_currencies": {
-  "about": "Display only (MENA, 2026-10-14): the site shows each price in the visitor's local currency next to the USD price list above. Clients are always charged the USD price; these numbers never change what is charged. SAR and AED use the fixed pegs below and are rounded to the nearest whole price ending in 9; EGP uses egp_per_usd and is rounded to the nearest 10. Every display price is VAT-inclusive at the country rate below. Change a rate here, rerun the rounding (test/pricing.test.cjs checks it) and republish.",
-  "sar_per_usd": 3.75,
-  "aed_per_usd": 3.67,
-  "egp_per_usd": 49,
-  "rounding": {
-   "SAR": "nearest_ending_9",
-   "AED": "nearest_ending_9",
-   "EGP": "nearest_10"
-  },
+ "local": {
+  "about": "Launch pricing (Adham, 2026-10-15): a buyer in Saudi Arabia, the UAE or Egypt is quoted and charged in their own currency, with VAT ADDED on top of the package's local price: total = net + VAT, shown as \"price + VAT = total\". packages[].prices.<CUR> and extra_platform_prices.<CUR> are the NET prices before VAT. VAT = net x vat_pct / 100, computed in integer cents and rounded half-up (vat_minor = floor((net_minor x vat_pct + 50) / 100)) on the whole order (base + extra platforms). The country is picked from a dropdown (Saudi Arabia / UAE / Egypt / Other), never typed; any other country pays the USD price (packages[].price, extra_platform_price) with no VAT. vat_registration: PLACEHOLDER, Adham supplies each country's VAT / tax registration number; null = not registered, nothing is printed.",
   "countries": {
    "SA": {
     "currency": "SAR",
-    "vat_pct": 15
+    "vat_pct": 15,
+    "vat_registration": null
    },
    "AE": {
     "currency": "AED",
-    "vat_pct": 5
+    "vat_pct": 5,
+    "vat_registration": null
    },
    "EG": {
     "currency": "EGP",
-    "vat_pct": 14
+    "vat_pct": 14,
+    "vat_registration": null
    }
   },
-  "vat_included": true
+  "fallback": {
+   "currency": "USD",
+   "vat_pct": 0
+  }
  },
  "packages": [
   {
    "id": "kit",
    "name": "The Complete Kit",
    "price": 29,
-   "display_prices": {
+   "prices": {
     "SAR": 109,
     "AED": 109,
     "EGP": 1420
@@ -56,7 +54,7 @@
    "id": "visible",
    "name": "Stay Visible",
    "price": 45,
-   "display_prices": {
+   "prices": {
     "SAR": 169,
     "AED": 169,
     "EGP": 2210
@@ -64,7 +62,7 @@
    "billing": "monthly",
    "platforms_included": 1,
    "extra_platform_price": 20,
-   "extra_platform_display_prices": {
+   "extra_platform_prices": {
     "SAR": 79,
     "AED": 69,
     "EGP": 980
@@ -82,7 +80,7 @@
    "id": "growing",
    "name": "Keep Growing",
    "price": 60,
-   "display_prices": {
+   "prices": {
     "SAR": 229,
     "AED": 219,
     "EGP": 2940
@@ -90,7 +88,7 @@
    "billing": "monthly",
    "platforms_included": 1,
    "extra_platform_price": 30,
-   "extra_platform_display_prices": {
+   "extra_platform_prices": {
     "SAR": 109,
     "AED": 109,
     "EGP": 1470
@@ -113,12 +111,14 @@
    "id": "deck",
    "name": "Brand Deck",
    "price": 250,
-   "display_prices": {
+   "prices": {
     "SAR": 939,
     "AED": 919,
     "EGP": 12250
    },
    "billing": "once",
+   "coming_soon": true,
+   "coming_soon_why": "Brand Deck is shown as coming soon and is never payable on the site (disabled buttons, no structured-data offer, the form refuses it).",
    "items": {
     "deck_screen_pdf": 1,
     "deck_print_pdf": 1,
@@ -129,11 +129,9 @@
  ],
  "platforms": [
   "instagram",
-  "tiktok",
-  "facebook",
-  "youtube_shorts",
-  "linkedin"
+  "facebook"
  ],
+ "platforms_why": "Only platforms we make posts AND stories for. YouTube Shorts is video-only and LinkedIn and TikTok get no posts, so none of them is sold (no reels or video; launch audit H4, 2026-10-15).",
  "rules": {
   "first_month_includes_kit": true,
   "extra_platform_is_full_adaptation": true,
