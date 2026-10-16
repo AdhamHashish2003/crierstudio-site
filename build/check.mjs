@@ -4,7 +4,8 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const LANGS = ['en', 'es', 'fr', 'ar'];
+const LANGS = ['en', 'ar'];
+const REMOVED = ['es', 'fr']; // removed languages: only redirect stubs to the English page remain
 const PAGES = ['', 'pricing/', 'brand-deck/', 'kit/', 'samples/', 'faq/', 'about/', 'physical/', 'terms/', 'privacy/', 'refund/'];
 const MOVED = { 'snapshot/': 'kit/', 'crier-deck/': 'brand-deck/' }; // old URLs: redirect stubs, not in the sitemap
 const PRODUCTS = ['kit', 'visible', 'growing', 'deck'];
@@ -39,9 +40,9 @@ for (const l of LANGS) for (const p of PAGES) {
   for (const lp of LANGS.filter((x) => x !== 'en')) { /* sibling links exist */ }
   ok(!/\bUMA\b/i.test(h), `UMA in ${file}`);
   ok(!/draft|\(DRAFT\)/i.test(h.replace(/<style>[\s\S]*?<\/style>/, '')), `draft text in ${file}`);
-  // no free offers anywhere: the word free (and its es/fr/ar forms) must not appear in visible text
+  // no free offers anywhere: the word free (and its ar form) must not appear in visible text
   const vis = h.replace(/<style>[\s\S]*?<\/style>/, '').replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ');
-  ok(!/\bfree\b|\bgratis\b|gratuit|sin cargo|مجان|بدون مقابل/i.test(vis), `free wording in ${file}`);
+  ok(!/\bfree\b|مجان|بدون مقابل/i.test(vis), `free wording in ${file}`);
   ok(!/Your shop, heard/i.test(h), `tagline in ${file}`);
   if (p === 'pricing/') for (const pk of PRICING.packages) {
     ok(vis.includes('$' + pk.price), `price $${pk.price} (${pk.id}, data/pricing.json) on ${file}`);
@@ -97,7 +98,7 @@ ok(rd('index.html').includes('"alternateName":"Crier"') && rd('index.html').incl
     return e.name.endsWith('.html') ? [rel] : [];
   });
   const files = walk('');
-  ok(files.length === urls.length + 1 + 3 + LANGS.length * Object.keys(MOVED).length, `GA: expected every built HTML file, found ${files.length}`);
+  ok(files.length === urls.length + 1 + 3 + LANGS.length * Object.keys(MOVED).length + REMOVED.length * (PAGES.length + Object.keys(MOVED).length), `GA: expected every built HTML file, found ${files.length}`);
   for (const f of files) {
     const h = rd(f), headEnd = h.indexOf('</head>');
     // delayed load (2026-10-11): no blocking/parsed gtag.js <script src> anywhere; the inline head script injects it on the first

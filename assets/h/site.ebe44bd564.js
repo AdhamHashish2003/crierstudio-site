@@ -1,7 +1,7 @@
 /* Crier Studio: language memory, old-URL redirects and the request form. All visible text is already in the HTML. */
 (function () {
   "use strict";
-  var KEY = "crier.lang", CODES = ["en", "es", "fr", "ar"];
+  var KEY = "crier.lang", CODES = ["en", "ar"];
   var de = document.documentElement, page = document.body.getAttribute("data-page");
   function saved() { try { var s = localStorage.getItem(KEY); return CODES.indexOf(s) > -1 ? s : null; } catch (e) { return null; } }
   function pathFor(lang, p) { return "/" + (lang === "en" ? "" : lang + "/") + (p === "index" ? "" : p + "/"); }
@@ -53,7 +53,7 @@
   // the country an order is sent with: SA / AE / EG, or the detected ISO code of any other country (US dollars), ZZ if unknown
   function countryCode() { return cc && /^[A-Z]{2}$/.test(cc) ? cc : "ZZ"; }
   function fmtNum(n) {
-    var sep = { es: ".", fr: " " }[de.lang] || ",", dec = { es: ",", fr: "," }[de.lang] || ".";
+    var sep = ",", dec = ".";
     var m = Math.round(n * 100), f = m % 100, i = String((m - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, sep);
     return f ? i + dec + (f < 10 ? "0" : "") + f : i;
   }

@@ -1,5 +1,5 @@
 // Crier Studio static site build. Node only, no dependencies.
-// Reads i18n/<lang>.json + templates/*, writes static HTML for en (/), es, fr, ar into the repo root.
+// Reads i18n/<lang>.json + templates/*, writes static HTML for en (/) and ar into the repo root.
 // Run:  node build/build.mjs        (the built files are committed; GitHub Pages serves it as-is)
 // Check: node build/check.mjs       (key sets identical in all 4 languages, no unused keys, no price/internal-name/draft text)
 import fs from 'node:fs';
@@ -20,9 +20,11 @@ const EMAIL = 'team@crierstudio.com';
 const BRAND = 'Crier Studio';
 const PORTAL = 'https://portal.crierstudio.com/';
 const ENDPOINT = 'https://crm-production-d789.up.railway.app/api/public/snapshot-request';
-const LANGS = [['en', 'English', 'en_US'], ['es', 'Español', 'es_ES'], ['fr', 'Français', 'fr_FR'], ['ar', 'العربية', 'ar_AR']];
+const LANGS = [['en', 'English', 'en_US'], ['ar', 'العربية', 'ar_AR']];
+// removed languages (2026-10-16): their old URLs stay as redirect stubs to the matching English page, not in the sitemap
+const REMOVED = ['es', 'fr'];
 const RTL = new Set(['ar']);
-// every page exists in all 4 languages: / (en), /es/, /fr/, /ar/ and the sub-paths below
+// every page exists in both languages: / (en), /ar/ and the sub-paths below
 const PAGES = ['index', 'pricing', 'brand-deck', 'kit', 'samples', 'faq', 'about', 'physical', 'terms', 'privacy', 'refund'];
 // renamed pages: the old URLs stay as redirect stubs in every language (query + hash kept), not in the sitemap
 const MOVED = { snapshot: 'kit', 'crier-deck': 'brand-deck' };
@@ -299,7 +301,7 @@ function seasons(lang) {
 function kitVars(lang) {
   const kitPages = [1, 2, 3].map((i) => `<article class="page"><span class="pg">${h(lang, 'kit.label')}</span>${minis[i - 1]}<span class="ex2">${h(lang, 'board.ex')}</span><h3>${h(lang, `kit.p${i}t`)}</h3><p>${h(lang, `kit.p${i}x`)}</p></article>`).join('');
   const industryOptions = `<option value="">${esc(t(lang, 'f.choose'))}</option>` + INDUSTRY_VALUES.map((v, j) => `<option value="${esc(v)}">${esc(t(lang, j < IND_N ? `ind.${j + 1}n` : 'ind.other'))}</option>`).join('');
-  const deckLangOptions = [['en', 'English'], ['es', 'Español'], ['fr', 'Français'], ['ar', 'العربية'], ['ar-en', t(lang, 'f.deckBi')]]
+  const deckLangOptions = [['en', 'English'], ['ar', 'العربية'], ['ar-en', t(lang, 'f.deckBi')]]
     .map(([v, n]) => `<option value="${v}"${v === lang ? ' selected' : ''}>${esc(n)}</option>`).join('');
   const msgKeys = ['availability.soon', 'availability.deck', 'pay.note', 'pay.noteCheckout', 'f.platforms', 'f.platformKit', 'f.platformsErr', 'f.total', 'f.totalMonthly', 'f.toStripe', 'f.pay', 'f.sending', 'f.thanks', 'f.thanksDeck', 'f.failed', 'f.tooMany', 'f.consentErr', 'v.business', 'v.web', 'v.emailEmpty', 'v.emailBad', 'v.city', 'v.industry', 'v.address'];
   const formMsgs = jsonScript(Object.fromEntries(msgKeys.map((k) => [k, t(lang, k)])));
@@ -338,7 +340,7 @@ function jsonLd(lang, page) {
       { '@type': 'ListItem', position: 2, name: t(lang, CRUMB_KEY[page]), item: urlFor(lang, page) }] });
     if (page === 'brand-deck' || page === 'kit') {
       const p = page === 'kit' ? 'kit' : 'deck';
-      nodes.push({ '@type': 'Service', name: pname(lang, p), description: t(lang, `meta.d.${page}`), url: urlFor(lang, page), provider: { '@type': 'Organization', name: BRAND, url: SITE + '/' }, availableLanguage: ['en', 'es', 'fr', 'ar'],
+      nodes.push({ '@type': 'Service', name: pname(lang, p), description: t(lang, `meta.d.${page}`), url: urlFor(lang, page), provider: { '@type': 'Organization', name: BRAND, url: SITE + '/' }, availableLanguage: ['en', 'ar'],
         ...(p === 'deck' ? {} : { offers: offerNode(lang, p) }) });
     }
     if (page === 'pricing') {
@@ -560,7 +562,29 @@ ${GA_HEAD}
 `));
 }
 
-// 404 (one file, four languages; header and footer in English, one block per language)
+// removed languages: /es/… and /fr/… (every page and the renamed-page stubs) redirect to the same English page. Not in the sitemap.
+for (const lang of REMOVED) for (const [from, to] of [...PAGES.map((p) => [p, p]), ...Object.entries(MOVED)]) {
+  write(dirFor(lang, from) + 'index.html', hashUrls(`<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<meta http-equiv="Content-Security-Policy" content="${esc(CSP)}">
+${GA_HEAD}
+<title>${BRAND}</title>
+<link rel="canonical" href="${urlFor('en', to)}">
+<noscript><meta http-equiv="refresh" content="0;url=${pathFor('en', to)}"></noscript>
+</head>
+<body data-page="redirect" data-target="${to}" data-lang="en">
+<p><a href="${pathFor('en', to)}">${BRAND}</a></p>
+<script src="/site.js"></script>
+</body>
+</html>
+`));
+}
+
+// 404 (one file, two languages; header and footer in English, one block per language)
 {
   const ctx = { lang: 'en', v: { ...pageVars('en', '404'), langpick: '', crumbs: '' } };
   const sections = LANGS.map(([c]) => {
@@ -614,4 +638,4 @@ write('site.webmanifest', JSON.stringify({ name: BRAND, short_name: BRAND, start
 // keys in the JSON that no page used (the check script fails on these)
 const unused = Object.keys(dicts.en).filter((k) => !used.has(k));
 if (unused.length) console.warn('UNUSED i18n keys: ' + unused.join(', '));
-console.log(`built ${built.length} pages + ${LEGAL.length + LANGS.length * Object.keys(MOVED).length} stubs + 404 + robots/sitemap/manifest (noindex ${NOINDEX ? 'ON' : 'off'})`);
+console.log(`built ${built.length} pages + ${LEGAL.length + LANGS.length * Object.keys(MOVED).length + REMOVED.length * (PAGES.length + Object.keys(MOVED).length)} stubs + 404 + robots/sitemap/manifest (noindex ${NOINDEX ? 'ON' : 'off'})`);
