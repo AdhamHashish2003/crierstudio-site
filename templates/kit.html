@@ -4,20 +4,23 @@
       <span class="eyebrow">{{t:kit.eyebrow}}</span>
       <h1 id="kit-title">{{t:kit.title}}</h1>
       <p class="lead">{{t:kit.lead}}</p>
+      <div class="priceline">{{=kitPrice}}<span class="per">{{t:one.per}}</span></div>
+      {{=kitVat}}
       <p class="fine">{{t:pkg.kit.bill}}</p>
       {{=curPick}}
       <div class="buyrow">{{=buyKit}}</div>
-      <div class="pages" id="kit-pages">{{=kitPages}}</div>
     </section>
 
     <section id="inside" aria-labelledby="all-title">
-      <div class="sec-head">
-        <span class="eyebrow">{{t:kit.all.eyebrow}}</span>
-        <h2 id="all-title">{{t:kit.all.title}}</h2>
-      </div>
+      <div class="sec-head"><h2 id="all-title">{{t:kit.all.title}}</h2></div>
       {{=kitList}}
       <p class="fine" style="margin-top:16px">{{t:pkg.kit.note}}</p>
       <p class="more"><a href="{{=pricingHref}}">{{t:offer.plans}}</a></p>
+    </section>
+
+    <section id="how" aria-labelledby="how-title">
+      <div class="sec-head"><h2 id="how-title">{{t:how.title}}</h2></div>
+      <div class="flow" id="flow">{{=flow}}</div>
     </section>
 
     <section id="request" aria-labelledby="form-title">
@@ -88,21 +91,5 @@
         <div class="status" id="snap-status" role="status" aria-live="polite" hidden></div>
       </form>
       <script type="application/json" id="form-msgs">{{=formMsgs}}</script>
-    </section>
-
-    <section id="how" aria-labelledby="how-title">
-      <div class="sec-head">
-        <span class="eyebrow">{{t:how.eyebrow}}</span>
-        <h2 id="how-title">{{t:how.title}}</h2>
-      </div>
-      <div class="flow" id="flow">{{=flow}}</div>
-    </section>
-
-    <section aria-labelledby="also-title">
-      <div class="closing">
-        <h2 id="also-title">{{t:offer.deck.t}}</h2>
-        <p class="lead">{{t:offer.deck.x}}</p>
-        <a class="btn ghost" href="{{=deckHref}}">{{t:offer.deck.cta}}</a>
-      </div>
     </section>
   </main>

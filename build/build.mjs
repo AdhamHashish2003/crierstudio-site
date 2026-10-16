@@ -55,6 +55,12 @@ const PRICES = Object.fromEntries(PRICING.packages.map((p) => [p.id, p.price]));
 // never by page language) with "price + VAT = total" on every page but the legal ones.
 const COUNTRIES = PRICING.local.countries;
 const CURS = ['USD', ...new Set(Object.values(COUNTRIES).map((c) => c.currency))];
+// MENA landing (2026-10-16): a visitor whose country is unknown is quoted as Saudi Arabia (SAR + VAT), on every language page.
+// The HTML is written in this country's prices (no flash of US dollars); site.js then follows the visitor's pick, Cloudflare or
+// the time zone. The legal pages keep the US-dollar price list.
+const DEFAULT_CC = 'SA';
+if (!COUNTRIES[DEFAULT_CC]) throw new Error('DEFAULT_CC is not in data/pricing.json local.countries');
+let htmlCc = DEFAULT_CC; // the country the page being built is written in (null = US dollars); set per page in the build loop
 // the same arithmetic as the checkout server and site.js: VAT on the whole order, in integer cents, rounded half-up
 function localQuote(id, cc, extra = 0) {
   const k = PKG[id], L = COUNTRIES[cc];
@@ -72,6 +78,12 @@ const PKGDATA = Object.fromEntries(PRICING.packages.filter((p) => !p.coming_soon
 const CONTACT = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'contact.json'), 'utf8'));
 const WA = String(CONTACT.whatsapp || '').replace(/[\s+()-]/g, '');
 if (WA && !/^[1-9]\d{7,14}$/.test(WA)) throw new Error('data/contact.json: whatsapp must be the number in international format, digits only');
+// Business hours (data/contact.json "hours"), one line per country in that country's own time. Empty = no hours shown.
+const HOURS = Object.entries(CONTACT.hours || {});
+for (const [cc, r] of HOURS) {
+  if (!COUNTRIES[cc]) throw new Error('data/contact.json: hours for unknown country ' + cc);
+  if (!['sun-thu', 'mon-fri', 'sat-thu'].includes(r.days) || !/^\d\d:\d\d$/.test(r.open) || !/^\d\d:\d\d$/.test(r.close)) throw new Error('data/contact.json: bad hours for ' + cc);
+}
 const MONTHLY = new Set(PRICING.packages.filter((p) => p.billing === 'monthly').map((p) => p.id)); // billed monthly; kit and deck are one-time
 // product names are i18n keys (name.<id>) so every language shows its own name
 const PRODUCTS = Object.keys(PRICES);
@@ -93,7 +105,7 @@ const partials = {
 };
 const CSS = {
   fonts: rd('templates/fonts.css'), fontsAr: rd('templates/fonts-ar.css'), common: rd('templates/common.css'),
-  home: rd('templates/home.css'), legal: rd('templates/legal.css'), consent: rd('templates/consent.css'), studio: rd('templates/studio-home.css'), chrome: rd('templates/studio-shared.css'),
+  home: rd('templates/home.css'), legal: rd('templates/legal.css'), consent: rd('templates/consent.css'), chrome: rd('templates/studio-shared.css'),
 };
 const faqCss = CSS.home.slice(CSS.home.indexOf('/* faq */'), CSS.home.indexOf('/* closing */'));
 
@@ -117,16 +129,30 @@ function fillPricing(v, key) {
     .replace(/\{n:(\w+)\.(\w+)\}/g, (m, id, item) => String(need(PKG[id]?.items?.[item], `count ${id}.${item}`)));
 }
 const PRICE_MARK = /\u0002([\d.|]+)\u0002/g;
-function priceSpan(vals, cls = 'amt') {
-  const [usd, ...loc] = String(vals).split('|');
-  return `<span class="${cls}" dir="ltr" data-usd="${usd}"${CURS.slice(1).map((c, i) => ` data-${c.toLowerCase()}="${loc[i]}"`).join('')}>$${usd}</span>`;
+// money and "price + VAT = total" exactly as site.js writes them (fmtNum, money, display there)
+function fmtNum(n) {
+  const m = Math.round(n * 100), f = m % 100, i = String((m - f) / 100).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return f ? `${i}.${String(f).padStart(2, '0')}` : i;
+}
+const fmtMoney = (lang, cur, n) => (cur === 'USD' ? '$' + fmtNum(n) : t(lang, 'cur.fmt').replace('{n}', () => fmtNum(n)).replace('{cur}', () => t(lang, 'cur.sym' + cur)));
+function display(lang, q) {
+  const r = { net: fmtMoney(lang, q.currency, q.net / 100), pct: String(q.vat_pct), vat: fmtMoney(lang, q.currency, q.vat / 100), total: fmtMoney(lang, q.currency, q.total / 100) };
+  return t(lang, 'cur.vatLine').replace(/\{(net|pct|vat|total)\}/g, (m, k) => r[k]);
+}
+const htmlCur = () => (htmlCc ? COUNTRIES[htmlCc].currency : 'USD');
+// a price: every currency in data-*, the text in the page's default country (net, "+ VAT" after a price inside a sentence;
+// a card's big price is followed by its VAT line instead)
+function priceSpan(lang, vals, cls = 'amt') {
+  const [usd, ...loc] = String(vals).split('|'), cur = htmlCur();
+  const text = cur === 'USD' ? '$' + usd : fmtMoney(lang, cur, +loc[CURS.indexOf(cur) - 1]) + (/(^|\s)price(\s|$)/.test(cls) ? '' : ' ' + t(lang, 'cur.plusVat'));
+  return `<span class="${cls}" dir="${cur !== 'USD' && RTL.has(lang) ? 'rtl' : 'ltr'}" data-usd="${usd}"${CURS.slice(1).map((c, i) => ` data-${c.toLowerCase()}="${loc[i]}"`).join('')}>${esc(text)}</span>`;
 }
 const t = (lang, key) => raw(lang, key).replace(PRICE_MARK, (m, vals) => '$' + vals.split('|')[0]).replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m).replace(/<\/?(?:b|a)>/g, '');
 function h(lang, key, href) {
   let s = raw(lang, key).replace(/\{(\w+)\}/g, (m, k) => (k === 'email' ? '\u0001E\u0001' : vars[k] ?? m));
   s = esc(s).replace(/&lt;(\/?)b&gt;/g, '<$1b>')
     .replace(/&lt;a&gt;/g, href ? `<a href="${esc(href)}">` : '<a>').replace(/&lt;\/a&gt;/g, '</a>')
-    .replace(/\u0001E\u0001/g, `<a dir="ltr" href="mailto:${EMAIL}">${EMAIL}</a>`).replace(PRICE_MARK, (m, vals) => priceSpan(vals));
+    .replace(/\u0001E\u0001/g, `<a dir="ltr" href="mailto:${EMAIL}">${EMAIL}</a>`).replace(PRICE_MARK, (m, vals) => priceSpan(lang, vals));
   return s;
 }
 const jsonScript = (o) => JSON.stringify(o).replace(/</g, '\\u003c');
@@ -153,16 +179,9 @@ const syms = [
   '<svg class="sym" viewBox="0 0 44 44" aria-hidden="true"><rect x="4" y="4" width="16" height="16" fill="var(--sun)" stroke="currentColor" stroke-width="2"/><rect x="24" y="4" width="16" height="16" fill="var(--coral)"/><rect x="4" y="24" width="16" height="16" fill="currentColor"/><path d="M26 32l5 5 9-11" fill="none" stroke="currentColor" stroke-width="4"/></svg>',
   '<svg class="sym" viewBox="0 0 44 44" aria-hidden="true"><rect x="4" y="10" width="36" height="26" fill="none" stroke="currentColor" stroke-width="4"/><path d="M4 30l10-9 8 7 6-5 12 9" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="31" cy="18" r="3" fill="var(--sun)" stroke="currentColor" stroke-width="1.5"/></svg>',
 ];
-const minis = [
-  '<div class="mini score" aria-hidden="true"><span style="height:55%"></span><span style="height:75%"></span><span style="height:40%"></span><span style="height:65%"></span></div>',
-  '<div class="mini fix" aria-hidden="true"><span style="width:80%"></span><span style="width:62%"></span><span style="width:70%"></span></div>',
-  '<div class="mini posts" aria-hidden="true"><span></span><span></span></div>',
-];
 const INDCOLORS = [['sun', 'coral'], ['coral', 'accent'], ['accent', 'ink'], ['ink', 'sun'], ['sun', 'accent']];
 // FAQ ids (keys faq.<id>q, faq.<id>a1, faq.<id>a2)
 const FAQ_ALL = [19, 20, 21, 22, 11, 12, 13, 14, 15, 16, 1, 7, 2, 4, 5, 17, 9, 18];
-const FAQ_HOME = [19, 11, 14, 1, 5];
-const FAQ_PRICING = [19, 20, 21, 22];
 const FAQ_DECK = [11, 12, 13, 14, 15, 16];
 
 function faqAnswers(lang, i) {
@@ -211,24 +230,40 @@ function sheet(lang, n) {
 }
 const fig = (lang, n) => `<figure class="sheetfig">${sheet(lang, n)}<figcaption>${h(lang, `sample.c${n}`)}</figcaption></figure>`;
 
-const money = (p) => priceSpan([PRICES[p], ...CURS.slice(1).map((c) => PKG[p].prices[c])].join('|'), 'price amt');
-// "Your country" dropdown: Saudi Arabia / UAE / Egypt / Other (never free text). Used above the prices (pricing and kit pages)
-// and in the order form; site.js keeps every one of them on the same country and sends that country to the checkout.
+const money = (lang, p) => priceSpan(lang, [PRICES[p], ...CURS.slice(1).map((c) => PKG[p].prices[c])].join('|'), 'price amt');
+// "Your country" dropdown: Saudi Arabia / UAE / Egypt first, "Another country (US dollars)" last (never free text). Used above
+// the prices (home, pricing and kit pages) and in the order form; site.js keeps every one of them on the same country and sends
+// that country to the checkout. Selected in the HTML: the default country (Saudi Arabia).
 const CC_OPTS = [...Object.keys(COUNTRIES), 'other'];
-const ccOptions = (lang) => CC_OPTS.map((c) => `<option value="${c}"${c === 'other' ? ' selected' : ''}>${esc(t(lang, 'cc.' + c))}</option>`).join('');
-// Country picker + VAT note (pricing and kit pages) and the currency data site.js reads. Hidden until site.js runs:
-// without JavaScript every price stays in US dollars, the international price.
+const ccOptions = (lang) => CC_OPTS.map((c) => `<option value="${c}"${c === (htmlCc || 'other') ? ' selected' : ''}>${esc(t(lang, 'cc.' + c))}</option>`).join('');
+// Country picker + VAT note (home, pricing and kit pages) and the currency data site.js reads. The picker is hidden until
+// site.js runs (it needs JavaScript); the prices and the VAT note are already written for the default country.
 function curPick(lang) {
-  return `<div class="curbox" id="curbox" hidden><label class="curpick"><span>${h(lang, 'cur.label')}</span><select id="cur-select" data-cc>${ccOptions(lang)}</select></label><p class="fine vatnote" id="vat-note" aria-live="polite"></p></div>`;
+  const note = htmlCc ? t(lang, 'cur.note' + htmlCur()).replace('{vat}', COUNTRIES[htmlCc].vat_pct) : '';
+  return `<div class="curbox" id="curbox" hidden><label class="curpick"><span>${h(lang, 'cur.label')}</span><select id="cur-select" data-cc>${ccOptions(lang)}</select></label><p class="fine vatnote" id="vat-note" aria-live="polite">${esc(note)}</p></div>`;
+}
+// the line under a price: "SAR 109 + VAT 15% SAR 16.35 = SAR 125.35" (+ "/mo" for a monthly plan); site.js rewrites it for the
+// visitor's country and hides it in US dollars (no VAT)
+function vatNote(lang, p, per = '') {
+  const q = htmlCc ? localQuote(p, htmlCc) : null;
+  return `<p class="usdnote" data-pkg="${p}"${per ? ` data-per="${esc(per)}"` : ''}${q ? '' : ' hidden'}>${q ? esc(display(lang, q) + per) : ''}</p>`;
 }
 function curData(lang) {
   const countries = Object.fromEntries(Object.entries(COUNTRIES).map(([cc, c]) => [cc, { currency: c.currency, vat_pct: c.vat_pct }]));
-  const o = { countries, fmt: t(lang, 'cur.fmt'), vatLine: t(lang, 'cur.vatLine'), plusVat: t(lang, 'cur.plusVat'), pk: PKGDATA };
+  const o = { countries, def: DEFAULT_CC, fmt: t(lang, 'cur.fmt'), vatLine: t(lang, 'cur.vatLine'), plusVat: t(lang, 'cur.plusVat'), pk: PKGDATA };
   for (const c of CURS) Object.assign(o, { ['sym' + c]: t(lang, 'cur.sym' + c), ['note' + c]: t(lang, 'cur.note' + c) });
   return `<script type="application/json" id="cur-data">${jsonScript(o)}</script>`;
 }
 // M14: a WhatsApp link only when data/contact.json has a number (the label key is always read, so it is never "unused")
 function waLink(lang) { const label = t(lang, 'contact.wa'); return WA ? `<a href="https://wa.me/${WA}" dir="ltr" rel="noopener">${esc(label)}</a>` : ''; }
+// business hours, each country in its own time zone ("Saudi Arabia: Sunday to Thursday, 09:30 to 17:00 (Riyadh time)")
+function hoursBlock(lang) {
+  const title = t(lang, 'hours.title');
+  if (!HOURS.length) return '';
+  const lines = HOURS.map(([cc, r]) => `<li>${esc(t(lang, 'hours.line').replace(/\{(country|days|open|close|zone)\}/g, (m, k) =>
+    ({ country: t(lang, 'cc.' + cc), days: t(lang, 'days.' + r.days), open: r.open, close: r.close, zone: t(lang, 'zone.' + cc) })[k]))}</li>`).join('');
+  return `<h3>${esc(title)}</h3><ul class="plain">${lines}</ul>`;
+}
 const pname = (lang, p) => t(lang, `name.${p}`);
 const isLinked = (p) => LINKS[p] !== '';
 function buyHref(lang, p) { return isLinked(p) ? LINKS[p] : `${pathFor(lang, 'kit')}?product=${p}#request`; }
@@ -246,10 +281,17 @@ function ticks(lang, prefix, cls) {
 function planCard(lang, p, hot) {
   const per = MONTHLY.has(p) ? 'plan.per' : 'one.per';
   const bill = MONTHLY.has(p) ? 'plan.bill' : `pkg.${p}.bill`;
-  // the VAT line ("SAR 109 + VAT 15% SAR 16.35 = SAR 125.35") is filled in by site.js for Saudi Arabia, the UAE and Egypt; it
-  // stays hidden in US dollars (no VAT). The Brand Deck is coming soon and is never payable, so its card has no such line.
-  const vatLine = PKG[p].coming_soon ? '' : `<p class="usdnote" data-pkg="${p}" hidden></p>`;
-  return `<article class="plan${hot ? ' hot' : ''}" data-plan="${p}"><span class="badge">${h(lang, `pkg.${p}.eye`)}</span><h3>${esc(pname(lang, p))}</h3><p class="pt">${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(p)}<span class="per">${h(lang, per)}</span></div>${vatLine}<p class="billnote">${h(lang, bill)}</p>${platPick(lang, p)}${ticks(lang, `pkg.${p}`)}<p class="pnote">${h(lang, `pkg.${p}.note`)}</p><div class="buyrow">${buyBtn(lang, p, !hot)}</div></article>`;
+  // the VAT line ("SAR 109 + VAT 15% SAR 16.35 = SAR 125.35"), hidden in US dollars (no VAT). The Brand Deck is coming soon
+  // and is never payable, so its card has no such line.
+  const vatLine = PKG[p].coming_soon ? '' : vatNote(lang, p, platPick(lang, p) ? t(lang, 'plan.perShort') : '');
+  return `<article class="plan${hot ? ' hot' : ''}" data-plan="${p}"><span class="badge">${h(lang, `pkg.${p}.eye`)}</span><h3>${esc(pname(lang, p))}</h3><p class="pt">${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(lang, p)}<span class="per">${h(lang, per)}</span></div>${vatLine}<p class="billnote">${h(lang, bill)}</p>${platPick(lang, p)}${ticks(lang, `pkg.${p}`)}<p class="pnote">${h(lang, `pkg.${p}.note`)}</p><div class="buyrow">${buyBtn(lang, p, !hot)}</div></article>`;
+}
+// home: the three packages side by side, name + one line + price + VAT line (the details are on the pricing page)
+function homePlans(lang) {
+  return ['kit', 'visible', 'growing'].map((p) => {
+    const per = MONTHLY.has(p) ? 'plan.per' : 'one.per';
+    return `<div class="ind"><h3>${esc(pname(lang, p))}</h3><p>${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(lang, p)}<span class="per">${h(lang, per)}</span></div>${vatNote(lang, p, MONTHLY.has(p) ? t(lang, 'plan.perShort') : '')}</div>`;
+  }).join('');
 }
 // P1: a monthly package picks its platforms on the card; the live line ("Keep Growing · Instagram + Facebook · $90/mo") is computed in
 // the browser from the numbers below (data/pricing.json: price + (platforms - included) × extra_platform_price), never typed.
@@ -257,7 +299,8 @@ function planCard(lang, p, hot) {
 function platPick(lang, p) {
   const k = PKG[p]; if (!MONTHLY.has(p) || !k.extra_platform_price) return '';
   const first = PRICING.platforms[0];
-  const line = t(lang, 'plan.live').replace('{name}', pname(lang, p)).replace('{platforms}', t(lang, 'plat.' + first)).replace('{price}', '$' + k.price).replace('{per}', t(lang, 'plan.perShort'));
+  const cur = htmlCur(), shown = cur === 'USD' ? '$' + k.price : fmtMoney(lang, cur, k.prices[cur]) + ' ' + t(lang, 'cur.plusVat');
+  const line = t(lang, 'plan.live').replace('{name}', () => pname(lang, p)).replace('{platforms}', () => t(lang, 'plat.' + first)).replace('{price}', () => shown).replace('{per}', () => t(lang, 'plan.perShort'));
   const boxes = PRICING.platforms.map((id) => `<label class="opt"><input type="checkbox" name="pp-${p}" value="${esc(id)}"${id === first ? ' checked' : ''}><span>${h(lang, 'plat.' + id)}</span></label>`).join('');
   // local NET prices (before VAT) for the live line: { SAR: [price, extra platform], AED: …, EGP: … }
   const local = Object.fromEntries(CURS.slice(1).map((c) => [c, [k.prices[c], k.extra_platform_prices[c]]]));
@@ -269,14 +312,15 @@ const billItems = (lang) => { const out = []; for (let i = 1; dicts[lang][`bill.
 
 function pageVars(lang, page) {
   const v = {
-    ...hrefs(lang), studioNav: [ ['#work', 'studio.copy.098'], ['#services', 'studio.copy.099'], ['about', 'studio.copy.100'], ['pricing', 'nav.pricing'] ].map(([p,k]) => `<a href="${p.startsWith('#') ? pathFor(lang,'index')+p : pathFor(lang,p)}">${h(lang,k)}</a>`).join(''), langpick: langpick(lang, page), nav: navLinks(lang, page, true), navFoot: navLinks(lang, page, false),
+    ...hrefs(lang), langpick: langpick(lang, page), nav: navLinks(lang, page, true), navFoot: navLinks(lang, page, false),
     crumbs: crumbs(lang, page), portalHref: PORTAL, emailLink: `<a href="mailto:${EMAIL}" dir="ltr">${EMAIL}</a>`,
     buyKit: buyBtn(lang, 'kit', false), buyDeck: buyBtn(lang, 'deck', false), conv: lang === 'en' ? '' : `<p class="conv">${h(lang, 'leg.conv')}</p>`,
     waFoot: waLink(lang), waAbout: WA ? `<p>${waLink(lang)}</p>` : '',
   };
-  if (page === 'index') Object.assign(v, { flow: flow(lang, 3, 'how'), inds: inds(lang), faqItems: faqItems(lang, FAQ_HOME, true) });
+  if (page === 'index') Object.assign(v, { kitPrice: money(lang, 'kit'), kitVat: vatNote(lang, 'kit'), curPick: curPick(lang), inds: inds(lang), seasons: seasons(lang), homePlans: homePlans(lang), trust: ticks(lang, 'home.trust'), hours: hoursBlock(lang) });
+  if (page === 'about') v.hours = hoursBlock(lang);
   if (page === 'kit') Object.assign(v, kitVars(lang));
-  if (page === 'pricing') Object.assign(v, { planCards: planCards(lang), deckCards: deckCards(lang), billItems: billItems(lang), faqItems: faqItems(lang, FAQ_PRICING, false), inds: inds(lang), seasons: seasons(lang), curPick: curPick(lang) });
+  if (page === 'pricing') Object.assign(v, { planCards: planCards(lang), deckCards: deckCards(lang), billItems: billItems(lang), curPick: curPick(lang) });
   if (page === 'brand-deck') Object.assign(v, { deckFlow: flow(lang, 4, 'deck.how'), deckCards: deckCards(lang), faqItems: faqItems(lang, FAQ_DECK, true), sheets: [1, 2, 4].map((n) => fig(lang, n)).join('') });
   if (page === 'samples') v.sheets = [1, 2, 3, 4].map((n) => fig(lang, n)).join('');
   if (page === 'faq') v.faqItems = faqItems(lang, FAQ_ALL, false);
@@ -299,7 +343,6 @@ function seasons(lang) {
   }).join('');
 }
 function kitVars(lang) {
-  const kitPages = [1, 2, 3].map((i) => `<article class="page"><span class="pg">${h(lang, 'kit.label')}</span>${minis[i - 1]}<span class="ex2">${h(lang, 'board.ex')}</span><h3>${h(lang, `kit.p${i}t`)}</h3><p>${h(lang, `kit.p${i}x`)}</p></article>`).join('');
   const industryOptions = `<option value="">${esc(t(lang, 'f.choose'))}</option>` + INDUSTRY_VALUES.map((v, j) => `<option value="${esc(v)}">${esc(t(lang, j < IND_N ? `ind.${j + 1}n` : 'ind.other'))}</option>`).join('');
   const deckLangOptions = [['en', 'English'], ['ar', 'العربية'], ['ar-en', t(lang, 'f.deckBi')]]
     .map(([v, n]) => `<option value="${v}"${v === lang ? ' selected' : ''}>${esc(n)}</option>`).join('');
@@ -308,7 +351,7 @@ function kitVars(lang) {
   // Low 15: The Complete Kit (selected first) is made for exactly one platform: radio buttons. site.js turns them into
   // checkboxes for the monthly plans (first platform included, each extra one charged) and back for the kit.
   const platformChecks = PRICING.platforms.map((id, i) => `<label class="opt"><input type="radio" name="platform" value="${esc(id)}"${i === 0 ? ' checked' : ''}><span>${h(lang, 'plat.' + id)}</span></label>`).join('');
-  return { kitPages, kitList: ticks(lang, 'pkg.kit', 'cols'), industryOptions, curPick: curPick(lang), deckLangOptions, formMsgs, endpoint: ENDPOINT, flow: flow(lang, 3, 'how'),
+  return { kitPrice: money(lang, 'kit'), kitVat: vatNote(lang, 'kit'), kitList: ticks(lang, 'pkg.kit', 'cols'), industryOptions, curPick: curPick(lang), deckLangOptions, formMsgs, endpoint: ENDPOINT, flow: flow(lang, 3, 'how'),
     platformChecks, countryOptions: ccOptions(lang), checkoutAttr: CHECKOUT.enabled ? ` data-checkout="${esc(CHECKOUT.endpoint)}"` : '' };
 }
 
@@ -332,7 +375,8 @@ function jsonLd(lang, page) {
   const orgId = SITE + '/#organization';
   const nodes = [];
   if (page === 'index') {
-    nodes.push({ '@type': 'Organization', '@id': orgId, name: BRAND, url: SITE + '/', logo: SITE + '/favicon-512.png', email: EMAIL });
+    nodes.push({ '@type': 'Organization', '@id': orgId, name: BRAND, url: SITE + '/', logo: SITE + '/favicon-512.png', email: EMAIL,
+      areaServed: Object.keys(COUNTRIES).map((cc) => ({ '@type': 'Country', name: cc })) });
     nodes.push({ '@type': 'WebSite', '@id': SITE + '/#website', name: BRAND, alternateName: 'Crier', url: SITE + '/', inLanguage: lang, publisher: { '@id': orgId } });
   } else {
     nodes.push({ '@type': 'BreadcrumbList', itemListElement: [
@@ -386,13 +430,12 @@ function head(lang, page, css) {
   const ogAlt = LANGS.filter(([c]) => c !== lang).map(([, , loc]) => `<meta property="og:locale:alternate" content="${loc}">`).join('\n');
   const loc = LANGS.find(([c]) => c === lang)[2];
   const pl = (f) => `<link rel="preload" href="/fonts/${f}.subset.woff2" as="font" type="font/woff2" crossorigin>`;
-  // Speed (mobile PageSpeed, 2026-10-11): on the homepage the hero image is preloaded first (it is the LCP element on phones), then
-  // every font file the page uses, so none is discovered late at top priority. Preload media/type match the <picture>.
-  // Since the second pass the Latin fonts are two files (Archivo + one variable Instrument Sans for all four weights), and
-  // Arabic pages preload their two Arabic files plus those two (Latin words such as the brand name use them).
-  const heroImg = page === 'index' ? '<link rel="preload" as="image" href="/assets/spatial-fallback-mobile.avif" type="image/avif" media="(max-width:760px)" fetchpriority="high">\n<link rel="preload" as="image" href="/assets/spatial-fallback.avif" type="image/avif" media="(min-width:761px)" fetchpriority="high">\n' : '';
+  // Speed (mobile PageSpeed, 2026-10-11): every font file the page uses is preloaded, so none is discovered late at top priority.
+  // The Latin fonts are two files (Archivo + one variable Instrument Sans for all four weights), and Arabic pages preload their
+  // two Arabic files plus those two (Latin words such as the brand name use them). Since the MENA landing (2026-10-16) the
+  // homepage has no hero image: its H1 is the LCP element.
   const latin = ['archivo-latin-wght-normal', 'instrument-sans-latin-var'];
-  const preload = heroImg + (lang === 'ar' ? ['noto-sans-arabic-arabic-400-normal', 'noto-sans-arabic-arabic-700-normal', ...latin] : latin).map(pl).join('\n');
+  const preload = (lang === 'ar' ? ['noto-sans-arabic-arabic-400-normal', 'noto-sans-arabic-arabic-700-normal', ...latin] : latin).map(pl).join('\n');
   return `<!doctype html>
 <html lang="${lang}" dir="${RTL.has(lang) ? 'rtl' : 'ltr'}">
 <head>
@@ -473,7 +516,7 @@ function purgeCss(css, html) {
 // Template indentation is dropped from the page body (a line break renders the same as the spaces that followed it);
 // <script>, <style>, <pre> and <textarea> contents are left exactly as they are (inline scripts are allowed by hash).
 const trimIndent = (html) => html.split(/(<(script|style|pre|textarea)\b[\s\S]*?<\/\2>)/).map((part, i) => i % 3 === 0 ? part.replace(/\n[ \t]+/g, '\n') : i % 3 === 1 ? part : '').join('');
-const cssFor = (lang, page) => minCss([CSS.fonts, lang === 'ar' ? CSS.fontsAr : '', WIDE.has(page) ? CSS.home : CSS.legal + (page === 'faq' ? '\n' + faqCss : ''), CSS.common, CSS.consent, page === 'index' ? CSS.studio : '', CSS.chrome].join('\n'));
+const cssFor = (lang, page) => minCss([CSS.fonts, lang === 'ar' ? CSS.fontsAr : '', WIDE.has(page) ? CSS.home : CSS.legal + (page === 'faq' ? '\n' + faqCss : ''), CSS.common, CSS.consent, CSS.chrome].join('\n'));
 
 // ---------- content-hashed asset copies (long browser cache) ----------
 // GitHub Pages sends every file with max-age=600. The pages therefore reference copies of the fonts, the hero images and
@@ -505,9 +548,10 @@ function write(rel, content) {
 const built = [];
 for (const [lang] of LANGS) {
   for (const page of PAGES) {
+    htmlCc = LEGAL.includes(page) ? null : DEFAULT_CC; // the legal pages keep the US-dollar price list
     const ctx = { lang, v: pageVars(lang, page) };
     const body = render(rd(`templates/${page === 'index' ? 'home' : page}.html`), ctx);
-    const bodyHtml = `<body data-page="${page}" class="${page === 'index' ? 'gallery spatial' : 'studio-inner'}">\n${render(partials.consent, ctx)}\n<div class="${page === 'index' ? 'site-shell' : 'wrap'}">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${!LEGAL.includes(page) && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n</body>\n</html>\n`;
+    const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${!LEGAL.includes(page) && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n</body>\n</html>\n`;
     const html = `${head(lang, page, purgeCss(cssFor(lang, page), bodyHtml))}\n${trimIndent(bodyHtml)}`;
     write(dirFor(lang, page) + 'index.html', hashUrls(html));
     built.push([lang, page]);
@@ -586,6 +630,7 @@ ${GA_HEAD}
 
 // 404 (one file, two languages; header and footer in English, one block per language)
 {
+  htmlCc = null;
   const ctx = { lang: 'en', v: { ...pageVars('en', '404'), langpick: '', crumbs: '' } };
   const sections = LANGS.map(([c]) => {
     const links = [['index', 'crumb.home'], ['pricing', 'nav.pricing'], ['kit', 'nav.kit'], ['brand-deck', 'nav.deck']].map(([p, k]) => `<a href="${pathFor(c, p)}">${esc(t(c, k))}</a>`).join(' · ');

@@ -1,4 +1,10 @@
 {
  "whatsapp": "",
- "about": "ADHAM: supply the WhatsApp business number here, digits only in international format (country code + number, no +, no spaces, no leading 0), then rebuild. While it is empty the build shows NO WhatsApp link anywhere (no broken wa.me link). When it is set, the build adds a https://wa.me/<number> link to the footer and the About page contact section. Also update the 'by email only' wording (about.contact.p, faq.18a1, terms.who.p) in all four languages at the same time."
+ "about": "ADHAM: supply the WhatsApp business number here, digits only in international format (country code + number, no +, no spaces, no leading 0), then rebuild. While it is empty the build shows NO WhatsApp link anywhere (no broken wa.me link). When it is set, the build adds a https://wa.me/<number> link to the footer, the homepage and the About page contact section. Also update the 'by email' wording (about.contact.p, faq.18a1, terms.who.p) in both languages at the same time.",
+ "hours": {
+  "SA": { "tz": "Asia/Riyadh", "days": "sun-thu", "open": "09:30", "close": "17:00" },
+  "AE": { "tz": "Asia/Dubai", "days": "mon-fri", "open": "09:30", "close": "17:00" },
+  "EG": { "tz": "Africa/Cairo", "days": "sat-thu", "open": "10:00", "close": "17:00" }
+ },
+ "hours_about": "Business hours shown on the homepage and the About page, one line per country in that country's local time. Copied on 2026-10-16 from the local business hours and weekends already set for Saudi Arabia, the UAE and Egypt in the Launchpad sender (crm/launchpad_crm/sender/config.py: Gulf weekend Friday-Saturday, UAE Saturday-Sunday, Egypt Friday). ADHAM: confirm or change them. days: sun-thu, mon-fri or sat-thu; open/close: HH:MM, 24-hour. Remove a country, or empty the object, to hide its line."
 }

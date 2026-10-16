@@ -5,10 +5,6 @@
       <h1 id="about-title">{{t:about.h1}}</h1>
       <p class="lead">{{t:about.lead}}</p>
     </section>
-    <section class="prose" aria-labelledby="what-title">
-      <h2 id="what-title">{{t:about.what.h}}</h2>
-      <p>{{t:about.what.p}}</p>
-    </section>
     <section class="prose" aria-labelledby="work-title">
       <h2 id="work-title">{{t:about.how.h}}</h2>
       <ul class="plain">
@@ -18,19 +14,16 @@
         <li>{{t:about.how.4}}</li>
       </ul>
     </section>
-    <section class="prose" aria-labelledby="co-title">
-      <h2 id="co-title">{{t:about.co.h}}</h2>
-      <p>{{t:about.co.p}}</p>
-      <h2 id="contact-title" style="margin-top:28px">{{t:about.contact.h}}</h2>
+    <section class="prose" aria-labelledby="contact-title">
+      <h2 id="contact-title">{{t:about.contact.h}}</h2>
       <p>{{t:about.contact.p}}</p>{{=waAbout}}
+      {{=hours}}
+      <p>{{t:about.co.p}}</p>
     </section>
     <section aria-labelledby="go-title">
       <div class="closing">
         <h2 id="go-title">{{t:about.go}}</h2>
-        <div class="cta-row">
-          <a class="btn" href="{{=homeHref}}#project">{{t:studio.copy.006}}</a>
-          <a class="btn ghost" href="/assets/studio-deck/index.html">{{t:studio.copy.103}}</a>
-        </div>
+        <a class="btn" href="{{=pricingHref}}">{{t:about.cta}}</a>
       </div>
     </section>
   </main>

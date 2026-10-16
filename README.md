@@ -1,12 +1,12 @@
 # crierstudio.com
 
-## Dimension Studio frontend
+## Homepage: MENA landing (2026-10-16)
 
-The homepage presents Crier as a branding and design studio across identity, digital, campaigns and physical experiences. The original logo, Archivo / Instrument Sans / Noto Sans Arabic fonts and color values are retained. All new concept applications are labelled as self-initiated studies.
+The homepage is a short landing page for local businesses in Saudi Arabia, the UAE and Egypt (cafés, restaurants, abayas, perfume and oud, salons, clinics, real estate). One headline, one main button (The Complete Kit), then: the business types, the seasons (Ramadan, Eid, national days, White Friday), the three packages with "price + VAT = total", and a "Good to know" block (Stripe in SAR / AED / EGP, Arabic and English content, Instagram and Facebook, business hours in local time, email). It uses the same page style as the inner pages (`studio-inner`); the old 3D studio hero is gone, so the homepage no longer loads `assets/studio.js`, three.js or the hero images (the files stay in `assets/`). The header has no button; each page has one main button.
 
-- Homepage source: `templates/hero.html`, `templates/home.html`, `templates/studio-home.css` and the `studio.copy.*` keys in the existing language dictionaries (en, ar).
+- Homepage source: `templates/hero.html`, `templates/home.html` and the `home.*`, `ind.*`, `season.*`, `hours.*`, `days.*` and `zone.*` keys (en, ar). `templates/studio-home.css` is no longer used.
 - Shared navigation, inner-page styling and RTL adjustments: `templates/header.html`, `templates/studio-shared.css`, `templates/common.css` and `site.js`.
-- Interactive scene: `assets/studio.js`, using the existing self-hosted `assets/three.r128.min.js`. The scene supports pointer/keyboard rotation, view selection, pause/reset, visibility suspension, and a static image fallback (AVIF/WebP/PNG). `site.js` loads three.js only after the page has loaded and the stage is near the viewport, and only on screens wider than 760px without reduced motion, data saver, a 2G/3G connection or a low-memory/low-core device; everyone else keeps the static image and never downloads three.js. The initial HTML remains usable without JavaScript. Only the homepage loads the 3D assets.
+- Business hours: `data/contact.json` `hours` (one line per country, in that country's time; empty = not shown), on the homepage and the About page.
 - Editable English studio presentation: `templates/studio-deck.html`; build output `/assets/studio-deck/index.html`. This introduces Crier to prospective clients and is distinct from the paid `/brand-deck/` product.
 - Social preview source: `templates/social-preview.html`, built to `/assets/social-preview.html`. Render that page at 1200 × 630 after fonts/images load to refresh `og.png`.
 - Project inquiries open the existing `team@crierstudio.com` email. Existing package pricing, intake, portal and checkout destinations are retained. Language switching preserves the selected package/platforms.
@@ -63,8 +63,8 @@ Buyers in Saudi Arabia, the UAE and Egypt are quoted and charged in SAR, AED or 
 
 `vat_registration` is `null` for every country (PLACEHOLDER: Adham supplies the numbers; nothing is printed while null).
 
-The HTML shows USD (the international price) until `site.js` runs. `site.js` picks the visitor's country: their pick in the "Your country" selector (pricing and kit pages, and the order form; saved in localStorage `crier.cc`), else Cloudflare's `/cdn-cgi/trace`, else the time zone or the browser's language region. Saudi Arabia / UAE / Egypt switch the prices to the local currency (net) with the VAT line under each card; any other country (Kuwait, Qatar, Bahrain, ...) stays on USD. The order form sends `country` (SA, AE, EG, or the detected ISO code, `ZZ` if unknown) to the checkout, and shows the server's quote (`GET <endpoint>/quote?package=&platforms=&country=`). Terms, privacy and refund show the US-dollar price list and explain the rule in words.
+The HTML is written for Saudi Arabia (`DEFAULT_CC` in `build/build.mjs`: SAR before VAT, with the VAT line filled in and Saudi Arabia selected), on English and Arabic pages alike. `site.js` then picks the visitor's country: their pick in the "Your country" selector (home, pricing and kit pages, and the order form; Saudi Arabia, UAE, Egypt, then "Another country (US dollars)" last; saved in localStorage `crier.cc`), else Cloudflare's `/cdn-cgi/trace`, else the time zone or the browser's language region, else Saudi Arabia. Saudi Arabia / UAE / Egypt show the local currency (net) with the VAT line; any other detected country (Kuwait, Qatar, Bahrain, ...), or picking "Another country", shows USD. The order form sends `country` (SA, AE, EG, or the detected ISO code, `ZZ` if unknown) to the checkout, and shows the server's quote (`GET <endpoint>/quote?package=&platforms=&country=`). Terms, privacy and refund show the US-dollar price list and explain the rule in words.
 
 ## WhatsApp
 
-`data/contact.json` holds the WhatsApp business number (`whatsapp`, digits only, international format). It is empty: no WhatsApp link is shown anywhere until Adham supplies the number and the site is rebuilt.
+`data/contact.json` holds the WhatsApp business number (`whatsapp`, digits only, international format). It is empty: no WhatsApp link is shown anywhere until Adham supplies the number and the site is rebuilt. When set, the link appears in the footer, on the homepage and on the About page.

@@ -44,9 +44,11 @@ for (const l of LANGS) for (const p of PAGES) {
   const vis = h.replace(/<style>[\s\S]*?<\/style>/, '').replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ');
   ok(!/\bfree\b|مجان|بدون مقابل/i.test(vis), `free wording in ${file}`);
   ok(!/Your shop, heard/i.test(h), `tagline in ${file}`);
+  // the HTML is written in the default country's currency (Saudi Arabia, SAR before VAT); every price carries its US-dollar
+  // and local prices in data-* for site.js
   if (p === 'pricing/') for (const pk of PRICING.packages) {
-    ok(vis.includes('$' + pk.price), `price $${pk.price} (${pk.id}, data/pricing.json) on ${file}`);
-    if (pk.extra_platform_price) ok(vis.includes('$' + pk.extra_platform_price), `extra platform $${pk.extra_platform_price} (${pk.id}) on ${file}`);
+    ok(h.includes(`data-usd="${pk.price}" data-sar="${pk.prices.SAR}"`), `price ${pk.price} USD / ${pk.prices.SAR} SAR (${pk.id}, data/pricing.json) on ${file}`);
+    if (pk.extra_platform_price) ok(h.includes(`data-extra="${pk.extra_platform_price}"`), `extra platform ${pk.extra_platform_price} USD (${pk.id}) on ${file}`);
   }
   if (p === 'pricing/') ok((h.match(/data-product="/g) || []).length === 3 && h.includes('disabled data-unavailable="deck"'), `3 buy buttons and unavailable Brand Deck on ${file}`);
   // retired packages and prices must not come back (Snapshot, Starter/Growth/Pro, Crier Deck + Print Kit, old discounts)

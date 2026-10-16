@@ -35,8 +35,9 @@
   // (15 / 5 / 14 %); every other country pays the US-dollar price with no VAT. The HTML shows US dollars (the international
   // price); every price also carries its local NET price before VAT (data-sar, data-aed, data-egp, from data/pricing.json).
   // The country: the visitor's own pick in a "Your country" dropdown (saved), else Cloudflare's /cdn-cgi/trace, else the time
-  // zone or the browser's language region; unknown = other (US dollars). Never taken from the page language: an Arabic page
-  // read in Kuwait, Qatar or Bahrain stays in US dollars. The legal pages keep the US-dollar price list.
+  // zone or the browser's language region; unknown = Saudi Arabia (CD.def, the country the HTML is written in; MENA landing,
+  // 2026-10-16). Never taken from the page language: an Arabic page read in Kuwait, Qatar or Bahrain stays in US dollars.
+  // Picking "Another country" always means US dollars. The legal pages keep the US-dollar price list.
   var CC_KEY = "crier.cc", CD = null, cc = null, ccPicked = null, ccSeen = null, cur = "USD", curHooks = [];
   try { CD = JSON.parse(document.getElementById("cur-data").textContent); } catch (e) {}
   var CC = CD ? CD.countries : {};
@@ -91,7 +92,7 @@
       ps[i].dir = cur !== "USD" && de.dir === "rtl" ? "rtl" : "ltr";
     }
     var us = document.querySelectorAll(".usdnote[data-pkg]");
-    for (var j = 0; j < us.length; j++) { var cd = us[j].closest(".plan"); if (!(cd && cd.querySelector(".platpick"))) vatNote(us[j], us[j].getAttribute("data-pkg"), 0, ""); }
+    for (var j = 0; j < us.length; j++) { var cd = us[j].closest(".plan"); if (!(cd && cd.querySelector(".platpick"))) vatNote(us[j], us[j].getAttribute("data-pkg"), 0, us[j].getAttribute("data-per") || ""); }
     var note = document.getElementById("vat-note"); if (note) note.textContent = (CD["note" + cur] || "").replace("{vat}", isLocal(cc) ? CC[cc].vat_pct : "");
     var sels = document.querySelectorAll("select[data-cc]");
     for (var s = 0; s < sels.length; s++) sels[s].value = isLocal(cc) ? cc : "other";
@@ -104,7 +105,7 @@
     var ccSels = document.querySelectorAll("select[data-cc]");
     for (var cs = 0; cs < ccSels.length; cs++) ccSels[cs].addEventListener("change", function () { ccPicked = this.value; try { localStorage.setItem(CC_KEY, ccPicked); } catch (e) {} setCountry(fromPick(ccPicked)); });
     ccSeen = guessCountry();
-    setCountry(ccPicked ? fromPick(ccPicked) : ccSeen);
+    setCountry(ccPicked ? fromPick(ccPicked) : (ccSeen || (isLocal(CD.def) ? CD.def : null)));
     // the country from Cloudflare (it serves crierstudio.com) wins over the guess, unless the visitor picked their country
     if (window.fetch) fetch("/cdn-cgi/trace").then(function (r) { return r.ok ? r.text() : ""; }).then(function (tx) {
       var m = /(?:^|\n)loc=([A-Z]{2})(?:\n|$)/.exec(tx || ""); if (!m || m[1] === "XX" || m[1] === "T1") return;
@@ -304,7 +305,7 @@
   });
 })();
 
-/* Dimension Studio navigation and progressive 3D. No external libraries or model calls. */
+/* Mobile navigation. No external libraries or model calls. */
 (function () {
   "use strict";
   var toggle=document.querySelector('.menu-toggle'), menu=document.getElementById('main-nav');
@@ -316,17 +317,4 @@
     document.addEventListener('click',function(e){if(!e.target.closest('.top'))close();});
     matchMedia('(min-width:801px)').addEventListener('change',close);
   }
-  var stage=document.getElementById('spatial-stage');if(!stage)return;
-  // The 3D scene (three.js, ~600 KB) never blocks first paint and is skipped where it costs more than it gives:
-  // phones/small screens, reduced motion, data saver, slow connections and low-memory/low-core devices keep the static image.
-  var conn=navigator.connection||{};
-  if(conn.saveData||/(^|-)2g|3g/.test(conn.effectiveType||''))return;
-  if(!window.matchMedia||matchMedia('(prefers-reduced-motion: reduce)').matches||!matchMedia('(min-width:761px)').matches)return;
-  if((navigator.deviceMemory&&navigator.deviceMemory<4)||(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<4))return;
-  function load(src){return new Promise(function(resolve,reject){var script=document.createElement('script');script.src=src;script.onload=resolve;script.onerror=reject;document.head.appendChild(script);});}
-  var started=false;
-  function start(){if(started)return;started=true;load('/assets/three.r128.min.js').then(function(){return load('/assets/studio.js');}).catch(function(){stage.dataset.state='fallback';});}
-  function idle(){if('requestIdleCallback' in window)requestIdleCallback(start,{timeout:1800});else setTimeout(start,300);}
-  function whenVisible(){if(!('IntersectionObserver' in window)){idle();return;}var io=new IntersectionObserver(function(es){if(es.some(function(e){return e.isIntersecting;})){io.disconnect();idle();}},{rootMargin:'200px'});io.observe(stage);}
-  if(document.readyState==='complete')whenVisible();else addEventListener('load',whenVisible,{once:true});
 })();
