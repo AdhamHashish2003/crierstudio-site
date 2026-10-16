@@ -1,0 +1,13 @@
+# GitHub Pages (Jekyll) publishing settings. Only the built site is public; sources, build scripts, tests,
+# internal notes and build-only config stay in the repository but are not served.
+# Nothing here is fetched by the live pages: site.js reads the prices and the checkout address from the HTML.
+exclude:
+  - README.md
+  - TRANSLATIONS.md
+  - build
+  - tests
+  - templates
+  - i18n
+  - data
+  - checkout.json
+  - payment-links.json
