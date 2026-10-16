@@ -78,12 +78,6 @@ const PKGDATA = Object.fromEntries(PRICING.packages.filter((p) => !p.coming_soon
 const CONTACT = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'contact.json'), 'utf8'));
 const WA = String(CONTACT.whatsapp || '').replace(/[\s+()-]/g, '');
 if (WA && !/^[1-9]\d{7,14}$/.test(WA)) throw new Error('data/contact.json: whatsapp must be the number in international format, digits only');
-// Business hours (data/contact.json "hours"), one line per country in that country's own time. Empty = no hours shown.
-const HOURS = Object.entries(CONTACT.hours || {});
-for (const [cc, r] of HOURS) {
-  if (!COUNTRIES[cc]) throw new Error('data/contact.json: hours for unknown country ' + cc);
-  if (!['sun-thu', 'mon-fri', 'sat-thu'].includes(r.days) || !/^\d\d:\d\d$/.test(r.open) || !/^\d\d:\d\d$/.test(r.close)) throw new Error('data/contact.json: bad hours for ' + cc);
-}
 const MONTHLY = new Set(PRICING.packages.filter((p) => p.billing === 'monthly').map((p) => p.id)); // billed monthly; kit and deck are one-time
 // product names are i18n keys (name.<id>) so every language shows its own name
 const PRODUCTS = Object.keys(PRICES);
@@ -256,14 +250,6 @@ function curData(lang) {
 }
 // M14: a WhatsApp link only when data/contact.json has a number (the label key is always read, so it is never "unused")
 function waLink(lang) { const label = t(lang, 'contact.wa'); return WA ? `<a href="https://wa.me/${WA}" dir="ltr" rel="noopener">${esc(label)}</a>` : ''; }
-// business hours, each country in its own time zone ("Saudi Arabia: Sunday to Thursday, 09:30 to 17:00 (Riyadh time)")
-function hoursBlock(lang) {
-  const title = t(lang, 'hours.title');
-  if (!HOURS.length) return '';
-  const lines = HOURS.map(([cc, r]) => `<li>${esc(t(lang, 'hours.line').replace(/\{(country|days|open|close|zone)\}/g, (m, k) =>
-    ({ country: t(lang, 'cc.' + cc), days: t(lang, 'days.' + r.days), open: r.open, close: r.close, zone: t(lang, 'zone.' + cc) })[k]))}</li>`).join('');
-  return `<h3>${esc(title)}</h3><ul class="plain">${lines}</ul>`;
-}
 const pname = (lang, p) => t(lang, `name.${p}`);
 const isLinked = (p) => LINKS[p] !== '';
 function buyHref(lang, p) { return isLinked(p) ? LINKS[p] : `${pathFor(lang, 'kit')}?product=${p}#request`; }
@@ -317,8 +303,7 @@ function pageVars(lang, page) {
     buyKit: buyBtn(lang, 'kit', false), buyDeck: buyBtn(lang, 'deck', false), conv: lang === 'en' ? '' : `<p class="conv">${h(lang, 'leg.conv')}</p>`,
     waFoot: waLink(lang), waAbout: WA ? `<p>${waLink(lang)}</p>` : '',
   };
-  if (page === 'index') Object.assign(v, { kitPrice: money(lang, 'kit'), kitVat: vatNote(lang, 'kit'), curPick: curPick(lang), inds: inds(lang), seasons: seasons(lang), homePlans: homePlans(lang), trust: ticks(lang, 'home.trust'), hours: hoursBlock(lang) });
-  if (page === 'about') v.hours = hoursBlock(lang);
+  if (page === 'index') Object.assign(v, { kitPrice: money(lang, 'kit'), kitVat: vatNote(lang, 'kit'), curPick: curPick(lang), inds: inds(lang), seasons: seasons(lang), homePlans: homePlans(lang), trust: ticks(lang, 'home.trust') });
   if (page === 'kit') Object.assign(v, kitVars(lang));
   if (page === 'pricing') Object.assign(v, { planCards: planCards(lang), deckCards: deckCards(lang), billItems: billItems(lang), curPick: curPick(lang) });
   if (page === 'brand-deck') Object.assign(v, { deckFlow: flow(lang, 4, 'deck.how'), deckCards: deckCards(lang), faqItems: faqItems(lang, FAQ_DECK, true), sheets: [1, 2, 4].map((n) => fig(lang, n)).join('') });
