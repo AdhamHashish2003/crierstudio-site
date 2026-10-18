@@ -1,5 +1,5 @@
 {
- "generated_from": "portal/lib/pricing.json sha256 7700c64938a514ec2f725dc7533af709f32e41355c94371e965afa2c45145291",
+ "generated_from": "portal/lib/pricing.json sha256 a85abaaa02943118cfbcaeec446a20c09382c8745ce06e5e15f1d513f62837b3",
  "currency": "USD",
  "local": {
   "about": "Launch pricing (Adham, 2026-10-15): a buyer in Saudi Arabia, the UAE or Egypt is quoted and charged in their own currency, with VAT ADDED on top of the package's local price: total = net + VAT, shown as \"price + VAT = total\". packages[].prices.<CUR> and extra_platform_prices.<CUR> are the NET prices before VAT. VAT = net x vat_pct / 100, rounded half-up to 0.01 on the whole order (base + extra platforms). The country comes from the client (SA / AE / EG only, never typed free text); any other country pays the USD price above with no VAT. Read by mena-batch/app/core/local-price.mjs (engine, portal), the Launchpad's pricing.py (checkout, a byte-for-byte copy of this file) and the site's data/pricing.json (republished from this file). vat_registration: PLACEHOLDER, Adham supplies each country's VAT / tax registration number before it is printed or sent to Stripe; null = not registered yet, nothing is printed.",
@@ -28,7 +28,7 @@
  "packages": [
   {
    "id": "kit",
-   "name": "The Complete Kit",
+   "name": "The Social Kit",
    "price": 29,
    "prices": {
     "SAR": 109,

@@ -6,8 +6,10 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LANGS = ['en', 'ar'];
 const REMOVED = ['es', 'fr']; // removed languages: only redirect stubs to the English page remain
-const PAGES = ['', 'pricing/', 'brand-deck/', 'kit/', 'samples/', 'faq/', 'about/', 'physical/', 'terms/', 'privacy/', 'refund/'];
-const MOVED = { 'snapshot/': 'kit/', 'crier-deck/': 'brand-deck/' }; // old URLs: redirect stubs, not in the sitemap
+const PAGES = ['', 'pricing/', 'brand-deck/', 'social/', 'in-store/', 'samples/', 'faq/', 'about/', 'terms/', 'privacy/', 'refund/'];
+// old URLs: redirect stubs, not in the sitemap (a target may carry a #hash)
+const MOVED = { 'kit/': 'social/', 'physical/': 'in-store/#custom', 'snapshot/': 'social/', 'crier-deck/': 'brand-deck/' };
+const SKIP_DIRS = ['.git', 'node_modules', 'templates', 'build', 'tests', 'i18n', 'fonts', 'assets', 'design'];
 const PRODUCTS = ['kit', 'visible', 'growing', 'deck'];
 let fail = 0; const ok = (c, m) => { if (!c) { fail++; console.log('FAIL', m); } };
 const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
@@ -31,11 +33,16 @@ for (const l of LANGS) for (const p of PAGES) {
   const h = rd(file);
   ok(h.includes(`<link rel="canonical" href="${u}">`), `canonical ${file}`);
   ok(h.includes(`<html lang="${l}" dir="${l === 'ar' ? 'rtl' : 'ltr'}">`), `html lang/dir ${file}`);
-  ok((h.match(/<link rel="alternate" hreflang="/g) || []).length === 5, `hreflang ${file}`);
+  ok((h.match(/<link rel="alternate" hreflang="/g) || []).length === LANGS.length + 1, `hreflang ${file}`); // each language + x-default
   ok(/<title>[^<]{8,}<\/title>/.test(h) && /<meta name="description" content="[^"]{40,}">/.test(h), `title/description ${file}`);
   const headerNav = (h.match(/<nav class="main-nav"[\s\S]*?<\/nav>/) || [''])[0];
-  for (const nav of ['pricing/', 'kit/', 'brand-deck/', 'samples/', 'faq/', 'about/', 'physical/']) ok(headerNav.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `nav link ${nav} in ${file}`);
+  for (const nav of ['social/', 'in-store/', 'samples/', 'pricing/', 'faq/']) ok(headerNav.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `nav link ${nav} in ${file}`);
   ok(headerNav.includes('href="https://portal.crierstudio.com/"'), `portal link ${file}`);
+  // the footer keeps every destination (About and Brand Deck moved there from the header)
+  const footNav = (h.match(/<footer>[\s\S]*?<\/footer>/) || [''])[0];
+  for (const nav of ['social/', 'in-store/', 'samples/', 'pricing/', 'faq/', 'about/', 'brand-deck/']) ok(footNav.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `footer link ${nav} in ${file}`);
+  // the social line's old name is gone everywhere (EN and AR)
+  ok(!/Complete Kit|complete kit|الحزمة الكاملة/.test(h), `old name "Complete Kit" in ${file}`);
   ok(h.includes('team@crierstudio.com'), `email in ${file}`);
   for (const lp of LANGS.filter((x) => x !== 'en')) { /* sibling links exist */ }
   ok(!/\bUMA\b/i.test(h), `UMA in ${file}`);
@@ -51,6 +58,18 @@ for (const l of LANGS) for (const p of PAGES) {
     if (pk.extra_platform_price) ok(h.includes(`data-extra="${pk.extra_platform_price}"`), `extra platform ${pk.extra_platform_price} USD (${pk.id}) on ${file}`);
   }
   if (p === 'pricing/') ok((h.match(/data-product="/g) || []).length === 3 && h.includes('disabled data-unavailable="deck"'), `3 buy buttons and unavailable Brand Deck on ${file}`);
+  // The Store Kit: a card on home and pricing with no price, no VAT line and no buy button; its only action is the waitlist
+  if (p === '' || p === 'pricing/') {
+    const card = (h.match(/<(article|div) class="(plan|ind) cream store-card"[\s\S]*?<\/\1>/) || [''])[0];
+    ok(card && !/data-usd|data-product|usdnote/.test(card) && card.includes(`href="/${l === 'en' ? '' : l + '/'}in-store/#waitlist"`), `Store Kit card (waitlist only, no price) on ${file}`);
+  }
+  if (p === 'in-store/') {
+    ok(!/data-usd|data-product|"@type":"Offer"/.test(h), `no price, buy button or offer on ${file}`);
+    for (const id of ['id="kit"', 'id="waitlist"', 'id="custom"', 'id="wl-form"', 'id="q-form"', 'data-form="store_waitlist"', 'data-form="custom_quote"']) ok(h.includes(id), `${id} on ${file}`);
+    ok(!/mailto:/.test(h.replace(/<noscript>[\s\S]*?<\/noscript>/g, '').replace(/<footer>[\s\S]*?<\/footer>/, '')), `no mailto outside noscript/footer on ${file}`);
+    ok((vis.match(/coming soon|قريبًا/gi) || []).length === 1, `"coming soon" exactly once on ${file}`);
+    ok(!/<h1[^>]*>[^<]*(coming soon|قريبًا)/i.test(h), `no "coming soon" in the H1 of ${file}`);
+  }
   // retired packages and prices must not come back (Snapshot, Starter/Growth/Pro, Crier Deck + Print Kit, old discounts)
   for (const bad of [/\$(99|199|399|149|249|39)\b/, /Snapshot/, /Starter/, /Growth/, /\bPro\b/, /Print Kit/, /Crier Deck/]) ok(!bad.test(vis + ' ' + (h.match(/<script type="application\/ld\+json">[\s\S]*?<\/script>/) || [''])[0] + ' ' + (h.match(/<meta[^>]+>/g) || []).join(' ')), `retired wording ${bad} in ${file}`);
   ok(/<meta name="robots" content="noindex">/.test(h) === /const NOINDEX = true/.test(rd('build/build.mjs')), `noindex consistency ${file}`);
@@ -61,14 +80,17 @@ const sm = rd('sitemap.xml');
 ok((sm.match(/<url>/g) || []).length === urls.length, 'sitemap url count');
 for (const u of urls) ok(sm.includes(`<loc>${u}</loc>`), 'sitemap missing ' + u);
 ok(rd('brand-deck/index.html').includes('"@type":"Service"') && !rd('brand-deck/index.html').includes('"@type":"Offer"'), 'Brand Deck Service is informational, without an active offer');
-ok(rd('kit/index.html').includes('"@type":"Service"') && rd('kit/index.html').includes('"price":"29"'), 'Service JSON-LD with the kit offer');
+ok(rd('social/index.html').includes('"@type":"Service"') && rd('social/index.html').includes('"price":"29"'), 'Service JSON-LD with The Social Kit offer');
+ok(rd('in-store/index.html').includes('"@type":"Service"') && !rd('in-store/index.html').includes('"offers"'), 'In-store Services are informational, without offers');
+ok(rd('pricing/index.html').includes('"name":"The Store Kit"'), 'pricing ItemList lists The Store Kit');
 for (const pr of ['"price":"29"', '"price":"45"', '"price":"60"', '"unitCode":"MON"']) ok(rd('pricing/index.html').includes(pr), 'pricing JSON-LD ' + pr);
 // renamed pages: every old URL is a noindex redirect stub to the new page in the same language
 for (const l of LANGS) for (const [from, to] of Object.entries(MOVED)) {
   const pre = l === 'en' ? '' : l + '/', f = pre + from + 'index.html';
   ok(fs.existsSync(path.join(ROOT, f)), 'missing stub ' + f); if (!fs.existsSync(path.join(ROOT, f))) continue;
-  const s = rd(f);
-  ok(s.includes('data-page="redirect"') && s.includes(`data-target="${to.slice(0, -1)}"`) && s.includes(`data-lang="${l}"`) && s.includes('content="noindex"') && s.includes(`url=/${pre}${to}"`), 'stub ' + f);
+  const s = rd(f), [tp, th] = to.split('#');
+  ok(s.includes('data-page="redirect"') && s.includes(`data-target="${tp.slice(0, -1)}"`) && s.includes(`data-lang="${l}"`) && s.includes('content="noindex"') && s.includes(`url=/${pre}${to}"`)
+    && s.includes(`<link rel="canonical" href="https://crierstudio.com/${pre}${tp}">`) && (th ? s.includes(`data-hash="${th}"`) : !s.includes('data-hash=')), 'stub ' + f);
   ok(!sm.includes(`/${pre}${from}<`), 'stub in sitemap ' + f);
 }
 ok(rd('pricing/index.html').includes('"@type":"ItemList"') && rd('pricing/index.html').includes('"priceCurrency":"USD"'), 'pricing JSON-LD');
@@ -82,7 +104,7 @@ ok(rd('pricing/index.html').includes('"@type":"ItemList"') && rd('pricing/index.
       const hh = rd((l === 'en' ? '' : l + '/') + 'pricing/index.html');
       const m = hh.match(new RegExp(`<a class="btn[^"]*" href="([^"]*)" data-product="${k}"`));
       if (k === 'deck') { ok(!m && hh.includes('disabled data-unavailable="deck"'), `Brand Deck unavailable (${l})`); continue; }
-      const want = links[k] || `/${l === 'en' ? '' : l + '/'}kit/?product=${k}#request`;
+      const want = links[k] || `/${l === 'en' ? '' : l + '/'}social/?product=${k}#request`;
       ok(m && m[1].replace(/&amp;/g, '&') === want, `buy button ${k} (${l}) href`);
     }
   }
@@ -96,7 +118,7 @@ ok(rd('index.html').includes('"alternateName":"Crier"') && rd('index.html').incl
   const GA = 'G-QLQ443CQ8E';
   const walk = (dir) => fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true }).flatMap((e) => {
     const rel = dir ? dir + '/' + e.name : e.name;
-    if (e.isDirectory()) return ['.git', 'node_modules', 'templates', 'build', 'tests', 'i18n', 'fonts', 'assets'].includes(e.name) ? [] : walk(rel);
+    if (e.isDirectory()) return SKIP_DIRS.includes(e.name) ? [] : walk(rel);
     return e.name.endsWith('.html') ? [rel] : [];
   });
   const files = walk('');
@@ -154,7 +176,7 @@ ok(rd('index.html').includes('"alternateName":"Crier"') && rd('index.html').incl
   const ent = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', copy: '©', middot: '·', rarr: '→', larr: '←', mdash: '—', ndash: '–', hellip: '…', laquo: '«', raquo: '»', rsquo: '’', lsquo: '‘', ldquo: '“', rdquo: '”', times: '×' };
   const missing = new Map();
   const files = [];
-  const walkHtml = (dir) => { for (const e of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) { const rel = path.join(dir, e.name); if (e.isDirectory()) { if (!['.git', 'node_modules', 'templates', 'build', 'tests', 'i18n', 'fonts', 'assets'].includes(e.name)) walkHtml(rel); } else if (e.name.endsWith('.html')) files.push(rel); } };
+  const walkHtml = (dir) => { for (const e of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) { const rel = path.join(dir, e.name); if (e.isDirectory()) { if (!SKIP_DIRS.includes(e.name)) walkHtml(rel); } else if (e.name.endsWith('.html')) files.push(rel); } };
   walkHtml('');
   for (const f of files) {
     const text = rd(f).replace(/<(style|script|svg)\b[\s\S]*?<\/\1>/g, ' ').replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n)).replace(/&(\w+);/g, (m, n) => ent[n] ?? m);

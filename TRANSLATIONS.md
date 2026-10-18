@@ -2,7 +2,7 @@
 
 crierstudio.com and its three legal pages are available in 2 languages: en, ar (right-to-left: ar). Spanish and French were removed on 2026-10-16 (their old URLs redirect to English). Strings live in `i18n/<code>.json` (one key set in both files, enforced by `node build/check.mjs`; there is no fallback to English). The build writes each language as static HTML.
 
-Rules used: "Crier Studio" and "Brand Deck" stay in Latin script; the package names are translated (ar: الحزمة الكاملة، حضور دائم، نمو مستمر); prices are shown in the visitor's currency (SAR, AED or EGP with VAT added, US dollars elsewhere; see README); legal pages show "This translation is for convenience; the English version governs." in non-English languages. Contact: team@crierstudio.com.
+Rules used: "Crier Studio" and "Brand Deck" stay in Latin script; the package names are translated (ar: حزمة السوشيال ميديا (The Social Kit, was الحزمة الكاملة)، حضور دائم، نمو مستمر، حزمة المحل (The Store Kit)); the two lines are السوشيال (nav) and داخل المحل (In-store), and Custom pieces is قطع حسب الطلب; prices are shown in the visitor's currency (SAR, AED or EGP with VAT added, US dollars elsewhere; see README); legal pages show "This translation is for convenience; the English version governs." in non-English languages. Contact: team@crierstudio.com.
 
 ## Needs native check
 

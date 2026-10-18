@@ -43,7 +43,7 @@ try{
   if(lang==='en'&&name==='desktop')await q.screenshot({path:path.join(OUTPUT,'homepage.png')});
   if(name==='mobile'){
    await q.locator('.menu-toggle').click();check(`Mobile menu opens ${lang}`,await q.locator('.main-nav').isVisible());await q.keyboard.press('Escape');check(`Mobile menu keyboard closes ${lang}`,!await q.locator('.main-nav').isVisible());
-   await q.locator('.menu-toggle').click();await q.locator('.main-nav a').filter({hasText:/./}).nth(1).click();await q.waitForLoadState('load');check(`Complete Kit navigation ${lang}`,new URL(q.url()).pathname.endsWith('/kit/')&&!await q.locator('.main-nav').isVisible());
+   await q.locator('.menu-toggle').click();await q.locator('.main-nav a').filter({hasText:/./}).nth(0).click();await q.waitForLoadState('load');check(`Social navigation ${lang}`,new URL(q.url()).pathname.endsWith('/social/')&&!await q.locator('.main-nav').isVisible());
   }
   await q.close();
  }

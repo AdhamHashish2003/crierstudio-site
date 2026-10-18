@@ -11,3 +11,5 @@ exclude:
   - data
   - checkout.json
   - payment-links.json
+  - design
+  - REVIEW-instore.md

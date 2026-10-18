@@ -25,7 +25,7 @@ for (const l of ['en', 'es', 'fr', 'ar']) {
   await fillBase(pg); await pg.click('#snap-submit'); await done(pg);
   ok(hits.length === 1, p + ' one POST to mocked endpoint (kit)');
   ok(Object.keys(hits[0]).sort().join(',') === 'business,city,company_website,consent,email,industry,lang,product,web', p + ' kit payload keys: ' + Object.keys(hits[0]).sort().join(','));
-  ok(hits[0].product === 'snapshot' && hits[0].business === 'Test Cafe [The Complete Kit]' && hits[0].lang === l && hits[0].consent === true && hits[0].company_website === '' && hits[0].industry === 'Cafés and dessert shops', p + ' kit -> API product=snapshot, tagged, lang=' + l);
+  ok(hits[0].product === 'snapshot' && hits[0].business === 'Test Cafe [The Social Kit]' && hits[0].lang === l && hits[0].consent === true && hits[0].company_website === '' && hits[0].industry === 'Cafés and dessert shops', p + ' kit -> API product=snapshot, tagged, lang=' + l);
   // Old links explain the unavailable deck and cannot submit, even through a scripted submit.
   for (const alias of ['deck', 'crier_deck', 'deck_print']) {
     await pg.goto(BASE + p + '?product=' + alias);

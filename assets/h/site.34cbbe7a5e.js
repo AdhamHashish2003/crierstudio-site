@@ -11,11 +11,10 @@
   try { q = new URLSearchParams(location.search).get("lang"); } catch (e) {}
   if (CODES.indexOf(q) < 0) q = null;
   if (page === "redirect") {
-    // renamed pages (/snapshot/ -> /kit/, /crier-deck/ -> /brand-deck/) carry their own language and keep ?product=
-    var own = document.body.getAttribute("data-lang");
-    var keep = "";
-    try { var pr = new URLSearchParams(location.search).get("product"); if (pr) keep = "?product=" + encodeURIComponent(pr); } catch (e) {}
-    location.replace(pathFor(own || q || saved() || "en", document.body.getAttribute("data-target")) + (own ? keep : "") + location.hash);
+    // renamed pages (/kit/ and /snapshot/ -> /social/, /physical/ -> /in-store/#custom, /crier-deck/ -> /brand-deck/) carry
+    // their own language and keep the full query string; the visitor's own #hash wins over the target's (data-hash)
+    var own = document.body.getAttribute("data-lang"), th = document.body.getAttribute("data-hash");
+    location.replace(pathFor(own || q || saved() || "en", document.body.getAttribute("data-target")) + (own ? location.search : "") + (location.hash || (th ? "#" + th : "")));
     return;
   }
   if (page === "index" && location.pathname === "/") {
@@ -136,7 +135,7 @@
     update();
   })(picks[pi]);
 
-  /* ---------------- request form (The Complete Kit, monthly plans, Brand Deck) ---------------- */
+  /* ---------------- request form (The Social Kit, monthly plans, Brand Deck) ---------------- */
   var form = document.getElementById("snap-form");
   if (!form) return;
   var M = {};
@@ -149,9 +148,9 @@
   function isPlan() { var p = product(); return p === "visible" || p === "growing"; }
   // the intake API accepts product "snapshot" and "crier_deck" only: the kit and the monthly plans go in as "snapshot" with the
   // package name added to the business name (the free-text field); the Brand Deck goes in as "crier_deck" with the same tag.
-  var TAGS = { kit: "The Complete Kit", visible: "Stay Visible plan", growing: "Keep Growing plan", deck: "Brand Deck" };
+  var TAGS = { kit: "The Social Kit", visible: "Stay Visible plan", growing: "Keep Growing plan", deck: "Brand Deck" };
   function apiProduct() { return isDeck() ? "crier_deck" : "snapshot"; }
-  // Low 15: The Complete Kit is made for exactly ONE platform (no extra-platform price), so for the kit the platform choices are
+  // Low 15: The Social Kit is made for exactly ONE platform (no extra-platform price), so for the kit the platform choices are
   // radio buttons; the monthly plans use checkboxes (the first platform included, each extra one charged).
   var platLegend = $("plats-legend");
   function platKind() {
@@ -173,10 +172,11 @@
     platKind();
     if (deck) { btn.textContent = M["availability.soon"]; say("availability.deck", false); }
   }
-  // /kit/?product=visible (the Buy buttons) opens the form with that product selected; old product ids map to the new packages
+  // /social/?product=visible (the Buy buttons) opens the form with that product selected; old product ids map to the new
+  // packages, and product=kit, product=social-kit and product=snapshot all select The Social Kit (package id "kit")
   var want = null;
   try { want = new URLSearchParams(location.search).get("product"); } catch (e) {}
-  var OLD = { snapshot: "kit", starter: "visible", growth: "growing", pro: "growing", deck_print: "deck", crier_deck: "deck" };
+  var OLD = { "social-kit": "kit", snapshot: "kit", starter: "visible", growth: "growing", pro: "growing", deck_print: "deck", crier_deck: "deck" };
   if (want && OLD[want]) want = OLD[want];
   if (want) { for (var r = 0; r < radios.length; r++) if (radios[r].value === want) { for (var q2 = 0; q2 < radios.length; q2++) radios[q2].checked = radios[q2].value === want; break; } }
   // ?platforms=instagram,facebook (from a pricing card) ticks those platforms in the form (the kit keeps one)
@@ -303,6 +303,117 @@
       .catch(function () { say("f.failed", true); })
       .then(function () { clearTimeout(timer); btn.disabled = false; });
   });
+})();
+
+/* In-store (2026-10-18): the zone chips (real tab buttons) and the two lead forms, the Store Kit waitlist and the Custom
+   pieces quote. Both post to the Launchpad intake (the order form's endpoint) with the fields it requires; it ignores unknown
+   keys today, so contact_name, piece, placement, timing, country and form are sent ready for a later CRM upgrade. Without
+   JavaScript the chips stay hidden (every zone is listed) and the submit buttons stay disabled (a noscript line gives the email). */
+(function () {
+  "use strict";
+  var tabs = document.getElementById("zone-tabs");
+  if (tabs) {
+    var list = tabs.querySelector('[role="tablist"]'), chips = tabs.querySelectorAll('[role="tab"]');
+    var pick = function (i, focus) {
+      for (var j = 0; j < chips.length; j++) {
+        var on = j === i, panel = document.getElementById(chips[j].getAttribute("aria-controls"));
+        chips[j].setAttribute("aria-selected", on ? "true" : "false"); chips[j].tabIndex = on ? 0 : -1;
+        if (panel) panel.hidden = !on;
+      }
+      if (focus) chips[i].focus();
+    };
+    for (var c = 0; c < chips.length; c++) (function (i) {
+      chips[i].addEventListener("click", function () { pick(i, false); });
+      chips[i].addEventListener("keydown", function (e) {
+        var n = chips.length, k = e.key, rtl = document.documentElement.dir === "rtl", d = 0;
+        if (k === "ArrowRight") d = rtl ? -1 : 1; else if (k === "ArrowLeft") d = rtl ? 1 : -1;
+        else if (k === "Home" || k === "End") { e.preventDefault(); pick(k === "Home" ? 0 : n - 1, true); return; }
+        if (d) { e.preventDefault(); pick((i + d + n) % n, true); }
+      });
+    })(c);
+    list.hidden = false; tabs.classList.add("tabs-on"); pick(0, false);
+  }
+
+  var forms = document.querySelectorAll("form.lead-form");
+  if (!forms.length) return;
+  var M = {}; try { M = JSON.parse(document.getElementById("lead-msgs").textContent); } catch (e) {}
+  var lang = document.documentElement.lang;
+  // the intake's own rules (crm/launchpad_crm/launchpad/web_public.py): required fields, length caps, a website or an
+  // @handle, a valid email, no < or >; whitespace is collapsed before the length is counted
+  var EMAIL = /^[A-Za-z0-9._%+'-]{1,64}@[A-Za-z0-9-]{1,63}(\.[A-Za-z0-9-]{1,63})*\.[A-Za-z]{2,24}$/;
+  var SITE = /^(https?:\/\/)?([A-Za-z0-9-]{1,63}\.)+[A-Za-z]{2,24}(:\d{1,5})?(\/[^\s<>"']{0,150})?$/;
+  var HANDLE = /^@?[A-Za-z0-9._]{1,30}$/;
+  var CC = { SA: "Saudi Arabia", AE: "UAE", EG: "Egypt", other: "Other country" };
+  var RULES = {
+    name: function (v) { return v ? "" : "v.name"; },
+    business: function (v) { return v ? "" : "v.business"; },
+    city: function (v) { return v ? "" : "v.city"; },
+    country: function (v) { return v ? "" : "v.country"; },
+    type: function (v) { return v ? "" : "v.type"; },
+    what: function (v) { return v ? "" : "v.what"; },
+    where: function () { return ""; },
+    when: function () { return ""; },
+    email: function (v) { return !v ? "v.email" : (EMAIL.test(v) ? "" : "v.emailBad"); },
+    web: function (v) { return !v ? "v.web" : (SITE.test(v) || HANDLE.test(v) ? "" : "v.webBad"); }
+  };
+  // a 422 from the intake names the intake's field: point it at the input it was made from, with that input's message
+  var FROM = { store_waitlist: { business: "web", city: "country", industry: "type" }, custom_quote: { industry: "what" } };
+  var MSG = { email: "v.emailBad", web: "v.webBad", business: "v.business", city: "v.city", type: "v.type", what: "v.what", consent: "f.consentErr" };
+  function clean(v) { return String(v || "").replace(/\s+/g, " ").trim(); }
+  function cut(s, n) { return s.length > n ? s.slice(0, n).trim() : s; }
+  for (var f = 0; f < forms.length; f++) (function (form) {
+    var kind = form.getAttribute("data-form"), endpoint = form.getAttribute("data-endpoint");
+    var btn = form.querySelector('button[type="submit"]'), status = form.querySelector(".status");
+    function el(n) { return form.elements.namedItem(n); }
+    function val(n) { var x = el(n); return x ? clean(x.value) : ""; }
+    function say(key, bad, busy) { status.textContent = M[key] || key; status.hidden = false; status.style.borderColor = bad ? "var(--error)" : "var(--ink)"; status.classList.toggle("busy", !!busy); }
+    function setErr(n, key, text) {
+      var e = form.querySelector('[data-err="' + n + '"]'), x = el(n), msg = key ? (M[key] || key) : (text || "");
+      if (e) { e.textContent = msg; e.hidden = !msg; }
+      if (x) x.setAttribute("aria-invalid", msg ? "true" : "false");
+    }
+    function check() {
+      var first = null;
+      for (var n in RULES) {
+        var x = el(n); if (!x) continue;
+        var v = clean(x.value), max = +x.getAttribute("maxlength") || 0;
+        var key = RULES[n](v) || (max && v.length > max ? "v.tooLong" : "") || (/[<>]/.test(v) ? "v.angle" : "");
+        setErr(n, key); if (key && !first) first = x;
+      }
+      var cb = el("consent"); setErr("consent", cb.checked ? "" : "f.consentErr"); if (!cb.checked && !first) first = cb;
+      return first;
+    }
+    function payload() {
+      var web = val("web"), country = el("country").value, cn = CC[country] || CC.other;
+      var p = { web: web, email: val("email"), consent: true, company_website: el("company_website").value, product: "snapshot", lang: lang, form: kind, country: country };
+      if (kind === "store_waitlist") {
+        p.business = cut("[Store Kit waitlist] " + web, 120); p.city = cn; p.industry = el("type").value;
+      } else {
+        var tag = " [Custom pieces quote]";
+        p.business = cut(val("business"), 120 - tag.length) + tag; p.city = cut(val("city") + ", " + cn, 80); p.industry = cut("Custom: " + val("what"), 80);
+        p.contact_name = val("name"); p.piece = val("what"); p.placement = val("where"); p.timing = val("when");
+      }
+      return p;
+    }
+    btn.disabled = false;
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var bad = check(); if (bad) { status.hidden = true; bad.focus(); return; }
+      btn.disabled = true; say("f.sending", false, true);
+      var ctl = ("AbortController" in window) ? new AbortController() : null, timer = setTimeout(function () { if (ctl) ctl.abort(); }, 20000);
+      fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload()), signal: ctl ? ctl.signal : undefined })
+        .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, body: j }; }); })
+        .then(function (res) {
+          if (res.status === 200 && res.body && res.body.ok === true) { form.reset(); say(kind === "store_waitlist" ? "is.wl.ok" : "is.q.ok", false); return; }
+          if (res.status === 429) { say("f.tooMany", true); return; }
+          var sf = res.status === 422 && res.body && res.body.field, n = sf && ((FROM[kind] || {})[sf] || sf);
+          if (n && el(n)) { setErr(n, MSG[n] || "", String(res.body.message || "")); status.hidden = true; el(n).focus(); return; }
+          say("f.failed", true);
+        })
+        .catch(function () { say("f.failed", true); })
+        .then(function () { clearTimeout(timer); btn.disabled = false; });
+    });
+  })(forms[f]);
 })();
 
 /* Mobile navigation. No external libraries or model calls. */

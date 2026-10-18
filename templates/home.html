@@ -14,9 +14,22 @@
       <div class="inds seasons">{{=seasons}}</div>
     </section>
 
+    <section id="in-store" class="cream is-teaser" aria-labelledby="teaser-title">
+      <div class="is-top">
+        <div class="is-head">
+          <div class="is-eye"><span>{{t:nav.instore}}</span></div>
+          <h2 id="teaser-title">{{t:is.h1a}}<br>{{t:is.h1b}}</h2>
+        </div>
+        <div class="is-side">
+          <div class="is-ctas"><a class="btn" href="{{=storeWaitHref}}">{{t:is.cta1}}</a><a class="is-link" href="{{=storeKitHref}}">{{t:is.cta2}}</a></div>
+        </div>
+      </div>
+      {{>panels}}
+    </section>
+
     <section id="plans" aria-labelledby="plans-title">
       <div class="sec-head"><h2 id="plans-title">{{t:home.plans.title}}</h2></div>
-      <div class="inds">{{=homePlans}}</div>
+      <div class="inds four">{{=homePlans}}</div>
       <p class="more"><a href="{{=pricingHref}}">{{t:home.plans.more}}</a></p>
     </section>
 

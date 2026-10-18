@@ -25,15 +25,27 @@ const LANGS = [['en', 'English', 'en_US'], ['ar', 'العربية', 'ar_AR']];
 const REMOVED = ['es', 'fr'];
 const RTL = new Set(['ar']);
 // every page exists in both languages: / (en), /ar/ and the sub-paths below
-const PAGES = ['index', 'pricing', 'brand-deck', 'kit', 'samples', 'faq', 'about', 'physical', 'terms', 'privacy', 'refund'];
-// renamed pages: the old URLs stay as redirect stubs in every language (query + hash kept), not in the sitemap
-const MOVED = { snapshot: 'kit', 'crier-deck': 'brand-deck' };
-const WIDE = new Set(['index', 'pricing', 'brand-deck', 'kit', 'samples', 'about', 'physical']); // wide layout; the rest use the narrow reading layout
+// Two product lines (2026-10-18): Social (/social/: The Social Kit + the monthly plans) and In-store (/in-store/: The Store
+// Kit waitlist + Custom pieces with a quote form).
+const PAGES = ['index', 'pricing', 'brand-deck', 'social', 'in-store', 'samples', 'faq', 'about', 'terms', 'privacy', 'refund'];
+// renamed pages: the old URLs stay as redirect stubs in every language (full query kept; the visitor's #hash wins over the
+// target's), not in the sitemap. A target may carry a #hash: /physical/ -> /in-store/#custom.
+const MOVED = { kit: 'social', physical: 'in-store#custom', snapshot: 'social', 'crier-deck': 'brand-deck' };
+const WIDE = new Set(['index', 'pricing', 'brand-deck', 'social', 'in-store', 'samples', 'about']); // wide layout; the rest use the narrow reading layout
 const LEGAL = ['terms', 'privacy', 'refund'];
-const NAV = [['pricing', 'nav.pricing'], ['kit', 'nav.kit'], ['brand-deck', 'nav.deck'], ['samples', 'nav.samples'], ['faq', 'nav.faq'], ['about', 'nav.about'], ['physical', 'nav.physical'], [PORTAL, 'nav.portal']];
-const CRUMB_KEY = { pricing: 'nav.pricing', 'brand-deck': 'nav.deck', kit: 'nav.kit', samples: 'nav.samples', faq: 'nav.faq', about: 'nav.about', physical: 'nav.physical', terms: 'foot.terms', privacy: 'foot.privacy', refund: 'foot.refund' };
+const NAV = [['social', 'nav.social'], ['in-store', 'nav.instore'], ['samples', 'nav.samples'], ['pricing', 'nav.pricing'], ['faq', 'nav.faq'], [PORTAL, 'nav.portal']];
+// the footer keeps every destination: the header nav plus About and Brand Deck
+const NAV_FOOT = [['social', 'nav.social'], ['in-store', 'nav.instore'], ['samples', 'nav.samples'], ['pricing', 'nav.pricing'], ['faq', 'nav.faq'], ['about', 'nav.about'], ['brand-deck', 'nav.deck'], [PORTAL, 'nav.portal']];
+const CRUMB_KEY = { pricing: 'nav.pricing', 'brand-deck': 'nav.deck', social: 'nav.social', 'in-store': 'nav.instore', samples: 'nav.samples', faq: 'nav.faq', about: 'nav.about', terms: 'foot.terms', privacy: 'foot.privacy', refund: 'foot.refund' };
+// In-store waitlist "business type": the value is the matching INDUSTRY_VALUES string (the CRM's industry field)
+const STORE_TYPES = [['Cafés and dessert shops', 'is.zone.cafe'], ['Restaurants', 'is.zone.restaurant'], ['Salons', 'is.zone.salon'], ['Abayas and fashion', 'is.zone.abaya'], ['Other local business', 'ind.other']];
+const ZONES = ['cafe', 'restaurant', 'salon', 'abaya'];
+const ZONE_COLS = ['door', 'wall', 'counter', 'team'];
+// The Store Kit bundles shown on /in-store/ (contents and [bracketed] quantities from Adham's brief; no Abaya shop card yet)
+const STORE_KITS = { cafe: 6, restaurant: 5, salon: 6 };
 // MENA (2026-10-14): Gulf and Egyptian business types. The value goes to the intake API as free text (the CRM's industry field).
 const INDUSTRY_VALUES = ['Cafés and dessert shops', 'Restaurants', 'Abayas and fashion', 'Perfume and oud', 'Salons', 'Clinics', 'Real estate', 'Other local business'];
+for (const [v] of STORE_TYPES) if (!INDUSTRY_VALUES.includes(v)) throw new Error('STORE_TYPES: not an INDUSTRY_VALUES string: ' + v);
 const IND_N = INDUSTRY_VALUES.length - 1; // ind.1n … ind.<IND_N>n, then ind.other
 const IND_NOTE = 6; // clinics carry the "no health claims" note (ind.<IND_NOTE>note)
 // the seasons the monthly content follows (keys season.<id>t / season.<id>x)
@@ -95,7 +107,7 @@ for (const k of PRODUCTS) {
 const dicts = Object.fromEntries(LANGS.map(([c]) => [c, JSON.parse(rd(`i18n/${c}.json`))]));
 const partials = {
   hero: rd('templates/hero.html'), logo: rd('templates/logo.svg.html'), footer: rd('templates/footer.html'), header: rd('templates/header.html'),
-  consent: rd('templates/consent.html'),
+  consent: rd('templates/consent.html'), panels: rd('templates/instore-panels.html'),
 };
 const CSS = {
   fonts: rd('templates/fonts.css'), fontsAr: rd('templates/fonts-ar.css'), common: rd('templates/common.css'),
@@ -175,7 +187,7 @@ const syms = [
 ];
 const INDCOLORS = [['sun', 'coral'], ['coral', 'accent'], ['accent', 'ink'], ['ink', 'sun'], ['sun', 'accent']];
 // FAQ ids (keys faq.<id>q, faq.<id>a1, faq.<id>a2)
-const FAQ_ALL = [19, 20, 21, 22, 11, 12, 13, 14, 15, 16, 1, 7, 2, 4, 5, 17, 9, 18];
+const FAQ_ALL = [19, 20, 21, 22, 23, 24, 25, 26, 11, 12, 13, 14, 15, 16, 1, 7, 2, 4, 5, 17, 9, 18];
 const FAQ_DECK = [11, 12, 13, 14, 15, 16];
 
 function faqAnswers(lang, i) {
@@ -193,8 +205,8 @@ function langpick(lang, page) {
   const links = LANGS.map(([c, name]) => `<a href="${pathFor(c, page)}" lang="${c}" hreflang="${c}" aria-label="${esc(name)}"${c === lang ? ' aria-current="true"' : ''}>${c.toUpperCase()}</a>`).join('');
   return `<div class="langpick" role="group" aria-label="${esc(t(lang, 'lang.label'))}">${links}</div>`;
 }
-function navLinks(lang, page, mark) {
-  return NAV.map(([target, key]) => {
+function navLinks(lang, page, mark, list = NAV) {
+  return list.map(([target, key]) => {
     const ext = target.startsWith('http');
     return `<a href="${ext ? target : pathFor(lang, target)}"${mark && target === page ? ' aria-current="page"' : ''}>${esc(t(lang, key))}</a>`;
   }).join('');
@@ -204,9 +216,9 @@ function crumbs(lang, page) {
   return `<nav class="crumbs" aria-label="${esc(t(lang, 'crumb.label'))}"><a href="${pathFor(lang, 'index')}">${esc(t(lang, 'crumb.home'))}</a><span aria-hidden="true">/</span><span aria-current="page">${esc(t(lang, CRUMB_KEY[page]))}</span></nav>`;
 }
 function hrefs(lang) {
-  const o = { homeHref: pathFor(lang, 'index'), kitCtaHref: pathFor(lang, 'kit') + '#request', deckCtaHref: pathFor(lang, 'brand-deck') + '#availability',
-    deckWaitHref: `mailto:${EMAIL}?subject=Brand%20Deck%20waitlist` };
-  const NAME = { index: 'home', 'brand-deck': 'deck' };
+  const o = { homeHref: pathFor(lang, 'index'), kitCtaHref: pathFor(lang, 'social') + '#request', deckCtaHref: pathFor(lang, 'brand-deck') + '#availability',
+    deckWaitHref: `mailto:${EMAIL}?subject=Brand%20Deck%20waitlist`, storeWaitHref: pathFor(lang, 'in-store') + '#waitlist', storeKitHref: pathFor(lang, 'in-store') + '#kit' };
+  const NAME = { index: 'home', 'brand-deck': 'deck', 'in-store': 'instore' };
   for (const p of PAGES) o[(NAME[p] || p) + 'Href'] = pathFor(lang, p);
   return o;
 }
@@ -252,7 +264,7 @@ function curData(lang) {
 function waLink(lang) { const label = t(lang, 'contact.wa'); return WA ? `<a href="https://wa.me/${WA}" dir="ltr" rel="noopener">${esc(label)}</a>` : ''; }
 const pname = (lang, p) => t(lang, `name.${p}`);
 const isLinked = (p) => LINKS[p] !== '';
-function buyHref(lang, p) { return isLinked(p) ? LINKS[p] : `${pathFor(lang, 'kit')}?product=${p}#request`; }
+function buyHref(lang, p) { return isLinked(p) ? LINKS[p] : `${pathFor(lang, 'social')}?product=${p}#request`; }
 function buyBtn(lang, p, ghost) {
   if (p === 'deck') return `<button class="btn coming-soon" type="button" disabled data-unavailable="deck">${h(lang, 'pkg.deck.btn')}</button><span class="paynote">${h(lang, 'availability.deck')}</span>`;
   const note = isLinked(p) ? '' : `<span class="paynote">${h(lang, 'pay.note')}</span>`;
@@ -272,12 +284,17 @@ function planCard(lang, p, hot) {
   const vatLine = PKG[p].coming_soon ? '' : vatNote(lang, p, platPick(lang, p) ? t(lang, 'plan.perShort') : '');
   return `<article class="plan${hot ? ' hot' : ''}" data-plan="${p}"><span class="badge">${h(lang, `pkg.${p}.eye`)}</span><h3>${esc(pname(lang, p))}</h3><p class="pt">${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(lang, p)}<span class="per">${h(lang, per)}</span></div>${vatLine}<p class="billnote">${h(lang, bill)}</p>${platPick(lang, p)}${ticks(lang, `pkg.${p}`)}<p class="pnote">${h(lang, `pkg.${p}.note`)}</p><div class="buyrow">${buyBtn(lang, p, !hot)}</div></article>`;
 }
-// home: the three packages side by side, name + one line + price + VAT line (the details are on the pricing page)
+// home: the four packages side by side, name + one line + price + VAT line (the details are on the pricing page). The Store
+// Kit is waitlist-only: no price, no VAT line, no buy button; "Coming soon" sits where the price would be.
 function homePlans(lang) {
   return ['kit', 'visible', 'growing'].map((p) => {
     const per = MONTHLY.has(p) ? 'plan.per' : 'one.per';
     return `<div class="ind"><h3>${esc(pname(lang, p))}</h3><p>${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(lang, p)}<span class="per">${h(lang, per)}</span></div>${vatNote(lang, p, MONTHLY.has(p) ? t(lang, 'plan.perShort') : '')}</div>`;
-  }).join('');
+  }).join('') + `<div class="ind cream store-card"><h3>${h(lang, 'name.store')}</h3><p>${h(lang, 'is.kit.line')}</p><p class="soon-price">${h(lang, 'availability.soon')}</p><a class="more-link" href="${pathFor(lang, 'in-store')}#waitlist">${h(lang, 'is.cta1')}</a></div>`;
+}
+// pricing: The Store Kit card (label, name, one line, "Coming soon" where the price sits, the waitlist as a secondary button)
+function storePlanCard(lang) {
+  return `<article class="plan cream store-card" data-plan="store"><span class="badge">${h(lang, 'pkg.store.eye')}</span><h3>${h(lang, 'name.store')}</h3><p class="pt">${h(lang, 'is.kit.line')}</p><p class="soon-price">${h(lang, 'availability.soon')}</p><div class="buyrow"><a class="btn ghost" href="${pathFor(lang, 'in-store')}#waitlist">${h(lang, 'is.cta1')}</a></div></article>`;
 }
 // P1: a monthly package picks its platforms on the card; the live line ("Keep Growing · Instagram + Facebook · $90/mo") is computed in
 // the browser from the numbers below (data/pricing.json: price + (platforms - included) × extra_platform_price), never typed.
@@ -292,19 +309,21 @@ function platPick(lang, p) {
   const local = Object.fromEntries(CURS.slice(1).map((c) => [c, [k.prices[c], k.extra_platform_prices[c]]]));
   return `<fieldset class="platpick" data-pkg="${p}" data-price="${k.price}" data-extra="${k.extra_platform_price}" data-local="${esc(JSON.stringify(local))}" data-included="${k.platforms_included || 1}" data-name="${esc(pname(lang, p))}" data-tpl="${esc(t(lang, 'plan.live'))}" data-per="${esc(t(lang, 'plan.perShort'))}"><legend>${h(lang, 'plan.pickPlatforms')}</legend><div class="opts">${boxes}</div><p class="liveprice" aria-live="polite" dir="auto">${esc(line)}</p><p class="fine">${h(lang, 'plan.extraNote')}</p></fieldset>`;
 }
-const planCards = (lang) => ['kit', 'visible', 'growing'].map((p) => planCard(lang, p, p === 'kit')).join('');
+const planCards = (lang) => ['kit', 'visible', 'growing'].map((p) => planCard(lang, p, p === 'kit')).join('') + storePlanCard(lang);
 const deckCards = (lang) => planCard(lang, 'deck', false);
 const billItems = (lang) => { const out = []; for (let i = 1; dicts[lang][`bill.${i}`] != null; i++) out.push(`<li>${h(lang, `bill.${i}`)}</li>`); return out.join(''); };
 
 function pageVars(lang, page) {
   const v = {
-    ...hrefs(lang), langpick: langpick(lang, page), nav: navLinks(lang, page, true), navFoot: navLinks(lang, page, false),
+    ...hrefs(lang), langpick: langpick(lang, page), nav: navLinks(lang, page, true), navFoot: navLinks(lang, page, false, NAV_FOOT),
     crumbs: crumbs(lang, page), portalHref: PORTAL, emailLink: `<a href="mailto:${EMAIL}" dir="ltr">${EMAIL}</a>`,
     buyKit: buyBtn(lang, 'kit', false), buyDeck: buyBtn(lang, 'deck', false), conv: lang === 'en' ? '' : `<p class="conv">${h(lang, 'leg.conv')}</p>`,
     waFoot: waLink(lang), waAbout: WA ? `<p>${waLink(lang)}</p>` : '',
   };
-  if (page === 'index') Object.assign(v, { kitPrice: money(lang, 'kit'), kitVat: vatNote(lang, 'kit'), curPick: curPick(lang), inds: inds(lang), seasons: seasons(lang), homePlans: homePlans(lang), trust: ticks(lang, 'home.trust') });
-  if (page === 'kit') Object.assign(v, kitVars(lang));
+  // sid: the suffix that keeps the In-store illustrations' SVG ids unique per page (home teaser "h", In-store page "b")
+  if (page === 'index') Object.assign(v, { kitPrice: money(lang, 'kit'), kitVat: vatNote(lang, 'kit'), curPick: curPick(lang), inds: inds(lang), seasons: seasons(lang), homePlans: homePlans(lang), trust: ticks(lang, 'home.trust'), sid: 'h' });
+  if (page === 'social') Object.assign(v, kitVars(lang));
+  if (page === 'in-store') Object.assign(v, storeVars(lang), { sid: 'b' });
   if (page === 'pricing') Object.assign(v, { planCards: planCards(lang), deckCards: deckCards(lang), billItems: billItems(lang), curPick: curPick(lang) });
   if (page === 'brand-deck') Object.assign(v, { deckFlow: flow(lang, 4, 'deck.how'), deckCards: deckCards(lang), faqItems: faqItems(lang, FAQ_DECK, true), sheets: [1, 2, 4].map((n) => fig(lang, n)).join('') });
   if (page === 'samples') v.sheets = [1, 2, 3, 4].map((n) => fig(lang, n)).join('');
@@ -333,11 +352,24 @@ function kitVars(lang) {
     .map(([v, n]) => `<option value="${v}"${v === lang ? ' selected' : ''}>${esc(n)}</option>`).join('');
   const msgKeys = ['availability.soon', 'availability.deck', 'pay.note', 'pay.noteCheckout', 'f.platforms', 'f.platformKit', 'f.platformsErr', 'f.total', 'f.totalMonthly', 'f.toStripe', 'f.pay', 'f.sending', 'f.thanks', 'f.thanksDeck', 'f.failed', 'f.tooMany', 'f.consentErr', 'v.business', 'v.web', 'v.emailEmpty', 'v.emailBad', 'v.city', 'v.industry', 'v.address'];
   const formMsgs = jsonScript(Object.fromEntries(msgKeys.map((k) => [k, t(lang, k)])));
-  // Low 15: The Complete Kit (selected first) is made for exactly one platform: radio buttons. site.js turns them into
+  // Low 15: The Social Kit (selected first) is made for exactly one platform: radio buttons. site.js turns them into
   // checkboxes for the monthly plans (first platform included, each extra one charged) and back for the kit.
   const platformChecks = PRICING.platforms.map((id, i) => `<label class="opt"><input type="radio" name="platform" value="${esc(id)}"${i === 0 ? ' checked' : ''}><span>${h(lang, 'plat.' + id)}</span></label>`).join('');
   return { kitPrice: money(lang, 'kit'), kitVat: vatNote(lang, 'kit'), kitList: ticks(lang, 'pkg.kit', 'cols'), industryOptions, curPick: curPick(lang), deckLangOptions, formMsgs, endpoint: ENDPOINT, flow: flow(lang, 3, 'how'),
     platformChecks, countryOptions: ccOptions(lang), checkoutAttr: CHECKOUT.enabled ? ` data-checkout="${esc(CHECKOUT.endpoint)}"` : '' };
+}
+
+// /in-store/: the zone chips (real tab buttons; without JavaScript the chips stay hidden and every zone is listed), the Store
+// Kit bundle cards, and the two lead forms (waitlist + quote). Both forms post to the Launchpad intake (ENDPOINT) from site.js.
+function storeVars(lang) {
+  const chips = ZONES.map((z, i) => `<button type="button" class="chip" role="tab" id="zt-${z}" aria-controls="zp-${z}" aria-selected="${i === 0}"${i ? ' tabindex="-1"' : ''}>${h(lang, `is.zone.${z}`)}</button>`).join('');
+  const zones = ZONES.map((z) => `<div class="zone" role="tabpanel" id="zp-${z}" aria-labelledby="zt-${z}"><h3 class="zone-name">${h(lang, `is.zone.${z}`)}</h3><div class="zone-cols">${ZONE_COLS.map((c) => `<div class="zone-col"><h4>${h(lang, `is.col.${c}`)}</h4><p>${h(lang, `is.z.${z}.${c}`)}</p></div>`).join('')}</div></div>`).join('');
+  const kits = Object.entries(STORE_KITS).map(([k, n]) => `<article class="kit-card"><h3>${h(lang, `is.kit.${k}.n`)}</h3><ul class="ticks">${Array.from({ length: n }, (_, i) => `<li>${h(lang, `is.kit.${k}.i${i + 1}`)}</li>`).join('')}</ul></article>`).join('');
+  const choose = `<option value="">${esc(t(lang, 'f.choose'))}</option>`;
+  const typeOptions = choose + STORE_TYPES.map(([v, k]) => `<option value="${esc(v)}">${esc(t(lang, k))}</option>`).join('');
+  const leadCountryOptions = choose + [...Object.keys(COUNTRIES), 'other'].map((c) => `<option value="${c}">${esc(t(lang, c === 'other' ? 'is.cc.other' : 'cc.' + c))}</option>`).join('');
+  const msgKeys = ['f.sending', 'f.failed', 'f.tooMany', 'f.consentErr', 'is.wl.ok', 'is.q.ok', 'v.business', 'v.web', 'v.webBad', 'v.email', 'v.emailBad', 'v.city', 'v.name', 'v.what', 'v.type', 'v.country', 'v.tooLong', 'v.angle'];
+  return { zoneChips: chips, zones, storeKits: kits, typeOptions, leadCountryOptions, endpoint: ENDPOINT, leadMsgs: jsonScript(Object.fromEntries(msgKeys.map((k) => [k, t(lang, k)]))) };
 }
 
 // ---------- head ----------
@@ -360,21 +392,28 @@ function jsonLd(lang, page) {
   const orgId = SITE + '/#organization';
   const nodes = [];
   if (page === 'index') {
-    nodes.push({ '@type': 'Organization', '@id': orgId, name: BRAND, url: SITE + '/', logo: SITE + '/favicon-512.png', email: EMAIL,
+    nodes.push({ '@type': 'Organization', '@id': orgId, name: BRAND, url: SITE + '/', logo: SITE + '/favicon-512.png', email: EMAIL, description: t(lang, 'foot.blurb'),
       areaServed: Object.keys(COUNTRIES).map((cc) => ({ '@type': 'Country', name: cc })) });
     nodes.push({ '@type': 'WebSite', '@id': SITE + '/#website', name: BRAND, alternateName: 'Crier', url: SITE + '/', inLanguage: lang, publisher: { '@id': orgId } });
   } else {
     nodes.push({ '@type': 'BreadcrumbList', itemListElement: [
       { '@type': 'ListItem', position: 1, name: t(lang, 'crumb.home'), item: urlFor(lang, 'index') },
       { '@type': 'ListItem', position: 2, name: t(lang, CRUMB_KEY[page]), item: urlFor(lang, page) }] });
-    if (page === 'brand-deck' || page === 'kit') {
-      const p = page === 'kit' ? 'kit' : 'deck';
-      nodes.push({ '@type': 'Service', name: pname(lang, p), description: t(lang, `meta.d.${page}`), url: urlFor(lang, page), provider: { '@type': 'Organization', name: BRAND, url: SITE + '/' }, availableLanguage: ['en', 'ar'],
+    const provider = { '@type': 'Organization', name: BRAND, url: SITE + '/' };
+    if (page === 'brand-deck' || page === 'social') {
+      const p = page === 'social' ? 'kit' : 'deck';
+      nodes.push({ '@type': 'Service', name: pname(lang, p), description: t(lang, `meta.d.${page}`), url: urlFor(lang, page), provider, availableLanguage: ['en', 'ar'],
         ...(p === 'deck' ? {} : { offers: offerNode(lang, p) }) });
     }
+    // In-store: The Store Kit (waitlist) and Custom pieces (quoted per project), informational, with no offers
+    if (page === 'in-store') {
+      nodes.push({ '@type': 'Service', name: t(lang, 'name.store'), description: t(lang, 'is.kit.line'), url: urlFor(lang, page) + '#kit', provider, areaServed: Object.keys(COUNTRIES).map((cc) => ({ '@type': 'Country', name: cc })) });
+      nodes.push({ '@type': 'Service', name: t(lang, 'is.c.name'), description: t(lang, 'is.c.intro'), url: urlFor(lang, page) + '#custom', provider });
+    }
     if (page === 'pricing') {
-      nodes.push({ '@type': 'ItemList', name: t(lang, 'pricing.h1'), itemListElement: PRODUCTS.map((p, i) => ({ '@type': 'ListItem', position: i + 1,
-        item: { '@type': 'Service', name: pname(lang, p), provider: { '@type': 'Organization', name: BRAND, url: SITE + '/' }, ...(p === 'deck' ? { description: t(lang, 'availability.deck') } : { offers: offerNode(lang, p) }) } })) });
+      const items = PRODUCTS.map((p) => ({ '@type': 'Service', name: pname(lang, p), provider, ...(p === 'deck' ? { description: t(lang, 'availability.deck') } : { offers: offerNode(lang, p) }) }));
+      items.splice(3, 0, { '@type': 'Service', name: t(lang, 'name.store'), description: t(lang, 'is.kit.line'), url: urlFor(lang, 'in-store') + '#kit', provider });
+      nodes.push({ '@type': 'ItemList', name: t(lang, 'pricing.h1'), itemListElement: items.map((item, i) => ({ '@type': 'ListItem', position: i + 1, item })) });
     }
     if (page === 'faq') {
       nodes.push({ '@type': 'FAQPage', inLanguage: lang, mainEntity: FAQ_ALL.map((i) => ({ '@type': 'Question', name: t(lang, `faq.${i}q`),
@@ -568,10 +607,12 @@ ${GA_HEAD}
 `));
 }
 
-// renamed pages: /snapshot/ -> /kit/, /crier-deck/ -> /brand-deck/ in every language. site.js keeps ?product= and the #hash;
-// without JS the meta refresh goes to the new page. Not in the sitemap.
-for (const [lang] of LANGS) for (const [from, to] of Object.entries(MOVED)) {
-  write(dirFor(lang, from) + 'index.html', hashUrls(`<!doctype html>
+// redirect stub at /<from>/ (in the folder of language `dir`) to page `to` in language `lang`; `to` may carry a #hash
+// (physical -> in-store#custom). site.js keeps the full query string, and the visitor's own #hash if there is one, else the
+// target's; without JS the meta refresh goes to the new page (with the target's #hash). Not in the sitemap.
+function stub(dir, from, lang, to) {
+  const [pg, hash = ''] = to.split('#'), href = pathFor(lang, pg) + (hash ? '#' + hash : '');
+  write(dirFor(dir, from) + 'index.html', hashUrls(`<!doctype html>
 <html lang="${lang}"${RTL.has(lang) ? ' dir="rtl"' : ''}>
 <head>
 <meta charset="utf-8">
@@ -580,45 +621,27 @@ for (const [lang] of LANGS) for (const [from, to] of Object.entries(MOVED)) {
 <meta http-equiv="Content-Security-Policy" content="${esc(CSP)}">
 ${GA_HEAD}
 <title>${BRAND}</title>
-<link rel="canonical" href="${urlFor(lang, to)}">
-<noscript><meta http-equiv="refresh" content="0;url=${pathFor(lang, to)}"></noscript>
+<link rel="canonical" href="${urlFor(lang, pg)}">
+<noscript><meta http-equiv="refresh" content="0;url=${href}"></noscript>
 </head>
-<body data-page="redirect" data-target="${to}" data-lang="${lang}">
-<p><a href="${pathFor(lang, to)}">${BRAND}</a></p>
+<body data-page="redirect" data-target="${pg}"${hash ? ` data-hash="${hash}"` : ''} data-lang="${lang}">
+<p><a href="${href}">${BRAND}</a></p>
 <script src="/site.js"></script>
 </body>
 </html>
 `));
 }
-
-// removed languages: /es/… and /fr/… (every page and the renamed-page stubs) redirect to the same English page. Not in the sitemap.
-for (const lang of REMOVED) for (const [from, to] of [...PAGES.map((p) => [p, p]), ...Object.entries(MOVED)]) {
-  write(dirFor(lang, from) + 'index.html', hashUrls(`<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex">
-<meta http-equiv="Content-Security-Policy" content="${esc(CSP)}">
-${GA_HEAD}
-<title>${BRAND}</title>
-<link rel="canonical" href="${urlFor('en', to)}">
-<noscript><meta http-equiv="refresh" content="0;url=${pathFor('en', to)}"></noscript>
-</head>
-<body data-page="redirect" data-target="${to}" data-lang="en">
-<p><a href="${pathFor('en', to)}">${BRAND}</a></p>
-<script src="/site.js"></script>
-</body>
-</html>
-`));
-}
+// renamed pages: /kit/ -> /social/, /physical/ -> /in-store/#custom, /snapshot/ -> /social/, /crier-deck/ -> /brand-deck/ in every language
+for (const [lang] of LANGS) for (const [from, to] of Object.entries(MOVED)) stub(lang, from, lang, to);
+// removed languages: /es/… and /fr/… (every page and the renamed-page stubs) redirect to the same English page
+for (const lang of REMOVED) for (const [from, to] of [...PAGES.map((p) => [p, p]), ...Object.entries(MOVED)]) stub(lang, from, 'en', to);
 
 // 404 (one file, two languages; header and footer in English, one block per language)
 {
   htmlCc = null;
   const ctx = { lang: 'en', v: { ...pageVars('en', '404'), langpick: '', crumbs: '' } };
   const sections = LANGS.map(([c]) => {
-    const links = [['index', 'crumb.home'], ['pricing', 'nav.pricing'], ['kit', 'nav.kit'], ['brand-deck', 'nav.deck']].map(([p, k]) => `<a href="${pathFor(c, p)}">${esc(t(c, k))}</a>`).join(' · ');
+    const links = [['index', 'crumb.home'], ['social', 'nav.social'], ['in-store', 'nav.instore'], ['pricing', 'nav.pricing']].map(([p, k]) => `<a href="${pathFor(c, p)}">${esc(t(c, k))}</a>`).join(' · ');
     return `<section lang="${c}" dir="${RTL.has(c) ? 'rtl' : 'ltr'}"><h2>${esc(t(c, 'e404.title'))}</h2><p>${esc(t(c, 'e404.p'))} <a href="${pathFor(c, 'index')}">${esc(t(c, 'e404.home'))}</a></p><p>${esc(t(c, 'e404.nav'))} ${links}</p></section>`;
   }).join('\n');
   ctx.v.sections = sections;

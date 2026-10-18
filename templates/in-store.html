@@ -1,0 +1,146 @@
+<main id="main-content" class="instore-page">
+  {{=crumbs}}
+  <div class="cream">
+    <section class="is-hero" aria-labelledby="is-title">
+      <div class="is-top">
+        <div class="is-head">
+          <div class="is-eye"><span>{{t:nav.instore}}</span><span class="is-pill">{{t:availability.soon}}</span></div>
+          <h1 id="is-title">{{t:is.h1a}}<br>{{t:is.h1b}}</h1>
+        </div>
+        <div class="is-side">
+          <p>{{t:is.sub}}</p>
+          <div class="is-ctas"><a class="btn" href="#waitlist">{{t:is.cta1}}</a><a class="is-link" href="#kit">{{t:is.cta2}}</a></div>
+        </div>
+      </div>
+      {{>panels}}
+    </section>
+
+    <section id="zones" class="is-sec" aria-labelledby="zones-title">
+      <div class="sec-head"><h2 id="zones-title">{{t:is.z.title}}</h2></div>
+      <div class="zones" id="zone-tabs">
+        <div class="zone-chips" role="tablist" aria-label="{{a:is.z.title}}" hidden>{{=zoneChips}}</div>
+        {{=zones}}
+      </div>
+    </section>
+
+    <section id="kit" class="is-sec" aria-labelledby="kit-title">
+      <div class="sec-head"><h2 id="kit-title">{{t:name.store}}</h2><p class="lead">{{t:is.kit.line}}</p></div>
+      <div class="kit-cards">{{=storeKits}}</div>
+      <p class="is-note">{{t:is.kit.note}}</p>
+    </section>
+
+    <section id="waitlist" class="is-sec" aria-labelledby="wl-title">
+      <form class="formbox lead-form" id="wl-form" novalidate data-endpoint="{{=endpoint}}" data-form="store_waitlist">
+        <h2 id="wl-title">{{t:is.cta1}}</h2>
+        <div class="fields">
+          <div class="field">
+            <label for="wl-email">{{t:f.email}}</label>
+            <input id="wl-email" name="email" type="email" dir="auto" autocomplete="email" maxlength="254" required aria-describedby="wl-e-email">
+            <span class="err" id="wl-e-email" data-err="email" hidden></span>
+          </div>
+          <div class="field">
+            <label for="wl-web">{{t:f.web}}</label>
+            <input id="wl-web" name="web" type="text" inputmode="url" dir="auto" maxlength="98" placeholder="{{a:f.webPh}}" required aria-describedby="wl-e-web">
+            <span class="err" id="wl-e-web" data-err="web" hidden></span>
+          </div>
+          <div class="field">
+            <label for="wl-type">{{t:is.f.type}}</label>
+            <select id="wl-type" name="type" required aria-describedby="wl-e-type">{{=typeOptions}}</select>
+            <span class="err" id="wl-e-type" data-err="type" hidden></span>
+          </div>
+          <div class="field">
+            <label for="wl-country">{{t:f.country}}</label>
+            <select id="wl-country" name="country" required aria-describedby="wl-e-country">{{=leadCountryOptions}}</select>
+            <span class="err" id="wl-e-country" data-err="country" hidden></span>
+          </div>
+        </div>
+        <div class="honey" aria-hidden="true"><label for="wl-company">{{t:f.honey}}</label><input id="wl-company" name="company_website" type="text" tabindex="-1" autocomplete="off"></div>
+        <div class="field full">
+          <label class="check" for="wl-consent"><input id="wl-consent" name="consent" type="checkbox" aria-describedby="wl-e-consent"><span><span>{{t:is.f.consent}}</span> <a href="{{=privacyHref}}">{{t:f.privacy}}</a></span></label>
+          <span class="err" id="wl-e-consent" data-err="consent" hidden></span>
+        </div>
+        <noscript><p class="fine">{{t:is.f.nojs}}</p></noscript>
+        <div class="cta-row"><button class="btn" type="submit" disabled>{{t:is.wl.btn}}</button></div>
+        <div class="status" role="status" aria-live="polite" hidden></div>
+      </form>
+    </section>
+
+    <section id="custom" class="is-sec" aria-labelledby="custom-title">
+      <div class="sec-head">
+        <span class="eyebrow">{{t:is.c.eye}}</span>
+        <h2 id="custom-title">{{t:is.c.title}}</h2>
+        <p class="lead">{{t:is.c.intro}}</p>
+      </div>
+      <div class="physical-grid">
+        <article><span class="physical-number">01 /</span><h3>{{t:physical.1t}}</h3><p>{{t:physical.1x}}</p></article>
+        <article><span class="physical-number">02 /</span><h3>{{t:physical.2t}}</h3><p>{{t:physical.2x}}</p></article>
+        <article><span class="physical-number">03 /</span><h3>{{t:physical.3t}}</h3><p>{{t:physical.3x}}</p></article>
+        <article><span class="physical-number">04 /</span><h3>{{t:physical.4t}}</h3><p>{{t:physical.4x}}</p></article>
+      </div>
+      <div class="physical-intro">
+        <h3>{{t:physical.process}}</h3>
+        <p>{{t:physical.scope}}</p>
+        <p class="availability-note">{{t:studio.copy.068}}</p>
+      </div>
+      <form class="formbox lead-form" id="q-form" novalidate data-endpoint="{{=endpoint}}" data-form="custom_quote" aria-labelledby="q-title">
+        <h3 id="q-title">{{t:is.q.btn}}</h3>
+        <div class="fields">
+          <div class="field">
+            <label for="q-name">{{t:is.q.name}}</label>
+            <input id="q-name" name="name" type="text" dir="auto" autocomplete="name" maxlength="120" required aria-describedby="q-e-name">
+            <span class="err" id="q-e-name" data-err="name" hidden></span>
+          </div>
+          <div class="field">
+            <label for="q-business">{{t:f.business}}</label>
+            <input id="q-business" name="business" type="text" dir="auto" autocomplete="organization" maxlength="98" required aria-describedby="q-e-business">
+            <span class="err" id="q-e-business" data-err="business" hidden></span>
+          </div>
+          <div class="field">
+            <label for="q-city">{{t:f.city}}</label>
+            <input id="q-city" name="city" type="text" dir="auto" autocomplete="address-level2" maxlength="60" required aria-describedby="q-e-city">
+            <span class="err" id="q-e-city" data-err="city" hidden></span>
+          </div>
+          <div class="field">
+            <label for="q-country">{{t:f.country}}</label>
+            <select id="q-country" name="country" required aria-describedby="q-e-country">{{=leadCountryOptions}}</select>
+            <span class="err" id="q-e-country" data-err="country" hidden></span>
+          </div>
+          <div class="field full">
+            <label for="q-what">{{t:is.q.what}}</label>
+            <textarea id="q-what" name="what" dir="auto" rows="4" maxlength="300" required aria-describedby="q-e-what"></textarea>
+            <span class="err" id="q-e-what" data-err="what" hidden></span>
+          </div>
+          <div class="field full">
+            <label for="q-where">{{t:is.q.where}}</label>
+            <input id="q-where" name="where" type="text" dir="auto" maxlength="200" aria-describedby="q-e-where">
+            <span class="err" id="q-e-where" data-err="where" hidden></span>
+          </div>
+          <div class="field full">
+            <label for="q-when">{{t:is.q.when}}</label>
+            <input id="q-when" name="when" type="text" dir="auto" maxlength="100" aria-describedby="q-e-when">
+            <span class="err" id="q-e-when" data-err="when" hidden></span>
+          </div>
+          <div class="field">
+            <label for="q-email">{{t:f.email}}</label>
+            <input id="q-email" name="email" type="email" dir="auto" autocomplete="email" maxlength="254" required aria-describedby="q-e-email">
+            <span class="err" id="q-e-email" data-err="email" hidden></span>
+          </div>
+          <div class="field">
+            <label for="q-web">{{t:f.web}}</label>
+            <input id="q-web" name="web" type="text" inputmode="url" dir="auto" maxlength="200" placeholder="{{a:f.webPh}}" required aria-describedby="q-e-web">
+            <span class="err" id="q-e-web" data-err="web" hidden></span>
+          </div>
+        </div>
+        <div class="honey" aria-hidden="true"><label for="q-company">{{t:f.honey}}</label><input id="q-company" name="company_website" type="text" tabindex="-1" autocomplete="off"></div>
+        <div class="field full">
+          <label class="check" for="q-consent"><input id="q-consent" name="consent" type="checkbox" aria-describedby="q-e-consent"><span><span>{{t:is.f.consent}}</span> <a href="{{=privacyHref}}">{{t:f.privacy}}</a></span></label>
+          <span class="err" id="q-e-consent" data-err="consent" hidden></span>
+        </div>
+        <noscript><p class="fine">{{t:is.f.nojs}}</p></noscript>
+        <div class="cta-row"><button class="btn" type="submit" disabled>{{t:is.q.btn}}</button></div>
+        <div class="status" role="status" aria-live="polite" hidden></div>
+      </form>
+      <script type="application/json" id="lead-msgs">{{=leadMsgs}}</script>
+    </section>
+  </div>
+</main>
