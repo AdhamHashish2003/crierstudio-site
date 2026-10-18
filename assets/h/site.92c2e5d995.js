@@ -194,6 +194,29 @@
   ];
   function say(key, bad, busy) { status.textContent = M[key] || key; status.hidden = false; status.style.borderColor = bad ? "var(--error)" : "var(--ink)"; status.classList.toggle("busy", !!busy); }
   function setErr(id, key) { var e = $("e-" + id.replace(/^f-/, "")); e.textContent = key ? (M[key] || key) : ""; e.hidden = !key; }
+  // Validate against the public intake only on the direct/fallback path. Keep the Stripe checkout request unchanged.
+  var INTAKE_EMAIL = /^[A-Za-z0-9._%+'-]{1,64}@[A-Za-z0-9-]{1,63}(\.[A-Za-z0-9-]{1,63})*\.[A-Za-z]{2,24}$/;
+  var INTAKE_SITE = /^(https?:\/\/)?([A-Za-z0-9-]{1,63}\.)+[A-Za-z]{2,24}(:\d{1,5})?(\/[^\s<>"']{0,150})?$/;
+  var INTAKE_HANDLE = /^@?[A-Za-z0-9._]{1,30}$/;
+  function intakeBad() {
+    var business = $("f-business").value.replace(/\s+/g, " ").trim();
+    var web = $("f-web").value.trim(), email = $("f-email").value.trim();
+    var city = $("f-city").value.replace(/\s+/g, " ").trim();
+    var suffix = TAGS[product()] ? " [" + TAGS[product()] + "]" : "";
+    var checks = [
+      ["f-business", !business ? "v.business" : (Array.from(business).length + suffix.length > 120 ? "v.tooLong" : /[<>]/.test(business) ? "v.angle" : "")],
+      ["f-web", !web ? "v.web" : (Array.from(web).length > 200 ? "v.tooLong" : (INTAKE_SITE.test(web) || INTAKE_HANDLE.test(web) ? "" : "v.webBad"))],
+      ["f-email", !email ? "v.emailEmpty" : (Array.from(email).length > 254 ? "v.tooLong" : (INTAKE_EMAIL.test(email) ? "" : "v.emailBad"))],
+      ["f-city", !city ? "v.city" : (Array.from(city).length > 80 ? "v.tooLong" : /[<>]/.test(city) ? "v.angle" : "")]
+    ];
+    var first = null;
+    checks.forEach(function (f) {
+      var el = $(f[0]), key = f[1];
+      el.setAttribute("aria-invalid", key ? "true" : "false"); setErr(f[0], key);
+      if (key && !first) first = el;
+    });
+    return first;
+  }
   // the payload is what the live intake API accepts: business, web, email, city, industry, consent, company_website,
   // plus product and lang, and for crier_deck also address and deck_lang. Every package adds its name to business.
   window.__snapPayload = function () {
@@ -289,6 +312,8 @@
     // Pay first; if checkout is not open yet (not configured, refused) the same click sends the request form instead
     if (checkout && !isDeck() && !form.__noPay) { payNow().then(function (done) { if (!done) { form.__noPay = true; if (form.requestSubmit) form.requestSubmit(); } }); return; }
     form.__noPay = false;
+    var intakeError = intakeBad();
+    if (intakeError) { status.hidden = true; intakeError.focus(); return; }
     var data = window.__snapPayload(), deck = isDeck();
     btn.disabled = true; say("f.sending", false);
     var ctl = ("AbortController" in window) ? new AbortController() : null;
