@@ -63,6 +63,7 @@
         <div class="cta-row"><button class="btn" type="submit" disabled>{{t:is.wl.btn}}</button></div>
         <div class="status" role="status" aria-live="polite" hidden></div>
       </form>
+      <script type="application/json" id="lead-msgs">{{=leadMsgs}}</script>
     </section>
 
     <section id="custom" class="is-sec" aria-labelledby="custom-title">
@@ -82,65 +83,10 @@
         <p>{{t:physical.scope}}</p>
         <p class="availability-note">{{t:studio.copy.068}}</p>
       </div>
-      <form class="formbox lead-form" id="q-form" novalidate data-endpoint="{{=endpoint}}" data-form="custom_quote" aria-labelledby="q-title">
-        <h3 id="q-title">{{t:is.q.btn}}</h3>
-        <div class="fields">
-          <div class="field">
-            <label for="q-name">{{t:is.q.name}}</label>
-            <input id="q-name" name="name" type="text" dir="auto" autocomplete="name" maxlength="120" required aria-describedby="q-e-name">
-            <span class="err" id="q-e-name" data-err="name" hidden></span>
-          </div>
-          <div class="field">
-            <label for="q-business">{{t:f.business}}</label>
-            <input id="q-business" name="business" type="text" dir="auto" autocomplete="organization" maxlength="98" required aria-describedby="q-e-business">
-            <span class="err" id="q-e-business" data-err="business" hidden></span>
-          </div>
-          <div class="field">
-            <label for="q-city">{{t:f.city}}</label>
-            <input id="q-city" name="city" type="text" dir="auto" autocomplete="address-level2" maxlength="60" required aria-describedby="q-e-city">
-            <span class="err" id="q-e-city" data-err="city" hidden></span>
-          </div>
-          <div class="field">
-            <label for="q-country">{{t:f.country}}</label>
-            <select id="q-country" name="country" required aria-describedby="q-e-country">{{=leadCountryOptions}}</select>
-            <span class="err" id="q-e-country" data-err="country" hidden></span>
-          </div>
-          <div class="field full">
-            <label for="q-what">{{t:is.q.what}}</label>
-            <textarea id="q-what" name="what" dir="auto" rows="4" maxlength="300" required aria-describedby="q-e-what"></textarea>
-            <span class="err" id="q-e-what" data-err="what" hidden></span>
-          </div>
-          <div class="field full">
-            <label for="q-where">{{t:is.q.where}}</label>
-            <input id="q-where" name="where" type="text" dir="auto" maxlength="200" aria-describedby="q-e-where">
-            <span class="err" id="q-e-where" data-err="where" hidden></span>
-          </div>
-          <div class="field full">
-            <label for="q-when">{{t:is.q.when}}</label>
-            <input id="q-when" name="when" type="text" dir="auto" maxlength="100" aria-describedby="q-e-when">
-            <span class="err" id="q-e-when" data-err="when" hidden></span>
-          </div>
-          <div class="field">
-            <label for="q-email">{{t:f.email}}</label>
-            <input id="q-email" name="email" type="email" dir="auto" autocomplete="email" maxlength="254" required aria-describedby="q-e-email">
-            <span class="err" id="q-e-email" data-err="email" hidden></span>
-          </div>
-          <div class="field">
-            <label for="q-web">{{t:f.web}}</label>
-            <input id="q-web" name="web" type="text" inputmode="url" dir="auto" maxlength="200" placeholder="{{a:f.webPh}}" required aria-describedby="q-e-web">
-            <span class="err" id="q-e-web" data-err="web" hidden></span>
-          </div>
-        </div>
-        <div class="honey" aria-hidden="true"><label for="q-company">{{t:f.honey}}</label><input id="q-company" name="company_website" type="text" tabindex="-1" autocomplete="off"></div>
-        <div class="field full">
-          <label class="check" for="q-consent"><input id="q-consent" name="consent" type="checkbox" aria-describedby="q-e-consent"><span><span>{{t:is.f.consent}}</span> <a href="{{=privacyHref}}">{{t:f.privacy}}</a></span></label>
-          <span class="err" id="q-e-consent" data-err="consent" hidden></span>
-        </div>
-        <noscript><p class="fine">{{t:is.f.nojs}}</p></noscript>
-        <div class="cta-row"><button class="btn" type="submit" disabled>{{t:is.q.btn}}</button></div>
-        <div class="status" role="status" aria-live="polite" hidden></div>
-      </form>
-      <script type="application/json" id="lead-msgs">{{=leadMsgs}}</script>
+      <div class="formbox quote-cta" id="quote">
+        <div class="is-ctas"><a class="btn" id="quote-btn" href="{{=quoteHref}}">{{t:is.q.btn}}</a><a class="is-link" id="quote-login" href="{{=quoteLoginHref}}">{{t:is.c.login}}</a></div>
+        <p class="quote-line">{{t:is.c.acct}}</p>
+      </div>
     </section>
   </div>
 </main>

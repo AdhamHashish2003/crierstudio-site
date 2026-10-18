@@ -11,7 +11,12 @@ What to read first: section 1 (every Arabic string), section 5 (every [BRACKET])
 Generated from `git diff` of `i18n/ar.json` (old = main 27db0e5). EN source = the same key in `i18n/en.json` after the change.
 `{price:…}` / `{n:…}` are filled from `data/pricing.json` at build time; `{email}` becomes team@crierstudio.com.
 
-144 keys (105 new, 39 changed).
+140 keys (100 new, 40 changed).
+
+Update 2026-10-18 (quotes move into the client portal): the inline quote form is gone. Removed keys `is.q.name`, `is.q.what`,
+`is.q.where`, `is.q.when`, `is.q.ok`, `v.name`, `v.what` (their rows are deleted below); new `is.c.acct`, `is.c.login`; changed
+`faq.25a1` (now about the portal) and `faq.17a1` (accounts for quotes can be created by the visitor). `is.q.btn` stays (the
+button). The quote page's own strings (EN + AR) are in the portal, uma-main `portal/public/i18n/*.json`, listed at the end of this section.
 
 | Key | Old AR | New AR | EN source |
 |---|---|---|---|
@@ -68,7 +73,8 @@ Generated from `git diff` of `i18n/ar.json` (old = main 27db0e5). EN source = th
 | `faq.24q` | (new) | متى تُطلق حزمة المحل؟ | When does the Store Kit launch? |
 | `faq.24a1` | (new) | لا يوجد موعد إطلاق بعد. انضم إلى قائمة الانتظار في صفحة داخل المحل: سنراسلك عندما تُتاح، ومن في قائمة الانتظار يحصل على سعر الإطلاق. | There is no launch date yet. Join the waitlist on the In-store page: we email you when it opens, and the waitlist gets the launch price. |
 | `faq.25q` | (new) | هل أقدر أطلب قطعًا حسب الطلب الآن؟ | Can I order custom pieces now? |
-| `faq.25a1` | (new) | نعم. القطع حسب الطلب متاحة الآن: أرسل نموذج طلب عرض السعر في صفحة داخل المحل، واذكر ما تريد صنعه وأين سيُستخدم والتوقيت الذي تحتاجه. ونسعّر كل مشروع على حدة. | Yes. Custom pieces are open now: send the quote form on the In-store page with what you want to make, where it will be used and your timing. We quote each project separately. |
+| `faq.25a1` | (new) | نعم. القطع حسب الطلب متاحة الآن: أنشئ حسابًا مجانيًا في بوابة العملاء (زر «اطلب عرض سعر» في صفحة داخل المحل)، ثم أرسل طلبك من هناك واذكر ما تريد صنعه وأين سيُستخدم والتوقيت الذي تحتاجه. ونسعّر كل مشروع على حدة. | Yes. Custom pieces are open now: create a free account in the client portal (the Request a quote button on the In-store page) and send your request there with what you want to make, where it will be used and your timing. We quote each project separately. |
+| `faq.17a1` | صفحة خاصة بعملائنا على portal.crierstudio.com، نشارك فيها عملك وتقدر تراجعه. نفتح الحساب بعد الدفع. | صفحة خاصة بعملائنا على portal.crierstudio.com، نشارك فيها عملك وتقدر تراجعه. نفتح حساب الباقات بعد الدفع، ولطلب عرض سعر لقطع حسب الطلب يمكنك إنشاء حساب فيها بنفسك. | A private page for clients at portal.crierstudio.com, where we share your work and you can review it. Accounts for our packages are opened after you pay; to request a quote for custom pieces, you can create an account there yourself. |
 | `faq.26q` | (new) | من يصنع القطع؟ | Who makes the pieces? |
 | `faq.26a1` | (new) | تصنعها ورشتنا الخاصة. ونفحص كل قطعة ونوصلها إلى بابك. | Our own workshop makes them. We check every piece and deliver it to your door. |
 | `is.h1a` | (new) | نصمّمها ونضع عليها هويتك | We design it, brand it |
@@ -146,19 +152,46 @@ Generated from `git diff` of `i18n/ar.json` (old = main 27db0e5). EN source = th
 | `is.c.title` | (new) | تحتاج شيئًا غير موجود في الحزمة؟ | Need something that isn't in the kit? |
 | `is.c.intro` | (new) | تصميم مادي حسب الطلب، بعرض سعر لكل مشروع. | Custom physical design, quoted per project. |
 | `is.q.btn` | (new) | اطلب عرض سعر | Request a quote |
-| `is.q.name` | (new) | اسمك | Your name |
-| `is.q.what` | (new) | ما الذي تريد صنعه | What you want to make |
-| `is.q.where` | (new) | أين ستُستخدم | Where it will be used |
-| `is.q.when` | (new) | التوقيت | Timing |
-| `is.q.ok` | (new) | وصلنا طلبك. نردّ عليك بالبريد الإلكتروني خلال [X] أيام عمل. | Got it. We reply by email within [X] business days. |
-| `v.name` | (new) | أدخل اسمك. | Enter your name. |
-| `v.what` | (new) | أخبرنا بما تريد صنعه. | Tell us what you want to make. |
+| `is.c.acct` | (new) | أنشئ حسابًا مجانيًا لطلب عرض سعر. | Create a free account to request a quote. |
+| `is.c.login` | (new) | لديك حساب لدينا؟ سجّل الدخول | Already a client? Log in |
 | `v.type` | (new) | اختر نوع نشاطك. | Choose your business type. |
 | `v.country` | (new) | اختر بلدك. | Choose your country. |
 | `v.email` | (new) | أدخل بريدك الإلكتروني حتى نردّ عليك. | Enter your email so we can reply. |
 | `v.webBad` | (new) | أدخل موقعًا (مثل yourshop.com) أو حسابًا على إنستغرام (مثل @yourshop). | Enter a website (like yourshop.com) or an Instagram handle (like @yourshop). |
 | `v.tooLong` | (new) | هذا النص طويل جدًا، اختصره من فضلك. | This is too long. Please shorten it. |
 | `v.angle` | (new) | احذف الرمزين < و > من فضلك. | Please remove the < and > characters. |
+
+Portal strings for the quote flow (uma-main branch `quote-signup`, `portal/public/i18n/en.json` + `ar.json`, all new):
+
+| Key | AR | EN |
+|---|---|---|
+| `signup_closed` | التسجيل عبر الإنترنت غير متاح بعد. لطلب عرض سعر، راسلنا على {email} وسننشئ لك حسابًا. هل أنت عميل لدينا؟ سجّل الدخول أدناه. | Online sign-up is not open yet. To request a quote, email {email} and we will set up your account. Already a client? Sign in below. |
+| `quote_create_account` | أنشئ حسابًا مجانيًا | Create a free account |
+| `quote_signin_intro` | سجّل الدخول لطلب عرض سعر لقطع حسب الطلب. | Sign in to request a quote for custom pieces. |
+| `quote_signup_intro` | أنشئ حسابًا مجانيًا لطلب عرض سعر. | Create a free account to request a quote. |
+| `quote_have_account` | لديك حساب بالفعل؟ سجّل الدخول | Already a client? Sign in |
+| `nav_quote`, `qr_title` | اطلب عرض سعر | Request a quote |
+| `qr_intro` | قطع حسب الطلب لنشاطك، بعرض سعر لكل مشروع. أخبرنا بما تريد صنعه وسنردّ عليك بالبريد الإلكتروني. | Custom pieces for your business, quoted per project. Tell us what you want to make and we will reply by email. |
+| `qr_form_h` | مشروعك | Your project |
+| `qr_city` / `qr_country` | المدينة / البلد | City / Country |
+| `qr_country_SA` / `_AE` / `_EG` / `_OTHER` | السعودية / الإمارات العربية المتحدة / مصر / بلد آخر | Saudi Arabia / United Arab Emirates / Egypt / Other |
+| `qr_piece` | ما الذي تريد صنعه | What you want to make |
+| `qr_placement` | أين ستُستخدم | Where it will be used |
+| `qr_timing` | التوقيت | Timing |
+| `qr_optional` | (اختياري) | (optional) |
+| `qr_email_hint` | سنردّ على هذا العنوان. | We reply to this address. |
+| `qr_images` | صور مرجعية | Reference images |
+| `qr_images_rule` | حتى {n} صور بصيغة PNG أو JPG أو WebP، وبحد أقصى {mb} ميغابايت لكل صورة. | Up to {n} images: PNG, JPG or WebP, at most {mb} MB each. |
+| `qr_images_failed` | تعذّر رفع بعض الصور، وقد نطلبها منك بالبريد الإلكتروني. | Some images could not be uploaded; we may ask you for them by email. |
+| `qr_images_n` | الصور: {n} | Images: {n} |
+| `qr_send` | أرسل الطلب | Send request |
+| `qr_required` | أدخل اسم النشاط والمدينة وما تريد صنعه وبريدك الإلكتروني. | Fill in the business name, city, what you want to make and your email. |
+| `qr_ok` | وصلنا طلبك. نردّ عليك بالبريد الإلكتروني خلال [X] أيام عمل. | Got it. We reply by email within [X] business days. |
+| `qr_mine_h` | طلباتك | Your requests |
+| `qr_none` | لا توجد طلبات بعد. | No requests yet. |
+| `qr_status_new` / `seen` / `replied` / `closed` | أُرسل / اطّلعنا عليه / تم الرد / مغلق | Sent / Seen / Replied / Closed |
+| `qr_home_link` | اطلب عرض سعر لقطع حسب الطلب | Request a quote for custom pieces |
+| `err_invalid_country` | اختر البلد. | Choose a country. |
 
 ## 2. Redirects
 
@@ -208,10 +241,19 @@ if Cloudflare puts the query after the fragment (`…/in-store/#custom?a=1`), sw
 and 4 (no query matters on /physical/). A server redirect's `#custom` replaces a visitor's own #hash; the in-repo stub keeps the
 visitor's hash instead.
 
-## 4. Forms -> the Launchpad intake (no CRM change)
+## 4. Forms: the waitlist -> the Launchpad intake (no CRM change); quotes -> the client portal
 
-Both forms POST JSON to `https://crm-production-d789.up.railway.app/api/public/snapshot-request` from site.js (same endpoint and
-CSP as the order form). Client-side rules mirror `web_public.py`: required fields, length caps, website or @handle, e-mail
+Update 2026-10-18 (Adham): people sign up for a client portal account before they request a Custom pieces quote. The site's
+quote form (which went to the CRM intake and lost most fields) is removed; quotes no longer go to the CRM. In `#custom` the
+"Request a quote" button opens `https://portal.crierstudio.com/#/signup?intent=quote&lang=en` (`lang=ar` on /ar/in-store/), with
+the line "Create a free account to request a quote." and "Already a client? Log in" ->
+`https://portal.crierstudio.com/#/login?intent=quote&lang=<en|ar>`. The portal stores every field (business, city, country
+SA/AE/EG/Other, what, where, timing, email, up to 3 reference images), shows the client their requests with a status, and gives
+the owner a "Quotes & sign-ups" page plus a read-only feed for the monitoring bot (uma-main `portal/PORTAL-API.md`, "Custom pieces
+quotes"). Plain links: the CSP needs no change. Deploy the portal first (with `ALLOW_PUBLIC_SIGNUP=1`), then the site.
+
+The waitlist form POSTs JSON to `https://crm-production-d789.up.railway.app/api/public/snapshot-request` from site.js (same endpoint and
+CSP as the order form); its fields and payload are unchanged. Client-side rules mirror `web_public.py`: required fields, length caps, website or @handle, e-mail
 pattern, no `<` `>`. A 422 marks the field it names (in the page's language); 429 shows "too many tries". Without JavaScript the
 submit buttons stay disabled and a `<noscript>` line gives team@crierstudio.com (mailto only inside noscript).
 
@@ -226,28 +268,17 @@ Store Kit waitlist (`#waitlist`):
 | Consent checkbox | `consent: true` | yes, but see below |
 | (fixed) | `product: "snapshot"`, `lang`, `form: "store_waitlist"`, honeypot `company_website` | `form` DROPPED |
 
-Custom pieces quote (`#custom`):
-
-| Form field | Sent as | Stored by the intake today |
-|---|---|---|
-| Your name (required) | `contact_name` | DROPPED |
-| Business name (required, max 98) | `business` = business + ` [Custom pieces quote]` (max 120) | yes |
-| City (required, max 60) + Country | `city` = city + ", " + country name (max 80); `country` code | city yes; `country` DROPPED |
-| What you want to make (required, max 300) | `industry` = "Custom: " + text, cut to 80; full text in `piece` | first 72 characters only; `piece` DROPPED |
-| Where it will be used (optional, max 200) | `placement` | DROPPED |
-| Timing (optional, max 100) | `timing` | DROPPED |
-| Email, Instagram or website (both required) | `email`, `web` | yes |
-| Consent | `consent: true` | yes, but see below |
+(The Custom pieces quote mapping that was here is gone with the form: quotes are stored by the portal, field for field.)
 
 Know before launch:
 - The intake stores the consent as "Agreed on crierstudio.com that Crier Studio may use these details to prepare and email the
-  free snapshot." That text is wrong for both forms (the page's consent line is "I agree that Crier Studio may use these details
+  free snapshot." That text is wrong for the waitlist (the page's consent line is "I agree that Crier Studio may use these details
   to contact me by email about what I asked for."). Fix it in the CRM when you upgrade the intake.
-- Every submission becomes a lead + a "Snapshot requested" deal and pings you with business + city; tell them apart by the
-  `[Store Kit waitlist]` / `[Custom pieces quote]` tag in the business name.
-- Same e-mail within 24 h is stored once (silently): a visitor who joins the waitlist and then asks for a quote the same day
-  only lands once. 5 requests per IP per hour, shared with the order form.
-- No WhatsApp field and no photo upload (Decisions 1 and 6).
+- Every waitlist submission becomes a lead + a "Snapshot requested" deal and pings you with business + city; it carries the
+  `[Store Kit waitlist]` tag in the business name.
+- Same e-mail within 24 h is stored once (silently). 5 requests per IP per hour, shared with the order form.
+- No WhatsApp field anywhere (Decision 1). Reference images: the portal quote page now takes up to 3 (PNG/JPG/WebP, 5 MB each,
+  seen by the owner only); this replaces "no photo upload" (Decision 6) for quotes, by the 2026-10-18 brief.
 
 ## 5. Every remaining [BRACKET]
 
@@ -270,7 +301,6 @@ Know before launch:
 | en | `is.kit.salon.i4` | [1] QR stand |
 | en | `is.kit.salon.i5` | [200] appointment cards |
 | en | `is.kit.salon.i6` | [4] name badges |
-| en | `is.q.ok` | Got it. We reply by email within [X] business days. |
 | ar | `is.kit.cafe.i1` | [4] مرايل |
 | ar | `is.kit.cafe.i2` | [1] لوحة قائمة |
 | ar | `is.kit.cafe.i3` | [1] سجادة باب |
@@ -288,9 +318,11 @@ Know before launch:
 | ar | `is.kit.salon.i4` | [1] حامل QR |
 | ar | `is.kit.salon.i5` | [200] بطاقة مواعيد |
 | ar | `is.kit.salon.i6` | [4] بطاقات أسماء |
-| ar | `is.q.ok` | وصلنا طلبك. نردّ عليك بالبريد الإلكتروني خلال [X] أيام عمل. |
+| portal en | `qr_ok` | Got it. We reply by email within [X] business days. |
+| portal ar | `qr_ok` | وصلنا طلبك. نردّ عليك بالبريد الإلكتروني خلال [X] أيام عمل. |
 
-The bundle quantities ([4], [1], [200] …) ship bracketed (Decision 3); [X] is the quote reply time in business days.
+The bundle quantities ([4], [1], [200] …) ship bracketed (Decision 3). [X] is the quote reply time in business days: it moved
+from the site (`is.q.ok`, removed) to the portal's quote page (`qr_ok` in uma-main `portal/public/i18n/en.json` + `ar.json`).
 
 ## 6. "Coming soon" per page (visible text, EN "coming soon" / AR "قريبًا")
 
@@ -356,12 +388,16 @@ Launchpad (`social-kit-rename`, worktree `fb-social-kit`):
 - Screenshots of /, /social/, /pricing/, /in-store/ at 1280 and 390 were NOT made: they need a local server and a headless
   browser, and this run was limited to git/node/python build commands. To make them: `python -m http.server 8767 --bind
   127.0.0.1` in the repo, then open each page at 1280 px and 390 px wide (browser dev tools device mode) and capture.
-- Not verified in a browser at all: the hero at ≥960 px against the comp, the 760–959 and phone layouts, the zone tabs, both
-  forms against the live intake (no live POST was made, as instructed), RTL rendering.
+- Not verified in a browser at all: the hero at ≥960 px against the comp, the 760–959 and phone layouts, the zone tabs, the
+  waitlist form against the live intake (no live POST was made, as instructed), the portal sign-up → quote flow, RTL rendering.
 - Copy not given in the brief, written by me: zones heading "What your store needs" / "ما يحتاجه محلك"; the waitlist heading
-  reuses "Join the waitlist"; the quote form heading reuses "Request a quote"; the Store Kit section lead reuses the pricing
-  card line; field labels "Your name", "Business type", "Timing"; validation messages; the waitlist/quote consent line; the
-  noscript line; the four FAQ answers; meta titles/descriptions; the AR translation of everything.
+  reuses "Join the waitlist"; the Store Kit section lead reuses the pricing card line; field label "Business type";
+  validation messages; the waitlist consent line; the noscript line; the four FAQ answers (25 rewritten for the portal on
+  2026-10-18, and 17 adjusted); meta titles/descriptions; the AR translation of everything, including "لديك حساب لدينا؟ سجّل الدخول".
+- "Create a free account" contains "free", which `build/check.mjs` bans in visible text (no free offers). The check now lets
+  exactly "free account" / "حسابًا مجانيًا" through (the brief's own line); every other "free" still fails the build.
+- Not changed, worth a look: `terms.acct.p` still reads "If we open a client portal account for you …" (accounts can now also
+  be self-created for quotes); legal text, so I left it for you.
 - The H1 is split into two keys (`is.h1a` / `is.h1b`) so the line break matches the comp ("We design it, brand it" / "and make
   it."). AR uses the feminine plural (the pieces): "نصمّمها ونضع عليها هويتك / ونصنعها لك."
 - Home order: hero → businesses → seasons → In-store teaser → four packages → good to know (the brief's architecture did not

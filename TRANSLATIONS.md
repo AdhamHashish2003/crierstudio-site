@@ -9,3 +9,7 @@ Rules used: "Crier Studio" and "Brand Deck" stay in Latin script; the package na
 The ar file was written by an AI translator, not a native speaker. Check it, the legal pages first:
 
 - ar: "Brand Deck" stays in Latin script; the other package names are translated.
+- ar (2026-10-18): the Custom pieces links on /ar/in-store/ (`is.c.acct` "أنشئ حسابًا مجانيًا لطلب عرض سعر.", `is.c.login`) and the
+  changed FAQ answers `faq.25a1` / `faq.17a1` (quotes are now asked in the client portal). The portal's own Arabic strings
+  for the quote page are in uma-main `portal/public/i18n/ar.json` (`qr_*`, `quote_*`, `signup_closed`, `nav_quote`).
+- "free account" / "حسابًا مجانيًا" is the one allowed use of free (a portal account, not an offer); `build/check.mjs` lets only that phrase through.

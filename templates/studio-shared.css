@@ -173,6 +173,9 @@ body.studio-inner{--cream-bg:#f3f1ea;--cream-ink:#1b1b17;--cream-panel:#fbfaf6;-
 .cream .physical-intro{border:1px solid var(--cream-line);padding:28px;background:var(--cream-panel);max-width:760px;margin-block:24px 32px;display:grid;gap:12px}
 .cream .physical-intro h3{font:600 22px/1.2 var(--display);font-stretch:100%}
 .cream .physical-intro .availability-note{margin:0}
+/* Custom pieces: the quote is asked in the client portal (sign up first); one button, the sign-in link and one line */
+.quote-cta{display:grid;gap:12px;max-width:760px}
+.quote-line{margin:0;font-size:15px;line-height:1.5;color:var(--cream-muted)}
 /* The Store Kit card on the home page and on /pricing/: no price, "Coming soon" where the price sits, the waitlist only */
 .store-card.cream{border-color:var(--cream-line)}
 .soon-price{font:600 clamp(1.6rem,4vw,2rem)/1.1 var(--display);font-stretch:100%;letter-spacing:-.02em;color:var(--cream-ink)}

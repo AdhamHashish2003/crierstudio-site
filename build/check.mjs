@@ -49,7 +49,8 @@ for (const l of LANGS) for (const p of PAGES) {
   ok(!/draft|\(DRAFT\)/i.test(h.replace(/<style>[\s\S]*?<\/style>/, '')), `draft text in ${file}`);
   // no free offers anywhere: the word free (and its ar form) must not appear in visible text
   const vis = h.replace(/<style>[\s\S]*?<\/style>/, '').replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ');
-  ok(!/\bfree\b|مجان|بدون مقابل/i.test(vis), `free wording in ${file}`);
+  // (one exception, Adham 2026-10-18: "Create a free account to request a quote" / the FAQ answer: a client portal account, not an offer)
+  ok(!/\bfree\b|مجان|بدون مقابل/i.test(vis.replace(/\bfree account\b|حسابًا مجانيًا/gi, '')), `free wording in ${file}`);
   ok(!/Your shop, heard/i.test(h), `tagline in ${file}`);
   // the HTML is written in the default country's currency (Saudi Arabia, SAR before VAT); every price carries its US-dollar
   // and local prices in data-* for site.js
@@ -65,7 +66,12 @@ for (const l of LANGS) for (const p of PAGES) {
   }
   if (p === 'in-store/') {
     ok(!/data-usd|data-product|"@type":"Offer"/.test(h), `no price, buy button or offer on ${file}`);
-    for (const id of ['id="kit"', 'id="waitlist"', 'id="custom"', 'id="wl-form"', 'id="q-form"', 'data-form="store_waitlist"', 'data-form="custom_quote"']) ok(h.includes(id), `${id} on ${file}`);
+    for (const id of ['id="kit"', 'id="waitlist"', 'id="custom"', 'id="wl-form"', 'data-form="store_waitlist"']) ok(h.includes(id), `${id} on ${file}`);
+    // one form (the waitlist); Custom pieces quotes are asked in the client portal: sign-up and sign-in links with the page language
+    ok((h.match(/<form\b/g) || []).length === 1 && !h.includes('id="q-form"') && !h.includes('custom_quote'), `only the waitlist form on ${file}`);
+    ok(h.includes(`id="quote-btn" href="https://portal.crierstudio.com/#/signup?intent=quote&amp;lang=${l}"`), `quote button -> portal sign-up (lang=${l}) on ${file}`);
+    ok(h.includes(`id="quote-login" href="https://portal.crierstudio.com/#/login?intent=quote&amp;lang=${l}"`), `quote log-in link -> portal sign-in (lang=${l}) on ${file}`);
+    ok((h.match(/id="lead-msgs"/g) || []).length === 1, `waitlist messages on ${file}`);
     ok(!/mailto:/.test(h.replace(/<noscript>[\s\S]*?<\/noscript>/g, '').replace(/<footer>[\s\S]*?<\/footer>/, '')), `no mailto outside noscript/footer on ${file}`);
     ok((vis.match(/coming soon|قريبًا/gi) || []).length === 1, `"coming soon" exactly once on ${file}`);
     ok(!/<h1[^>]*>[^<]*(coming soon|قريبًا)/i.test(h), `no "coming soon" in the H1 of ${file}`);

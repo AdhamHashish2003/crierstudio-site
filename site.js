@@ -330,10 +330,10 @@
   });
 })();
 
-/* In-store (2026-10-18): the zone chips (real tab buttons) and the two lead forms, the Store Kit waitlist and the Custom
-   pieces quote. Both post to the Launchpad intake (the order form's endpoint) with the fields it requires; it ignores unknown
-   keys today, so contact_name, piece, placement, timing, country and form are sent ready for a later CRM upgrade. Without
-   JavaScript the chips stay hidden (every zone is listed) and the submit buttons stay disabled (a noscript line gives the email). */
+/* In-store (2026-10-18): the zone chips (real tab buttons) and the Store Kit waitlist form. It posts to the Launchpad intake
+   (the order form's endpoint) with the fields it requires; it ignores unknown keys today, so country and form are sent ready
+   for a later CRM upgrade. Custom pieces quotes are asked in the client portal (a plain link, no script here). Without
+   JavaScript the chips stay hidden (every zone is listed) and the submit button stays disabled (a noscript line gives the email). */
 (function () {
   "use strict";
   var tabs = document.getElementById("zone-tabs");
@@ -370,20 +370,14 @@
   var HANDLE = /^@?[A-Za-z0-9._]{1,30}$/;
   var CC = { SA: "Saudi Arabia", AE: "UAE", EG: "Egypt", other: "Other country" };
   var RULES = {
-    name: function (v) { return v ? "" : "v.name"; },
-    business: function (v) { return v ? "" : "v.business"; },
-    city: function (v) { return v ? "" : "v.city"; },
     country: function (v) { return v ? "" : "v.country"; },
     type: function (v) { return v ? "" : "v.type"; },
-    what: function (v) { return v ? "" : "v.what"; },
-    where: function () { return ""; },
-    when: function () { return ""; },
     email: function (v) { return !v ? "v.email" : (EMAIL.test(v) ? "" : "v.emailBad"); },
     web: function (v) { return !v ? "v.web" : (SITE.test(v) || HANDLE.test(v) ? "" : "v.webBad"); }
   };
   // a 422 from the intake names the intake's field: point it at the input it was made from, with that input's message
-  var FROM = { store_waitlist: { business: "web", city: "country", industry: "type" }, custom_quote: { industry: "what" } };
-  var MSG = { email: "v.emailBad", web: "v.webBad", business: "v.business", city: "v.city", type: "v.type", what: "v.what", consent: "f.consentErr" };
+  var FROM = { store_waitlist: { business: "web", city: "country", industry: "type" } };
+  var MSG = { email: "v.emailBad", web: "v.webBad", type: "v.type", consent: "f.consentErr" };
   function clean(v) { return String(v || "").replace(/\s+/g, " ").trim(); }
   function cut(s, n) { return s.length > n ? s.slice(0, n).trim() : s; }
   for (var f = 0; f < forms.length; f++) (function (form) {
@@ -411,13 +405,7 @@
     function payload() {
       var web = val("web"), country = el("country").value, cn = CC[country] || CC.other;
       var p = { web: web, email: val("email"), consent: true, company_website: el("company_website").value, product: "snapshot", lang: lang, form: kind, country: country };
-      if (kind === "store_waitlist") {
-        p.business = cut("[Store Kit waitlist] " + web, 120); p.city = cn; p.industry = el("type").value;
-      } else {
-        var tag = " [Custom pieces quote]";
-        p.business = cut(val("business"), 120 - tag.length) + tag; p.city = cut(val("city") + ", " + cn, 80); p.industry = cut("Custom: " + val("what"), 80);
-        p.contact_name = val("name"); p.piece = val("what"); p.placement = val("where"); p.timing = val("when");
-      }
+      p.business = cut("[Store Kit waitlist] " + web, 120); p.city = cn; p.industry = el("type").value;
       return p;
     }
     btn.disabled = false;
@@ -429,7 +417,7 @@
       fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload()), signal: ctl ? ctl.signal : undefined })
         .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, body: j }; }); })
         .then(function (res) {
-          if (res.status === 200 && res.body && res.body.ok === true) { form.reset(); say(kind === "store_waitlist" ? "is.wl.ok" : "is.q.ok", false); return; }
+          if (res.status === 200 && res.body && res.body.ok === true) { form.reset(); say("is.wl.ok", false); return; }
           if (res.status === 429) { say("f.tooMany", true); return; }
           var sf = res.status === 422 && res.body && res.body.field, n = sf && ((FROM[kind] || {})[sf] || sf);
           if (n && el(n)) { setErr(n, MSG[n] || "", String(res.body.message || "")); status.hidden = true; el(n).focus(); return; }

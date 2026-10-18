@@ -26,7 +26,7 @@ const REMOVED = ['es', 'fr'];
 const RTL = new Set(['ar']);
 // every page exists in both languages: / (en), /ar/ and the sub-paths below
 // Two product lines (2026-10-18): Social (/social/: The Social Kit + the monthly plans) and In-store (/in-store/: The Store
-// Kit waitlist + Custom pieces with a quote form).
+// Kit waitlist + Custom pieces, whose quotes are asked in the client portal after a free sign-up).
 const PAGES = ['index', 'pricing', 'brand-deck', 'social', 'in-store', 'samples', 'faq', 'about', 'terms', 'privacy', 'refund'];
 // renamed pages: the old URLs stay as redirect stubs in every language (full query kept; the visitor's #hash wins over the
 // target's), not in the sitemap. A target may carry a #hash: /physical/ -> /in-store/#custom.
@@ -360,7 +360,10 @@ function kitVars(lang) {
 }
 
 // /in-store/: the zone chips (real tab buttons; without JavaScript the chips stay hidden and every zone is listed), the Store
-// Kit bundle cards, and the two lead forms (waitlist + quote). Both forms post to the Launchpad intake (ENDPOINT) from site.js.
+// Kit bundle cards, the waitlist form (posts to the Launchpad intake, ENDPOINT, from site.js) and the Custom pieces links.
+// Quotes are asked in the client portal (Adham, 2026-10-18): "Request a quote" opens the portal's sign-up with intent=quote and
+// the page language; "Already a client? Log in" its sign-in with the same intent (portal PORTAL-API.md, "Custom pieces quotes").
+const portalAuth = (route, lang) => `${PORTAL}#/${route}?intent=quote&lang=${lang}`;
 function storeVars(lang) {
   const chips = ZONES.map((z, i) => `<button type="button" class="chip" role="tab" id="zt-${z}" aria-controls="zp-${z}" aria-selected="${i === 0}"${i ? ' tabindex="-1"' : ''}>${h(lang, `is.zone.${z}`)}</button>`).join('');
   const zones = ZONES.map((z) => `<div class="zone" role="tabpanel" id="zp-${z}" aria-labelledby="zt-${z}"><h3 class="zone-name">${h(lang, `is.zone.${z}`)}</h3><div class="zone-cols">${ZONE_COLS.map((c) => `<div class="zone-col"><h4>${h(lang, `is.col.${c}`)}</h4><p>${h(lang, `is.z.${z}.${c}`)}</p></div>`).join('')}</div></div>`).join('');
@@ -368,8 +371,9 @@ function storeVars(lang) {
   const choose = `<option value="">${esc(t(lang, 'f.choose'))}</option>`;
   const typeOptions = choose + STORE_TYPES.map(([v, k]) => `<option value="${esc(v)}">${esc(t(lang, k))}</option>`).join('');
   const leadCountryOptions = choose + [...Object.keys(COUNTRIES), 'other'].map((c) => `<option value="${c}">${esc(t(lang, c === 'other' ? 'is.cc.other' : 'cc.' + c))}</option>`).join('');
-  const msgKeys = ['f.sending', 'f.failed', 'f.tooMany', 'f.consentErr', 'is.wl.ok', 'is.q.ok', 'v.business', 'v.web', 'v.webBad', 'v.email', 'v.emailBad', 'v.city', 'v.name', 'v.what', 'v.type', 'v.country', 'v.tooLong', 'v.angle'];
-  return { zoneChips: chips, zones, storeKits: kits, typeOptions, leadCountryOptions, endpoint: ENDPOINT, leadMsgs: jsonScript(Object.fromEntries(msgKeys.map((k) => [k, t(lang, k)]))) };
+  const msgKeys = ['f.sending', 'f.failed', 'f.tooMany', 'f.consentErr', 'is.wl.ok', 'v.web', 'v.webBad', 'v.email', 'v.emailBad', 'v.type', 'v.country', 'v.tooLong', 'v.angle'];
+  return { zoneChips: chips, zones, storeKits: kits, typeOptions, leadCountryOptions, endpoint: ENDPOINT, leadMsgs: jsonScript(Object.fromEntries(msgKeys.map((k) => [k, t(lang, k)]))),
+    quoteHref: esc(portalAuth('signup', lang)), quoteLoginHref: esc(portalAuth('login', lang)) };
 }
 
 // ---------- head ----------
