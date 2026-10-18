@@ -409,7 +409,7 @@ function jsonLd(lang, page) {
       nodes.push({ '@type': 'Service', name: pname(lang, p), description: t(lang, `meta.d.${page}`), url: urlFor(lang, page), provider, availableLanguage: ['en', 'ar'],
         ...(p === 'deck' ? {} : { offers: offerNode(lang, p) }) });
     }
-    // In-store: The Store Kit (waitlist) and Custom pieces (quoted per project), informational, with no offers
+    // In-store: The Store Kit (waitlist) and Custom pieces (requests through the client portal), informational, with no offers
     if (page === 'in-store') {
       nodes.push({ '@type': 'Service', name: t(lang, 'name.store'), description: t(lang, 'is.kit.line'), url: urlFor(lang, page) + '#kit', provider, areaServed: Object.keys(COUNTRIES).map((cc) => ({ '@type': 'Country', name: cc })) });
       nodes.push({ '@type': 'Service', name: t(lang, 'is.c.name'), description: t(lang, 'is.c.intro'), url: urlFor(lang, page) + '#custom', provider });

@@ -4,7 +4,8 @@ Branch `instore-restructure` (site), `social-kit-rename` (uma-main worktree, Lau
 One local build: `python build/subset-fonts.py`, `node build/build.mjs`, `node build/check.mjs` -> "all checks passed (22 pages, 2 languages)".
 Tests (`tests/*.mjs`, portal `node --test`, Launchpad `pytest`) were NOT run; expectations that assert the old name were updated.
 
-What to read first: section 1 (every Arabic string), section 5 (every [BRACKET]), section 8 (things I decided that you may want to change).
+What to read first: section 1 (every Arabic string), section 5 ([BRACKET]s: none left), section 8 (things I decided that you may want to change),
+section 9 ("Snapshot" wording).
 
 ## 1. Arabic strings: every new or changed key
 
@@ -17,6 +18,14 @@ Update 2026-10-18 (quotes move into the client portal): the inline quote form is
 `is.q.where`, `is.q.when`, `is.q.ok`, `v.name`, `v.what` (their rows are deleted below); new `is.c.acct`, `is.c.login`; changed
 `faq.25a1` (now about the portal) and `faq.17a1` (accounts for quotes can be created by the visitor). `is.q.btn` stays (the
 button). The quote page's own strings (EN + AR) are in the portal, uma-main `portal/public/i18n/*.json`, listed at the end of this section.
+
+Update 2026-10-18 (promise nothing): The Store Kit is a coming-soon concept, so its copy promises no quantities, price, launch
+price, launch date or delivery; Custom pieces is a sign-up, so its copy promises no quote, price or reply time. Changed (rows
+below show the new text): `is.kit.note` (now says the lists are not final), the 17 `is.kit.*.i*` items (plain names, no
+quantities), `is.sub`, `is.p3x`, `faq.23a1`, `faq.24a1`, `faq.25a1`, `faq.26a1`, `faq.17a1`, `meta.d.in-store`, `physical.scope`,
+`is.c.intro`, `is.c.acct`, and `studio.copy.068` (was "Technical feasibility, production scope, cost and delivery are confirmed
+before commitment." / "نؤكد الجدوى التقنية ونطاق الإنتاج والتكلفة والتسليم قبل الالتزام.", now "Nothing is made or charged until
+you agree to it." / "لا نصنع شيئًا ولا نطلب أي مبلغ قبل موافقتك."). `is.q.btn` stays "Request a quote" / "اطلب عرض سعر".
 
 | Key | Old AR | New AR | EN source |
 |---|---|---|---|
@@ -58,7 +67,7 @@ button). The quote page's own strings (EN + AR) are in the portal, uma-main `por
 | `f.platformKit` | أي منصة تريد؟ الحزمة الكاملة تُجهَّز لمنصة واحدة. | أي منصة تريد؟ حزمة السوشيال ميديا تُجهَّز لمنصة واحدة. | Which platform? The Social Kit is made for one platform. |
 | `home.plans.title` | ثلاث باقات | أربع باقات | Four packages |
 | `physical.2x` | تصوّرات لقطع ومنحوتات مخصّصة، من دراسة الشكل الأولية إلى تحديد اتجاه الخامات والتشطيبات. | تصوّرات لقطع ومنحوتات مخصّصة، من دراسة الشكل الأولية إلى تحديد اتجاه الخامات والتشطيبات. وقطع الفايبرجلاس نصنعها في ورشتنا الخاصة. | Custom object and sculptural concepts, from initial form studies to material and finish direction. Fiberglass pieces are made in our own workshop. |
-| `physical.scope` | أخبرنا بما تريد تصميمه، وكيف سيُستخدم، وأين موقعك، ومتى تحتاجه. نحدّد نطاق التصميم ونسعّره منفصلًا عن الحزمة الكاملة والباقات الشهرية وBrand Deck. | أخبرنا بما تريد تصميمه، وكيف سيُستخدم، وأين موقعك، ومتى تحتاجه. نحدّد نطاق التصميم ونسعّره منفصلًا عن حزمة السوشيال ميديا والباقات الشهرية وBrand Deck. | Tell us what you want to make, how it will be used, your location and your timing. We define the design scope and quote it separately from The Social Kit, the monthly plans and Brand Deck. |
+| `physical.scope` | أخبرنا بما تريد تصميمه، وكيف سيُستخدم، وأين موقعك، ومتى تحتاجه. نحدّد نطاق التصميم ونسعّره منفصلًا عن الحزمة الكاملة والباقات الشهرية وBrand Deck. | أخبرنا بما تريد تصميمه، وكيف سيُستخدم، وأين موقعك، ومتى تحتاجه. القطع حسب الطلب منفصلة عن حزمة السوشيال ميديا والباقات الشهرية وBrand Deck. | Tell us what you want to make, how it will be used, your location and your timing. Custom pieces are separate from The Social Kit, the monthly plans and Brand Deck. |
 | `nav.social` | (new) | السوشيال | Social |
 | `nav.instore` | (new) | داخل المحل | In-store |
 | `name.store` | (new) | حزمة المحل | The Store Kit |
@@ -66,20 +75,20 @@ button). The quote page's own strings (EN + AR) are in the portal, uma-main `por
 | `meta.t.social` | (new) | حزمة السوشيال ميديا: دليل علامتك و{n:kit.posts} تصاميم لوسائل التواصل وخطة لمدة 30 يومًا \| Crier Studio | The Social Kit: your brand book, {n:kit.posts} social designs and a 30-day plan \| Crier Studio |
 | `meta.d.social` | (new) | حزمة السوشيال ميديا دفعة واحدة: ملف PDF للتسويق ودليل العلامة، و{n:kit.competitor_profiles} ملفات عن المنافسين، والتموضع، و{n:kit.posts} تصاميم لوسائل التواصل مع تعليقاتها، وفكرة حملة، ونماذج عرض للعلامة، وخطة لمدة 30 يومًا. من Crier Studio، استوديو تصميم للمشاريع المحلية في السعودية والإمارات ومصر. | The Social Kit, one time: a marketing + brand-book PDF, {n:kit.competitor_profiles} competitor profiles, positioning, {n:kit.posts} social designs with captions, a campaign concept, brand mockups and a 30-day plan. By Crier Studio, a design studio for local businesses in Saudi Arabia, the UAE and Egypt. |
 | `meta.t.in-store` | (new) | داخل المحل: حزمة المحل والقطع حسب الطلب \| Crier Studio | In-store: The Store Kit and custom pieces \| Crier Studio |
-| `meta.d.in-store` | (new) | استوديو تصميم للمشاريع المحلية: محتوى السوشيال ميديا وحزم المحلات والقطع حسب الطلب، في السعودية والإمارات ومصر. مرايل ولوحات قوائم وسجاد مدخل وأكواب وحوامل QR بهويتك: انضم إلى قائمة انتظار حزمة المحل أو اطلب عرض سعر لقطع حسب الطلب. | A design studio for local businesses: social content, store kits and custom pieces, in Saudi Arabia, the UAE and Egypt. Aprons, menu boards, door mats, cups and QR stands in your identity: join the Store Kit waitlist or request a quote for custom pieces. |
+| `meta.d.in-store` | (new) | استوديو تصميم للمشاريع المحلية: محتوى السوشيال ميديا وحزم المحلات والقطع حسب الطلب، في السعودية والإمارات ومصر. مرايل ولوحات قوائم وسجاد مدخل وأكواب وحوامل QR بهويتك: انضم إلى قائمة انتظار حزمة المحل أو أخبرنا بالقطع التي تحتاجها حسب الطلب. | A design studio for local businesses: social content, store kits and custom pieces, in Saudi Arabia, the UAE and Egypt. Aprons, menu boards, door mats, cups and QR stands in your identity: join the Store Kit waitlist or tell us about the custom pieces you need. |
 | `faq.ctaStore` | (new) | حزمة المحل — انضم إلى قائمة الانتظار | Store Kit — join the waitlist |
 | `faq.23q` | (new) | ما هي حزمة المحل؟ | What is the Store Kit? |
-| `faq.23a1` | (new) | حزمة المحل هي مجموعة القطع التي يستخدمها محلك كل يوم، مثل المرايل ولوحات القوائم وسجاد المدخل والأكواب وحوامل QR وبطاقات الأختام: نصمّمها لنشاطك بهويتك أنت، ونصنعها في ورشتنا، ونوصلها إلى بابك في السعودية والإمارات ومصر. وتعرض صفحة داخل المحل الحزم الخاصة بالمقاهي والمطاعم والصالونات. | The Store Kit is the set of pieces your store uses every day, such as aprons, menu boards, door mats, cups, QR stands and stamp cards: designed for your business, in your own identity, made in our workshop and delivered to your door in Saudi Arabia, the UAE and Egypt. The In-store page shows the bundles for cafés, restaurants and salons. |
+| `faq.23a1` | (new) | حزمة المحل مجموعة من القطع التي يستخدمها محلك كل يوم، مثل المرايل ولوحات القوائم وسجاد المدخل والأكواب وحوامل QR وبطاقات الأختام، نصمّمها لنشاطك بهويتك أنت. ولم تُتح بعد. وتعرض صفحة داخل المحل نوع القطع التي قد تشملها حزمة لمقهى أو مطعم أو صالون. | The Store Kit is a set of pieces your store uses every day, such as aprons, menu boards, door mats, cups, QR stands and stamp cards, designed for your business in your own identity. It is not open yet. The In-store page shows the kind of pieces a kit for a café, a restaurant or a salon could include. |
 | `faq.24q` | (new) | متى تُطلق حزمة المحل؟ | When does the Store Kit launch? |
-| `faq.24a1` | (new) | لا يوجد موعد إطلاق بعد. انضم إلى قائمة الانتظار في صفحة داخل المحل: سنراسلك عندما تُتاح، ومن في قائمة الانتظار يحصل على سعر الإطلاق. | There is no launch date yet. Join the waitlist on the In-store page: we email you when it opens, and the waitlist gets the launch price. |
+| `faq.24a1` | (new) | لا يوجد موعد إطلاق بعد. انضم إلى قائمة الانتظار وسنراسلك عندما تُتاح. | There is no launch date yet. Join the waitlist and we will email you when it opens. |
 | `faq.25q` | (new) | هل أقدر أطلب قطعًا حسب الطلب الآن؟ | Can I order custom pieces now? |
-| `faq.25a1` | (new) | نعم. القطع حسب الطلب متاحة الآن: أنشئ حسابًا مجانيًا في بوابة العملاء (زر «اطلب عرض سعر» في صفحة داخل المحل)، ثم أرسل طلبك من هناك واذكر ما تريد صنعه وأين سيُستخدم والتوقيت الذي تحتاجه. ونسعّر كل مشروع على حدة. | Yes. Custom pieces are open now: create a free account in the client portal (the Request a quote button on the In-store page) and send your request there with what you want to make, where it will be used and your timing. We quote each project separately. |
-| `faq.17a1` | صفحة خاصة بعملائنا على portal.crierstudio.com، نشارك فيها عملك وتقدر تراجعه. نفتح الحساب بعد الدفع. | صفحة خاصة بعملائنا على portal.crierstudio.com، نشارك فيها عملك وتقدر تراجعه. نفتح حساب الباقات بعد الدفع، ولطلب عرض سعر لقطع حسب الطلب يمكنك إنشاء حساب فيها بنفسك. | A private page for clients at portal.crierstudio.com, where we share your work and you can review it. Accounts for our packages are opened after you pay; to request a quote for custom pieces, you can create an account there yourself. |
+| `faq.25a1` | (new) | نعم. أنشئ حسابًا مجانيًا في بوابة العملاء (زر «اطلب عرض سعر» في صفحة داخل المحل)، وأخبرنا هناك بما تريد صنعه وأين سيُستخدم والتوقيت الذي تحتاجه. | Yes. Create a free account in the client portal (the Request a quote button on the In-store page) and tell us there what you want to make, where it will be used and your timing. |
+| `faq.17a1` | صفحة خاصة بعملائنا على portal.crierstudio.com، نشارك فيها عملك وتقدر تراجعه. نفتح الحساب بعد الدفع. | صفحة خاصة بعملائنا على portal.crierstudio.com، نشارك فيها عملك وتقدر تراجعه. نفتح حساب الباقات بعد الدفع، ولتخبرنا بالقطع التي تحتاجها حسب الطلب يمكنك إنشاء حساب فيها بنفسك. | A private page for clients at portal.crierstudio.com, where we share your work and you can review it. Accounts for our packages are opened after you pay; to tell us about custom pieces, you can create an account there yourself. |
 | `faq.26q` | (new) | من يصنع القطع؟ | Who makes the pieces? |
-| `faq.26a1` | (new) | تصنعها ورشتنا الخاصة. ونفحص كل قطعة ونوصلها إلى بابك. | Our own workshop makes them. We check every piece and deliver it to your door. |
+| `faq.26a1` | (new) | تصنعها ورشتنا الخاصة، ونفحص كل قطعة. | Our own workshop makes them, and we check every piece. |
 | `is.h1a` | (new) | نصمّمها ونضع عليها هويتك | We design it, brand it |
 | `is.h1b` | (new) | ونصنعها لك. | and make it. |
-| `is.sub` | (new) | مرايل، ولوحات قوائم، وسجاد مدخل، وأكواب، وحوامل QR، وبطاقات أختام — كل قطعة في محلك، بهويتك، تصلك إلى بابك. | Aprons, menu boards, door mats, cups, QR stands, stamp cards — every piece in your store, in your identity, delivered to your door. |
+| `is.sub` | (new) | مرايل، ولوحات قوائم، وسجاد مدخل، وأكواب، وحوامل QR، وبطاقات أختام — كل قطعة في محلك، بهويتك. | Aprons, menu boards, door mats, cups, QR stands, stamp cards — every piece in your store, in your identity. |
 | `is.cta1` | (new) | انضم إلى قائمة الانتظار | Join the waitlist |
 | `is.cta2` | (new) | ماذا في الحزمة | What's in the kit |
 | `is.p1n` | (new) | التصميم | Design |
@@ -91,7 +100,7 @@ button). The quote page's own strings (EN + AR) are in the portal, uma-main `por
 | `is.p2aria` | (new) | الهوية: المريلة ولوحة القائمة وسجادة المدخل نفسها بألوان المقهى وشعاره | Brand: the same apron, menu board and door mat in the café's own colours and logo |
 | `is.p3n` | (new) | التصنيع | Make |
 | `is.p3tag` | (new) | ورشتنا | Our workshop |
-| `is.p3x` | (new) | نصنعها، ونفحص كل قطعة، ونوصلها إلى بابك في السعودية والإمارات ومصر. | We make it, check every piece and deliver it to your door in Saudi Arabia, the UAE and Egypt. |
+| `is.p3x` | (new) | نصنعها في ورشتنا الخاصة، ونفحص كل قطعة. | We make it in our own workshop and check every piece. |
 | `is.p3aria` | (new) | التصنيع: المريلة جاهزة بخياطتها وملصقها المنسوج، ولوحة القائمة في إطارها، وسجادة المدخل من ألياف جوز الهند | Make: the finished apron with stitching and a woven label, the framed menu board and the coir door mat |
 | `is.foot` | (new) | المعروض: Karak House، مقهى وهمي. قطعك تحمل هويتك أنت. | Shown: Karak House, a fictional café. Your pieces carry your own identity. |
 | `is.z.title` | (new) | ما يحتاجه محلك | What your store needs |
@@ -120,27 +129,27 @@ button). The quote page's own strings (EN + AR) are in the portal, uma-main `por
 | `is.z.abaya.counter` | (new) | بطاقات التعليق، أكياس الملابس، مفرش الكاونتر، حامل QR | Hang tags, garment bags, counter mat, QR stand |
 | `is.z.abaya.team` | (new) | بطاقات الموظفين، حقائب قماشية | Staff badges, tote bags |
 | `is.kit.line` | (new) | مرايل ولوحات قوائم وسجاد مدخل وأكواب وحوامل QR — مصمّمة، وبهويتك، ومصنوعة. | Aprons, menu boards, door mats, cups, QR stands — designed, branded, made. |
-| `is.kit.note` | (new) | نعلن السعر عند الإطلاق، ومن في قائمة الانتظار يحصل على سعر الإطلاق. | Price announced at launch. Waitlist gets the launch price. |
+| `is.kit.note` | (new) | القوائم تعرض نوع القطع التي قد تشملها الحزمة، ولا شيء نهائي بعد. | The lists show the kind of pieces a kit could include. Nothing is final yet. |
 | `is.kit.cafe.n` | (new) | حزمة المحل للمقاهي | Café Store Kit |
-| `is.kit.cafe.i1` | (new) | [4] مرايل | [4] aprons |
-| `is.kit.cafe.i2` | (new) | [1] لوحة قائمة | [1] menu board |
-| `is.kit.cafe.i3` | (new) | [1] سجادة باب | [1] door mat |
-| `is.kit.cafe.i4` | (new) | [1] حامل QR | [1] QR stand |
-| `is.kit.cafe.i5` | (new) | [200] بطاقة أختام | [200] stamp cards |
-| `is.kit.cafe.i6` | (new) | [100] كوب | [100] cups |
+| `is.kit.cafe.i1` | (new) | مرايل | Aprons |
+| `is.kit.cafe.i2` | (new) | لوحة قائمة | Menu board |
+| `is.kit.cafe.i3` | (new) | سجادة باب | Door mat |
+| `is.kit.cafe.i4` | (new) | حامل QR | QR stand |
+| `is.kit.cafe.i5` | (new) | بطاقات أختام | Stamp cards |
+| `is.kit.cafe.i6` | (new) | أكواب | Cups |
 | `is.kit.restaurant.n` | (new) | حزمة المحل للمطاعم | Restaurant Store Kit |
-| `is.kit.restaurant.i1` | (new) | [6] مرايل | [6] aprons |
-| `is.kit.restaurant.i2` | (new) | [2] لوحة قائمة | [2] menu boards |
-| `is.kit.restaurant.i3` | (new) | [1] سجادة باب | [1] door mat |
-| `is.kit.restaurant.i4` | (new) | [6] حامل QR للطاولات | [6] QR table tents |
-| `is.kit.restaurant.i5` | (new) | [50] قائمة طعام | [50] menus |
+| `is.kit.restaurant.i1` | (new) | مرايل | Aprons |
+| `is.kit.restaurant.i2` | (new) | لوحات قوائم | Menu boards |
+| `is.kit.restaurant.i3` | (new) | سجادة باب | Door mat |
+| `is.kit.restaurant.i4` | (new) | حوامل QR للطاولات | QR table tents |
+| `is.kit.restaurant.i5` | (new) | قوائم طعام | Menus |
 | `is.kit.salon.n` | (new) | حزمة المحل للصالونات | Salon Store Kit |
-| `is.kit.salon.i1` | (new) | [4] أغطية قص | [4] capes |
-| `is.kit.salon.i2` | (new) | [1] لوحة خدمات | [1] service board |
-| `is.kit.salon.i3` | (new) | [1] سجادة باب | [1] door mat |
-| `is.kit.salon.i4` | (new) | [1] حامل QR | [1] QR stand |
-| `is.kit.salon.i5` | (new) | [200] بطاقة مواعيد | [200] appointment cards |
-| `is.kit.salon.i6` | (new) | [4] بطاقات أسماء | [4] name badges |
+| `is.kit.salon.i1` | (new) | أغطية قص | Capes |
+| `is.kit.salon.i2` | (new) | لوحة خدمات | Service board |
+| `is.kit.salon.i3` | (new) | سجادة باب | Door mat |
+| `is.kit.salon.i4` | (new) | حامل QR | QR stand |
+| `is.kit.salon.i5` | (new) | بطاقات مواعيد | Appointment cards |
+| `is.kit.salon.i6` | (new) | بطاقات أسماء | Name badges |
 | `is.f.type` | (new) | نوع النشاط | Business type |
 | `is.cc.other` | (new) | بلد آخر | Another country |
 | `is.f.consent` | (new) | أوافق أن تستخدم Crier Studio هذه البيانات للتواصل معي بالبريد الإلكتروني بخصوص ما طلبته. | I agree that Crier Studio may use these details to contact me by email about what I asked for. |
@@ -150,9 +159,9 @@ button). The quote page's own strings (EN + AR) are in the portal, uma-main `por
 | `is.c.eye` | (new) | حسب الطلب · متاح الآن | Custom · Open now |
 | `is.c.name` | (new) | قطع حسب الطلب | Custom pieces |
 | `is.c.title` | (new) | تحتاج شيئًا غير موجود في الحزمة؟ | Need something that isn't in the kit? |
-| `is.c.intro` | (new) | تصميم مادي حسب الطلب، بعرض سعر لكل مشروع. | Custom physical design, quoted per project. |
+| `is.c.intro` | (new) | تصميم مادي حسب الطلب لنشاطك. | Custom physical design for your business. |
 | `is.q.btn` | (new) | اطلب عرض سعر | Request a quote |
-| `is.c.acct` | (new) | أنشئ حسابًا مجانيًا لطلب عرض سعر. | Create a free account to request a quote. |
+| `is.c.acct` | (new) | أنشئ حسابًا مجانيًا وأخبرنا بما تحتاجه. | Create a free account and tell us what you need. |
 | `is.c.login` | (new) | لديك حساب لدينا؟ سجّل الدخول | Already a client? Log in |
 | `v.type` | (new) | اختر نوع نشاطك. | Choose your business type. |
 | `v.country` | (new) | اختر بلدك. | Choose your country. |
@@ -168,10 +177,10 @@ Portal strings for the quote flow (uma-main branch `quote-signup`, `portal/publi
 | `signup_closed` | التسجيل عبر الإنترنت غير متاح بعد. لطلب عرض سعر، راسلنا على {email} وسننشئ لك حسابًا. هل أنت عميل لدينا؟ سجّل الدخول أدناه. | Online sign-up is not open yet. To request a quote, email {email} and we will set up your account. Already a client? Sign in below. |
 | `quote_create_account` | أنشئ حسابًا مجانيًا | Create a free account |
 | `quote_signin_intro` | سجّل الدخول لطلب عرض سعر لقطع حسب الطلب. | Sign in to request a quote for custom pieces. |
-| `quote_signup_intro` | أنشئ حسابًا مجانيًا لطلب عرض سعر. | Create a free account to request a quote. |
+| `quote_signup_intro` | أنشئ حسابًا مجانيًا وأخبرنا بما تحتاجه. | Create a free account and tell us what you need. |
 | `quote_have_account` | لديك حساب بالفعل؟ سجّل الدخول | Already a client? Sign in |
 | `nav_quote`, `qr_title` | اطلب عرض سعر | Request a quote |
-| `qr_intro` | قطع حسب الطلب لنشاطك، بعرض سعر لكل مشروع. أخبرنا بما تريد صنعه وسنردّ عليك بالبريد الإلكتروني. | Custom pieces for your business, quoted per project. Tell us what you want to make and we will reply by email. |
+| `qr_intro` | قطع حسب الطلب لنشاطك. أخبرنا بما تريد صنعه. | Custom pieces for your business. Tell us what you want to make. |
 | `qr_form_h` | مشروعك | Your project |
 | `qr_city` / `qr_country` | المدينة / البلد | City / Country |
 | `qr_country_SA` / `_AE` / `_EG` / `_OTHER` | السعودية / الإمارات العربية المتحدة / مصر / بلد آخر | Saudi Arabia / United Arab Emirates / Egypt / Other |
@@ -179,14 +188,14 @@ Portal strings for the quote flow (uma-main branch `quote-signup`, `portal/publi
 | `qr_placement` | أين ستُستخدم | Where it will be used |
 | `qr_timing` | التوقيت | Timing |
 | `qr_optional` | (اختياري) | (optional) |
-| `qr_email_hint` | سنردّ على هذا العنوان. | We reply to this address. |
+| `qr_email_hint` | نستخدم هذا العنوان للتواصل معك. | We use this address to contact you. |
 | `qr_images` | صور مرجعية | Reference images |
 | `qr_images_rule` | حتى {n} صور بصيغة PNG أو JPG أو WebP، وبحد أقصى {mb} ميغابايت لكل صورة. | Up to {n} images: PNG, JPG or WebP, at most {mb} MB each. |
 | `qr_images_failed` | تعذّر رفع بعض الصور، وقد نطلبها منك بالبريد الإلكتروني. | Some images could not be uploaded; we may ask you for them by email. |
 | `qr_images_n` | الصور: {n} | Images: {n} |
 | `qr_send` | أرسل الطلب | Send request |
 | `qr_required` | أدخل اسم النشاط والمدينة وما تريد صنعه وبريدك الإلكتروني. | Fill in the business name, city, what you want to make and your email. |
-| `qr_ok` | وصلنا طلبك. نردّ عليك بالبريد الإلكتروني خلال [X] أيام عمل. | Got it. We reply by email within [X] business days. |
+| `qr_ok` | شكرًا. وصلنا طلبك. | Thanks. We have your request. |
 | `qr_mine_h` | طلباتك | Your requests |
 | `qr_none` | لا توجد طلبات بعد. | No requests yet. |
 | `qr_status_new` / `seen` / `replied` / `closed` | أُرسل / اطّلعنا عليه / تم الرد / مغلق | Sent / Seen / Replied / Closed |
@@ -246,7 +255,7 @@ visitor's hash instead.
 Update 2026-10-18 (Adham): people sign up for a client portal account before they request a Custom pieces quote. The site's
 quote form (which went to the CRM intake and lost most fields) is removed; quotes no longer go to the CRM. In `#custom` the
 "Request a quote" button opens `https://portal.crierstudio.com/#/signup?intent=quote&lang=en` (`lang=ar` on /ar/in-store/), with
-the line "Create a free account to request a quote." and "Already a client? Log in" ->
+the line "Create a free account and tell us what you need." and "Already a client? Log in" ->
 `https://portal.crierstudio.com/#/login?intent=quote&lang=<en|ar>`. The portal stores every field (business, city, country
 SA/AE/EG/Other, what, where, timing, email, up to 3 reference images), shows the client their requests with a status, and gives
 the owner a "Quotes & sign-ups" page plus a read-only feed for the monitoring bot (uma-main `portal/PORTAL-API.md`, "Custom pieces
@@ -271,58 +280,22 @@ Store Kit waitlist (`#waitlist`):
 (The Custom pieces quote mapping that was here is gone with the form: quotes are stored by the portal, field for field.)
 
 Know before launch:
-- The intake stores the consent as "Agreed on crierstudio.com that Crier Studio may use these details to prepare and email the
-  free snapshot." That text is wrong for the waitlist (the page's consent line is "I agree that Crier Studio may use these details
-  to contact me by email about what I asked for."). Fix it in the CRM when you upgrade the intake.
+- The intake stored the consent as "… to prepare and email the free snapshot." Fixed on the Launchpad branch
+  `social-kit-rename` (section 9): it now stores "Agreed on crierstudio.com that Crier Studio may use these details to contact
+  them by email about what they asked for.", matching the page's consent line. Deploy the Launchpad for it to take effect.
 - Every waitlist submission becomes a lead + a "Snapshot requested" deal and pings you with business + city; it carries the
   `[Store Kit waitlist]` tag in the business name.
 - Same e-mail within 24 h is stored once (silently). 5 requests per IP per hour, shared with the order form.
 - No WhatsApp field anywhere (Decision 1). Reference images: the portal quote page now takes up to 3 (PNG/JPG/WebP, 5 MB each,
   seen by the owner only); this replaces "no photo upload" (Decision 6) for quotes, by the 2026-10-18 brief.
 
-## 5. Every remaining [BRACKET]
+## 5. [BRACKET]s: none left
 
-| Lang | Key | Text |
-|---|---|---|
-| en | `is.kit.cafe.i1` | [4] aprons |
-| en | `is.kit.cafe.i2` | [1] menu board |
-| en | `is.kit.cafe.i3` | [1] door mat |
-| en | `is.kit.cafe.i4` | [1] QR stand |
-| en | `is.kit.cafe.i5` | [200] stamp cards |
-| en | `is.kit.cafe.i6` | [100] cups |
-| en | `is.kit.restaurant.i1` | [6] aprons |
-| en | `is.kit.restaurant.i2` | [2] menu boards |
-| en | `is.kit.restaurant.i3` | [1] door mat |
-| en | `is.kit.restaurant.i4` | [6] QR table tents |
-| en | `is.kit.restaurant.i5` | [50] menus |
-| en | `is.kit.salon.i1` | [4] capes |
-| en | `is.kit.salon.i2` | [1] service board |
-| en | `is.kit.salon.i3` | [1] door mat |
-| en | `is.kit.salon.i4` | [1] QR stand |
-| en | `is.kit.salon.i5` | [200] appointment cards |
-| en | `is.kit.salon.i6` | [4] name badges |
-| ar | `is.kit.cafe.i1` | [4] مرايل |
-| ar | `is.kit.cafe.i2` | [1] لوحة قائمة |
-| ar | `is.kit.cafe.i3` | [1] سجادة باب |
-| ar | `is.kit.cafe.i4` | [1] حامل QR |
-| ar | `is.kit.cafe.i5` | [200] بطاقة أختام |
-| ar | `is.kit.cafe.i6` | [100] كوب |
-| ar | `is.kit.restaurant.i1` | [6] مرايل |
-| ar | `is.kit.restaurant.i2` | [2] لوحة قائمة |
-| ar | `is.kit.restaurant.i3` | [1] سجادة باب |
-| ar | `is.kit.restaurant.i4` | [6] حامل QR للطاولات |
-| ar | `is.kit.restaurant.i5` | [50] قائمة طعام |
-| ar | `is.kit.salon.i1` | [4] أغطية قص |
-| ar | `is.kit.salon.i2` | [1] لوحة خدمات |
-| ar | `is.kit.salon.i3` | [1] سجادة باب |
-| ar | `is.kit.salon.i4` | [1] حامل QR |
-| ar | `is.kit.salon.i5` | [200] بطاقة مواعيد |
-| ar | `is.kit.salon.i6` | [4] بطاقات أسماء |
-| portal en | `qr_ok` | Got it. We reply by email within [X] business days. |
-| portal ar | `qr_ok` | وصلنا طلبك. نردّ عليك بالبريد الإلكتروني خلال [X] أيام عمل. |
-
-The bundle quantities ([4], [1], [200] …) ship bracketed (Decision 3). [X] is the quote reply time in business days: it moved
-from the site (`is.q.ok`, removed) to the portal's quote page (`qr_ok` in uma-main `portal/public/i18n/en.json` + `ar.json`).
+Update 2026-10-18 (Adham: the Store Kit promises nothing): none left. The 34 bundle-quantity brackets (`is.kit.*.i*`, EN + AR)
+are now plain item names, and the portal's `qr_ok` ("… within [X] business days") is now "Thanks. We have your request." /
+"شكرًا. وصلنا طلبك." with no reply time. `build/check.mjs` now fails the build if the visible text of /in-store/, home, /pricing/
+or /faq/ (EN + AR) has any `[…]`; the portal test `quotes.test.cjs` fails if a quote-page string has `[`, a reply time or "quoted
+per project".
 
 ## 6. "Coming soon" per page (visible text, EN "coming soon" / AR "قريبًا")
 
@@ -395,7 +368,20 @@ Launchpad (`social-kit-rename`, worktree `fb-social-kit`):
   validation messages; the waitlist consent line; the noscript line; the four FAQ answers (25 rewritten for the portal on
   2026-10-18, and 17 adjusted); meta titles/descriptions; the AR translation of everything, including "لديك حساب لدينا؟ سجّل الدخول".
 - "Create a free account" contains "free", which `build/check.mjs` bans in visible text (no free offers). The check now lets
-  exactly "free account" / "حسابًا مجانيًا" through (the brief's own line); every other "free" still fails the build.
+  exactly "free account" / "حسابًا مجانيًا" through (the brief's own line, now "Create a free account and tell us what you
+  need."); every other "free" still fails the build.
+- Promise nothing (2026-10-18), my calls: I read "delivery promise" as covering "delivered to your door", so it is gone from
+  `is.sub`, `is.p3x`, `faq.23a1` and `faq.26a1`; `studio.copy.068` no longer says cost and delivery are confirmed (now "Nothing is
+  made or charged until you agree to it."); `physical.scope` no longer says "we … quote it separately"; `meta.d.in-store` and
+  `faq.17a1` say "tell us about custom pieces" instead of "request a quote". The bundle cards keep one item per line (not a
+  "·" row). The portal's `qr_email_hint` "We reply to this address." became "We use this address to contact you." (no reply
+  promise). Left as they are: `faq.15a1` (Social Kit timing, "We confirm the timing by email when we reply"), the portal's
+  `request_sent` ("We will reply in Messages", the client-requests page, not quotes) and `signup_closed` ("email {email} and we
+  will set up your account").
+- `build/check.mjs` new checks: /in-store/ (EN + AR) has no `[…]` and no "launch price", "to your door" / "we deliver" /
+  "delivered to", "quoted per" or "business days" (EN + AR forms) in visible text ("delivery bag stickers" is a product, so a
+  bare "deliver" is allowed); home, /pricing/ and /faq/ have no `[…]`; no page says "launch price"; no page (nor
+  404.html) has "snapshot" / "سنابشوت" / "سناب شوت" in visible text, meta or JSON-LD (URLs excluded).
 - Not changed, worth a look: `terms.acct.p` still reads "If we open a client portal account for you …" (accounts can now also
   be self-created for quotes); legal text, so I left it for you.
 - The H1 is split into two keys (`is.h1a` / `is.h1b`) so the line break matches the comp ("We design it, brand it" / "and make
@@ -417,3 +403,51 @@ Launchpad (`social-kit-rename`, worktree `fb-social-kit`):
 - `design/` and this file are excluded from GitHub Pages (`_config.yml`).
 - Removed i18n keys (no longer used): `nav.kit`, `meta.t.kit`, `meta.d.kit`, `nav.physical`, `meta.t.physical`,
   `meta.d.physical`, `physical.title`, `physical.lead`, `physical.work`, `studio.copy.067` (the old mailto button), `deck.cta`.
+
+## 9. Snapshot wording (Adham 2026-10-18: no "free snapshot" anywhere)
+
+Display copy only. Ids, keys, kinds, DB values, the product value `"snapshot"`, the API route
+`/api/public/snapshot-request`, the `/snapshot/` redirect stubs and `BRAND.snapshotUrl` are unchanged.
+
+Site (`instore-restructure`):
+- Swept `i18n/en.json`, `i18n/ar.json`, `templates/`, `site.js`, `build/build.mjs` and the built pages (every `index.html`,
+  `404.html`) for snapshot / Snapshot / سنابشوت / سناب شوت / free snapshot: no visible copy had it any more. The only hits are the
+  intake URL in `data-endpoint` (attribute), the product value `"snapshot"` and code comments in `site.js` / `build.mjs`, and
+  the redirect-stub folders. Nothing to replace.
+- New check in `build/check.mjs`: no built page (40 pages + 404.html) has "snapshot" (any case), سنابشوت or سناب شوت in visible
+  text, meta tags or JSON-LD (URLs excluded). The old case-sensitive `/Snapshot/` "retired wording" check stays too.
+
+Portal (uma-main `quote-signup`): the client-facing name of the `snapshot` kind (the short business report PDF made by local
+models) is now "Business report" / "تقرير النشاط":
+
+| Key | Old EN | New EN | Old AR | New AR |
+|---|---|---|---|---|
+| `order_product_snapshot` | Snapshot | Business report | Snapshot | تقرير النشاط |
+| `product_snapshot` | Snapshot | Business report | تقرير Snapshot | تقرير النشاط |
+| `plan_pkg_snapshot` | Snapshot | Business report | Snapshot | تقرير النشاط |
+| `plan_addon_snapshot_pdf` | Snapshot PDF | Business report PDF | Snapshot بصيغة PDF | تقرير النشاط بصيغة PDF |
+| `gift_item_snapshot` (gift e-mail + banner) | a Snapshot PDF | a business report PDF | ملف Snapshot بصيغة PDF | ملف تقرير النشاط بصيغة PDF |
+| `gift_name_snapshot` | Snapshot PDF | Business report PDF | ملف Snapshot بصيغة PDF | ملف تقرير النشاط بصيغة PDF |
+| `yw_d_snapshot` | Snapshot | Business report | لمحة سريعة | تقرير النشاط |
+| `client_lang_text` | … reports, the Snapshot and posts. … | … reports and posts. … | … التقارير وتقرير Snapshot والمنشورات. … | … التقارير والمنشورات. … |
+
+- `lib/owner.cjs` `LEGACY_KIND_LABEL.snapshot` "Snapshot (PDF)" -> "Business report (PDF)": it is the fallback title of the
+  client's delivery e-mail ("Your {title} is ready"; there is no `kind_name_snapshot`), the order's package line the client sees,
+  and the owner's labels.
+- No "free" offer was left in client strings: the only "free" is "Create a free account" (the account, not an offer).
+  `get_snapshot` (key) already reads "See plans" / "اطّلع على الباقات".
+- Test expectation updated (not run): `test/work-ui.test.cjs` tracker title "working on your Business report".
+- Left (owner-only or not shown to clients), listed for you: `lib/owner.cjs` comment and `COST_LINE` (`snapshot` key);
+  `lib/required-inputs.json` `_note` ("The free Snapshot for leads is not a paid product …", a maintainer note);
+  `lib/pricing.json` legacy package `"name": "Snapshot only"` (legacy, not sold; editing it changes the sha256 that the site's
+  `data/pricing.json` is checked against, so it needs a re-publish — left for you); code comments in `lib/app.cjs`,
+  `lib/feedback.cjs`, tests; docs `PORTAL-API.md`, `CHECKLIST-PORTAL.md`, `REPORT-PORTAL.md`; the `snapshots` table and API route.
+
+Launchpad (`social-kit-rename`, worktree `fb-social-kit`):
+- `crm/launchpad_crm/launchpad/web_public.py` `CONSENT_TEXT` (stored with every intake lead and shown in the owner ping):
+  "Agreed on crierstudio.com that Crier Studio may use these details to prepare and email the free snapshot." -> "Agreed on
+  crierstudio.com that Crier Studio may use these details to contact them by email about what they asked for." No test
+  asserted the old text (searched every `test_*.py`), so no test changed. Nothing else in the CRM changed.
+- Left (owner-only), listed for you: `web_public.py` deal notes "crierstudio.com: free snapshot, then the one-time Plan." (line
+  179), the "Snapshot requested" deal name, `uma_funnel.py` `CONSENT_TEXT_VERSION` "crierstudio.com snapshot form, 2026-10-01"
+  (a version id), the `_uma_leads_top.html` option value `snapshot`.

@@ -49,7 +49,7 @@ for (const l of LANGS) for (const p of PAGES) {
   ok(!/draft|\(DRAFT\)/i.test(h.replace(/<style>[\s\S]*?<\/style>/, '')), `draft text in ${file}`);
   // no free offers anywhere: the word free (and its ar form) must not appear in visible text
   const vis = h.replace(/<style>[\s\S]*?<\/style>/, '').replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ');
-  // (one exception, Adham 2026-10-18: "Create a free account to request a quote" / the FAQ answer: a client portal account, not an offer)
+  // (one exception, Adham 2026-10-18: "Create a free account and tell us what you need" / the FAQ answer: a client portal account, not an offer)
   ok(!/\bfree\b|مجان|بدون مقابل/i.test(vis.replace(/\bfree account\b|حسابًا مجانيًا/gi, '')), `free wording in ${file}`);
   ok(!/Your shop, heard/i.test(h), `tagline in ${file}`);
   // the HTML is written in the default country's currency (Saudi Arabia, SAR before VAT); every price carries its US-dollar
@@ -75,12 +75,27 @@ for (const l of LANGS) for (const p of PAGES) {
     ok(!/mailto:/.test(h.replace(/<noscript>[\s\S]*?<\/noscript>/g, '').replace(/<footer>[\s\S]*?<\/footer>/, '')), `no mailto outside noscript/footer on ${file}`);
     ok((vis.match(/coming soon|قريبًا/gi) || []).length === 1, `"coming soon" exactly once on ${file}`);
     ok(!/<h1[^>]*>[^<]*(coming soon|قريبًا)/i.test(h), `no "coming soon" in the H1 of ${file}`);
+    // The Store Kit is a concept (Adham 2026-10-18): no [bracket] placeholders (bundle quantities) and no launch price,
+    // launch date or delivery promise; Custom pieces promise no quote, price or reply time
+    ok(!/\[[^\]]*\]/.test(vis), `a [bracket] placeholder in the visible text of ${file}`);
+    ok(!/launch price|price announced|سعر الإطلاق|نعلن السعر|to your door|we deliver|delivered to|إلى بابك|تصلك|نوصل|quoted per|business days?|أيام عمل/i.test(vis), `a launch-price, delivery, quote or reply-time promise on ${file}`);
   }
+  // no [bracket] placeholders in the visible text of the home, pricing and FAQ pages either
+  if (['', 'pricing/', 'faq/'].includes(p)) ok(!/\[[^\]]*\]/.test(vis), `a [bracket] placeholder in the visible text of ${file}`);
+  // no Store Kit launch-price promise anywhere (Adham 2026-10-18)
+  ok(!/launch price|سعر الإطلاق/i.test(vis), `a Store Kit launch-price promise on ${file}`);
+  // no "snapshot" in visible text, meta or JSON-LD (Adham 2026-10-18); URLs and attributes such as the
+  // /api/public/snapshot-request endpoint are not visible text and may keep the word
+  ok(!/snapshot|سنابشوت|سناب شوت/i.test(vis + ' ' + (h.match(/<script type="application\/ld\+json">[\s\S]*?<\/script>/) || [''])[0].replace(/"(url|@id)":"[^"]*"/g, '') + ' ' + (h.match(/<meta (name|property)="[^"]+" content="[^"]*">/g) || []).filter((m) => !/content="https?:/.test(m)).join(' ')), `"snapshot" wording in ${file}`);
   // retired packages and prices must not come back (Snapshot, Starter/Growth/Pro, Crier Deck + Print Kit, old discounts)
   for (const bad of [/\$(99|199|399|149|249|39)\b/, /Snapshot/, /Starter/, /Growth/, /\bPro\b/, /Print Kit/, /Crier Deck/]) ok(!bad.test(vis + ' ' + (h.match(/<script type="application\/ld\+json">[\s\S]*?<\/script>/) || [''])[0] + ' ' + (h.match(/<meta[^>]+>/g) || []).join(' ')), `retired wording ${bad} in ${file}`);
   ok(/<meta name="robots" content="noindex">/.test(h) === /const NOINDEX = true/.test(rd('build/build.mjs')), `noindex consistency ${file}`);
   // every internal href resolves to a built page or a file
   for (const m of h.matchAll(/href="(\/[^"#?]*)/g)) { const t = m[1]; const f = t.endsWith('/') ? t + 'index.html' : t; ok(fs.existsSync(path.join(ROOT, f)), `dead link ${t} in ${file}`); }
+}
+{
+  const h = rd('404.html'), vis = h.replace(/<(style|script)\b[\s\S]*?<\/\1>/g, '').replace(/<[^>]+>/g, ' ');
+  ok(!/snapshot|سنابشوت|سناب شوت/i.test(vis), '"snapshot" wording in 404.html');
 }
 const sm = rd('sitemap.xml');
 ok((sm.match(/<url>/g) || []).length === urls.length, 'sitemap url count');
