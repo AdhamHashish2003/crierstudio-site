@@ -161,10 +161,11 @@ html[lang=ar] .isa-head h1{line-height:1.3;letter-spacing:0}
 .isa-pc-apron svg{height:210px}.isa-pc-menu svg{height:150px;transform:rotate(-2deg)}.isa-pc-cup svg{height:96px}.isa-pc-qr svg{height:112px}.isa-pc-mat svg{height:62px;transform:rotate(1.5deg)}.isa-pc-card svg{height:60px;transform:rotate(-5deg)}
 .isa-note{grid-area:note;justify-self:start;margin:0;font-size:12px;line-height:1.5;color:var(--cream-label)}
 .isa-banner{--ink:var(--cream-bg);--muted:#c9c6bb;--line:#5d5b52;--paper:var(--cream-ink);--focus:var(--accent);--error:#ff8a80;color-scheme:dark;background:var(--cream-ink);color:var(--cream-bg);border-radius:0 0 16px 16px;padding:24px 18px;display:grid;gap:18px 40px;align-items:center}
-.isa-big{margin:0;width:min-content;font:800 38px/.95 var(--display);letter-spacing:-.02em;text-transform:uppercase;font-stretch:100%;color:var(--accent)}
+.isa-big{margin:0;width:min-content;font:800 38px/.95 var(--display);letter-spacing:-.02em;text-transform:uppercase;font-stretch:100%;color:var(--accent);overflow-wrap:normal;word-break:normal;hyphens:none}
+.isa-msg{min-width:0}
 .isa-msg h2{margin:0 0 4px;font:600 19px/1.3 var(--body);letter-spacing:0;color:var(--cream-bg)}
 .isa-msg p{margin:0;font-size:15px;line-height:1.5;color:#c9c6bb}
-.isa-form{display:grid;gap:16px;padding-top:20px;border-top:1px solid #3a3a33}
+.isa-form{min-width:0;display:grid;gap:16px;padding-top:20px;border-top:1px solid #3a3a33}
 .isa-form-end{display:grid;gap:14px;align-items:center}
 .isa-form .cta-row{display:flex}
 .isa-banner .field label{color:var(--cream-bg)}
@@ -198,7 +199,7 @@ html[lang=ar] .isa-pc figcaption{font-size:13px}
 html[lang=ar] .isa-big{width:auto;line-height:1.3}
 @media(min-width:640px){.isa-ex{grid-template-columns:repeat(2,minmax(0,1fr))}.isa-ex .isa-sign{grid-column:1/-1;grid-template-columns:120px minmax(0,1fr)}}
 @media(min-width:760px){
- .isa-banner{grid-template-columns:auto minmax(0,1fr);padding:28px 40px}.isa-big{font-size:46px}.isa-form{grid-column:1/-1}
+ .isa-banner{grid-template-columns:auto minmax(0,1fr);padding:28px 40px}.isa-big{grid-area:1/1;font-size:46px}.isa-msg{grid-area:1/2;max-width:62ch}.isa-form{grid-area:2/1/auto/-1}
  .isa-form-end{grid-template-columns:minmax(0,1fr) auto;gap:14px 32px}
 }
 @media(min-width:900px){
@@ -211,5 +212,7 @@ html[lang=ar] .isa-big{width:auto;line-height:1.3}
  .isa-note{justify-self:end}
  .cream .isa-custom{grid-template-columns:repeat(2,minmax(0,1fr));gap:64px;margin-top:64px;padding-block:60px 72px}
 }
+.isa-banner .fields{display:grid;gap:14px 18px}
+@media(min-width:760px){.isa-banner .fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(min-width:1100px){.isa-banner .fields{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .top .main-nav a{font-size:14px}
