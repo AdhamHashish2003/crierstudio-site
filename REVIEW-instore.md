@@ -543,7 +543,7 @@ sign drawings are decorative (`aria-hidden`), and their names are in the caption
 ## Home hero, Direction C (2026-10-18)
 
 Branch `home-hero`. The home hero on `/` and `/ar/` is now Direction C from hero-mockup (dir-c-en.html, dir-c-ar.html): copy, kit
-price card and CTA on one side; on the other a phone with the Instagram profile of Nakha Café (Example) / مقهى نكهة (مثال), its 3x3
+price card and CTA on one side; on the other a phone with the Instagram profile of Crier Studio (example posts), its 3x3
 grid of flat posts in the dashboard's art style, the brand book, story and 30-day plan cards and the "Ready for Instagram" tag.
 Static HTML/CSS (templates/hero.html, the `.hc` / `.ig-` rules in templates/home.css), no images, no script. Strings: `hero.*` keys.
 - Price: `kitPrice` (data/pricing.json), the `data-vat` "+ VAT" and "one time", as before; site.js localises them (SAR 109 + VAT in

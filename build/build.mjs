@@ -311,7 +311,7 @@ const FAQ_HOME_SWAP = { 'faq.1a2': 'home.faq.1a2' };
 // An HTML/CSS recreation of the portal Overview for an example client, driven by assets/dash.js (14.4 s loop). Portal labels
 // are the portal's own (dash.* keys); posts, names and the caption are example content. Steps: wt.<n>l / t / x / screen.
 const WT_STEPS = 5;
-const DASH_EMAIL = 'sara@nakha.example';
+const DASH_EMAIL = 'team@crierstudio.com';
 // icon paths copied from the portal's own set (portal/public/app.js)
 const PI = {
   overview: 'M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z', layers: 'M12 3l9 5-9 5-9-5zM3 13l9 5 9-5', review: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8 12l3 3 5-6',
