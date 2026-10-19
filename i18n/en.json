@@ -488,6 +488,7 @@
   "cur.noteEGP": "Prices in Egyptian pounds before VAT. {vat}% VAT (Egypt) is added: you see the price, the VAT and the total before you pay.",
   "nav.social": "Social",
   "nav.instore": "In-store",
+  "nav.soon": "Coming soon",
   "name.store": "The Store Kit",
   "pkg.store.eye": "Your store",
   "meta.t.social": "The Social Kit: your brand book, {n:kit.posts} social designs and a 30-day plan | Crier Studio",

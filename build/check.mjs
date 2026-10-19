@@ -42,6 +42,9 @@ for (const l of LANGS) for (const p of PAGES) {
   ok((headerNav.match(/aria-current="page"/g) || []).length === (p === 'sculptures/' || p === 'social/' || p === 'in-store/' || p === 'pricing/' ? 1 : 0) && (p !== 'sculptures/' || headerNav.includes(`href="/${l === 'en' ? '' : l + '/'}sculptures/" aria-current="page"`)), `header nav active state in ${file}`);
   for (const nav of ['samples/', 'faq/', 'about/']) ok(!headerNav.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `no header nav link ${nav} in ${file}`);
   ok(headerNav.includes('href="https://portal.crierstudio.com/"'), `portal link ${file}`);
+  // the In-store link carries a decorative "Coming soon" chip (aria-hidden) and a visually hidden " (coming soon)"; the footer does not
+  { const soon = l === 'ar' ? 'قريبًا' : 'Coming soon', a = (headerNav.match(/<a [^>]*href="\/(?:ar\/)?in-store\/"[^>]*>[\s\S]*?<\/a>/) || [''])[0];
+    ok(a.includes(`<span class="sr"> (${soon})</span><span class="nav-soon" aria-hidden="true">${soon}</span>`) && (headerNav.match(/class="nav-soon"/g) || []).length === 1, `In-store "Coming soon" chip in the header nav of ${file}`); }
   // the footer keeps every destination (About and Brand Deck moved there from the header)
   const footNav = (h.match(/<footer>[\s\S]*?<\/footer>/) || [''])[0];
   for (const nav of ['social/', 'in-store/', 'sculptures/', 'samples/', 'pricing/', 'faq/', 'about/', 'brand-deck/']) ok(footNav.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `footer link ${nav} in ${file}`);
@@ -94,7 +97,9 @@ for (const l of LANGS) for (const p of PAGES) {
     ok((h.match(/id="lead-msgs"/g) || []).length === 1, `waitlist messages on ${file}`);
     ok(!/mailto:/.test(h.replace(/<noscript>[\s\S]*?<\/noscript>/g, '').replace(/<footer>[\s\S]*?<\/footer>/, '')), `no mailto outside noscript/footer on ${file}`);
     // In-store v3, Direction A (Adham, 2026-10-18): twice, the Store Kit status pill and the COMING SOON banner
-    ok((vis.match(/coming soon|قريبًا/gi) || []).length === 2, `"coming soon" exactly twice (status pill + banner) on ${file}`);
+    // (not counting the header nav's In-store "Coming soon" chip, checked on every page above)
+    const visNav = headerNav.replace(/<[^>]+>/g, ' ');
+    ok((vis.match(/coming soon|قريبًا/gi) || []).length - (visNav.match(/coming soon|قريبًا/gi) || []).length === 2,`"coming soon" exactly twice (status pill + banner) on ${file}`);
     ok(!/<h1[^>]*>[^<]*(coming soon|قريبًا)/i.test(h), `no "coming soon" in the H1 of ${file}`);
     // The Store Kit is a concept (Adham 2026-10-18): no [bracket] placeholders (bundle quantities) and no launch price,
     // launch date or delivery promise; Custom pieces promise no quote, price or reply time

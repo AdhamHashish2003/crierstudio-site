@@ -205,10 +205,13 @@ function langpick(lang, page) {
   const links = LANGS.map(([c, name]) => `<a href="${pathFor(c, page)}" lang="${c}" hreflang="${c}" aria-label="${esc(name)}"${c === lang ? ' aria-current="true"' : ''}>${c.toUpperCase()}</a>`).join('');
   return `<div class="langpick" role="group" aria-label="${esc(t(lang, 'lang.label'))}">${links}</div>`;
 }
+// header nav only: a decorative "Coming soon" chip beside In-store; screen readers hear " (coming soon)" from the .sr span.
+// The label sits in its own span so the active underline is drawn under the label only, never through the chip.
 function navLinks(lang, page, mark, list = NAV) {
   return list.map(([target, key]) => {
-    const ext = target.startsWith('http');
-    return `<a href="${ext ? target : pathFor(lang, target)}"${mark && target === page ? ' aria-current="page"' : ''}>${esc(t(lang, key))}</a>`;
+    const ext = target.startsWith('http'), soon = list === NAV && target === 'in-store';
+    const label = soon ? `<span class="nav-lbl">${esc(t(lang, key))}</span><span class="sr"> (${esc(t(lang, 'nav.soon'))})</span><span class="nav-soon" aria-hidden="true">${esc(t(lang, 'nav.soon'))}</span>` : esc(t(lang, key));
+    return `<a href="${ext ? target : pathFor(lang, target)}"${mark && target === page ? ' aria-current="page"' : ''}${soon ? ' class="has-soon"' : ''}>${label}</a>`;
   }).join('');
 }
 function crumbs(lang, page) {
