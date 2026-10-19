@@ -322,18 +322,22 @@ function dash(lang) {
   const T = (k) => t(lang, 'dash.' + k), D = (k) => esc(T(k)), ar = lang === 'ar';
   const posts = [1, 2, 3, 4].map((i) => ({ t: T(`p${i}t`), s: T(`p${i}s`), date: T(`p${i}d`) }));
   const dlogo = partials.logo.replace('role="img" aria-label="Crier Studio"', 'aria-hidden="true"');
-  const art = (i) => `<span class="art art-${i + 1}" data-art="${i}"><span class="art-b">${D('artBrand')}</span><span class="art-ring"></span><span class="art-dot"></span><span class="art-t">${esc(posts[i].t)}</span><span class="art-s">${esc(posts[i].s)}</span></span>`;
-  const link = (k, label, active, badge) => `<span class="d-link${active ? ' on' : ''}">${ic(k)}<span class="d-nl">${D(label)}</span>${badge ? `<span class="d-badge" data-k="${badge}">0</span>` : ''}</span>`;
+  // The markup is the finished (?static=1) state, so the dashboard reads without JavaScript; dash.js adds .is-live and resets it.
+  const art = (i, on = '') => `<span class="art art-${i + 1}${on}" data-art="${i}"><span class="art-b">${D('artBrand')}</span><span class="art-ring"></span><span class="art-dot"></span><span class="art-t">${esc(posts[i].t)}</span><span class="art-s">${esc(posts[i].s)}</span></span>`;
+  const END = { delivB: 4, awaitB: 2 }; // the finished state's counts: four delivered, two approved, two awaiting
+  const link = (k, label, active, badge) => `<span class="d-link${active ? ' on' : ''}">${ic(k)}<span class="d-nl">${D(label)}</span>${badge ? `<span class="d-badge" data-k="${badge}">${digits(lang, END[badge])}</span>` : ''}</span>`;
   const pill = (k, cls, label) => `<span class="d-pill ${cls}" data-k="${k}"><i></i><span>${D(label)}</span></span>`;
-  const tile = (k, label, sub, dark) => `<span class="d-tile${dark ? ' dark' : ''}"><span class="d-tl">${D(label)}</span><span class="d-tv" data-k="${k}">0</span><span class="d-ts" data-k="${k}Sub">${esc(sub)}</span></span>`;
+  const tile = (k, label, sub, n, dark) => `<span class="d-tile${dark ? ' dark' : ''}"><span class="d-tl">${D(label)}</span><span class="d-tv" data-k="${k}">${digits(lang, n)}</span><span class="d-ts" data-k="${k}Sub">${esc(sub)}</span></span>`;
   const user = T('user'), u0 = esc(user.charAt(0));
-  const post = (i) => `<span class="d-slot"><span class="d-post" data-p="${i}">
-        <span class="d-media">${art(i)}<span class="d-id" dir="ltr">#0${i + 1}</span><span class="d-ver" dir="ltr">v2</span>${pill('st' + i, 'amber d-st', 'waiting')}${i === 2 ? `
+  const st = [['ready', 'ready'], ['amber', 'waiting'], ['lime', 'approved'], ['amber', 'waiting']];
+  const post = (i) => `<span class="d-slot"><span class="d-post${i === 2 ? ' v2' : ''}" data-p="${i}">
+        <span class="d-media">${art(i)}<span class="d-id" dir="ltr">#0${i + 1}</span><span class="d-ver" dir="ltr">v2</span>${pill('st' + i, st[i][0] + ' d-st', st[i][1])}${i === 2 ? `
           <span class="d-bubs"><span class="d-bub cl" data-k="b1"><span class="d-bav">${u0}</span><span>${D('note')}</span></span><span class="d-bub st" data-k="b2"><span class="d-bav c">C</span><span>${D('reply')}</span></span></span>
           <span class="d-cchip" data-k="cchip">${ic('comment')}<b>${digits(lang, 2)}</b></span>` : ''}</span>
         <span class="d-info"><strong>${esc(posts[i].t)}</strong><small><span>${D('kind')}</span><span class="d-date">${esc(posts[i].date)}</span></small></span>
       </span></span>`;
-  const rvTop = `<span class="d-rv-top"><span class="d-rv-ic">${ic('spark')}</span><span class="d-ct"><strong>${D('review')}</strong><small>${D('reviewSub')}</small></span></span><span class="d-rv-line"><span data-k="line">${D('pillNone')}</span>${ic('chev')}</span>`;
+  const line = esc(T('pill').replace('{n}', digits(lang, 2)));
+  const rvTop = `<span class="d-rv-top"><span class="d-rv-ic">${ic('spark')}</span><span class="d-ct"><strong>${D('review')}</strong><small>${D('reviewSub')}</small></span></span><span class="d-rv-line"><span data-k="line">${line}</span>${ic('chev')}</span>`;
   // the strings the script needs (pill lines, sub lines, status names)
   const js = Object.fromEntries(['pill', 'pillOne', 'pillNone', 'inTotal', 'awaitSub', 'awaitNone', 'ofDecided', 'waiting', 'approved', 'changesAsked', 'ready', 'brand', 'note'].map((k) => [k, T(k)]));
   js.titles = posts.map((p) => p.t);
@@ -351,23 +355,23 @@ function dash(lang) {
         <span class="d-user"><span class="d-av">${u0}</span><span class="d-ct"><strong>${esc(user)}</strong><small>${D('client')}</small></span></span>
       </span>
     </span>
-    <span class="d-mtop"><span class="d-mmenu">${ic('menu')}</span><span class="d-logo">${dlogo}</span><span class="d-pill amber d-mpill" data-k="mpill"><i></i><span data-k="line">${D('pillNone')}</span></span></span>
+    <span class="d-mtop"><span class="d-mmenu">${ic('menu')}</span><span class="d-logo">${dlogo}</span><span class="d-pill amber d-mpill" data-k="mpill"><i></i><span data-k="line">${line}</span></span></span>
     <span class="d-main">
-      <span class="d-head"><span class="d-h1">${D('greet')}</span><span class="d-pill amber d-hpill" data-k="hpill"><i></i><span data-k="line">${D('pillNone')}</span></span><span class="d-acts"><span class="d-btn dark">${D('planMonth')}</span><span class="d-btn sec">${D('askPost')}</span></span></span>
+      <span class="d-head"><span class="d-h1">${D('greet')}</span><span class="d-pill amber d-hpill" data-k="hpill"><i></i><span data-k="line">${line}</span></span><span class="d-acts"><span class="d-btn dark">${D('planMonth')}</span><span class="d-btn sec">${D('askPost')}</span></span></span>
       <span class="d-mclient"><span class="d-mark">${D('mark')}</span><strong>${D('brand')}</strong></span>
       <span class="d-card d-stats"><span class="d-ch"><strong>${D('glance')}</strong><span class="d-more">${D('seeAll')}${ic('chev')}</span></span>
-        <span class="d-tiles">${tile('deliv', 'delivered', T('inTotal').replace('{n}', digits(lang, 0)), 1)}${tile('await', 'awaiting', T('awaitNone'))}${tile('appr', 'approved', T('ofDecided').replace('{n}', digits(lang, 0)))}${tile('new', 'newT', T('newSub'))}</span></span>
+        <span class="d-tiles">${tile('deliv', 'delivered', T('inTotal').replace('{n}', digits(lang, 4)), 4, 1)}${tile('await', 'awaiting', T('awaitSub'), 2)}${tile('appr', 'approved', T('ofDecided').replace('{n}', digits(lang, 2)), 2)}${tile('new', 'newT', T('newSub'), 2)}</span></span>
       <span class="d-row">
-        <span class="d-card d-week"><span class="d-ch"><strong>${D('week')}</strong><span class="d-count" data-k="weekN">0</span></span>
+        <span class="d-card d-week"><span class="d-ch"><strong>${D('week')}</strong><span class="d-count" data-k="weekN">${digits(lang, 4)}</span></span>
           <span class="d-grid"><span class="d-empty">${D('firstDelivery')}</span>${[0, 1, 2, 3].map(post).join('')}</span></span>
         <span class="d-panel">
           <span class="d-layer" data-l="A"><span class="d-card d-att"><span class="d-ch"><strong>${D('attention')}</strong><span class="d-count">${digits(lang, 1)}</span></span><span class="d-subh">${D('todo')}</span>
-            <span class="d-need" data-k="need"><strong>${D('qT')}</strong><span class="d-btn lime" data-b="q">${D('qBtn')}</span><span class="d-allset"><span class="d-tick">${ic('check')}</span>${D('done')}</span></span></span></span>
+            <span class="d-need done" data-k="need"><strong>${D('qT')}</strong><span class="d-btn lime" data-b="q">${D('qBtn')}</span><span class="d-allset"><span class="d-tick">${ic('check')}</span>${D('done')}</span></span></span></span>
           <span class="d-layer" data-l="B"><span class="d-card d-lime"><strong>${D('newReady')}</strong><span class="d-btn dark">${D('openWork')}</span></span>
             <span class="d-card d-rvcard">${rvTop}</span></span>
           <span class="d-layer" data-l="C"><span class="d-card d-rev">
-            <span class="d-rhead"><span class="d-mini">${[0, 1, 2, 3].map(art).join('')}</span><span class="d-ct"><strong data-k="selT">${esc(posts[0].t)}</strong><small>${D('kind')}</small></span></span>
-            <span class="d-dl"><span class="d-dt">${D('status')}</span>${pill('selPill', 'amber', 'waiting')}<span class="d-dt">${D('version')}</span><span class="d-dd" dir="ltr" data-k="selV">v1</span></span>
+            <span class="d-rhead"><span class="d-mini">${[0, 1, 2, 3].map((i) => art(i, [' on', '', ' v2', ''][i])).join('')}</span><span class="d-ct"><strong data-k="selT">${esc(posts[0].t)}</strong><small>${D('kind')}</small></span></span>
+            <span class="d-dl"><span class="d-dt">${D('status')}</span>${pill('selPill', 'lime', 'approved')}<span class="d-dt">${D('version')}</span><span class="d-dd" dir="ltr" data-k="selV">v1</span></span>
             <span class="d-dec"><span class="d-btn lime" data-b="approve">${D('approve')}</span><span class="d-btn sec" data-b="changes">${D('changes')}</span></span>
             <span class="d-lab">${D('comment')}</span><span class="d-ta"><span data-k="ta"></span><i class="d-caret"></i></span>
             <span class="d-btn lime d-send" data-b="send">${D('send')}</span></span></span>
@@ -382,7 +386,7 @@ function dash(lang) {
     <span class="d-bnav">${[['overview', 'overview', 1], ['layers', 'deliverables', 0, 'delivB'], ['review', 'review', 0, 'awaitB'], ['chat', 'messages'], ['settings', 'settings']].map(([k, l, on, b]) => `<span class="d-bn${on ? ' on' : ''}">${ic(k)}${b ? `<span class="d-badge" data-k="${b}">0</span>` : ''}<span>${D(l)}</span></span>`).join('')}</span>
     <span class="d-modal" data-k="modal"><span class="d-mbox">
       <span class="d-logo">${dlogo}</span><strong class="d-mt">${D('signup')}</strong>
-      <span class="d-f"><span class="d-fl">${D('company')}</span><span class="d-fi" data-c="company"><span data-k="type"></span><i class="d-caret"></i></span></span>
+      <span class="d-f"><span class="d-fl">${D('company')}</span><span class="d-fi" data-c="company"><span data-k="type">${D('brand')}</span><i class="d-caret"></i></span></span>
       <span class="d-f"><span class="d-fl">${D('yourName')}</span><span class="d-fi">${esc(user)}</span></span>
       <span class="d-f"><span class="d-fl">${D('email')}</span><span class="d-fi" dir="ltr">${DASH_EMAIL}</span></span>
       <span class="d-btn lime d-wide" data-b="create">${D('signup')}</span>
@@ -394,9 +398,10 @@ function dash(lang) {
 }
 function walkthrough(lang) {
   const n = Array.from({ length: WT_STEPS }, (_, i) => i + 1), two = (i) => String(i).padStart(2, '0');
-  const wtSteps = n.map((i) => `<li class="wt-step${i > 1 ? '' : ' is-active'}" data-step="${i}"><button type="button" class="wt-btn" aria-controls="dash" aria-current="${i > 1 ? 'false' : 'step'}"><span class="wt-num" aria-hidden="true">${two(i)}</span><span class="wt-text"><span class="wt-label">${h(lang, `wt.${i}l`)}</span><span class="wt-title">${h(lang, `wt.${i}t`)}</span></span></button><span class="wt-bar" aria-hidden="true"><i></i></span></li>`).join('');
+  // the finished state: the last step active, the ones before it done (dash.js resets this when it runs)
+  const wtSteps = n.map((i) => `<li class="wt-step ${i < WT_STEPS ? 'is-done' : 'is-active'}" data-step="${i}"><button type="button" class="wt-btn" aria-controls="dash" aria-current="${i < WT_STEPS ? 'false' : 'step'}"><span class="wt-num" aria-hidden="true">${two(i)}</span><span class="wt-text"><span class="wt-label">${h(lang, `wt.${i}l`)}</span><span class="wt-title">${h(lang, `wt.${i}t`)}</span></span></button><span class="wt-bar" aria-hidden="true"><i></i></span></li>`).join('');
   // the active step's detail sits in one fixed-height box (all five stacked in one grid cell) so the page never shifts
-  const wtDetails = n.map((i) => `<div class="wt-d${i > 1 ? '' : ' is-on'}" data-step="${i}"><p class="wt-sub">${h(lang, `wt.${i}x`)}</p><p class="wt-screen"><span>${h(lang, 'wt.screen')}:</span> ${h(lang, `wt.${i}screen`)}</p></div>`).join('');
+  const wtDetails = n.map((i) => `<div class="wt-d${i < WT_STEPS ? '' : ' is-on'}" data-step="${i}"><p class="wt-sub">${h(lang, `wt.${i}x`)}</p><p class="wt-screen"><span>${h(lang, 'wt.screen')}:</span> ${h(lang, `wt.${i}screen`)}</p></div>`).join('');
   // "Get started": the client portal's own sign-up, in the page language
   return { dash: dash(lang), wtSteps, wtDetails, wtTotal: two(WT_STEPS), signupHref: esc(`${PORTAL}#/signup?lang=${lang}`) };
 }

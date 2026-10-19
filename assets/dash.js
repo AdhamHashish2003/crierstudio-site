@@ -203,6 +203,8 @@
       if (frozen) render(false);
     });
   });
+  // the server markup is the finished state (for no JavaScript); from here the script owns every frame
+  dash.classList.add('is-live'); root.classList.add('is-live');
   if (frozen) { dash.classList.add('no-tr'); }
   if (isStatic) { dash.classList.add('is-static'); root.classList.add('is-static'); }
   else dash.classList.add('no-tr');
