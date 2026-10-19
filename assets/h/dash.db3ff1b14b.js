@@ -137,14 +137,21 @@
     });
     css(cursor, 'transform', 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) scale(' + sc.toFixed(3) + ')');
     css(cursor, '--ck-s', ring.toFixed(3)); css(cursor, '--ck-o', ro.toFixed(3));
-    css(cursor, 'opacity', '1');
+    show(cursor, 1);
   }
 
   // ---- continuous motion (opacity / transform only) ----
+  // anything at opacity 0 is also taken out entirely (visibility hidden, no pointer events), so no layer from another moment
+  // can ghost over the current one
+  function show(el, o) {
+    var v = o < .001 ? '0' : o.toFixed(3);
+    css(el, 'opacity', v);
+    css(el, 'visibility', v === '0' ? 'hidden' : 'visible');
+    css(el, 'pointer-events', v === '0' ? 'none' : '');
+  }
   function fade(el, o, dy, sc) {
-    css(el, 'opacity', o.toFixed(3));
+    show(el, o);
     css(el, 'transform', o >= 1 ? 'none' : 'translateY(' + (dy || 0).toFixed(2) + 'px)' + (sc != null ? ' scale(' + sc.toFixed(3) + ')' : ''));
-    css(el, 'visibility', o <= 0 ? 'hidden' : 'visible');
   }
   function motion(tt) {
     var m = tt < 8 ? 1 - ramp(tt, 2, .45) : ramp(tt, RESET, .55);
@@ -155,17 +162,18 @@
     function layer(el, a, b) { var i = ramp(tt, a, .45), o = b == null ? i : i * (1 - ramp(tt, b, .3)); fade(el, o, (1 - i) * 10); }
     var A = tt < 8 ? 1 - ramp(tt, ARRIVE[0], .3) : ramp(tt, BEHIND, .3); fade(layers.A, A, 0);
     layer(layers.B, ARRIVE[0], 7.3); layer(layers.C, 7.3, 12.45); layer(layers.D, 12.45, BEHIND);
-    function bub(el, a) { var x = lin(tt, a, .5), out = 1 - ramp(tt, 10.9, .35), o = clamp(x * 2.5) * out; css(el, 'opacity', o.toFixed(3)); css(el, 'transform', 'translateY(' + ((1 - easeOut(x)) * 6 + (1 - out) * 4).toFixed(2) + 'px) scale(' + ((.55 + .45 * back(x)) * (.85 + .15 * out)).toFixed(3) + ')'); }
+    function bub(el, a) { var x = lin(tt, a, .5), out = 1 - ramp(tt, 10.9, .35), o = clamp(x * 2.5) * out; show(el, o); css(el, 'transform', 'translateY(' + ((1 - easeOut(x)) * 6 + (1 - out) * 4).toFixed(2) + 'px) scale(' + ((.55 + .45 * back(x)) * (.85 + .15 * out)).toFixed(3) + ')'); }
     bub(b1, 9.3); bub(b2, 10.1);
-    var u = (1 - lin(tt, 9.3, .2)) + ramp(tt, 10.9, .35); under.forEach(function (el) { css(el, 'opacity', clamp(u).toFixed(3)); });
-    var c = ramp(tt, 11.05, .4) * gone; css(cchip, 'opacity', c.toFixed(3)); css(cchip, 'transform', 'scale(' + (.6 + .4 * back(lin(tt, 11.05, .4))).toFixed(3) + ')');
+    var u = (1 - lin(tt, 9.3, .2)) + ramp(tt, 10.9, .35); under.forEach(function (el) { show(el, clamp(u)); });
+    var c = ramp(tt, 11.05, .4) * gone; show(cchip, c); css(cchip, 'transform', 'scale(' + (.6 + .4 * back(lin(tt, 11.05, .4))).toFixed(3) + ')');
   }
 
   // ---- the step list beside it ----
   var lastStep = -1;
   function stepper(tt) {
-    var idx = 0; while (idx + 1 < STEP_AT.length && STEP_AT[idx + 1] <= tt) idx++;
-    var end = idx + 1 < STEP_AT.length ? STEP_AT[idx + 1] : CYCLE;
+    // from RESET the sign-up card is coming back: that is step 01 again, not the finished step 05
+    var back1 = tt >= RESET, idx = 0; if (!back1) while (idx + 1 < STEP_AT.length && STEP_AT[idx + 1] <= tt) idx++;
+    var end = idx + 1 < STEP_AT.length ? STEP_AT[idx + 1] : RESET;
     if (idx !== lastStep) {
       lastStep = idx;
       steps.forEach(function (li, j) { cls(li, 'is-active', j === idx); cls(li, 'is-done', j < idx); li.querySelector('.wt-btn').setAttribute('aria-current', j === idx ? 'step' : 'false'); });
@@ -173,7 +181,7 @@
       var c = root.querySelector('.wt-count b'); if (c) c.textContent = '0' + (idx + 1);
       root.style.setProperty('--wt-p', String((idx + 1) / steps.length));
     }
-    steps.forEach(function (li, j) { var b = li.querySelector('.wt-bar i'); css(b, '--p', j === idx ? (isStatic ? '1' : clamp((tt - STEP_AT[idx]) / (end - STEP_AT[idx])).toFixed(3)) : '0'); });
+    steps.forEach(function (li, j) { var b = li.querySelector('.wt-bar i'); css(b, '--p', j === idx && !back1 ? (isStatic ? '1' : clamp((tt - STEP_AT[idx]) / (end - STEP_AT[idx])).toFixed(3)) : '0'); });
   }
 
   function render(anim) { discrete(state(t), anim); motion(t); if (!isStatic) pointer(t); stepper(t); }
