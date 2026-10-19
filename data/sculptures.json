@@ -1,0 +1,590 @@
+{
+ "note": "Sculptures catalog for /sculptures/ (EN + AR). Concept renders: no prices, lead times or quantities. A size is listed only when the catalog gives one. Images: assets/sculptures/<id>-<front|side|back|scene|thumb>.webp.",
+ "items": [
+  {
+   "id": "o-01-fold-vessel-peak",
+   "collection": "origami",
+   "category": "decor",
+   "name": {
+    "en": "Fold Vessel — Peak",
+    "ar": "إناء الطيّة — القمّة"
+   },
+   "size": {
+    "en": "40 cm tall",
+    "ar": "ارتفاع 40 سم"
+   },
+   "finish": {
+    "en": "Matte warm white or charcoal",
+    "ar": "أبيض دافئ مطفأ أو فحمي"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "A low angular floor vase inspired by a single origami fold, approx. 40cm tall, for entryways or beside sofas; matte warm white or charcoal, satin smooth facets.",
+    "ar": "مزهرية أرضية منخفضة بزوايا حادّة مستوحاة من طيّة أوريغامي واحدة، بارتفاع 40 سم تقريبًا، للمداخل أو بجانب الأرائك؛ بلون أبيض دافئ مطفأ أو فحمي، بأوجه ناعمة بلمسة ساتان."
+   }
+  },
+  {
+   "id": "o-02-crane-silhouette-panel",
+   "collection": "origami",
+   "category": "decor",
+   "name": {
+    "en": "Crane Silhouette Panel",
+    "ar": "لوح ظلّ الكركي"
+   },
+   "size": {
+    "en": "70 cm wide",
+    "ar": "عرض 70 سم"
+   },
+   "finish": {
+    "en": "Glossy black or glossy pink",
+    "ar": "أسود لامع أو وردي لامع"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "A wall-mounted flat relief panel abstracting a crane's folded wings into geometric planes, approx. 70cm wide, for above console tables; glossy black or glossy pink finish.",
+    "ar": "لوح جداري بنقش بارز مسطّح يختزل جناحي طائر الكركي المطويّين في أسطح هندسية، بعرض 70 سم تقريبًا، يُعلَّق فوق طاولات الكونسول؛ بلون أسود لامع أو وردي لامع."
+   }
+  },
+  {
+   "id": "o-03-facet-column-vase",
+   "collection": "origami",
+   "category": "decor",
+   "name": {
+    "en": "Facet Column Vase",
+    "ar": "مزهرية العمود المضلّع"
+   },
+   "size": {
+    "en": "55 cm tall",
+    "ar": "ارتفاع 55 سم"
+   },
+   "finish": {
+    "en": "Matte or glossy single colour",
+    "ar": "لون واحد مطفأ أو لامع"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "Medium-scale floor vase (approx. 55 cm tall) with angular origami-fold facets tapering to a narrow neck; ideal for entryways or living room corners beside sofas; finished in a single matte or glossy colourway with crisp fold lines catching light.",
+    "ar": "مزهرية أرضية متوسطة الحجم (بارتفاع 55 سم تقريبًا) بأوجه حادّة على طريقة طيّات الأوريغامي تضيق نحو عنق رفيع؛ مناسبة للمداخل أو زوايا غرف المعيشة بجانب الأرائك؛ بلون واحد مطفأ أو لامع، وخطوط طيّ واضحة تلتقط الضوء."
+   }
+  },
+  {
+   "id": "o-04-mountain-fold-bowl",
+   "collection": "origami",
+   "category": "decor",
+   "name": {
+    "en": "Mountain Fold Bowl",
+    "ar": "وعاء طيّة الجبل"
+   },
+   "size": {
+    "en": "30 cm diameter",
+    "ar": "قطر 30 سم"
+   },
+   "finish": {
+    "en": "Glossy sand or glossy orange",
+    "ar": "رملي لامع أو برتقالي لامع"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "A wide decorative bowl with a zigzag mountain-fold rim profile, approx. 30cm diameter, for coffee tables or console styling; glossy sand or glossy orange finish.",
+    "ar": "وعاء زخرفي عريض بحافة متعرّجة على شكل طيّة الجبل، بقطر 30 سم تقريبًا، لتنسيق طاولات القهوة أو الكونسول؛ بلون رملي لامع أو برتقالي لامع."
+   }
+  },
+  {
+   "id": "o-05-origami-fox-bookend-pair",
+   "collection": "origami",
+   "category": "decor",
+   "name": {
+    "en": "Origami Fox Bookend Pair",
+    "ar": "زوج مساند كتب الثعلب الأوريغامي"
+   },
+   "size": {
+    "en": "15 cm height each",
+    "ar": "ارتفاع كل قطعة 15 سم"
+   },
+   "finish": {
+    "en": "Glossy navy or glossy yellow",
+    "ar": "كحلي لامع أو أصفر لامع"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "A pair of small geometric fox-head bookends with faceted planes inspired by folded paper animals, approx. 15cm height each, for shelves and desks; glossy navy or glossy yellow finish.",
+    "ar": "زوج من مساند الكتب الصغيرة على شكل رأس ثعلب هندسي بأوجه مستوحاة من حيوانات الورق المطوي، بارتفاع 15 سم تقريبًا لكل قطعة، للرفوف والمكاتب؛ بلون كحلي لامع أو أصفر لامع."
+   }
+  },
+  {
+   "id": "o-06-folded-plane-mirror-frame",
+   "collection": "origami",
+   "category": "decor",
+   "name": {
+    "en": "Folded Plane Mirror Frame",
+    "ar": "مرآة بإطار الأسطح المطويّة"
+   },
+   "size": {
+    "en": "60 cm diameter",
+    "ar": "قطر 60 سم"
+   },
+   "finish": {
+    "en": "Matte warm white",
+    "ar": "أبيض دافئ مطفأ"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "A round mirror with an angular faceted frame evoking a folded paper ring, approx. 60cm diameter, for hallways and bedrooms; matte warm white finish.",
+    "ar": "مرآة دائرية بإطار مضلّع حادّ الزوايا يوحي بحلقة من الورق المطوي، بقطر 60 سم تقريبًا، للممرات وغرف النوم؛ بلون أبيض دافئ مطفأ."
+   }
+  },
+  {
+   "id": "o-07-pleated-table-lamp-base",
+   "collection": "origami",
+   "category": "lighting",
+   "name": {
+    "en": "Pleated Table Lamp Base",
+    "ar": "قاعدة مصباح طاولة بطيّات"
+   },
+   "size": {
+    "en": "35 cm tall",
+    "ar": "ارتفاع 35 سم"
+   },
+   "finish": {
+    "en": "Glossy brown",
+    "ar": "بني لامع"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "A cylindrical lamp base with vertical pleated folds like an accordion fold, approx. 35cm tall, for bedside and side tables; glossy brown finish, paired with a simple drum shade.",
+    "ar": "قاعدة مصباح أسطوانية بطيّات عمودية تشبه طيّات الأكورديون، بارتفاع 35 سم تقريبًا، لطاولات السرير والطاولات الجانبية؛ بلون بني لامع، مع غطاء أسطواني بسيط."
+   }
+  },
+  {
+   "id": "o-08-fold-stack-side-table",
+   "collection": "origami",
+   "category": "furniture",
+   "name": {
+    "en": "Fold Stack Side Table",
+    "ar": "طاولة جانبية بطيّات متراصّة"
+   },
+   "size": {
+    "en": "50 cm height",
+    "ar": "ارتفاع 50 سم"
+   },
+   "finish": {
+    "en": "Matte charcoal black",
+    "ar": "أسود فحمي مطفأ"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "A side table composed of three angular folded slab forms stacked for a geometric origami-box look, approx. 50cm height, for living rooms; matte charcoal black finish.",
+    "ar": "طاولة جانبية من ثلاث كتل مطويّة بزوايا حادّة متراصّة فوق بعضها لتبدو كعلبة أوريغامي هندسية، بارتفاع 50 سم تقريبًا، لغرف المعيشة؛ بلون أسود فحمي مطفأ."
+   }
+  },
+  {
+   "id": "o-09-fold-arc-console-table",
+   "collection": "origami",
+   "category": "furniture",
+   "name": {
+    "en": "Fold Arc Console Table",
+    "ar": "طاولة كونسول القوس المطوي"
+   },
+   "size": {
+    "en": "110 cm wide, 75 cm tall",
+    "ar": "عرض 110 سم، ارتفاع 75 سم"
+   },
+   "finish": {
+    "en": "Glossy or matte",
+    "ar": "لامع أو مطفأ"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "Compact console table (approx. 110 cm wide, 75 cm tall) with an angular origami-folded base supporting a flat tabletop; suited for hallways and behind sofas in boutique furniture stores; glossy or matte finish highlighting the sharp geometric base against the simple top.",
+    "ar": "طاولة كونسول مدمجة (بعرض 110 سم وارتفاع 75 سم تقريبًا) بقاعدة مطويّة على طريقة الأوريغامي تحمل سطحًا مستويًا؛ مناسبة للممرات وخلف الأرائك في متاجر الأثاث الراقية؛ بلمسة لامعة أو مطفأة تُبرز حدّة القاعدة الهندسية أمام بساطة السطح."
+   }
+  },
+  {
+   "id": "o-10-pleat-fold-floor-lamp",
+   "collection": "origami",
+   "category": "lighting",
+   "name": {
+    "en": "Pleat Fold Floor Lamp",
+    "ar": "مصباح أرضي بطيّات"
+   },
+   "size": {
+    "en": "140 cm tall",
+    "ar": "ارتفاع 140 سم"
+   },
+   "finish": {
+    "en": "Matte or glossy single colour",
+    "ar": "لون واحد مطفأ أو لامع"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "Tall floor lamp (approx. 140 cm) with a faceted origami-pleated fiberglass shade on a slim tapered base; designed for living rooms and lounge corners in upscale decor stores; available in matte or glossy single-colour finish for a sculptural glow.",
+    "ar": "مصباح أرضي طويل (بارتفاع 140 سم تقريبًا) بغطاء من الفايبرجلاس بطيّات أوريغامي مضلّعة فوق قاعدة رفيعة مستدقّة؛ مصمّم لغرف المعيشة وزوايا الجلوس في متاجر الديكور الراقية؛ متوفر بلون واحد مطفأ أو لامع لإضاءة ذات طابع نحتي."
+   }
+  },
+  {
+   "id": "o-11-origami-owl-planter",
+   "collection": "origami",
+   "category": "decor",
+   "name": {
+    "en": "Origami Owl Planter",
+    "ar": "أصيص البومة الأوريغامي"
+   },
+   "size": {
+    "en": "28 cm height",
+    "ar": "ارتفاع 28 سم"
+   },
+   "finish": {
+    "en": "Glossy matcha",
+    "ar": "أخضر ماتشا لامع"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "A geometric faceted owl-shaped planter with simplified folded-paper form, approx. 28cm height, for indoor plants on consoles or floors; glossy matcha finish.",
+    "ar": "أصيص هندسي مضلّع على شكل بومة بتصميم مبسّط يشبه الورق المطوي، بارتفاع 28 سم تقريبًا، للنباتات الداخلية على الكونسول أو الأرض؛ بلون أخضر ماتشا لامع."
+   }
+  },
+  {
+   "id": "o-12-fold-ridge-room-divider-panel",
+   "collection": "origami",
+   "category": "furniture",
+   "name": {
+    "en": "Fold Ridge Room Divider Panel",
+    "ar": "فاصل غرف بحواف مطويّة"
+   },
+   "size": {
+    "en": "150 cm height",
+    "ar": "ارتفاع 150 سم"
+   },
+   "finish": {
+    "en": "Matte charcoal gray",
+    "ar": "رمادي فحمي مطفأ"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "A tall standalone screen panel with repeating angular ridge folds like pleated origami paper, approx. 150cm height, for living rooms and boutique interiors; matte charcoal gray finish.",
+    "ar": "لوح فاصل طويل قائم بذاته بحواف مطويّة متكرّرة بزوايا حادّة مثل ورق الأوريغامي المكسّر، بارتفاع 150 سم تقريبًا، لغرف المعيشة والمساحات الداخلية الراقية؛ بلون رمادي فحمي مطفأ."
+   }
+  },
+  {
+   "id": "a-01-faceted-fox-stool",
+   "collection": "animal",
+   "category": "furniture",
+   "name": {
+    "en": "Faceted Fox Stool",
+    "ar": "مقعد الثعلب المضلّع"
+   },
+   "size": {
+    "en": "45 cm tall",
+    "ar": "ارتفاع 45 سم"
+   },
+   "finish": {
+    "en": "Matte single colourway",
+    "ar": "لون واحد مطفأ"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "A low-poly fox-shaped side stool, medium size (45cm), ideal for living rooms or entryways as extra seating or a plant stand; matte finish in a single colourway.",
+    "ar": "مقعد جانبي على شكل ثعلب بأسطح مضلّعة، متوسط الحجم (45 سم)، مثالي لغرف المعيشة أو المداخل كمقعد إضافي أو حامل للنباتات؛ بلون واحد مطفأ."
+   }
+  },
+  {
+   "id": "a-02-rounded-seal-side-table",
+   "collection": "animal",
+   "category": "furniture",
+   "name": {
+    "en": "Rounded Seal Side Table",
+    "ar": "طاولة الفقمة الجانبية"
+   },
+   "size": null,
+   "finish": {
+    "en": "Matte warm white or glossy charcoal gray",
+    "ar": "أبيض دافئ مطفأ أو رمادي فحمي لامع"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "Medium-scale side table shaped like a resting seal with a smooth domed back forming the tabletop surface; finished in matte warm white or glossy charcoal gray, ideal for living rooms and hotel lobby seating clusters.",
+    "ar": "طاولة جانبية متوسطة الحجم على شكل فقمة مستلقية، يشكّل ظهرها المقبّب الناعم سطح الطاولة؛ بلون أبيض دافئ مطفأ أو رمادي فحمي لامع، مثالية لغرف المعيشة وجلسات ردهات الفنادق."
+   }
+  },
+  {
+   "id": "a-03-penguin-umbrella-stand",
+   "collection": "animal",
+   "category": "decor",
+   "name": {
+    "en": "Penguin Umbrella Stand",
+    "ar": "حامل مظلات البطريق"
+   },
+   "size": null,
+   "finish": {
+    "en": "Glossy black or matte charcoal black",
+    "ar": "أسود لامع أو أسود فحمي مطفأ"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "Small freestanding umbrella and cane stand modeled as a stylized upright penguin with a hollow cylindrical cavity through its body; glossy black or matte charcoal black finish, suited for entryways in boutique hotels and modern homes.",
+    "ar": "حامل صغير قائم للمظلات والعصي على شكل بطريق منتصب بتصميم مبسّط، يخترق جسمه تجويف أسطواني؛ بلون أسود لامع أو أسود فحمي مطفأ، مناسب لمداخل الفنادق الراقية والمنازل العصرية."
+   }
+  },
+  {
+   "id": "a-04-arched-dolphin-console-table",
+   "collection": "animal",
+   "category": "furniture",
+   "name": {
+    "en": "Arched Dolphin Console Table",
+    "ar": "طاولة كونسول الدلافين المقوّسة"
+   },
+   "size": null,
+   "finish": {
+    "en": "Glossy navy or sand",
+    "ar": "كحلي أو رملي لامع"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "Large console table where two simplified dolphin arcs leap to form the legs, supporting a thin flat rectangular top; glossy navy or sand finish, designed as a statement console for entryways and hallways in upscale retail settings.",
+    "ar": "طاولة كونسول كبيرة تقفز فيها دلفينتان بخطوط مبسّطة لتشكّلا قوائمها، وتحملان سطحًا مستطيلًا رفيعًا؛ بلون كحلي أو رملي لامع، مصمّمة لتكون قطعة لافتة في المداخل والممرات في المتاجر الراقية."
+   }
+  },
+  {
+   "id": "a-05-coiled-snake-candle-tray",
+   "collection": "animal",
+   "category": "decor",
+   "name": {
+    "en": "Coiled Snake Candle Tray",
+    "ar": "صينية شموع الأفعى الملتفّة"
+   },
+   "size": null,
+   "finish": {
+    "en": "Matte sand or glossy green",
+    "ar": "رملي مطفأ أو أخضر لامع"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "Small tabletop tray in the shape of a loosely coiled snake forming a shallow circular well for candles or trinkets; matte sand or glossy green finish, perfect for coffee tables and spa-style retail displays.",
+    "ar": "صينية صغيرة للطاولة على شكل أفعى ملتفّة برفق تكوّن تجويفًا دائريًا ضحلًا للشموع أو الأغراض الصغيرة؛ بلون رملي مطفأ أو أخضر لامع، مثالية لطاولات القهوة وواجهات العرض ذات طابع السبا."
+   }
+  },
+  {
+   "id": "a-06-swan-curve-bowl",
+   "collection": "animal",
+   "category": "decor",
+   "name": {
+    "en": "Swan Curve Bowl",
+    "ar": "وعاء البجعة المنحني"
+   },
+   "size": {
+    "en": "40 cm long",
+    "ar": "طول 40 سم"
+   },
+   "finish": {
+    "en": "Glossy single-colour",
+    "ar": "لون واحد لامع"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "A decorative swan-form bowl, medium size (40cm long), for dining tables or coffee tables as a fruit or catch-all bowl, glossy single-colour finish.",
+    "ar": "وعاء زخرفي على شكل بجعة، متوسط الحجم (بطول 40 سم)، لطاولات الطعام أو القهوة كوعاء للفاكهة أو للأغراض اليومية؛ بلون واحد لامع."
+   }
+  },
+  {
+   "id": "a-07-geometric-bear-stool",
+   "collection": "animal",
+   "category": "furniture",
+   "name": {
+    "en": "Geometric Bear Stool",
+    "ar": "مقعد الدبّ الهندسي"
+   },
+   "size": {
+    "en": "48 cm tall",
+    "ar": "ارتفاع 48 سم"
+   },
+   "finish": {
+    "en": "Matte single-colour",
+    "ar": "لون واحد مطفأ"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "A sturdy faceted bear-form stool, medium-large size (48cm tall), for kids' rooms or as a decorative accent seat, matte single-colour finish.",
+    "ar": "مقعد متين على شكل دبّ بأوجه مضلّعة، بحجم متوسط إلى كبير (بارتفاع 48 سم)، لغرف الأطفال أو كمقعد زخرفي مميّز؛ بلون واحد مطفأ."
+   }
+  },
+  {
+   "id": "a-08-flamingo-floor-lamp-base",
+   "collection": "animal",
+   "category": "lighting",
+   "name": {
+    "en": "Flamingo Floor Lamp Base",
+    "ar": "قاعدة مصباح الفلامنغو الأرضي"
+   },
+   "size": {
+    "en": "90 cm tall",
+    "ar": "ارتفاع 90 سم"
+   },
+   "finish": {
+    "en": "Glossy single-colour",
+    "ar": "لون واحد لامع"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "A tall simplified flamingo-form floor lamp base (90cm), for living rooms or hotel lobbies, fitted for standard lamp hardware, glossy single-colour finish.",
+    "ar": "قاعدة مصباح أرضي طويلة على شكل فلامنغو مبسّط (بارتفاع 90 سم)، لغرف المعيشة أو ردهات الفنادق، مجهّزة لتركيبات المصابيح القياسية؛ بلون واحد لامع."
+   }
+  },
+  {
+   "id": "a-09-minimalist-owl-side-table",
+   "collection": "animal",
+   "category": "furniture",
+   "name": {
+    "en": "Minimalist Owl Side Table",
+    "ar": "طاولة البومة الجانبية البسيطة"
+   },
+   "size": {
+    "en": "Approx. 45 cm tall",
+    "ar": "ارتفاع 45 سم تقريبًا"
+   },
+   "finish": {
+    "en": "Satin-matte",
+    "ar": "مطفأ بلمسة ساتان"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "A medium-size occasional table in the stylized form of a perched owl, its rounded body forming the tabletop surface and simple folded-wing silhouette forming the base; cast in satin-matte fiberglass for living rooms, lobbies, and bedside use. Approx. 45cm tall, single-piece shell construction, available in all standard colourways with matte or gloss finish depending on tone.",
+    "ar": "طاولة جانبية متوسطة الحجم على هيئة بومة جاثمة بتصميم مبسّط، يشكّل جسمها المستدير سطح الطاولة، وتشكّل الأجنحة المطويّة البسيطة قاعدتها؛ مصبوبة من فايبرجلاس مطفأ بلمسة ساتان لغرف المعيشة وردهات الاستقبال وجانب السرير. بارتفاع 45 سم تقريبًا، بهيكل من قطعة واحدة، ومتوفرة بكل الألوان القياسية بلمسة مطفأة أو لامعة حسب اللون."
+   }
+  },
+  {
+   "id": "a-10-perched-falcon-bookshelf-accent",
+   "collection": "animal",
+   "category": "decor",
+   "name": {
+    "en": "Perched Falcon Bookshelf Accent",
+    "ar": "مجسّم الصقر الواقف للرفوف"
+   },
+   "size": {
+    "en": "35 cm tall",
+    "ar": "ارتفاع 35 سم"
+   },
+   "finish": {
+    "en": "Glossy single-colour",
+    "ar": "لون واحد لامع"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "A medium sculptural falcon figure (35cm tall), standing pose with folded wings, for bookshelves or console tables, glossy single-colour finish.",
+    "ar": "مجسّم نحتي متوسط لصقر (بارتفاع 35 سم) في وقفة بجناحين مطويّين، لرفوف الكتب أو طاولات الكونسول؛ بلون واحد لامع."
+   }
+  },
+  {
+   "id": "a-11-curled-cat-planter",
+   "collection": "animal",
+   "category": "decor",
+   "name": {
+    "en": "Curled Cat Planter",
+    "ar": "أصيص القطة الملتفّة"
+   },
+   "size": {
+    "en": "25 cm long",
+    "ar": "طول 25 سم"
+   },
+   "finish": {
+    "en": "Matte single-colour",
+    "ar": "لون واحد مطفأ"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "A compact curled cat-form planter (25cm), for windowsills or side tables as a succulent or small plant pot, matte single-colour finish with drainage-ready hollow top.",
+    "ar": "أصيص مدمج على شكل قطة ملتفّة (25 سم)، لعتبات النوافذ أو الطاولات الجانبية كأصيص للنباتات العصارية أو الصغيرة؛ بلون واحد مطفأ وفتحة علوية مجوّفة جاهزة للتصريف."
+   }
+  },
+  {
+   "id": "a-12-soaring-whale-wall-shelf",
+   "collection": "animal",
+   "category": "decor",
+   "name": {
+    "en": "Soaring Whale Wall Shelf",
+    "ar": "رف الحوت المحلّق الجداري"
+   },
+   "size": null,
+   "finish": {
+    "en": "Glossy pink or matte warm white",
+    "ar": "وردي لامع أو أبيض دافئ مطفأ"
+   },
+   "material": {
+    "en": "Fiberglass",
+    "ar": "فايبرجلاس"
+   },
+   "desc": {
+    "en": "Compact wall-mounted shelf shaped like a leaping whale silhouette with a flat shelf surface along its belly, glossy pink or matte warm white finish, ideal as an accent display shelf in nurseries, offices, and retail feature walls.",
+    "ar": "رف جداري مدمج على شكل ظلّ حوت يقفز، بسطح مستوٍ على امتداد بطنه؛ بلون وردي لامع أو أبيض دافئ مطفأ، مثالي كرف عرض مميّز في غرف الأطفال والمكاتب وجدران العرض في المتاجر."
+   }
+  }
+ ]
+}

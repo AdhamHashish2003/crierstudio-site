@@ -1,0 +1,140 @@
+<main id="main-content" class="sc-page">
+  {{=crumbs}}
+  <div class="cream sc">
+    <section class="sc-hero" aria-labelledby="sc-title">
+      <div class="sc-hero-copy">
+        <div>
+          <p class="eyebrow">{{t:nav.sculptures}}</p>
+          <h1 id="sc-title">{{t:sc.h1}}</h1>
+        </div>
+        <div class="sc-hero-side">
+          <p class="sc-lead">{{t:sc.lead}}</p>
+          <div class="sc-ctas">
+            <a class="btn" id="sc-quote" href="{{=quoteHref}}">{{t:sc.cta}}</a>
+            <a class="btn ghost" href="#collections">{{t:sc.browse}}</a>
+          </div>
+        </div>
+      </div>
+      <figure class="sc-collage">
+        <span class="sc-dia" aria-hidden="true"></span>
+        {{=scCollage}}
+        <figcaption class="sc-cap">{{t:sc.renders}}</figcaption>
+      </figure>
+    </section>
+
+    <section id="collections" class="sc-cat" aria-labelledby="sc-cat-h">
+      <div class="sc-shead">
+        <p class="eyebrow">{{t:sc.cat.eye}}</p>
+        <h2 id="sc-cat-h">{{t:sc.cat.h2}}</h2>
+        <p>{{t:sc.cat.p}}</p>
+      </div>
+      <div class="sc-cols2">
+        <div class="sc-coll"><h3>{{t:sc.col.origami}}</h3><p>{{t:sc.col.origamix}}</p></div>
+        <div class="sc-coll"><h3>{{t:sc.col.animal}}</h3><p>{{t:sc.col.animalx}}</p></div>
+      </div>
+      <div class="sc-filters" id="sc-filters" hidden>
+        <div class="sc-chips" role="group" aria-label="{{a:sc.f.col}}"><span class="sc-lbl" aria-hidden="true">{{t:sc.f.col}}</span>
+          <button type="button" class="sc-chip" data-group="col" data-val="all" aria-pressed="true">{{t:sc.f.all}}</button>
+          <button type="button" class="sc-chip" data-group="col" data-val="origami" aria-pressed="false">{{t:sc.col.origami}}</button>
+          <button type="button" class="sc-chip" data-group="col" data-val="animal" aria-pressed="false">{{t:sc.col.animal}}</button>
+        </div>
+        <div class="sc-chips" role="group" aria-label="{{a:sc.f.cat}}"><span class="sc-lbl" aria-hidden="true">{{t:sc.f.cat}}</span>
+          <button type="button" class="sc-chip" data-group="cat" data-val="furniture" aria-pressed="false">{{t:sc.cat.furniture}}</button>
+          <button type="button" class="sc-chip" data-group="cat" data-val="decor" aria-pressed="false">{{t:sc.cat.decor}}</button>
+          <button type="button" class="sc-chip" data-group="cat" data-val="lighting" aria-pressed="false">{{t:sc.cat.lighting}}</button>
+        </div>
+        <p class="sc-count" id="sc-count" aria-live="polite" data-tpl="{{a:sc.f.count}}"></p>
+      </div>
+      <ul class="sc-grid" id="sc-grid" data-img="{{=scImgDir}}">
+        {{=scCards}}
+      </ul>
+      <p class="sc-empty" id="sc-empty" hidden>{{t:sc.f.empty}}</p>
+    </section>
+
+    <section id="custom" class="sc-custom" aria-labelledby="sc-custom-h">
+      <div class="sc-shead">
+        <p class="eyebrow">{{t:sc.c.eye}}</p>
+        <h2 id="sc-custom-h">{{t:sc.c.h2}}</h2>
+        <p>{{t:sc.c.p}}</p>
+      </div>
+      <ol class="sc-steps">
+        <li class="sc-step">
+          <p class="sc-step-n"><b>1</b>{{t:sc.s1}}</p>
+          <div class="sc-url" dir="ltr" role="img" aria-label="{{a:sc.s1aria}}"><span>https://</span>crierstudio.com<i aria-hidden="true"></i></div>
+          <p class="sc-cap">{{t:sc.s1cap}}</p>
+        </li>
+        <li class="sc-step">
+          <p class="sc-step-n"><b>2</b>{{t:sc.s2}}</p>
+          <div class="sc-cues">
+            <div class="sc-cue"><h3>{{t:sc.colour}}</h3>
+              <div class="sc-sw">
+                <span><i class="sw-cream"></i>{{t:sc.cream}}<code dir="ltr">#F6F8EF</code></span>
+                <span><i class="sw-ink"></i>{{t:sc.ink}}<code dir="ltr">#0E0F0C</code></span>
+                <span><i class="sw-lime"></i>{{t:sc.lime}}<code dir="ltr">#C6FF00</code></span>
+              </div>
+            </div>
+            <div class="sc-cue"><h3>{{t:sc.shape}}</h3>
+              <div class="sc-shapes">
+                <svg viewBox="0 0 64 64" role="img" aria-label="{{a:sc.diamond}}"><rect x="14" y="14" width="36" height="36" transform="rotate(45 32 32)" fill="#C6FF00" stroke="#0E0F0C" stroke-width="3"/></svg>
+                <svg viewBox="0 0 64 64" role="img" aria-label="{{a:sc.facets}}"><polygon points="32,4 58,22 50,58 14,58 6,22" fill="#F6F8EF" stroke="#0E0F0C" stroke-width="3" stroke-linejoin="round"/><path d="M32 4 32 34 6 22M32 34 58 22M32 34 14 58M32 34 50 58" fill="none" stroke="#0E0F0C" stroke-width="2"/></svg>
+                <p class="sc-cap">{{t:sc.shapesCap}}</p>
+              </div>
+            </div>
+            <div class="sc-cue"><h3>{{t:sc.voice}}</h3><p class="sc-voice">{{t:sc.voiceLine}}</p></div>
+          </div>
+        </li>
+        <li class="sc-step">
+          <p class="sc-step-n"><b>3</b>{{t:sc.s3}}</p>
+          <figure class="sc-concept">
+            {{=scConcept}}
+            <figcaption><span class="sc-ex">{{t:sc.concept.cap}}</span></figcaption>
+          </figure>
+        </li>
+      </ol>
+      <p class="sc-note">{{t:sc.c.note}}</p>
+    </section>
+
+    <section class="sc-band" aria-labelledby="sc-cta-h">
+      <div>
+        <h2 id="sc-cta-h">{{t:sc.b.h2}}</h2>
+        <p>{{t:sc.b.p}}</p>
+      </div>
+      <div class="sc-ctas">
+        <a class="btn" href="{{=quoteHref}}">{{t:sc.cta}}</a>
+        <a class="sc-alt" href="{{=quoteLoginHref}}">{{t:is.c.login}}</a>
+      </div>
+    </section>
+
+    <div class="sc-lb" id="sc-lb" role="dialog" aria-modal="true" aria-labelledby="sc-lb-name" data-sep="{{a:sc.lb.sep}}" hidden>
+      <div class="sc-lb-panel">
+        <div class="sc-lb-stage">
+          <div class="sc-frame"><img id="sc-lb-img" alt="" width="1289" height="1600"></div>
+          <div class="sc-views" role="group" aria-label="{{a:sc.lb.view}}">
+            <button type="button" data-view="front" aria-pressed="true">{{t:sc.v.front}}</button>
+            <button type="button" data-view="side" aria-pressed="false">{{t:sc.v.side}}</button>
+            <button type="button" data-view="back" aria-pressed="false">{{t:sc.v.back}}</button>
+            <button type="button" data-view="scene" aria-pressed="false">{{t:sc.v.scene}}</button>
+          </div>
+        </div>
+        <div class="sc-lb-info">
+          <div class="sc-lb-bar"><p class="eyebrow" id="sc-lb-col"></p><button type="button" class="sc-lb-close" id="sc-lb-close" aria-label="{{a:sc.lb.close}}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="2.5" fill="none"/></svg></button></div>
+          <h2 id="sc-lb-name"></h2>
+          <dl class="sc-spec">
+            <dt>{{t:sc.lb.cat}}</dt><dd id="sc-lb-cat"></dd>
+            <dt id="sc-lb-size-t">{{t:sc.lb.size}}</dt><dd id="sc-lb-size"></dd>
+            <dt>{{t:sc.lb.finish}}</dt><dd id="sc-lb-finish"></dd>
+            <dt>{{t:sc.lb.material}}</dt><dd id="sc-lb-material"></dd>
+          </dl>
+          <p class="sc-lb-desc" id="sc-lb-desc"></p>
+          <p class="sc-cap">{{t:sc.renders}}</p>
+          <a class="btn" href="{{=quoteHref}}">{{t:sc.cta}}</a>
+          <div class="sc-lb-nav">
+            <button type="button" id="sc-lb-prev"><svg class="sc-flip" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.5" fill="none"/></svg>{{t:sc.lb.prev}}</button>
+            <span class="sc-cap sc-pos" id="sc-lb-pos" aria-live="polite" dir="ltr"></span>
+            <button type="button" id="sc-lb-next">{{t:sc.lb.next}}<svg class="sc-flip" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.5" fill="none"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LANGS = ['en', 'ar'];
 const REMOVED = ['es', 'fr']; // removed languages: only redirect stubs to the English page remain
-const PAGES = ['', 'pricing/', 'brand-deck/', 'social/', 'in-store/', 'samples/', 'faq/', 'about/', 'terms/', 'privacy/', 'refund/'];
+const PAGES = ['', 'pricing/', 'brand-deck/', 'social/', 'in-store/', 'sculptures/', 'samples/', 'faq/', 'about/', 'terms/', 'privacy/', 'refund/'];
 // old URLs: redirect stubs, not in the sitemap (a target may carry a #hash)
 const MOVED = { 'kit/': 'social/', 'physical/': 'in-store/#custom', 'snapshot/': 'social/', 'crier-deck/': 'brand-deck/' };
 const SKIP_DIRS = ['.git', 'node_modules', 'templates', 'build', 'tests', 'i18n', 'fonts', 'assets', 'design'];
@@ -36,13 +36,15 @@ for (const l of LANGS) for (const p of PAGES) {
   ok((h.match(/<link rel="alternate" hreflang="/g) || []).length === LANGS.length + 1, `hreflang ${file}`); // each language + x-default
   ok(/<title>[^<]{8,}<\/title>/.test(h) && /<meta name="description" content="[^"]{40,}">/.test(h), `title/description ${file}`);
   const headerNav = (h.match(/<nav class="main-nav"[\s\S]*?<\/nav>/) || [''])[0];
-  // Home v2 (2026-10-18): the header is Social · In-store · Pricing · Client portal; Samples and FAQ are in the footer only
-  for (const nav of ['social/', 'in-store/', 'pricing/']) ok(headerNav.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `nav link ${nav} in ${file}`);
+  // Home v2 (2026-10-18): the header is Social · In-store · Sculptures · Pricing · Client portal; Samples and FAQ are in the footer only
+  for (const nav of ['social/', 'in-store/', 'sculptures/', 'pricing/']) ok(headerNav.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `nav link ${nav} in ${file}`);
+  { const order = ['social/', 'in-store/', 'sculptures/', 'pricing/'].map((n) => headerNav.indexOf(`href="/${(l === 'en' ? '' : l + '/') + n}"`)); ok(order.every((x, i) => i === 0 || x > order[i - 1]) && order[3] < headerNav.indexOf('href="https://portal.crierstudio.com/"'), `header nav order Social, In-store, Sculptures, Pricing, Client portal in ${file}`); }
+  ok((headerNav.match(/aria-current="page"/g) || []).length === (p === 'sculptures/' || p === 'social/' || p === 'in-store/' || p === 'pricing/' ? 1 : 0) && (p !== 'sculptures/' || headerNav.includes(`href="/${l === 'en' ? '' : l + '/'}sculptures/" aria-current="page"`)), `header nav active state in ${file}`);
   for (const nav of ['samples/', 'faq/', 'about/']) ok(!headerNav.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `no header nav link ${nav} in ${file}`);
   ok(headerNav.includes('href="https://portal.crierstudio.com/"'), `portal link ${file}`);
   // the footer keeps every destination (About and Brand Deck moved there from the header)
   const footNav = (h.match(/<footer>[\s\S]*?<\/footer>/) || [''])[0];
-  for (const nav of ['social/', 'in-store/', 'samples/', 'pricing/', 'faq/', 'about/', 'brand-deck/']) ok(footNav.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `footer link ${nav} in ${file}`);
+  for (const nav of ['social/', 'in-store/', 'sculptures/', 'samples/', 'pricing/', 'faq/', 'about/', 'brand-deck/']) ok(footNav.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `footer link ${nav} in ${file}`);
   // the social line's old name is gone everywhere (EN and AR)
   ok(!/Complete Kit|complete kit|الحزمة الكاملة/.test(h), `old name "Complete Kit" in ${file}`);
   ok(h.includes('team@crierstudio.com'), `email in ${file}`);
@@ -98,6 +100,21 @@ for (const l of LANGS) for (const p of PAGES) {
     // launch date or delivery promise; Custom pieces promise no quote, price or reply time
     ok(!/\[[^\]]*\]/.test(vis), `a [bracket] placeholder in the visible text of ${file}`);
     ok(!/launch price|price announced|سعر الإطلاق|نعلن السعر|to your door|we deliver|delivered to|إلى بابك|تصلك|نوصل|quoted per|business days?|أيام عمل/i.test(vis), `a launch-price, delivery, quote or reply-time promise on ${file}`);
+  }
+  // Sculptures (2026-10-18): concept renders said once in plain words, no price, lead time or quantity, no [bracket] placeholder
+  // anywhere in the file (data-* included), every quote link -> the same portal sign-up as In-store's "Request a quote"
+  if (p === 'sculptures/') {
+    ok(!/\[[A-Z][A-Z _-]+\]/.test(h) && !/\[[^\]]*\]/.test(vis), `a [bracket] placeholder in ${file}`);
+    const main = (h.match(/<main[\s\S]*?<\/main>/) || [''])[0];
+    ok(!/data-usd|data-product|"@type":"Offer"|"offers"/.test(h) && !/price|lead time|MOQ|minimum order|السعر|أسعار|مدة التنفيذ|الحد الأدنى/i.test(main.replace(/<[^>]+>/g, ' ') + ' ' + (main.match(/<li class="sc-card"[^>]*>/g) || []).join(' ')), `no price, lead time or minimum order on ${file}`);
+    ok(vis.includes(l === 'en' ? 'Images are concept renders.' : 'الصور تصاميم مفاهيمية.'), `"concept renders" line on ${file}`);
+    ok((h.match(/<li class="sc-card"/g) || []).length === JSON.parse(rd('data/sculptures.json')).items.length, `every catalog piece on ${file}`);
+    const quotes = [...h.matchAll(/<a class="btn"[^>]* href="(https:\/\/portal[^"]*)"/g)].map((m) => m[1]);
+    ok(quotes.length === 3 && quotes.every((u) => u === `https://portal.crierstudio.com/#/signup?intent=quote&amp;lang=${l}`), `quote buttons -> portal sign-up (lang=${l}) on ${file}`);
+    ok(/<script src="\/assets\/h\/sculptures\.[0-9a-f]{10}\.js" defer><\/script>/.test(h), `sculptures script (hashed, from 'self') on ${file}`);
+    for (const m of h.matchAll(/<img\b[^>]*>/g)) ok(/ width="\d+" height="\d+"/.test(m[0]) && / alt="[^"]+"/.test(m[0]) || m[0].includes('id="sc-lb-img"'), `img size/alt on ${file}: ${m[0].slice(0, 80)}`);
+    for (const m of h.matchAll(/src="(\/assets\/sculptures\/[^"]+)"/g)) ok(fs.existsSync(path.join(ROOT, m[1])), `missing image ${m[1]} in ${file}`);
+    ok(/src="\/assets\/sculptures\/concept-example\.webp"/.test(h), `example concept image on ${file}`);
   }
   // no [bracket] placeholders in the visible text of the home, pricing and FAQ pages either
   if (['', 'pricing/', 'faq/'].includes(p)) ok(!/\[[^\]]*\]/.test(vis), `a [bracket] placeholder in the visible text of ${file}`);

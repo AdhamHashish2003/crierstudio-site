@@ -27,17 +27,18 @@ const RTL = new Set(['ar']);
 // every page exists in both languages: / (en), /ar/ and the sub-paths below
 // Two product lines (2026-10-18): Social (/social/: The Social Kit + the monthly plans) and In-store (/in-store/: The Store
 // Kit waitlist + Custom pieces, whose quotes are asked in the client portal after a free sign-up).
-const PAGES = ['index', 'pricing', 'brand-deck', 'social', 'in-store', 'samples', 'faq', 'about', 'terms', 'privacy', 'refund'];
+// Sculptures (2026-10-18): /sculptures/, the fiberglass catalog (data/sculptures.json) and custom pieces, quoted in the portal.
+const PAGES = ['index', 'pricing', 'brand-deck', 'social', 'in-store', 'sculptures', 'samples', 'faq', 'about', 'terms', 'privacy', 'refund'];
 // renamed pages: the old URLs stay as redirect stubs in every language (full query kept; the visitor's #hash wins over the
 // target's), not in the sitemap. A target may carry a #hash: /physical/ -> /in-store/#custom.
 const MOVED = { kit: 'social', physical: 'in-store#custom', snapshot: 'social', 'crier-deck': 'brand-deck' };
-const WIDE = new Set(['index', 'pricing', 'brand-deck', 'social', 'in-store', 'samples', 'about']); // wide layout; the rest use the narrow reading layout
+const WIDE = new Set(['index', 'pricing', 'brand-deck', 'social', 'in-store', 'sculptures', 'samples', 'about']); // wide layout; the rest use the narrow reading layout
 const LEGAL = ['terms', 'privacy', 'refund'];
-// Home v2 (2026-10-18): the header shows Social · In-store · Pricing · Client portal; Samples and FAQ moved to the footer only
-const NAV = [['social', 'nav.social'], ['in-store', 'nav.instore'], ['pricing', 'nav.pricing'], [PORTAL, 'nav.portal']];
+// Home v2 (2026-10-18): the header shows Social · In-store · Sculptures · Pricing · Client portal; Samples and FAQ moved to the footer only
+const NAV = [['social', 'nav.social'], ['in-store', 'nav.instore'], ['sculptures', 'nav.sculptures'], ['pricing', 'nav.pricing'], [PORTAL, 'nav.portal']];
 // the footer keeps every destination: the header nav plus Samples, FAQ, About and Brand Deck
-const NAV_FOOT = [['social', 'nav.social'], ['in-store', 'nav.instore'], ['samples', 'nav.samples'], ['pricing', 'nav.pricing'], ['faq', 'nav.faq'], ['about', 'nav.about'], ['brand-deck', 'nav.deck'], [PORTAL, 'nav.portal']];
-const CRUMB_KEY = { pricing: 'nav.pricing', 'brand-deck': 'nav.deck', social: 'nav.social', 'in-store': 'nav.instore', samples: 'nav.samples', faq: 'nav.faq', about: 'nav.about', terms: 'foot.terms', privacy: 'foot.privacy', refund: 'foot.refund' };
+const NAV_FOOT = [['social', 'nav.social'], ['in-store', 'nav.instore'], ['sculptures', 'nav.sculptures'], ['samples', 'nav.samples'], ['pricing', 'nav.pricing'], ['faq', 'nav.faq'], ['about', 'nav.about'], ['brand-deck', 'nav.deck'], [PORTAL, 'nav.portal']];
+const CRUMB_KEY = { pricing: 'nav.pricing', 'brand-deck': 'nav.deck', social: 'nav.social', 'in-store': 'nav.instore', sculptures: 'nav.sculptures', samples: 'nav.samples', faq: 'nav.faq', about: 'nav.about', terms: 'foot.terms', privacy: 'foot.privacy', refund: 'foot.refund' };
 // In-store waitlist "business type": the value is the matching INDUSTRY_VALUES string (the CRM's industry field)
 const STORE_TYPES = [['Cafés and dessert shops', 'is.zone.cafe'], ['Restaurants', 'is.zone.restaurant'], ['Salons', 'is.zone.salon'], ['Abayas and fashion', 'is.zone.abaya'], ['Other local business', 'ind.other']];
 // MENA (2026-10-14): Gulf and Egyptian business types. The value goes to the intake API as free text (the CRM's industry field).
@@ -109,6 +110,7 @@ const partials = {
 const CSS = {
   fonts: rd('templates/fonts.css'), fontsAr: rd('templates/fonts-ar.css'), common: rd('templates/common.css'),
   home: rd('templates/home.css'), legal: rd('templates/legal.css'), consent: rd('templates/consent.css'), chrome: rd('templates/studio-shared.css'),
+  sculpt: rd('templates/sculptures.css'),
 };
 const faqCss = CSS.home.slice(CSS.home.indexOf('/* faq */'), CSS.home.indexOf('/* closing */'));
 
@@ -441,6 +443,7 @@ function pageVars(lang, page) {
   if (page === 'index') Object.assign(v, { kitPrice: money(lang, 'kit'), homePlans: homePlans(lang), trust: homeTrust(lang), faqHome: faqItems(lang, FAQ_HOME, false, FAQ_HOME_SWAP), ...walkthrough(lang), ...heroBuy(lang) });
   if (page === 'social') Object.assign(v, kitVars(lang));
   if (page === 'in-store') Object.assign(v, storeVars(lang));
+  if (page === 'sculptures') Object.assign(v, sculptVars(lang));
   if (page === 'pricing') Object.assign(v, { planCards: planCards(lang), deckCards: deckCards(lang), billItems: billItems(lang), curPick: curPick(lang) });
   if (page === 'brand-deck') Object.assign(v, { deckFlow: flow(lang, 4, 'deck.how'), deckCards: deckCards(lang), faqItems: faqItems(lang, FAQ_DECK, true), sheets: [1, 2, 4].map((n) => fig(lang, n)).join('') });
   if (page === 'samples') v.sheets = [1, 2, 3, 4].map((n) => fig(lang, n)).join('');
@@ -491,6 +494,50 @@ function storeVars(lang) {
     quoteHref: esc(portalAuth('signup', lang)), quoteLoginHref: esc(portalAuth('login', lang)) };
 }
 
+// /sculptures/ (2026-10-18, the approved Sculptures mockup): 24 fiberglass pieces in two collections (data/sculptures.json, EN +
+// AR) and "send us your website" custom pieces. The images are concept renders (one plain line says so); no price, lead time
+// or quantity. A size is shown only when the catalog gives one. Quotes go to the same portal sign-up as In-store's "Request a
+// quote" (portalAuth). Images live in assets/sculptures/ (<id>-<front|side|back|scene|thumb>.webp, loaded lazily; the lightbox
+// views load when it opens, from assets/sculptures.js); width/height come from each file's own header.
+const SCULPT = JSON.parse(rd('data/sculptures.json')).items;
+const SC_DIR = '/assets/sculptures/';
+const SC_VIEWS = ['front', 'side', 'back', 'scene'];
+const SC_COLS = { origami: 'sc.col.origami', animal: 'sc.col.animal' };
+// the real pixel size of a .webp (VP8, VP8L or VP8X header)
+function webpSize(url) {
+  const b = fs.readFileSync(path.join(ROOT, url.slice(1))), kind = b.toString('ascii', 12, 16);
+  if (b.toString('ascii', 0, 4) !== 'RIFF' || b.toString('ascii', 8, 12) !== 'WEBP') throw new Error('not a webp: ' + url);
+  if (kind === 'VP8 ') return [b.readUInt16LE(26) & 0x3fff, b.readUInt16LE(28) & 0x3fff];
+  if (kind === 'VP8L') { const n = b.readUInt32LE(21); return [(n & 0x3fff) + 1, ((n >> 14) & 0x3fff) + 1]; }
+  if (kind === 'VP8X') return [1 + b.readUIntLE(24, 3), 1 + b.readUIntLE(27, 3)];
+  throw new Error('unknown webp header: ' + url);
+}
+const scImg = (file, alt, extra = ' loading="lazy" decoding="async"') => { const u = SC_DIR + file + '.webp', [w, h] = webpSize(u); return `<img src="${u}" width="${w}" height="${h}"${extra} alt="${esc(alt)}">`; };
+for (const it of SCULPT) {
+  if (!SC_COLS[it.collection] || !['furniture', 'decor', 'lighting'].includes(it.category)) throw new Error('data/sculptures.json: bad collection/category ' + it.id);
+  for (const v of [...SC_VIEWS, 'thumb']) webpSize(`${SC_DIR}${it.id}-${v}.webp`); // every view exists
+  if (/\[[^\]]*\]/.test(JSON.stringify(it))) throw new Error('data/sculptures.json: a [bracket] placeholder in ' + it.id);
+}
+function sculptVars(lang) {
+  const byId = Object.fromEntries(SCULPT.map((it) => [it.id, it]));
+  const ph = (cls, file, altKey, extra, tagId) => `<div class="sc-ph ${cls}">${scImg(file, t(lang, altKey), extra)}${tagId ? `<span class="sc-tag">${esc(byId[tagId].name[lang])}</span>` : ''}</div>`;
+  // hero collage (the mockup's four pieces); the large scene is the first thing seen, so it loads at once
+  const scCollage = ph('a', 'o-10-pleat-fold-floor-lamp-scene', 'sc.alt.a', ' fetchpriority="high" decoding="async"', 'o-10-pleat-fold-floor-lamp')
+    + ph('b', 'a-07-geometric-bear-stool-front', 'sc.alt.b', ' decoding="async"') + ph('c', 'o-03-facet-column-vase-front', 'sc.alt.c', ' decoding="async"')
+    + ph('d', 'a-02-rounded-seal-side-table-scene', 'sc.alt.d');
+  const scCards = SCULPT.map((it) => {
+    const col = t(lang, SC_COLS[it.collection]), cat = t(lang, 'sc.cat.' + it.category), size = it.size ? it.size[lang] : '';
+    const dims = SC_VIEWS.map((v) => webpSize(`${SC_DIR}${it.id}-${v}.webp`).join('x')).join(' ');
+    const data = { id: it.id, col: it.collection, cat: it.category, collabel: col, catlabel: cat, ...(size ? { size } : {}), finish: it.finish[lang], material: it.material[lang], desc: it.desc[lang], dims };
+    const attrs = Object.entries(data).map(([k, v]) => ` data-${k}="${esc(v)}"`).join('');
+    const meta = esc(cat) + (size ? ' · ' + (lang === 'ar' ? `<bdi>${esc(size)}</bdi>` : esc(size)) : '');
+    return `<li class="sc-card"${attrs}><button type="button" class="sc-card-btn" aria-haspopup="dialog"><span class="sc-card-img">${scImg(it.id + '-thumb', t(lang, 'sc.altFront').replace('{name}', () => it.name[lang]))}<span class="sc-card-tag">${esc(col)}</span></span><span class="sc-card-name">${esc(it.name[lang])}</span><span class="sc-card-meta">${meta}</span></button></li>`;
+  }).join('\n');
+  // the "send us your website" example: a catalog scene render, shown and labelled as an example concept (not a client project)
+  const scConcept = scImg('concept-example', t(lang, 'sc.concept.alt'));
+  return { scCollage, scCards, scConcept, scImgDir: SC_DIR, quoteHref: esc(portalAuth('signup', lang)), quoteLoginHref: esc(portalAuth('login', lang)) };
+}
+
 // ---------- head ----------
 // Structured data (launch pricing, 2026-10-15): one Offer per market, the same on every language page (the currency follows
 // the buyer's country, not the page language). Saudi Arabia, the UAE and Egypt each get an Offer in their currency, limited to
@@ -529,6 +576,8 @@ function jsonLd(lang, page) {
       nodes.push({ '@type': 'Service', name: t(lang, 'name.store'), description: t(lang, 'is.kit.line'), url: urlFor(lang, page) + '#kit', provider, areaServed: Object.keys(COUNTRIES).map((cc) => ({ '@type': 'Country', name: cc })) });
       nodes.push({ '@type': 'Service', name: t(lang, 'is.c.name'), description: t(lang, 'is.c.intro'), url: urlFor(lang, page) + '#custom', provider });
     }
+    // Sculptures: informational, with no offers (pieces are quoted in the client portal)
+    if (page === 'sculptures') nodes.push({ '@type': 'Service', name: t(lang, 'nav.sculptures'), description: t(lang, 'meta.d.sculptures'), url: urlFor(lang, page), provider });
     if (page === 'pricing') {
       const items = PRODUCTS.map((p) => ({ '@type': 'Service', name: pname(lang, p), provider, ...(p === 'deck' ? { description: t(lang, 'availability.deck') } : { offers: offerNode(lang, p) }) }));
       items.splice(3, 0, { '@type': 'Service', name: t(lang, 'name.store'), description: t(lang, 'is.kit.line'), url: urlFor(lang, 'in-store') + '#kit', provider });
@@ -629,6 +678,8 @@ const minCss = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '').split(/("[^"\n]*"|'
 const JS_WORDS = new Set([rd('site.js'), rd('assets/studio.js'), rd('assets/deck.js'), CONSENT_JS].join('\n').match(/[A-Za-z_][\w-]*/g));
 // assets/dash.js (the home dashboard) only runs on pages with #dash, so its words count only there
 const DASH_WORDS = rd('assets/dash.js').match(/[A-Za-z_][\w-]*/g);
+// assets/sculptures.js (catalog filters + lightbox) only runs on /sculptures/ (#sc-grid)
+const SC_WORDS = rd('assets/sculptures.js').match(/[A-Za-z_][\w-]*/g);
 function cssBlocks(css) {
   const out = []; let start = 0, depth = 0, q = null, pre = '';
   for (let i = 0; i < css.length; i++) {
@@ -645,6 +696,7 @@ function cssBlocks(css) {
 function purgeCss(css, html) {
   const have = new Set(JS_WORDS);
   if (html.includes('id="dash"')) for (const w of DASH_WORDS) have.add(w);
+  if (html.includes('id="sc-grid"')) for (const w of SC_WORDS) have.add(w);
   for (const m of html.matchAll(/\sclass="([^"]*)"/g)) for (const c of m[1].split(/\s+/)) have.add(c);
   for (const m of html.matchAll(/\sid="([^"]*)"/g)) have.add(m[1]);
   const split = (s) => { const r = []; let d = 0, st = 0; for (let i = 0; i < s.length; i++) { const c = s[i]; if (c === '(' || c === '[') d++; else if (c === ')' || c === ']') d--; else if (c === ',' && !d) { r.push(s.slice(st, i)); st = i + 1; } } r.push(s.slice(st)); return r; };
@@ -664,7 +716,7 @@ function purgeCss(css, html) {
 const trimIndent = (html) => html.split(/(<(script|style|pre|textarea)\b[\s\S]*?<\/\2>)/).map((part, i) => i % 3 === 0 ? part.replace(/\n[ \t]+/g, '\n') : i % 3 === 1 ? part : '').join('');
 // the English In-store page loads the Arabic faces too: its menu board and QR stand carry Arabic item names (the unicode-range
 // means the files download only for those glyphs)
-const cssFor = (lang, page) => minCss([CSS.fonts, lang === 'ar' || page === 'in-store' ? CSS.fontsAr : '', WIDE.has(page) ? CSS.home : CSS.legal + (page === 'faq' ? '\n' + faqCss : ''), CSS.common, CSS.consent, CSS.chrome].join('\n'));
+const cssFor = (lang, page) => minCss([CSS.fonts, lang === 'ar' || page === 'in-store' ? CSS.fontsAr : '', WIDE.has(page) ? CSS.home : CSS.legal + (page === 'faq' ? '\n' + faqCss : ''), CSS.common, CSS.consent, CSS.chrome, page === 'sculptures' ? CSS.sculpt : ''].join('\n'));
 
 // ---------- content-hashed asset copies (long browser cache) ----------
 // GitHub Pages sends every file with max-age=600. The pages therefore reference copies of the fonts, the hero images and
@@ -683,7 +735,8 @@ function hashed(url) {
   hashedUrls.set(url, out);
   return out;
 }
-const hashUrls = (html) => html.replace(/\/(?:fonts|assets)\/[\w.-]+\.(?:woff2|avif|webp|png)\b|\/site\.js\b|\/assets\/dash\.js\b/g, hashed);
+// (the sculpture images in assets/sculptures/ keep their names: the lightbox builds their URLs from the piece id)
+const hashUrls = (html) => html.replace(/\/(?:fonts|assets)\/[\w.-]+\.(?:woff2|avif|webp|png)\b|\/site\.js\b|\/assets\/(?:dash|sculptures)\.js\b/g, hashed);
 
 // ---------- build ----------
 function write(rel, content) {
@@ -699,7 +752,7 @@ for (const [lang] of LANGS) {
     htmlCc = LEGAL.includes(page) ? null : DEFAULT_CC; // the legal pages keep the US-dollar price list
     const ctx = { lang, v: pageVars(lang, page) };
     const body = render(rd(`templates/${page === 'index' ? 'home' : page}.html`), ctx);
-    const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${!LEGAL.includes(page) && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${page === 'index' ? '<script src="/assets/dash.js" defer></script>\n' : ''}</body>\n</html>\n`;
+    const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${!LEGAL.includes(page) && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${page === 'index' ? '<script src="/assets/dash.js" defer></script>\n' : ''}${page === 'sculptures' ? '<script src="/assets/sculptures.js" defer></script>\n' : ''}</body>\n</html>\n`;
     const html = `${head(lang, page, purgeCss(cssFor(lang, page), bodyHtml))}\n${trimIndent(bodyHtml)}`;
     write(dirFor(lang, page) + 'index.html', hashUrls(html));
     built.push([lang, page]);

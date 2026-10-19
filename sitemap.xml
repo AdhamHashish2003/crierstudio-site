@@ -61,6 +61,18 @@
 <xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/in-store/"/>
 </url>
 <url>
+<loc>https://crierstudio.com/sculptures/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/sculptures/"/>
+<xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/ar/sculptures/"/>
+<xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/sculptures/"/>
+</url>
+<url>
+<loc>https://crierstudio.com/ar/sculptures/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/sculptures/"/>
+<xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/ar/sculptures/"/>
+<xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/sculptures/"/>
+</url>
+<url>
 <loc>https://crierstudio.com/samples/</loc>
 <xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/samples/"/>
 <xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/ar/samples/"/>
