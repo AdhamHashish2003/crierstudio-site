@@ -268,6 +268,13 @@ function buyBtn(lang, p, ghost) {
   const note = isLinked(p) ? '' : `<span class="paynote">${h(lang, 'pay.note')}</span>`;
   return `<a class="btn${ghost ? ' ghost' : ''}" href="${esc(buyHref(lang, p))}" data-product="${p}">${h(lang, `pkg.${p}.btn`)}</a>${note}`;
 }
+// home hero (Direction C, 2026-10-18): the kit's buy button (same href and data-product as buyBtn) with an arrow, and its
+// "You'll pay securely on Stripe" line on its own, so the hero card can put it next to "See how it works"
+const ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+function heroBuy(lang) {
+  return { heroBtn: `<a class="btn" href="${esc(buyHref(lang, 'kit'))}" data-product="kit">${h(lang, 'pkg.kit.btn')} ${ARROW}</a>`,
+    heroPay: isLinked('kit') ? '' : `<span class="paynote">${h(lang, 'pay.note')}</span>` };
+}
 function ticks(lang, prefix, cls) {
   const out = [];
   for (let i = 1; dicts[lang][`${prefix}.f${i}`] != null; i++) out.push(`<li>${h(lang, `${prefix}.f${i}`)}</li>`);
@@ -431,7 +438,7 @@ function pageVars(lang, page) {
   };
   // Home v2 (2026-10-18): hero, the client portal walkthrough, three packages, Good to know, FAQ. The industries, seasons and
   // In-store teaser sections are gone from the home page (In-store content lives on /in-store/ only).
-  if (page === 'index') Object.assign(v, { kitPrice: money(lang, 'kit'), homePlans: homePlans(lang), trust: homeTrust(lang), faqHome: faqItems(lang, FAQ_HOME, false, FAQ_HOME_SWAP), ...walkthrough(lang) });
+  if (page === 'index') Object.assign(v, { kitPrice: money(lang, 'kit'), homePlans: homePlans(lang), trust: homeTrust(lang), faqHome: faqItems(lang, FAQ_HOME, false, FAQ_HOME_SWAP), ...walkthrough(lang), ...heroBuy(lang) });
   if (page === 'social') Object.assign(v, kitVars(lang));
   if (page === 'in-store') Object.assign(v, storeVars(lang));
   if (page === 'pricing') Object.assign(v, { planCards: planCards(lang), deckCards: deckCards(lang), billItems: billItems(lang), curPick: curPick(lang) });

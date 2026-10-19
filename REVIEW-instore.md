@@ -539,3 +539,21 @@ Differences from the mockup: the footnote keeps the site's "café" (the mockup h
 sign-in with `intent=quote` (the mockup used the portal root as a placeholder). The waitlist is the real five-field form, so in
 the banner it sits on its own row under "COMING SOON" and the message, not as the mockup's single email field. The piece and
 sign drawings are decorative (`aria-hidden`), and their names are in the captions.
+
+## Home hero, Direction C (2026-10-18)
+
+Branch `home-hero`. The home hero on `/` and `/ar/` is now Direction C from hero-mockup (dir-c-en.html, dir-c-ar.html): copy, kit
+price card and CTA on one side; on the other a phone with the Instagram profile of Nakha Café (Example) / مقهى نكهة (مثال), its 3x3
+grid of flat posts in the dashboard's art style, the brand book, story and 30-day plan cards and the "Ready for Instagram" tag.
+Static HTML/CSS (templates/hero.html, the `.hc` / `.ig-` rules in templates/home.css), no images, no script. Strings: `hero.*` keys.
+- Price: `kitPrice` (data/pricing.json), the `data-vat` "+ VAT" and "one time", as before; site.js localises them (SAR 109 + VAT in
+  the HTML, AED / EGP by country, USD elsewhere). The button is the kit's buy button (same href and data-product as before:
+  /social/?product=kit#request, /ar/social/?product=kit#request) with the Stripe line; "See how it works" goes to #walkthrough.
+- Changed from the mockup: the post "Good morning, Riyadh." / "صباح الخير يا الرياض." is now "Fresh every morning." / "قهوة طازجة
+  كل صباح." (no place name). The status-bar clock (9:41) is gone. On phones the tag sits on the phone's top edge, over the status
+  bar, never on the grid (EN and AR). The header is the site's own, so the AR portal link is the bare PORTAL URL (no `?lang=ar`).
+- The Arabic H1 and lead now use the mockup's wording (`home.h1`, `home.lead` in ar.json).
+- Layout: side by side from 1101px (the composition scaled to 0.8 below 1280px); 801-1100px stacks copy, phone and price card; up
+  to 800px the mockup's small phone (brand book and plan cards hidden, as in the mockup). The live page padding is 40px on phones
+  too (the mockup assumed 22px), so the hero bleeds 40px into it.
+- check.mjs: new home-hero assertions (kit price, VAT tag, buy href, #walkthrough, "(Example)" label, no city, clock or image).

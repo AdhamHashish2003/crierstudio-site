@@ -70,6 +70,13 @@ for (const l of LANGS) for (const p of PAGES) {
     ok(h.includes(`href="https://portal.crierstudio.com/#/signup?lang=${l}"`), `walkthrough Get started -> portal sign-up (lang=${l}) on ${file}`);
     ok(/<script src="\/assets\/h\/dash\.[0-9a-f]{10}\.js" defer><\/script>/.test(h), `dashboard script (hashed, from 'self') on ${file}`);
     ok(h.indexOf('id="walkthrough"') < h.indexOf('id="plans"') && h.indexOf('id="plans"') < h.indexOf('id="trust"') && h.indexOf('id="trust"') < h.indexOf('id="faq"'), `home section order on ${file}`);
+    // Home hero, Direction C (2026-10-18): the kit price from data/pricing.json (localised by site.js), the kit buy button, the
+    // example labelled as made up, and no place name, clock or count in the phone
+    const hero = (h.match(/<section class="hc" id="hero"[\s\S]*?<\/section>/) || [''])[0];
+    const kitWant = JSON.parse(rd('payment-links.json')).kit || `/${l === 'en' ? '' : l + '/'}social/?product=kit#request`;
+    ok(hero.split('class="price amt"').length === 2 && hero.includes('data-vat') && hero.includes('href="#walkthrough"'), `hero kit price, VAT tag and walkthrough link on ${file}`);
+    ok((hero.match(/<a class="btn" href="([^"]*)" data-product="kit">/) || [])[1]?.replace(/&amp;/g, '&') === kitWant, `hero buy button -> ${kitWant} on ${file}`);
+    ok(/\((Example|مثال)\)/.test(hero) && !/Riyadh|الرياض|\d:\d\d|<img\b/.test(hero), `hero example labelled, no city, clock or image on ${file}`);
   }
   if (p === 'pricing/') {
     const card = (h.match(/<(article|div) class="(plan|ind) cream store-card"[\s\S]*?<\/\1>/) || [''])[0];

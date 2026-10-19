@@ -166,6 +166,191 @@ html{scroll-behavior:smooth}
 .priceline .vat{font:700 var(--step-1)/1 var(--display);color:var(--ink)}
 html[lang=ar] .priceline .vat{font-size:var(--step-0)}
 
+/* ---------------- home hero, Direction C (2026-10-18): the Instagram-ready phone (hero-mockup/dir-c-en.html, dir-c-ar.html) ----------------
+   Copy, kit price card and CTA on one side; on the other a phone with the Instagram profile of a made-up café (Nakha Café (Example)),
+   its 3x3 grid in the dashboard's flat art style, and the other kit pieces around it. Static HTML/CSS, no images, no numbers in the
+   phone UI. The section bleeds into the page padding (--bleed, 40px like body>.wrap) so the pieces can hang past the column and
+   are clipped there.
+   The composition (.hc-rig, 680 wide) is scaled with --k on mid widths; tablets stack it under the copy; phones use the mockup's
+   own small phone with the "Ready for Instagram" tag on the phone's top edge (it never covers the grid). */
+.hc{--bleed:40px;--k:1;position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,560px) minmax(0,1fr);gap:40px;height:702px;margin-inline:calc(-1 * var(--bleed));padding:0 var(--bleed);border:0}
+.hc-copy{display:grid;gap:20px;justify-items:start;align-content:center;padding-bottom:8px;min-width:0}
+.hc h1{font-size:60px;line-height:1;max-width:11ch}
+html[lang=ar] .hc h1{font-size:56px;line-height:1.3;max-width:12ch;font-weight:700}
+.hc .lead{max-width:44ch;font-size:18px;line-height:1.6}
+html[lang=ar] .hc .lead{line-height:1.8}
+html[lang=ar] .hc-copy{gap:18px}
+.hc-card{width:100%;display:grid;gap:18px;padding:22px 24px;background:var(--paper);border:1px solid var(--line)}
+.hc-kit{display:grid;gap:8px}
+html[lang=ar] .hc-kit{gap:6px}
+.hc-kitname{font:700 13px/1.2 var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}
+html[lang=ar] .hc-kitname{letter-spacing:0;text-transform:none;font-size:15px}
+.hc .priceline{gap:10px}
+.hc .price{font:800 44px/1 var(--display);font-stretch:112%;letter-spacing:-.03em}
+html[lang=ar] .hc .price{letter-spacing:0;font-stretch:normal;font-weight:700}
+.hc .priceline .vat{font-size:18px}
+html[lang=ar] .hc .priceline .vat{font-size:15px;font-weight:600}
+.hc .per{font-size:14px}
+.hc .hc-card .btn{width:100%;gap:.6em;min-height:52px;font-size:15px;font-weight:700}
+html[lang=ar] .hc .hc-card .btn{font-size:16px}
+.hc-card .btn svg{width:16px;height:16px;flex:none}
+[dir=rtl] .hc-card .btn svg{transform:scaleX(-1)}
+.hc-meta{display:flex;justify-content:space-between;align-items:center;gap:8px 18px;flex-wrap:wrap;margin-top:-6px}
+html[lang=ar] .hc-meta .paynote{font-size:14px}
+.hc-more{display:inline-flex;align-items:center;min-height:44px;font:600 15px/1.2 var(--body);color:var(--ink);text-decoration:underline;text-underline-offset:6px;text-decoration-color:var(--accent);text-decoration-thickness:2px}
+html[lang=ar] .hc-more{font-size:16px}
+.hc-exnote{margin-top:-8px;font:500 12px/1.4 var(--body);color:var(--muted);letter-spacing:.01em}
+html[lang=ar] .hc-exnote{margin-top:-6px;font-size:13px}
+
+/* the stage: phone + kit pieces, mirrored on /ar/ */
+.hc-stage{position:relative;min-width:0}
+.hc-rig{position:absolute;top:0;left:50%;width:680px;height:702px;margin-left:-340px;transform:scale(var(--k));transform-origin:50% 50%}
+.hc-phone{position:absolute;top:40px;left:50%;margin-left:-172px;width:344px;padding:11px;background:#1B1D17;border-radius:52px;box-shadow:0 0 0 1px #34382C,0 50px 100px rgba(0,0,0,.6);transform:scale(.92);transform-origin:50% 0}
+.hc-phone::after{content:"";position:absolute;top:22px;left:50%;width:96px;height:26px;margin-left:-48px;background:#0E0F0C;border-radius:20px}
+.hc-scr{position:relative;height:690px;overflow:hidden;border-radius:42px;background:#fff;color:#111;font:400 12px/1.35 var(--body);letter-spacing:0;text-align:start}
+html[lang=ar] .hc-scr{line-height:1.5}
+.ig-sb{display:flex;justify-content:flex-end;align-items:center;gap:5px;height:44px;padding:8px 26px 0;direction:ltr}
+.ig-sb i{display:block;width:16px;height:9px;border-radius:2px;background:#111}
+.ig-sb i:first-child{width:14px;height:8px;background:none;border:2px solid #111}
+.ig-tb{display:flex;align-items:center;justify-content:space-between;padding:6px 16px 4px}
+.ig-tb b{display:flex;align-items:center;gap:4px;font:700 17px/1 var(--body)}
+.ig-tb b svg{width:12px;height:12px}
+.ig-acts{display:flex;gap:16px}.ig-acts svg{width:21px;height:21px}
+.ig-pr{display:flex;align-items:center;gap:16px;padding:10px 16px 8px}
+.ig-av{flex:none;width:76px;height:76px;border-radius:50%;padding:3px;background:#fff;box-shadow:0 0 0 2.5px #C6FF00}
+.ig-av span{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;background:#0E0F0C;color:#C6FF00;font:800 21px/1 var(--display);letter-spacing:-.02em}
+html[lang=ar] .ig-av span{font-size:30px;letter-spacing:0}
+.ig-nm{display:grid;gap:3px}
+.ig-nm b{font:700 14px/1.2 var(--body)}
+html[lang=ar] .ig-nm{gap:2px}
+html[lang=ar] .ig-nm b{font-size:14.5px;line-height:1.3}
+.ig-nm small{font-size:12px;color:#737373}
+.ig-bio{padding:0 16px 10px;font-size:12.5px;line-height:1.4;max-width:none}
+html[lang=ar] .ig-bio{line-height:1.6}
+.ig-bio span{color:#00376B;font-weight:600}
+.ig-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:0 16px 12px}
+.ig-btns span{display:grid;place-items:center;height:30px;border-radius:8px;background:#EFEFEF;font:600 12.5px/1 var(--body)}
+.ig-btns span.on{background:#0E0F0C;color:#fff}
+.ig-hl{display:flex;gap:14px;padding:0 16px 10px}
+html[lang=ar] .ig-hl{padding-bottom:8px}
+.ig-hl span{display:grid;justify-items:center;gap:4px;font-size:10.5px}
+html[lang=ar] .ig-hl span{gap:2px}
+.ig-hl i{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;box-shadow:0 0 0 1px #DBDBDB;border:3px solid #fff;background:#0E0F0C}
+.ig-hl i b{width:18px;height:18px;border-radius:50%;background:#C6FF00}
+.ig-hl span:nth-child(2) i{background:#C6FF00}.ig-hl span:nth-child(2) i b{background:#0E0F0C}
+.ig-hl span:nth-child(3) i{background:#E7EBDA}.ig-hl span:nth-child(3) i b{background:#23251F;border-radius:4px}
+.ig-hl span:nth-child(4) i{background:#23261D}.ig-hl span:nth-child(4) i b{background:none;border:3px solid #C6FF00}
+.ig-tabs{display:flex;border-top:1px solid #EFEFEF}
+.ig-tabs span{flex:1;display:grid;place-items:center;height:40px;color:#A8A8A8}
+.ig-tabs span.on{color:#111;box-shadow:inset 0 -1.5px 0 #111}
+.ig-tabs svg{width:20px;height:20px}
+.ig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+/* the posts: the dashboard's flat art (.art) at 1:1, Nakha Café's palette */
+.ig-post{position:relative;display:block;overflow:hidden;container-type:size;aspect-ratio:1/1;background:#0E0F0C;color:#C6FF00;font-family:var(--display);text-align:start}
+.ig-post>*{position:absolute}
+.ig-ring{width:72cqh;height:72cqh;top:12cqh;inset-inline-end:-20cqh;border-radius:50%;border:5cqh solid rgba(255,255,255,.28)}
+.ig-dot{width:30cqh;height:30cqh;top:28cqh;inset-inline-end:6cqw;border-radius:50%;background:#C6FF00}
+.ig-t{inset-inline-start:8cqw;bottom:20cqh;max-width:78cqw;font:800 14cqh/.92 var(--display);font-stretch:112%;letter-spacing:-.04em}
+.ig-s{inset-inline-start:8cqw;bottom:9cqh;font:600 6.5cqh/1.1 var(--body);color:#fff;white-space:nowrap}
+.ig-ty .ig-t{top:16cqh;bottom:auto;max-width:84cqw;font-size:17cqh}
+html[lang=ar] .ig-t{bottom:19cqh;max-width:52cqw;font-size:13cqh;line-height:1.25;letter-spacing:0;font-stretch:normal}
+html[lang=ar] .ig-s{bottom:8cqh;max-width:84cqw;font-size:7cqh}
+html[lang=ar] .ig-ty .ig-t{top:12cqh;bottom:auto;max-width:84cqw;font-size:15cqh}
+.ig-n2{background:#C6FF00;color:#0E0F0C}.ig-n2 .ig-s{color:#0E0F0C}.ig-n2 .ig-ring{border-color:rgba(14,15,12,.18)}.ig-n2 .ig-dot{background:#22260F}
+.ig-n3{background:#E7EBDA;color:#0E0F0C}.ig-n3 .ig-s{color:#2B2E25}.ig-n3 .ig-ring{border-color:#B9BDAD}.ig-n3 .ig-dot{background:#23251F}
+.ig-n4{background:#23261D;color:#fff}.ig-n4 .ig-ring{border-color:rgba(198,255,0,.5)}.ig-n4 .ig-s{color:#C6FF00}
+/* the tag on the phone's top edge */
+.hc-tag{position:absolute;z-index:4;top:12px;left:50%;transform:translateX(-50%);display:inline-flex;align-items:center;gap:7px;white-space:nowrap;background:#C6FF00;color:#0E0F0C;font:700 11px/1 var(--body);letter-spacing:.06em;text-transform:uppercase;padding:9px 13px;border-radius:999px;box-shadow:0 10px 24px rgba(0,0,0,.45)}
+html[lang=ar] .hc-tag{font-size:13px;line-height:1.2;letter-spacing:0;text-transform:none;padding:8px 14px}
+.hc-tag svg{width:12px;height:12px;flex:none}
+/* the other kit pieces: brand book, story, 30-day plan */
+.hc-pc{position:absolute;z-index:3;background:#fff;color:#111827;border-radius:14px;padding:12px;box-shadow:0 30px 60px rgba(0,0,0,.5)}
+.hc-tt{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;font:700 11px/1 var(--body);letter-spacing:.08em;text-transform:uppercase}
+.hc-tt em{font-style:normal;font-weight:600;font-size:10px;letter-spacing:0;text-transform:none;color:#6B7280}
+html[lang=ar] .hc-tt{font-size:13px;line-height:1.2;letter-spacing:0;text-transform:none}
+html[lang=ar] .hc-tt em{font-weight:500;font-size:11px}
+.hc-bb{top:170px;inset-inline-start:6px;width:190px;transform:rotate(-5deg)}
+.hc-pl{top:478px;inset-inline-start:10px;width:190px;transform:rotate(4deg)}
+.hc-st{top:300px;inset-inline-end:6px;width:146px;padding:8px;transform:rotate(6deg)}
+[dir=rtl] .hc-bb{transform:rotate(5deg)}
+[dir=rtl] .hc-pl{transform:rotate(-4deg)}
+[dir=rtl] .hc-st{transform:rotate(-6deg)}
+.hc-st .hc-tt{margin:2px 2px 8px}
+.hc-sw{display:grid;grid-template-columns:2fr 1fr 1fr;gap:4px;height:46px;margin-bottom:10px}
+.hc-sw i{border-radius:6px;background:#0E0F0C}
+.hc-sw i:nth-child(2){background:#C6FF00}.hc-sw i:nth-child(3){background:#E7EBDA;box-shadow:inset 0 0 0 1px #D5DAC6}
+.hc-aa{display:flex;align-items:baseline;gap:10px;border-top:1px solid #EEF0F3;padding-top:8px}
+.hc-aa b{font:800 30px/1 var(--display);letter-spacing:-.04em}
+.hc-aa span{font-size:10.5px;line-height:1.3;color:#6B7280}
+html[lang=ar] .hc-aa{align-items:center}
+html[lang=ar] .hc-aa b{font-size:28px;line-height:1.2;letter-spacing:0}
+html[lang=ar] .hc-aa span{font-size:11px;line-height:1.45}
+.hc-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.hc-cal i{aspect-ratio:1;border-radius:4px;background:#F3F4F6}
+.hc-cal i.cp{background:#0E0F0C}.hc-cal i.cs{background:#C6FF00}
+.hc-story{position:relative;aspect-ratio:9/16;border-radius:9px;overflow:hidden;background:#C6FF00;container-type:size}
+.hc-story>*{position:absolute}
+.st-bar{top:3cqh;left:6cqw;right:6cqw;height:.8cqh;background:rgba(14,15,12,.25);border-radius:9px}
+.st-bar::before{content:"";position:absolute;inset-block:0;inset-inline:0 45%;background:#0E0F0C;border-radius:9px}
+.st-ring{width:90cqw;height:90cqw;top:14cqh;inset-inline-end:-30cqw;border-radius:50%;border:5cqw solid rgba(14,15,12,.18)}
+.st-dot{width:40cqw;height:40cqw;top:22cqh;inset-inline-end:8cqw;border-radius:50%;background:#22260F}
+.st-t{inset-inline-start:8cqw;bottom:22cqh;max-width:84cqw;font:800 7.4cqh/.95 var(--display);letter-spacing:-.04em;color:#0E0F0C}
+.st-s{inset-inline-start:8cqw;bottom:9cqh;font:700 3cqh/1 var(--body);color:#0E0F0C;background:#fff;padding:2cqh 3cqh;border-radius:99px}
+html[lang=ar] .st-t{bottom:21cqh;font-size:7cqh;line-height:1.25;letter-spacing:0}
+html[lang=ar] .st-s{bottom:8cqh;font-size:3.4cqh;line-height:1.2;padding:1.6cqh 3cqh}
+
+/* mid widths: the same layout, the composition scaled down so the pieces stay in the gap and the page padding */
+@media(max-width:1279px){.hc{--k:.8}}
+@media(max-width:1180px){.hc{grid-template-columns:minmax(0,480px) minmax(0,1fr)}.hc h1{font-size:54px}html[lang=ar] .hc h1{font-size:48px}}
+/* tablets: copy, then the phone with its kit pieces, then the price card */
+@media(max-width:1100px){
+  .hc{height:auto;grid-template-columns:minmax(0,1fr);gap:16px;padding-top:28px}
+  .hc-copy{display:contents}
+  .hc-copy>*{justify-self:start}
+  .hc h1{max-width:18ch}
+  .hc-card{order:2;max-width:640px}
+  .hc-exnote{order:3;margin:0 0 24px}
+  html[lang=ar] .hc-exnote{margin:0 0 24px}
+  .hc-stage{order:1;height:520px;margin-inline:calc(-1 * var(--bleed));overflow:hidden}
+  .hc-rig{transform-origin:50% 0}
+}
+/* phones: the mockup's small phone; brand book and plan cards hidden so the profile stays readable */
+@media(max-width:800px){
+  .hc{gap:14px;padding-top:22px}
+  .hc .eyebrow{font-size:12px}
+  html[lang=ar] .hc .eyebrow{font-size:13px}
+  .hc h1{font-size:32px;line-height:1.04;max-width:none}
+  html[lang=ar] .hc h1{font-size:31px;line-height:1.35;max-width:none}
+  .hc .lead{font-size:15px;line-height:1.55}
+  html[lang=ar] .hc .lead{line-height:1.75}
+  .hc-card{padding:16px;gap:12px}
+  .hc-exnote,html[lang=ar] .hc-exnote{margin:0 0 18px}
+  .hc .price{font-size:34px}.hc .priceline .vat{font-size:16px}
+  html[lang=ar] .hc .price{font-size:32px}html[lang=ar] .hc .priceline .vat{font-size:14px}
+  .hc-stage{height:344px}
+  .hc-rig{left:0;width:100%;height:100%;margin-left:0;transform:none}
+  .hc-phone{top:20px;width:256px;margin-left:-128px;padding:8px;border-radius:40px;transform:none}
+  .hc-phone::after{top:16px;width:70px;height:19px;margin-left:-35px}
+  .hc-scr{height:420px;border-radius:33px;font-size:10px}
+  .ig-sb{height:34px;padding:6px 20px 0}
+  .ig-tb{padding:4px 12px 2px}.ig-tb b{font-size:13.5px}.ig-acts{gap:12px}.ig-acts svg{width:17px;height:17px}
+  .ig-pr{gap:12px;padding:8px 12px 6px}
+  .ig-av{width:58px;height:58px;padding:2px}.ig-av span{font-size:16px}
+  html[lang=ar] .ig-av span{font-size:22px}
+  .ig-nm b,html[lang=ar] .ig-nm b{font-size:12px}.ig-nm small{font-size:10.5px}
+  .ig-bio{padding:0 12px 8px;font-size:10.5px}
+  .ig-btns{padding:0 12px 8px}.ig-btns span{height:24px;font-size:10.5px;border-radius:6px}
+  .ig-hl,.hc-bb,.hc-pl{display:none}
+  .ig-tabs span{height:30px}.ig-tabs svg{width:16px;height:16px}
+  .hc-tt{font-size:8.5px;margin-bottom:6px}
+  html[lang=ar] .hc-tt{font-size:10px;margin-bottom:5px}
+  .hc-st{top:164px;width:92px;padding:6px;border-radius:10px}
+  .hc-st .hc-tt{margin:1px 1px 5px}
+  html[lang=ar] .hc-st .hc-tt{margin:1px 1px 5px}
+  .hc-tag{top:6px;font-size:9.5px;padding:7px 10px;gap:6px}
+  html[lang=ar] .hc-tag{font-size:11px;padding:6px 11px}
+}
+
 /* ---------------- the client portal section ---------------- */
 .wt{border-top:1px solid var(--line);padding-block:88px 72px}
 .wt-head{display:grid;gap:14px;max-width:760px;margin-bottom:44px}
