@@ -4,11 +4,8 @@
       <span class="eyebrow">{{t:kit.eyebrow}}</span>
       <h1 id="kit-title">{{t:kit.title}}</h1>
       <p class="lead">{{t:kit.lead}}</p>
-      <div class="priceline">{{=kitPrice}}<span class="per">{{t:one.per}}</span></div>
-      {{=kitVat}}
-      <p class="fine">{{t:pkg.kit.bill}}</p>
-      {{=curPick}}
-      <div class="buyrow">{{=buyKit}}</div>
+      <div class="cta-row"><a class="btn" href="{{=signupHref}}">{{t:hero.start.btn}}</a><a class="btn ghost" href="{{=pricingHref}}">{{t:hero.start.pricing}}</a></div>
+      <p class="fine">{{t:kit.portal}}</p>
     </section>
 
     <section id="inside" aria-labelledby="all-title">
@@ -23,73 +20,11 @@
       <div class="flow" id="flow">{{=flow}}</div>
     </section>
 
-    <section id="request" aria-labelledby="form-title">
-      <form class="formbox" id="snap-form" novalidate data-endpoint="{{=endpoint}}"{{=checkoutAttr}}>
-        <h2 id="form-title">{{t:form.title}}</h2>
-        <p class="fine paybox" id="paynote">{{t:pay.note}}</p>
-        <fieldset class="choice">
-          <legend>{{t:f.what}}</legend>
-          <label class="opt"><input type="radio" name="product" value="kit" checked><span>{{t:f.optKit}}</span></label>
-          <label class="opt"><input type="radio" name="product" value="visible"><span>{{t:f.optVisible}}</span></label>
-          <label class="opt"><input type="radio" name="product" value="growing"><span>{{t:f.optGrowing}}</span></label>
-          <label class="opt"><input type="radio" name="product" value="deck" disabled aria-describedby="deck-availability"><span>{{t:f.optDeck}} · {{t:availability.soon}}</span></label>
-        </fieldset>
-        <p class="availability-note" id="deck-availability">{{t:availability.deck}}</p>
-        <fieldset class="choice" id="plats" hidden>
-          <legend id="plats-legend">{{t:f.platformKit}}</legend>
-          {{=platformChecks}}
-          <span class="err" id="e-platforms" hidden></span>
-          <p class="fine" id="live-price" aria-live="polite" hidden></p>
-        </fieldset>
-        <div class="fields">
-          <div class="field">
-            <label for="f-business">{{t:f.business}}</label>
-            <input id="f-business" name="business" type="text" autocomplete="organization" required aria-describedby="e-business">
-            <span class="err" id="e-business" hidden></span>
-          </div>
-          <div class="field">
-            <label for="f-web">{{t:f.web}}</label>
-            <input id="f-web" name="web" type="text" inputmode="url" dir="auto" placeholder="{{a:f.webPh}}" required aria-describedby="e-web">
-            <span class="err" id="e-web" hidden></span>
-          </div>
-          <div class="field">
-            <label for="f-email">{{t:f.email}}</label>
-            <input id="f-email" name="email" type="email" dir="auto" autocomplete="email" required aria-describedby="e-email">
-            <span class="err" id="e-email" hidden></span>
-          </div>
-          <div class="field">
-            <label for="f-city">{{t:f.city}}</label>
-            <input id="f-city" name="city" type="text" dir="auto" autocomplete="address-level2" required aria-describedby="e-city">
-            <span class="err" id="e-city" hidden></span>
-          </div>
-          <div class="field full">
-            <label for="f-country">{{t:f.country}}</label>
-            <select id="f-country" name="country" data-cc required>{{=countryOptions}}</select>
-          </div>
-          <div class="field full">
-            <label for="f-industry">{{t:f.industry}}</label>
-            <select id="f-industry" name="industry" required aria-describedby="e-industry">{{=industryOptions}}</select>
-            <span class="err" id="e-industry" hidden></span>
-          </div>
-          <div class="field full" id="deck-address" hidden>
-            <label for="f-address">{{t:f.address}}</label>
-            <input id="f-address" name="address" type="text" dir="auto" autocomplete="street-address" aria-describedby="e-address">
-            <span class="err" id="e-address" hidden></span>
-          </div>
-          <div class="field full" id="deck-lang" hidden>
-            <label for="f-decklang">{{t:f.deckLang}}</label>
-            <select id="f-decklang" name="deck_lang">{{=deckLangOptions}}</select>
-          </div>
-        </div>
-        <div class="honey" aria-hidden="true"><label for="f-company">{{t:f.honey}}</label><input id="f-company" name="company_website" type="text" tabindex="-1" autocomplete="off"></div>
-        <p class="fine">{{t:form.note}}</p>
-        <div class="field full">
-          <label class="check" for="f-consent"><input id="f-consent" name="consent" type="checkbox" aria-describedby="e-consent"><span><span>{{t:f.consent}}</span> <a href="{{=privacyHref}}">{{t:f.privacy}}</a></span></label>
-          <span class="err" id="e-consent" hidden></span>
-        </div>
-        <div class="cta-row"><button class="btn" type="submit" id="snap-submit" data-kit="{{a:f.submit}}" data-deck="{{a:f.submitDeck}}" data-plan="{{a:f.submitPlan}}">{{t:f.submit}}</button></div>
-        <div class="status" id="snap-status" role="status" aria-live="polite" hidden></div>
-      </form>
-      <script type="application/json" id="form-msgs">{{=formMsgs}}</script>
+    <section id="start" aria-labelledby="start-title">
+      <div class="closing">
+        <h2 id="start-title">{{t:hero.start.t}}</h2>
+        <p class="lead">{{t:hero.start.x}}</p>
+        <a class="btn" href="{{=signupHref}}">{{t:hero.start.btn}}</a>
+      </div>
     </section>
   </main>

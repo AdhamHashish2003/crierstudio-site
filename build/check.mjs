@@ -11,6 +11,8 @@ const PAGES = ['', 'pricing/', 'brand-deck/', 'social/', 'in-store/', 'sculpture
 const MOVED = { 'kit/': 'social/', 'physical/': 'in-store/#custom', 'snapshot/': 'social/', 'crier-deck/': 'brand-deck/' };
 const SKIP_DIRS = ['.git', 'node_modules', 'templates', 'build', 'tests', 'i18n', 'fonts', 'assets', 'design'];
 const PRODUCTS = ['kit', 'visible', 'growing', 'deck'];
+// Audit fixes (2026-10-19): every buy / plan / start button opens the client portal's sign-up (AR pages with ?lang=ar)
+const SIGNUP = (l) => `https://portal.crierstudio.com/#/signup${l === 'en' ? '' : '?lang=' + l}`;
 let fail = 0; const ok = (c, m) => { if (!c) { fail++; console.log('FAIL', m); } };
 const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const d = Object.fromEntries(LANGS.map((l) => [l, JSON.parse(rd(`i18n/${l}.json`))]));
@@ -69,19 +71,18 @@ for (const l of LANGS) for (const p of PAGES) {
   // The Store Kit: a card on pricing with no price, no VAT line and no buy button; its only action is the waitlist
   // (Home v2, 2026-10-18: the home page shows the three Social packages only, no Store Kit card and no In-store teaser)
   if (p === '') {
-    ok(!/store-card|is-teaser|id="businesses"|id="seasons"/.test(h), `no Store Kit card, In-store teaser, industries or seasons section on ${file}`);
-    ok((h.match(/<div class="inds three">[\s\S]*?<\/div>\s*<p class="more">/) || [''])[0].split('class="price amt"').length === 4, `three Social packages with prices on ${file}`);
-    for (const id of ['id="walkthrough"', 'id="dash"', 'id="dash-s"', 'id="plans"', 'id="trust"', 'id="faq"']) ok(h.includes(id), `${id} on ${file}`);
-    ok(h.includes(`href="https://portal.crierstudio.com/#/signup?lang=${l}"`), `walkthrough Get started -> portal sign-up (lang=${l}) on ${file}`);
+    ok(!/store-card|is-teaser|id="businesses"|id="seasons"|id="plans"/.test(h), `no package cards, Store Kit card, In-store teaser, industries or seasons section on ${file}`);
+    for (const id of ['id="walkthrough"', 'id="dash"', 'id="dash-s"', 'id="trust"', 'id="faq"']) ok(h.includes(id), `${id} on ${file}`);
+    ok(h.includes(`href="${SIGNUP(l)}"`), `walkthrough Get started -> portal sign-up (${l}) on ${file}`);
     ok(/<script src="\/assets\/h\/dash\.[0-9a-f]{10}\.js" defer><\/script>/.test(h), `dashboard script (hashed, from 'self') on ${file}`);
-    ok(h.indexOf('id="walkthrough"') < h.indexOf('id="plans"') && h.indexOf('id="plans"') < h.indexOf('id="trust"') && h.indexOf('id="trust"') < h.indexOf('id="faq"'), `home section order on ${file}`);
-    // Home hero, Direction C (2026-10-18): the kit price from data/pricing.json (localised by site.js), the kit buy button, the
-    // example posts labelled as examples, and no place name, clock or count in the phone
+    ok(h.indexOf('id="walkthrough"') < h.indexOf('id="trust"') && h.indexOf('id="trust"') < h.indexOf('id="faq"'), `home section order on ${file}`);
+    // Home hero (audit fixes, 2026-10-19): a "Start in your portal" card (no price, no package name, no geo price data) whose
+    // button opens the portal sign-up; the example posts labelled as examples, and no place name, clock or count in the phone
     const hero = (h.match(/<section class="hc" id="hero"[\s\S]*?<\/section>/) || [''])[0];
-    const kitWant = JSON.parse(rd('payment-links.json')).kit || `/${l === 'en' ? '' : l + '/'}social/?product=kit#request`;
-    ok(hero.split('class="price amt"').length === 2 && hero.includes('data-vat') && hero.includes('href="#walkthrough"'), `hero kit price, VAT tag and walkthrough link on ${file}`);
-    ok((hero.match(/<a class="btn" href="([^"]*)" data-product="kit">/) || [])[1]?.replace(/&amp;/g, '&') === kitWant, `hero buy button -> ${kitWant} on ${file}`);
+    ok(!/data-usd|data-vat|data-product|id="cur-data"/.test(h) && hero.includes('href="#walkthrough"') && hero.includes(l === 'en' ? 'Start in your portal' : 'ابدأ من بوابتك'), `hero "Start in your portal" card, no price data, walkthrough link on ${file}`);
+    ok((hero.match(/<div class="hc-card[^"]*">[\s\S]*?<a class="btn" href="([^"]*)"/) || [])[1] === SIGNUP(l), `hero button -> ${SIGNUP(l)} on ${file}`);
     ok(/Example posts|منشورات للمثال/.test(hero) && !/Riyadh|الرياض|\d:\d\d|<img\b/.test(hero), `hero example labelled, no city, clock or image on ${file}`);
+    ok(hero.includes(l === 'en' ? 'Instagram-ready posts for local shops. Built on your logo. Approve in your portal, post it yourself.' : d.ar['hero.ig.bio']), `hero phone bio on ${file}`);
   }
   if (p === 'pricing/') {
     const card = (h.match(/<(article|div) class="(plan|ind) cream store-card"[\s\S]*?<\/\1>/) || [''])[0];
@@ -121,6 +122,19 @@ for (const l of LANGS) for (const p of PAGES) {
     for (const m of h.matchAll(/src="(\/assets\/sculptures\/[^"]+)"/g)) ok(fs.existsSync(path.join(ROOT, m[1])), `missing image ${m[1]} in ${file}`);
     ok(/src="\/assets\/sculptures\/concept-example\.webp"/.test(h), `example concept image on ${file}`);
   }
+  // Audit fixes (2026-10-19): the public order form is gone everywhere (no #snap-form, its script data or consent hooks), and
+  // prices and package names appear only on /pricing/ and the legal pages (terms, privacy, refund). In-store keeps its own
+  // Store Kit waitlist name. Checked in the visible text, the meta tags and the JSON-LD.
+  ok(!/id="snap-|id="form-msgs"|id="request"|f-consent|__snapPayload/.test(h), `the public order form (#snap-form) is gone from ${file}`);
+  if (!['pricing/', 'terms/', 'privacy/', 'refund/'].includes(p)) {
+    const ld = (h.match(/<script type="application\/ld\+json">[\s\S]*?<\/script>/) || [''])[0], meta = (h.match(/<meta[^>]+>|<title>[^<]*<\/title>/g) || []).join(' ');
+    const syms = ['SAR', 'AED', 'EGP'].map((c) => d[l]['cur.sym' + c].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const priceRe = new RegExp(`data-usd|class="(price )?amt"|"offers"|"price":|\\$\\s?\\d|(${syms.join('|')})\\s?\\d|\\d\\s?(${syms.join('|')})`);
+    ok(!priceRe.test(vis + ' ' + ld + ' ' + meta) && !/data-usd|id="cur-data"/.test(h), `a price on ${file} (prices are on /pricing/ only)`);
+    const store = p === 'in-store/' ? [] : ['name.store'];
+    const names = ['name.kit', 'name.visible', 'name.growing', ...store].flatMap((k) => [d.en[k], d[l][k]]).concat('Social Kit', store.length ? ['Store Kit'] : []);
+    for (const n of new Set(names)) ok(!(vis + ' ' + ld + ' ' + meta).includes(n), `package name "${n}" on ${file} (package names are on /pricing/ only)`);
+  }
   // no [bracket] placeholders in the visible text of the home, pricing and FAQ pages either
   if (['', 'pricing/', 'faq/'].includes(p)) ok(!/\[[^\]]*\]/.test(vis), `a [bracket] placeholder in the visible text of ${file}`);
   // no Store Kit launch-price promise anywhere (Adham 2026-10-18)
@@ -142,7 +156,7 @@ const sm = rd('sitemap.xml');
 ok((sm.match(/<url>/g) || []).length === urls.length, 'sitemap url count');
 for (const u of urls) ok(sm.includes(`<loc>${u}</loc>`), 'sitemap missing ' + u);
 ok(rd('brand-deck/index.html').includes('"@type":"Service"') && !rd('brand-deck/index.html').includes('"@type":"Offer"'), 'Brand Deck Service is informational, without an active offer');
-ok(rd('social/index.html').includes('"@type":"Service"') && rd('social/index.html').includes('"price":"29"'), 'Service JSON-LD with The Social Kit offer');
+ok(rd('social/index.html').includes('"@type":"Service"') && !rd('social/index.html').includes('"offers"'), 'Social Service JSON-LD is informational, without offers');
 ok(rd('in-store/index.html').includes('"@type":"Service"') && !rd('in-store/index.html').includes('"offers"'), 'In-store Services are informational, without offers');
 ok(rd('pricing/index.html').includes('"name":"The Store Kit"'), 'pricing ItemList lists The Store Kit');
 for (const pr of ['"price":"29"', '"price":"45"', '"price":"60"', '"unitCode":"MON"']) ok(rd('pricing/index.html').includes(pr), 'pricing JSON-LD ' + pr);
@@ -156,7 +170,7 @@ for (const l of LANGS) for (const [from, to] of Object.entries(MOVED)) {
   ok(!sm.includes(`/${pre}${from}<`), 'stub in sitemap ' + f);
 }
 ok(rd('pricing/index.html').includes('"@type":"ItemList"') && rd('pricing/index.html').includes('"priceCurrency":"USD"'), 'pricing JSON-LD');
-// Buy buttons: every product has one config entry; empty = the request form with the product preselected, filled = the link
+// Buy buttons: every product has one config entry; empty = the client portal's sign-up, filled = the link
 {
   const links = JSON.parse(rd('payment-links.json'));
   ok(JSON.stringify(Object.keys(links).sort()) === JSON.stringify([...PRODUCTS].sort()), 'payment-links.json has exactly ' + PRODUCTS.join(', '));
@@ -166,7 +180,7 @@ ok(rd('pricing/index.html').includes('"@type":"ItemList"') && rd('pricing/index.
       const hh = rd((l === 'en' ? '' : l + '/') + 'pricing/index.html');
       const m = hh.match(new RegExp(`<a class="btn[^"]*" href="([^"]*)" data-product="${k}"`));
       if (k === 'deck') { ok(!m && hh.includes('disabled data-unavailable="deck"'), `Brand Deck unavailable (${l})`); continue; }
-      const want = links[k] || `/${l === 'en' ? '' : l + '/'}social/?product=${k}#request`;
+      const want = links[k] || SIGNUP(l);
       ok(m && m[1].replace(/&amp;/g, '&') === want, `buy button ${k} (${l}) href`);
     }
   }

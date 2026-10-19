@@ -50,9 +50,9 @@ const IND_NOTE = 6; // clinics carry the "no health claims" note (ind.<IND_NOTE>
 const SEASONS = ['ramadan', 'eids', 'national', 'white'];
 
 // ---------- products + payment links ----------
-// payment-links.json (repo root) holds one entry per product. Empty = the Buy button opens the order form with the product
-// preselected (Stripe checkout in the buyer's currency). Keep them empty: a Stripe Payment Link has one fixed currency and no
-// VAT line, so it cannot follow the country rule below.
+// payment-links.json (repo root) holds one entry per product. Empty = the Buy button opens the client portal's sign-up
+// (payment happens in the portal). Keep them empty: a Stripe Payment Link has one fixed currency and no VAT line, so it
+// cannot follow the country rule below.
 // Every price and count comes from data/pricing.json, a copy of the studio's master price list (portal/lib/pricing.json,
 // republished by hand on 2026-10-15). Texts use {price:<id>}, {extra:<id>} (extra platform), {plat:<id>}
 // (platforms included) and {n:<id>.<item>} (a count). Never write a price or a count into i18n or templates.
@@ -93,9 +93,7 @@ const MONTHLY = new Set(PRICING.packages.filter((p) => p.billing === 'monthly').
 const PRODUCTS = Object.keys(PRICES);
 const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const LINKS = JSON.parse(rd('payment-links.json'));
-// L1 checkout (checkout.json): off = the request form as before; on = Pay with platforms and the live total (Stripe Checkout)
-const CHECKOUT = JSON.parse(rd('checkout.json'));
-if (CHECKOUT.enabled && !/^https:\/\/[^\s"'<>]+\/api\/public\/checkout$/.test(CHECKOUT.endpoint || '')) throw new Error('checkout.json: endpoint must be https://…/api/public/checkout');
+// (checkout.json, the old public order form's Stripe switch, is no longer read: payment happens in the client portal)
 for (const k of Object.keys(LINKS)) if (!PRODUCTS.includes(k)) throw new Error('payment-links.json: unknown product ' + k);
 for (const k of PRODUCTS) {
   const v = LINKS[k];
@@ -201,9 +199,12 @@ function faqItems(lang, ids, openFirst, swap = {}) {
     return `<details${openFirst && n === 0 ? ' open' : ''}><summary>${h(lang, `faq.${i}q`)}</summary><div class="ans">${ans}</div></details>`;
   }).join('');
 }
+// Language links (audit fixes, 2026-10-19): on every page EN always leads to English and AR to Arabic, in that order (the group is
+// dir="ltr" so RTL pages do not swap them). The accessible name is the language's own name with the visible code in it
+// ("English (EN)", "العربية (AR)"), and only the page's own language carries aria-current.
 function langpick(lang, page) {
-  const links = LANGS.map(([c, name]) => `<a href="${pathFor(c, page)}" lang="${c}" hreflang="${c}" aria-label="${esc(name)}"${c === lang ? ' aria-current="true"' : ''}>${c.toUpperCase()}</a>`).join('');
-  return `<div class="langpick" role="group" aria-label="${esc(t(lang, 'lang.label'))}">${links}</div>`;
+  const links = LANGS.map(([c, name]) => { const label = `${name} (${c.toUpperCase()})`; return `<a href="${pathFor(c, page)}" lang="${c}" hreflang="${c}" dir="${RTL.has(c) ? 'rtl' : 'ltr'}" aria-label="${esc(label)}" title="${esc(name)}"${c === lang ? ' aria-current="true"' : ''}>${c.toUpperCase()}</a>`; }).join('');
+  return `<div class="langpick" role="group" dir="ltr" aria-label="${esc(t(lang, 'lang.label'))}">${links}</div>`;
 }
 // header nav only: a decorative "Coming soon" chip beside In-store; screen readers hear " (coming soon)" from the .sr span.
 // The label sits in its own span so the active underline is drawn under the label only, never through the chip.
@@ -219,7 +220,7 @@ function crumbs(lang, page) {
   return `<nav class="crumbs" aria-label="${esc(t(lang, 'crumb.label'))}"><a href="${pathFor(lang, 'index')}">${esc(t(lang, 'crumb.home'))}</a><span aria-hidden="true">/</span><span aria-current="page">${esc(t(lang, CRUMB_KEY[page]))}</span></nav>`;
 }
 function hrefs(lang) {
-  const o = { homeHref: pathFor(lang, 'index'), kitCtaHref: pathFor(lang, 'social') + '#request', deckCtaHref: pathFor(lang, 'brand-deck') + '#availability',
+  const o = { homeHref: pathFor(lang, 'index'), deckCtaHref: pathFor(lang, 'brand-deck') + '#availability',
     deckWaitHref: `mailto:${EMAIL}?subject=Brand%20Deck%20waitlist`, storeWaitHref: pathFor(lang, 'in-store') + '#waitlist', storeKitHref: pathFor(lang, 'in-store') + '#kit' };
   const NAME = { index: 'home', 'brand-deck': 'deck', 'in-store': 'instore' };
   for (const p of PAGES) o[(NAME[p] || p) + 'Href'] = pathFor(lang, p);
@@ -267,18 +268,20 @@ function curData(lang) {
 function waLink(lang) { const label = t(lang, 'contact.wa'); return WA ? `<a href="https://wa.me/${WA}" dir="ltr" rel="noopener">${esc(label)}</a>` : ''; }
 const pname = (lang, p) => t(lang, `name.${p}`);
 const isLinked = (p) => LINKS[p] !== '';
-function buyHref(lang, p) { return isLinked(p) ? LINKS[p] : `${pathFor(lang, 'social')}?product=${p}#request`; }
+// Audit fixes (2026-10-19): every buy / plan button opens the client portal's sign-up (AR pages with ?lang=ar); the public
+// order form is gone. The portal supports no plan intent, so none is sent.
+const signupUrl = (lang) => `${PORTAL}#/signup${lang === 'en' ? '' : '?lang=' + lang}`;
+function buyHref(lang, p) { return isLinked(p) ? LINKS[p] : signupUrl(lang); }
 function buyBtn(lang, p, ghost) {
   if (p === 'deck') return `<button class="btn coming-soon" type="button" disabled data-unavailable="deck">${h(lang, 'pkg.deck.btn')}</button><span class="paynote">${h(lang, 'availability.deck')}</span>`;
   const note = isLinked(p) ? '' : `<span class="paynote">${h(lang, 'pay.note')}</span>`;
   return `<a class="btn${ghost ? ' ghost' : ''}" href="${esc(buyHref(lang, p))}" data-product="${p}">${h(lang, `pkg.${p}.btn`)}</a>${note}`;
 }
-// home hero (Direction C, 2026-10-18): the kit's buy button (same href and data-product as buyBtn) with an arrow, and its
-// "You'll pay securely on Stripe" line on its own, so the hero card can put it next to "See how it works"
+// home hero (audit fixes, 2026-10-19): a "Start in your portal" card whose button opens the portal sign-up (no price, no
+// package name: those are on /pricing/ only)
 const ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
-function heroBuy(lang) {
-  return { heroBtn: `<a class="btn" href="${esc(buyHref(lang, 'kit'))}" data-product="kit">${h(lang, 'pkg.kit.btn')} ${ARROW}</a>`,
-    heroPay: isLinked('kit') ? '' : `<span class="paynote">${h(lang, 'pay.note')}</span>` };
+function heroStart(lang) {
+  return { heroBtn: `<a class="btn" href="${esc(signupUrl(lang))}">${h(lang, 'hero.start.btn')} ${ARROW}</a>` };
 }
 function ticks(lang, prefix, cls) {
   const out = [];
@@ -293,15 +296,6 @@ function planCard(lang, p, hot) {
   // and is never payable, so its card has no such line.
   const vatLine = PKG[p].coming_soon ? '' : vatNote(lang, p, platPick(lang, p) ? t(lang, 'plan.perShort') : '');
   return `<article class="plan${hot ? ' hot' : ''}" data-plan="${p}"><span class="badge">${h(lang, `pkg.${p}.eye`)}</span><h3>${esc(pname(lang, p))}</h3><p class="pt">${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(lang, p)}<span class="per">${h(lang, per)}</span></div>${vatLine}<p class="billnote">${h(lang, bill)}</p>${platPick(lang, p)}${ticks(lang, `pkg.${p}`)}<p class="pnote">${h(lang, `pkg.${p}.note`)}</p><div class="buyrow">${buyBtn(lang, p, !hot)}</div></article>`;
-}
-// home (v2, 2026-10-18): the three Social packages side by side, name + one line + price + "+ VAT · one time" / "+ VAT / month"
-// (the details are on the pricing page; no Store Kit card). The "+ VAT" part carries data-vat: site.js hides it in US dollars.
-const vatTag = (lang, sep) => `<span data-vat>${h(lang, 'cur.plusVat')}${sep}</span>`;
-function homePlans(lang) {
-  return ['kit', 'visible', 'growing'].map((p) => {
-    const per = MONTHLY.has(p) ? vatTag(lang, ' ') + h(lang, 'plan.per') : vatTag(lang, ' · ') + h(lang, 'one.per');
-    return `<div class="ind"><h3>${esc(pname(lang, p))}</h3><p>${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(lang, p)}<span class="per">${per}</span></div></div>`;
-  }).join('');
 }
 // home "Good to know": four lines, the last one links the refund policy
 function homeTrust(lang) {
@@ -411,7 +405,7 @@ function walkthrough(lang) {
   // the active step's detail sits in one fixed-height box (all five stacked in one grid cell) so the page never shifts
   const wtDetails = n.map((i) => `<div class="wt-d${i < WT_STEPS ? '' : ' is-on'}" data-step="${i}"><p class="wt-sub">${h(lang, `wt.${i}x`)}</p><p class="wt-screen"><span>${h(lang, 'wt.screen')}:</span> ${h(lang, `wt.${i}screen`)}</p></div>`).join('');
   // "Get started": the client portal's own sign-up, in the page language
-  return { dash: dash(lang), wtSteps, wtDetails, wtTotal: two(WT_STEPS), signupHref: esc(`${PORTAL}#/signup?lang=${lang}`) };
+  return { dash: dash(lang), wtSteps, wtDetails, wtTotal: two(WT_STEPS), signupHref: esc(signupUrl(lang)) };
 }
 // pricing: The Store Kit card (label, name, one line, "Coming soon" where the price sits, the waitlist as a secondary button)
 function storePlanCard(lang) {
@@ -437,18 +431,18 @@ const billItems = (lang) => { const out = []; for (let i = 1; dicts[lang][`bill.
 function pageVars(lang, page) {
   const v = {
     ...hrefs(lang), langpick: langpick(lang, page), nav: navLinks(lang, page, true), navFoot: navLinks(lang, page, false, NAV_FOOT),
-    crumbs: crumbs(lang, page), portalHref: PORTAL, emailLink: `<a href="mailto:${EMAIL}" dir="ltr">${EMAIL}</a>`,
-    buyKit: buyBtn(lang, 'kit', false), buyDeck: buyBtn(lang, 'deck', false), conv: lang === 'en' ? '' : `<p class="conv">${h(lang, 'leg.conv')}</p>`,
+    crumbs: crumbs(lang, page), portalHref: PORTAL, signupHref: esc(signupUrl(lang)), emailLink: `<a href="mailto:${EMAIL}" dir="ltr">${EMAIL}</a>`,
+    buyDeck: buyBtn(lang, 'deck', false), conv: lang === 'en' ? '' : `<p class="conv">${h(lang, 'leg.conv')}</p>`,
     waFoot: waLink(lang), waAbout: WA ? `<p>${waLink(lang)}</p>` : '',
   };
-  // Home v2 (2026-10-18): hero, the client portal walkthrough, three packages, Good to know, FAQ. The industries, seasons and
-  // In-store teaser sections are gone from the home page (In-store content lives on /in-store/ only).
-  if (page === 'index') Object.assign(v, { kitPrice: money(lang, 'kit'), homePlans: homePlans(lang), trust: homeTrust(lang), faqHome: faqItems(lang, FAQ_HOME, false, FAQ_HOME_SWAP), ...walkthrough(lang), ...heroBuy(lang) });
-  if (page === 'social') Object.assign(v, kitVars(lang));
+  // Home v2 (2026-10-18): hero, the client portal walkthrough, Good to know, FAQ. Audit fixes (2026-10-19): no prices or
+  // package names on the home page (the three package cards are gone; pricing lives on /pricing/ only).
+  if (page === 'index') Object.assign(v, { trust: homeTrust(lang), faqHome: faqItems(lang, FAQ_HOME, false, FAQ_HOME_SWAP), ...walkthrough(lang), ...heroStart(lang) });
+  if (page === 'social') Object.assign(v, { kitList: ticks(lang, 'pkg.kit', 'cols'), flow: flow(lang, 3, 'how') });
   if (page === 'in-store') Object.assign(v, storeVars(lang));
   if (page === 'sculptures') Object.assign(v, sculptVars(lang));
   if (page === 'pricing') Object.assign(v, { planCards: planCards(lang), deckCards: deckCards(lang), billItems: billItems(lang), curPick: curPick(lang) });
-  if (page === 'brand-deck') Object.assign(v, { deckFlow: flow(lang, 4, 'deck.how'), deckCards: deckCards(lang), faqItems: faqItems(lang, FAQ_DECK, true), sheets: [1, 2, 4].map((n) => fig(lang, n)).join('') });
+  if (page === 'brand-deck') Object.assign(v, { deckFlow: flow(lang, 4, 'deck.how'), faqItems: faqItems(lang, FAQ_DECK, true), sheets: [1, 2, 4].map((n) => fig(lang, n)).join('') });
   if (page === 'samples') v.sheets = [1, 2, 3, 4].map((n) => fig(lang, n)).join('');
   if (page === 'faq') v.faqItems = faqItems(lang, FAQ_ALL, false);
   return v;
@@ -468,18 +462,6 @@ function seasons(lang) {
     const sw = INDCOLORS[i % INDCOLORS.length].map((c) => `<i style="background:var(--${c})"></i>`).join('');
     return `<div class="ind season"><div class="swatch" aria-hidden="true">${sw}</div><h3>${h(lang, `season.${id}t`)}</h3><p>${h(lang, `season.${id}x`)}</p></div>`;
   }).join('');
-}
-function kitVars(lang) {
-  const industryOptions = `<option value="">${esc(t(lang, 'f.choose'))}</option>` + INDUSTRY_VALUES.map((v, j) => `<option value="${esc(v)}">${esc(t(lang, j < IND_N ? `ind.${j + 1}n` : 'ind.other'))}</option>`).join('');
-  const deckLangOptions = [['en', 'English'], ['ar', 'العربية'], ['ar-en', t(lang, 'f.deckBi')]]
-    .map(([v, n]) => `<option value="${v}"${v === lang ? ' selected' : ''}>${esc(n)}</option>`).join('');
-  const msgKeys = ['availability.soon', 'availability.deck', 'pay.note', 'pay.noteCheckout', 'f.platforms', 'f.platformKit', 'f.platformsErr', 'f.total', 'f.totalMonthly', 'f.toStripe', 'f.pay', 'f.sending', 'f.thanks', 'f.thanksDeck', 'f.failed', 'f.tooMany', 'f.consentErr', 'v.business', 'v.web', 'v.webBad', 'v.emailEmpty', 'v.emailBad', 'v.city', 'v.industry', 'v.address', 'v.tooLong', 'v.angle'];
-  const formMsgs = jsonScript(Object.fromEntries(msgKeys.map((k) => [k, t(lang, k)])));
-  // Low 15: The Social Kit (selected first) is made for exactly one platform: radio buttons. site.js turns them into
-  // checkboxes for the monthly plans (first platform included, each extra one charged) and back for the kit.
-  const platformChecks = PRICING.platforms.map((id, i) => `<label class="opt"><input type="radio" name="platform" value="${esc(id)}"${i === 0 ? ' checked' : ''}><span>${h(lang, 'plat.' + id)}</span></label>`).join('');
-  return { kitPrice: money(lang, 'kit'), kitVat: vatNote(lang, 'kit'), kitList: ticks(lang, 'pkg.kit', 'cols'), industryOptions, curPick: curPick(lang), deckLangOptions, formMsgs, endpoint: ENDPOINT, flow: flow(lang, 3, 'how'),
-    platformChecks, countryOptions: ccOptions(lang), checkoutAttr: CHECKOUT.enabled ? ` data-checkout="${esc(CHECKOUT.endpoint)}"` : '' };
 }
 
 // /in-store/ (v3, Direction A, 2026-10-18): the Karak House flat-lay (templates/instore-panels.html), the ink COMING SOON
@@ -569,10 +551,9 @@ function jsonLd(lang, page) {
       { '@type': 'ListItem', position: 1, name: t(lang, 'crumb.home'), item: urlFor(lang, 'index') },
       { '@type': 'ListItem', position: 2, name: t(lang, CRUMB_KEY[page]), item: urlFor(lang, page) }] });
     const provider = { '@type': 'Organization', name: BRAND, url: SITE + '/' };
+    // informational Services without offers (audit fixes, 2026-10-19: offers and prices are on /pricing/ only)
     if (page === 'brand-deck' || page === 'social') {
-      const p = page === 'social' ? 'kit' : 'deck';
-      nodes.push({ '@type': 'Service', name: pname(lang, p), description: t(lang, `meta.d.${page}`), url: urlFor(lang, page), provider, availableLanguage: ['en', 'ar'],
-        ...(p === 'deck' ? {} : { offers: offerNode(lang, p) }) });
+      nodes.push({ '@type': 'Service', name: page === 'social' ? t(lang, 'kit.title') : pname(lang, 'deck'), description: t(lang, `meta.d.${page}`), url: urlFor(lang, page), provider, availableLanguage: ['en', 'ar'] });
     }
     // In-store: The Store Kit (waitlist) and Custom pieces (requests through the client portal), informational, with no offers
     if (page === 'in-store') {

@@ -3,11 +3,11 @@
     <span class="eyebrow">{{t:home.eyebrow}}</span>
     <h1 id="home-title">{{t:home.h1}}</h1>
     <p class="lead">{{t:home.lead}}</p>
-    <div class="hc-card">
-      <div class="hc-kit"><span class="hc-kitname">{{t:name.kit}}</span>
-        <div class="priceline">{{=kitPrice}}<span class="vat" data-vat>{{t:cur.plusVat}}</span><span class="per">{{t:one.per}}</span></div></div>
+    <div class="hc-card hc-start">
+      <div class="hc-kit"><span class="hc-kitname">{{t:hero.start.t}}</span>
+        <p class="hc-line">{{t:hero.start.x}}</p></div>
       {{=heroBtn}}
-      <div class="hc-meta">{{=heroPay}}<a class="hc-more" href="#walkthrough">{{t:hero.more}}</a></div>
+      <div class="hc-meta"><a class="hc-more" href="#walkthrough">{{t:hero.more}}</a><a class="hc-more" href="{{=pricingHref}}">{{t:hero.start.pricing}}</a></div>
     </div>
     <p class="hc-exnote">{{t:hero.exnote}}</p>
   </div>
