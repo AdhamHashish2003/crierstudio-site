@@ -495,3 +495,47 @@ i18n keys (EN + AR):
 Differences from the mockup: AR "From" line uses the site's price format ("ابتداءً من 109 ر.س + ضريبة القيمة المضافة", the
 mockup says "109 ريال"); the pay note keeps the site's "You'll" (mockup "You’ll"); the footer FAQ link goes to /faq/ (mockup
 `#faq`), as the footer was to stay unchanged.
+
+## In-store v3, Direction A (2026-10-18)
+
+Source: the approved mockup `instore-mockup/dir-a-en.html` (product first). /in-store/ and /ar/in-store/ now show, in order:
+
+1. Eyebrow "In-store", H1 "We design and make the branded pieces for your shop." and the line naming the pieces and
+   **The Store Kit**.
+2. The flat-lay of the Karak House pieces (apron, menu board, cup, QR stand, door mat, stamp card; hand-drawn inline SVG from
+   the mockup, `templates/instore-panels.html`). Each piece has a name label and no number. The menu board shows bilingual
+   item names only, with no prices or numbers. "The Store Kit" sits top left with the **Coming soon** pill.
+3. The full-width ink **COMING SOON** banner: "The Store Kit is not available yet." plus the waitlist line, and the existing
+   waitlist form inside it. The fields (email, website/handle, business type, country, consent), the honeypot, the endpoint,
+   `data-form="store_waitlist"`, the validation and the success/error handling in site.js are all unchanged. Only the styling
+   changed, and the submit label is now "Join the waitlist" as in the mockup (was "Tell me when it opens").
+4. `#custom`: the **Open now** pill, "Need one piece now? Custom pieces are open.", "Request a quote →" (portal sign-up,
+   `intent=quote&lang=en|ar`), "Already a client? Log in" (portal sign-in with the same intent), and the three category
+   cards (Signage & spaces with the hanging-sign drawing, Packaging & print, Apparel & everyday items).
+
+Status system: Coming soon = dashed outline pill with a hollow dot; Open now = solid ink pill with a lime dot (`.isa-st.soon` /
+`.isa-st.open`). The Store Kit is a concept only, with no price, date, quantity, reply time or buy/order button. The one kit
+note is plain: "Pieces shown are examples." / "القطع المعروضة أمثلة فقط." The mockup's bracketed "Final kit contents" line
+is gone. The bracket ban in check.mjs is unchanged.
+
+Removed from the page: the Design / Brand / Make panels, the zone tabs ("What your store needs"), the three bundle cards and
+the old Custom pieces copy. Their keys stay in the JSON (build.mjs warns on them, but check.mjs does not fail), and site.js
+needed no change (the zone-tab code only runs when `#zone-tabs` exists). The English page also loads the Arabic @font-face
+rules (the unicode-range limits the download to the Arabic names on the menu board and QR stand).
+
+check.mjs: one change. The In-store "coming soon" count is now **exactly twice** (the status pill and the banner) instead
+of once, because the approved design has both. "Not in the H1" and every other rule stay as they were.
+
+Arabic wording notes (Gulf-friendly MSA, using the site's existing terms):
+- H1 "نصمّم ونصنع القطع التي تحمل هوية محلك." ("the pieces that carry your shop's identity" reads more naturally than a
+  literal "branded pieces").
+- "حزمة المحل", "داخل المحل", "قريبًا", "متاح الآن", "قطع حسب الطلب", "بوابة العملاء", "اطلب عرض سعر" and "لديك حساب
+  لدينا؟ سجّل الدخول" are reused as they already were on the site.
+- "Joining is not an order" is "الانضمام ليس طلب شراء" (as in Direction C). "Nothing is made or charged until you agree"
+  reuses the site's existing "لا نصنع شيئًا ولا نطلب أي مبلغ قبل موافقتك."
+- Piece labels: مريلة، لوحة قائمة، كوب، حامل QR، سجادة باب، بطاقة أختام (singular, as in the mockup's Arabic).
+
+Differences from the mockup: the footnote keeps the site's "café" (the mockup has "cafe"). The login link goes to the portal
+sign-in with `intent=quote` (the mockup used the portal root as a placeholder). The waitlist is the real five-field form, so in
+the banner it sits on its own row under "COMING SOON" and the message, not as the mockup's single email field. The piece and
+sign drawings are decorative (`aria-hidden`), and their names are in the captions.

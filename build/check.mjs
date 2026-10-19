@@ -84,7 +84,8 @@ for (const l of LANGS) for (const p of PAGES) {
     ok(h.includes(`id="quote-login" href="https://portal.crierstudio.com/#/login?intent=quote&amp;lang=${l}"`), `quote log-in link -> portal sign-in (lang=${l}) on ${file}`);
     ok((h.match(/id="lead-msgs"/g) || []).length === 1, `waitlist messages on ${file}`);
     ok(!/mailto:/.test(h.replace(/<noscript>[\s\S]*?<\/noscript>/g, '').replace(/<footer>[\s\S]*?<\/footer>/, '')), `no mailto outside noscript/footer on ${file}`);
-    ok((vis.match(/coming soon|قريبًا/gi) || []).length === 1, `"coming soon" exactly once on ${file}`);
+    // In-store v3, Direction A (Adham, 2026-10-18): twice, the Store Kit status pill and the COMING SOON banner
+    ok((vis.match(/coming soon|قريبًا/gi) || []).length === 2, `"coming soon" exactly twice (status pill + banner) on ${file}`);
     ok(!/<h1[^>]*>[^<]*(coming soon|قريبًا)/i.test(h), `no "coming soon" in the H1 of ${file}`);
     // The Store Kit is a concept (Adham 2026-10-18): no [bracket] placeholders (bundle quantities) and no launch price,
     // launch date or delivery promise; Custom pieces promise no quote, price or reply time

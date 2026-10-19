@@ -40,10 +40,6 @@ const NAV_FOOT = [['social', 'nav.social'], ['in-store', 'nav.instore'], ['sampl
 const CRUMB_KEY = { pricing: 'nav.pricing', 'brand-deck': 'nav.deck', social: 'nav.social', 'in-store': 'nav.instore', samples: 'nav.samples', faq: 'nav.faq', about: 'nav.about', terms: 'foot.terms', privacy: 'foot.privacy', refund: 'foot.refund' };
 // In-store waitlist "business type": the value is the matching INDUSTRY_VALUES string (the CRM's industry field)
 const STORE_TYPES = [['Cafés and dessert shops', 'is.zone.cafe'], ['Restaurants', 'is.zone.restaurant'], ['Salons', 'is.zone.salon'], ['Abayas and fashion', 'is.zone.abaya'], ['Other local business', 'ind.other']];
-const ZONES = ['cafe', 'restaurant', 'salon', 'abaya'];
-const ZONE_COLS = ['door', 'wall', 'counter', 'team'];
-// The Store Kit bundles shown on /in-store/ (contents and [bracketed] quantities from Adham's brief; no Abaya shop card yet)
-const STORE_KITS = { cafe: 6, restaurant: 5, salon: 6 };
 // MENA (2026-10-14): Gulf and Egyptian business types. The value goes to the intake API as free text (the CRM's industry field).
 const INDUSTRY_VALUES = ['Cafés and dessert shops', 'Restaurants', 'Abayas and fashion', 'Perfume and oud', 'Salons', 'Clinics', 'Real estate', 'Other local business'];
 for (const [v] of STORE_TYPES) if (!INDUSTRY_VALUES.includes(v)) throw new Error('STORE_TYPES: not an INDUSTRY_VALUES string: ' + v);
@@ -435,10 +431,9 @@ function pageVars(lang, page) {
   };
   // Home v2 (2026-10-18): hero, the client portal walkthrough, three packages, Good to know, FAQ. The industries, seasons and
   // In-store teaser sections are gone from the home page (In-store content lives on /in-store/ only).
-  // sid: the suffix that keeps the In-store illustrations' SVG ids unique per page (In-store page "b")
   if (page === 'index') Object.assign(v, { kitPrice: money(lang, 'kit'), homePlans: homePlans(lang), trust: homeTrust(lang), faqHome: faqItems(lang, FAQ_HOME, false, FAQ_HOME_SWAP), ...walkthrough(lang) });
   if (page === 'social') Object.assign(v, kitVars(lang));
-  if (page === 'in-store') Object.assign(v, storeVars(lang), { sid: 'b' });
+  if (page === 'in-store') Object.assign(v, storeVars(lang));
   if (page === 'pricing') Object.assign(v, { planCards: planCards(lang), deckCards: deckCards(lang), billItems: billItems(lang), curPick: curPick(lang) });
   if (page === 'brand-deck') Object.assign(v, { deckFlow: flow(lang, 4, 'deck.how'), deckCards: deckCards(lang), faqItems: faqItems(lang, FAQ_DECK, true), sheets: [1, 2, 4].map((n) => fig(lang, n)).join('') });
   if (page === 'samples') v.sheets = [1, 2, 3, 4].map((n) => fig(lang, n)).join('');
@@ -474,20 +469,18 @@ function kitVars(lang) {
     platformChecks, countryOptions: ccOptions(lang), checkoutAttr: CHECKOUT.enabled ? ` data-checkout="${esc(CHECKOUT.endpoint)}"` : '' };
 }
 
-// /in-store/: the zone chips (real tab buttons; without JavaScript the chips stay hidden and every zone is listed), the Store
-// Kit bundle cards, the waitlist form (posts to the Launchpad intake, ENDPOINT, from site.js) and the Custom pieces links.
+// /in-store/ (v3, Direction A, 2026-10-18): the Karak House flat-lay (templates/instore-panels.html), the ink COMING SOON
+// banner holding the Store Kit waitlist form (posts to the Launchpad intake, ENDPOINT, from site.js) and the Custom pieces links.
+// The Store Kit is a concept: no price, date, quantity, reply time or buy button, and one plain note ("Pieces shown are examples.").
 // Quotes are asked in the client portal (Adham, 2026-10-18): "Request a quote" opens the portal's sign-up with intent=quote and
 // the page language; "Already a client? Log in" its sign-in with the same intent (portal PORTAL-API.md, "Custom pieces quotes").
 const portalAuth = (route, lang) => `${PORTAL}#/${route}?intent=quote&lang=${lang}`;
 function storeVars(lang) {
-  const chips = ZONES.map((z, i) => `<button type="button" class="chip" role="tab" id="zt-${z}" aria-controls="zp-${z}" aria-selected="${i === 0}"${i ? ' tabindex="-1"' : ''}>${h(lang, `is.zone.${z}`)}</button>`).join('');
-  const zones = ZONES.map((z) => `<div class="zone" role="tabpanel" id="zp-${z}" aria-labelledby="zt-${z}"><h3 class="zone-name">${h(lang, `is.zone.${z}`)}</h3><div class="zone-cols">${ZONE_COLS.map((c) => `<div class="zone-col"><h4>${h(lang, `is.col.${c}`)}</h4><p>${h(lang, `is.z.${z}.${c}`)}</p></div>`).join('')}</div></div>`).join('');
-  const kits = Object.entries(STORE_KITS).map(([k, n]) => `<article class="kit-card"><h3>${h(lang, `is.kit.${k}.n`)}</h3><ul class="ticks">${Array.from({ length: n }, (_, i) => `<li>${h(lang, `is.kit.${k}.i${i + 1}`)}</li>`).join('')}</ul></article>`).join('');
   const choose = `<option value="">${esc(t(lang, 'f.choose'))}</option>`;
   const typeOptions = choose + STORE_TYPES.map(([v, k]) => `<option value="${esc(v)}">${esc(t(lang, k))}</option>`).join('');
   const leadCountryOptions = choose + [...Object.keys(COUNTRIES), 'other'].map((c) => `<option value="${c}">${esc(t(lang, c === 'other' ? 'is.cc.other' : 'cc.' + c))}</option>`).join('');
   const msgKeys = ['f.sending', 'f.failed', 'f.tooMany', 'f.consentErr', 'is.wl.ok', 'v.web', 'v.webBad', 'v.email', 'v.emailBad', 'v.type', 'v.country', 'v.tooLong', 'v.angle'];
-  return { zoneChips: chips, zones, storeKits: kits, typeOptions, leadCountryOptions, endpoint: ENDPOINT, leadMsgs: jsonScript(Object.fromEntries(msgKeys.map((k) => [k, t(lang, k)]))),
+  return { typeOptions, leadCountryOptions, endpoint: ENDPOINT, leadMsgs: jsonScript(Object.fromEntries(msgKeys.map((k) => [k, t(lang, k)]))),
     quoteHref: esc(portalAuth('signup', lang)), quoteLoginHref: esc(portalAuth('login', lang)) };
 }
 
@@ -662,7 +655,9 @@ function purgeCss(css, html) {
 // Template indentation is dropped from the page body (a line break renders the same as the spaces that followed it);
 // <script>, <style>, <pre> and <textarea> contents are left exactly as they are (inline scripts are allowed by hash).
 const trimIndent = (html) => html.split(/(<(script|style|pre|textarea)\b[\s\S]*?<\/\2>)/).map((part, i) => i % 3 === 0 ? part.replace(/\n[ \t]+/g, '\n') : i % 3 === 1 ? part : '').join('');
-const cssFor = (lang, page) => minCss([CSS.fonts, lang === 'ar' ? CSS.fontsAr : '', WIDE.has(page) ? CSS.home : CSS.legal + (page === 'faq' ? '\n' + faqCss : ''), CSS.common, CSS.consent, CSS.chrome].join('\n'));
+// the English In-store page loads the Arabic faces too: its menu board and QR stand carry Arabic item names (the unicode-range
+// means the files download only for those glyphs)
+const cssFor = (lang, page) => minCss([CSS.fonts, lang === 'ar' || page === 'in-store' ? CSS.fontsAr : '', WIDE.has(page) ? CSS.home : CSS.legal + (page === 'faq' ? '\n' + faqCss : ''), CSS.common, CSS.consent, CSS.chrome].join('\n'));
 
 // ---------- content-hashed asset copies (long browser cache) ----------
 // GitHub Pages sends every file with max-age=600. The pages therefore reference copies of the fonts, the hero images and

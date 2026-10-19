@@ -1,91 +1,74 @@
 <main id="main-content" class="instore-page">
   {{=crumbs}}
   <div class="cream">
-    <section class="is-hero" aria-labelledby="is-title">
-      <div class="is-top">
-        <div class="is-head">
-          <div class="is-eye"><span>{{t:nav.instore}}</span><span class="is-pill">{{t:availability.soon}}</span></div>
-          <h1 id="is-title">{{t:is.h1a}}<br>{{t:is.h1b}}</h1>
+    <section class="isa-hero" aria-labelledby="is-title">
+      <div class="isa-head">
+        <div>
+          <p class="eyebrow">{{t:nav.instore}}</p>
+          <h1 id="is-title">{{t:is.a.h1}}</h1>
         </div>
-        <div class="is-side">
-          <p>{{t:is.sub}}</p>
-          <div class="is-ctas"><a class="btn" href="#waitlist">{{t:is.cta1}}</a><a class="is-link" href="#kit">{{t:is.cta2}}</a></div>
+        <p class="isa-sub">{{t:is.a.sub}}</p>
+      </div>
+      <div class="isa-kitbox" id="kit" role="group" aria-labelledby="kit-title">
+        {{>panels}}
+        <div class="isa-banner" id="waitlist">
+          <p class="isa-big">{{t:availability.soon}}</p>
+          <div class="isa-msg">
+            <h2 id="wl-title">{{t:is.a.na}}</h2>
+            <p>{{t:is.a.wl}}</p>
+          </div>
+          <form class="lead-form isa-form" id="wl-form" novalidate data-endpoint="{{=endpoint}}" data-form="store_waitlist" aria-labelledby="wl-title">
+            <div class="fields">
+              <div class="field">
+                <label for="wl-email">{{t:f.email}}</label>
+                <input id="wl-email" name="email" type="email" dir="auto" autocomplete="email" maxlength="254" required aria-describedby="wl-e-email">
+                <span class="err" id="wl-e-email" data-err="email" hidden></span>
+              </div>
+              <div class="field">
+                <label for="wl-web">{{t:f.web}}</label>
+                <input id="wl-web" name="web" type="text" inputmode="url" dir="auto" maxlength="98" placeholder="{{a:f.webPh}}" required aria-describedby="wl-e-web">
+                <span class="err" id="wl-e-web" data-err="web" hidden></span>
+              </div>
+              <div class="field">
+                <label for="wl-type">{{t:is.f.type}}</label>
+                <select id="wl-type" name="type" required aria-describedby="wl-e-type">{{=typeOptions}}</select>
+                <span class="err" id="wl-e-type" data-err="type" hidden></span>
+              </div>
+              <div class="field">
+                <label for="wl-country">{{t:f.country}}</label>
+                <select id="wl-country" name="country" required aria-describedby="wl-e-country">{{=leadCountryOptions}}</select>
+                <span class="err" id="wl-e-country" data-err="country" hidden></span>
+              </div>
+            </div>
+            <div class="honey" aria-hidden="true"><label for="wl-company">{{t:f.honey}}</label><input id="wl-company" name="company_website" type="text" tabindex="-1" autocomplete="off"></div>
+            <div class="isa-form-end">
+              <div class="field">
+                <label class="check" for="wl-consent"><input id="wl-consent" name="consent" type="checkbox" aria-describedby="wl-e-consent"><span><span>{{t:is.f.consent}}</span> <a href="{{=privacyHref}}">{{t:f.privacy}}</a></span></label>
+                <span class="err" id="wl-e-consent" data-err="consent" hidden></span>
+              </div>
+              <div class="cta-row"><button class="btn" type="submit" disabled>{{t:is.cta1}}</button></div>
+            </div>
+            <noscript><p class="fine">{{t:is.f.nojs}}</p></noscript>
+            <div class="status" role="status" aria-live="polite" hidden></div>
+          </form>
+          <script type="application/json" id="lead-msgs">{{=leadMsgs}}</script>
         </div>
       </div>
-      {{>panels}}
+      <p class="isa-foot">{{t:is.foot}}</p>
     </section>
 
-    <section id="zones" class="is-sec" aria-labelledby="zones-title">
-      <div class="sec-head"><h2 id="zones-title">{{t:is.z.title}}</h2></div>
-      <div class="zones" id="zone-tabs">
-        <div class="zone-chips" role="tablist" aria-label="{{a:is.z.title}}" hidden>{{=zoneChips}}</div>
-        {{=zones}}
+    <section id="custom" class="isa-custom" aria-labelledby="custom-title">
+      <div>
+        <span class="isa-st open">{{t:is.a.open}}</span>
+        <h2 id="custom-title">{{t:is.a.ch2}}</h2>
+        <p class="isa-lead">{{t:is.a.clead}}</p>
+        <div class="isa-ctas"><a class="btn" id="quote-btn" href="{{=quoteHref}}">{{t:is.q.btn}} <span class="isa-arr" aria-hidden="true">&rarr;</span></a><a class="is-link" id="quote-login" href="{{=quoteLoginHref}}">{{t:is.c.login}}</a></div>
+        <p class="isa-fact">{{t:is.a.cfact}}</p>
       </div>
-    </section>
-
-    <section id="kit" class="is-sec" aria-labelledby="kit-title">
-      <div class="sec-head"><h2 id="kit-title">{{t:name.store}}</h2><p class="lead">{{t:is.kit.line}}</p></div>
-      <div class="kit-cards">{{=storeKits}}</div>
-      <p class="is-note">{{t:is.kit.note}}</p>
-    </section>
-
-    <section id="waitlist" class="is-sec" aria-labelledby="wl-title">
-      <form class="formbox lead-form" id="wl-form" novalidate data-endpoint="{{=endpoint}}" data-form="store_waitlist">
-        <h2 id="wl-title">{{t:is.cta1}}</h2>
-        <div class="fields">
-          <div class="field">
-            <label for="wl-email">{{t:f.email}}</label>
-            <input id="wl-email" name="email" type="email" dir="auto" autocomplete="email" maxlength="254" required aria-describedby="wl-e-email">
-            <span class="err" id="wl-e-email" data-err="email" hidden></span>
-          </div>
-          <div class="field">
-            <label for="wl-web">{{t:f.web}}</label>
-            <input id="wl-web" name="web" type="text" inputmode="url" dir="auto" maxlength="98" placeholder="{{a:f.webPh}}" required aria-describedby="wl-e-web">
-            <span class="err" id="wl-e-web" data-err="web" hidden></span>
-          </div>
-          <div class="field">
-            <label for="wl-type">{{t:is.f.type}}</label>
-            <select id="wl-type" name="type" required aria-describedby="wl-e-type">{{=typeOptions}}</select>
-            <span class="err" id="wl-e-type" data-err="type" hidden></span>
-          </div>
-          <div class="field">
-            <label for="wl-country">{{t:f.country}}</label>
-            <select id="wl-country" name="country" required aria-describedby="wl-e-country">{{=leadCountryOptions}}</select>
-            <span class="err" id="wl-e-country" data-err="country" hidden></span>
-          </div>
-        </div>
-        <div class="honey" aria-hidden="true"><label for="wl-company">{{t:f.honey}}</label><input id="wl-company" name="company_website" type="text" tabindex="-1" autocomplete="off"></div>
-        <div class="field full">
-          <label class="check" for="wl-consent"><input id="wl-consent" name="consent" type="checkbox" aria-describedby="wl-e-consent"><span><span>{{t:is.f.consent}}</span> <a href="{{=privacyHref}}">{{t:f.privacy}}</a></span></label>
-          <span class="err" id="wl-e-consent" data-err="consent" hidden></span>
-        </div>
-        <noscript><p class="fine">{{t:is.f.nojs}}</p></noscript>
-        <div class="cta-row"><button class="btn" type="submit" disabled>{{t:is.wl.btn}}</button></div>
-        <div class="status" role="status" aria-live="polite" hidden></div>
-      </form>
-      <script type="application/json" id="lead-msgs">{{=leadMsgs}}</script>
-    </section>
-
-    <section id="custom" class="is-sec" aria-labelledby="custom-title">
-      <div class="sec-head">
-        <span class="eyebrow">{{t:is.c.eye}}</span>
-        <h2 id="custom-title">{{t:is.c.title}}</h2>
-        <p class="lead">{{t:is.c.intro}}</p>
-      </div>
-      <div class="physical-grid">
-        <article><span class="physical-number">01 /</span><h3>{{t:physical.1t}}</h3><p>{{t:physical.1x}}</p></article>
-        <article><span class="physical-number">02 /</span><h3>{{t:physical.2t}}</h3><p>{{t:physical.2x}}</p></article>
-        <article><span class="physical-number">03 /</span><h3>{{t:physical.3t}}</h3><p>{{t:physical.3x}}</p></article>
-        <article><span class="physical-number">04 /</span><h3>{{t:physical.4t}}</h3><p>{{t:physical.4x}}</p></article>
-      </div>
-      <div class="physical-intro">
-        <h3>{{t:physical.process}}</h3>
-        <p>{{t:physical.scope}}</p>
-        <p class="availability-note">{{t:studio.copy.068}}</p>
-      </div>
-      <div class="formbox quote-cta" id="quote">
-        <div class="is-ctas"><a class="btn" id="quote-btn" href="{{=quoteHref}}">{{t:is.q.btn}}</a><a class="is-link" id="quote-login" href="{{=quoteLoginHref}}">{{t:is.c.login}}</a></div>
-        <p class="quote-line">{{t:is.c.acct}}</p>
+      <div class="isa-ex">
+        <article class="isa-sign"><svg viewBox="0 0 150 130" aria-hidden="true" focusable="false"><rect x="4" y="6" width="8" height="118" fill="#2a1a12"/><rect x="4" y="14" width="128" height="7" fill="#2a1a12"/><path d="M44 21 V34 M110 21 V34" stroke="#2a1a12" stroke-width="2"/><rect x="30" y="34" width="94" height="88" rx="44" fill="#c4512f"/><circle cx="77" cy="78" r="36" fill="none" stroke="#f3e9d2" stroke-width="1.2" stroke-dasharray="3 3"/><g transform="translate(63 46) scale(0.72)"><path d="M8 18 H30 V32 a8 8 0 0 1 -8 8 H16 a8 8 0 0 1 -8 -8 Z" fill="#f3e9d2"/><path d="M30 22 h3 a6 6 0 0 1 0 12 h-3" fill="none" stroke="#f3e9d2" stroke-width="3"/><path d="M13 13 c3 -3 -3 -6 0 -9 M19 13 c3 -3 -3 -6 0 -9 M25 13 c3 -3 -3 -6 0 -9" fill="none" stroke="#f3e9d2" stroke-width="2.5" stroke-linecap="round"/></g><text x="77" y="98" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="700" font-size="6.4" letter-spacing="1" fill="#f3e9d2">KARAK HOUSE</text></svg><div><span class="isa-n">01 /</span><h3>{{t:physical.3t}}</h3><p>{{t:is.a.c1x}}</p></div></article>
+        <article><span class="isa-n">02 /</span><h3>{{t:physical.1t}}</h3><p>{{t:is.a.c2x}}</p></article>
+        <article><span class="isa-n">03 /</span><h3>{{t:physical.4t}}</h3><p>{{t:is.a.c3x}}</p></article>
       </div>
     </section>
   </div>
