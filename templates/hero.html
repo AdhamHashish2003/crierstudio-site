@@ -3,8 +3,6 @@
   <h1 id="home-title">{{t:home.h1}}</h1>
   <p class="lead">{{t:home.lead}}</p>
   <p class="billnote">{{t:name.kit}}</p>
-  <div class="priceline">{{=kitPrice}}<span class="per">{{t:one.per}}</span></div>
-  {{=kitVat}}
-  {{=curPick}}
+  <div class="priceline">{{=kitPrice}}<span class="vat" data-vat>{{t:cur.plusVat}}</span><span class="per">{{t:one.per}}</span></div>
   <div class="buyrow">{{=buyKit}}</div>
 </section>

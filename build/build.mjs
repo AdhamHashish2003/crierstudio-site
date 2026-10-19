@@ -33,8 +33,9 @@ const PAGES = ['index', 'pricing', 'brand-deck', 'social', 'in-store', 'samples'
 const MOVED = { kit: 'social', physical: 'in-store#custom', snapshot: 'social', 'crier-deck': 'brand-deck' };
 const WIDE = new Set(['index', 'pricing', 'brand-deck', 'social', 'in-store', 'samples', 'about']); // wide layout; the rest use the narrow reading layout
 const LEGAL = ['terms', 'privacy', 'refund'];
-const NAV = [['social', 'nav.social'], ['in-store', 'nav.instore'], ['samples', 'nav.samples'], ['pricing', 'nav.pricing'], ['faq', 'nav.faq'], [PORTAL, 'nav.portal']];
-// the footer keeps every destination: the header nav plus About and Brand Deck
+// Home v2 (2026-10-18): the header shows Social · In-store · Pricing · Client portal; Samples and FAQ moved to the footer only
+const NAV = [['social', 'nav.social'], ['in-store', 'nav.instore'], ['pricing', 'nav.pricing'], [PORTAL, 'nav.portal']];
+// the footer keeps every destination: the header nav plus Samples, FAQ, About and Brand Deck
 const NAV_FOOT = [['social', 'nav.social'], ['in-store', 'nav.instore'], ['samples', 'nav.samples'], ['pricing', 'nav.pricing'], ['faq', 'nav.faq'], ['about', 'nav.about'], ['brand-deck', 'nav.deck'], [PORTAL, 'nav.portal']];
 const CRUMB_KEY = { pricing: 'nav.pricing', 'brand-deck': 'nav.deck', social: 'nav.social', 'in-store': 'nav.instore', samples: 'nav.samples', faq: 'nav.faq', about: 'nav.about', terms: 'foot.terms', privacy: 'foot.privacy', refund: 'foot.refund' };
 // In-store waitlist "business type": the value is the matching INDUSTRY_VALUES string (the CRM's industry field)
@@ -195,9 +196,10 @@ function faqAnswers(lang, i) {
   for (const j of [1, 2]) { const k = `faq.${i}a${j}`; if (dicts[lang][k] != null) out.push(k); }
   return out;
 }
-function faqItems(lang, ids, openFirst) {
+// swap: answer keys replaced by another key on that page (home: faq.1a2 without the stock-photo clause)
+function faqItems(lang, ids, openFirst, swap = {}) {
   return ids.map((i, n) => {
-    const ans = faqAnswers(lang, i).map((k) => `<p>${h(lang, k, pathFor(lang, 'privacy'))}</p>`).join('');
+    const ans = faqAnswers(lang, i).map((k) => swap[k] || k).map((k) => `<p>${h(lang, k, pathFor(lang, 'privacy'))}</p>`).join('');
     return `<details${openFirst && n === 0 ? ' open' : ''}><summary>${h(lang, `faq.${i}q`)}</summary><div class="ans">${ans}</div></details>`;
   }).join('');
 }
@@ -284,13 +286,119 @@ function planCard(lang, p, hot) {
   const vatLine = PKG[p].coming_soon ? '' : vatNote(lang, p, platPick(lang, p) ? t(lang, 'plan.perShort') : '');
   return `<article class="plan${hot ? ' hot' : ''}" data-plan="${p}"><span class="badge">${h(lang, `pkg.${p}.eye`)}</span><h3>${esc(pname(lang, p))}</h3><p class="pt">${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(lang, p)}<span class="per">${h(lang, per)}</span></div>${vatLine}<p class="billnote">${h(lang, bill)}</p>${platPick(lang, p)}${ticks(lang, `pkg.${p}`)}<p class="pnote">${h(lang, `pkg.${p}.note`)}</p><div class="buyrow">${buyBtn(lang, p, !hot)}</div></article>`;
 }
-// home: the four packages side by side, name + one line + price + VAT line (the details are on the pricing page). The Store
-// Kit is waitlist-only: no price, no VAT line, no buy button; "Coming soon" sits where the price would be.
+// home (v2, 2026-10-18): the three Social packages side by side, name + one line + price + "+ VAT · one time" / "+ VAT / month"
+// (the details are on the pricing page; no Store Kit card). The "+ VAT" part carries data-vat: site.js hides it in US dollars.
+const vatTag = (lang, sep) => `<span data-vat>${h(lang, 'cur.plusVat')}${sep}</span>`;
 function homePlans(lang) {
   return ['kit', 'visible', 'growing'].map((p) => {
-    const per = MONTHLY.has(p) ? 'plan.per' : 'one.per';
-    return `<div class="ind"><h3>${esc(pname(lang, p))}</h3><p>${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(lang, p)}<span class="per">${h(lang, per)}</span></div>${vatNote(lang, p, MONTHLY.has(p) ? t(lang, 'plan.perShort') : '')}</div>`;
-  }).join('') + `<div class="ind cream store-card"><h3>${h(lang, 'name.store')}</h3><p>${h(lang, 'is.kit.line')}</p><p class="soon-price">${h(lang, 'availability.soon')}</p><a class="more-link" href="${pathFor(lang, 'in-store')}#waitlist">${h(lang, 'is.cta1')}</a></div>`;
+    const per = MONTHLY.has(p) ? vatTag(lang, ' ') + h(lang, 'plan.per') : vatTag(lang, ' · ') + h(lang, 'one.per');
+    return `<div class="ind"><h3>${esc(pname(lang, p))}</h3><p>${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(lang, p)}<span class="per">${per}</span></div></div>`;
+  }).join('');
+}
+// home "Good to know": four lines, the last one links the refund policy
+function homeTrust(lang) {
+  const li = ['home.trust.approve', 'home.trust.own', 'home.trust.f2'].map((k) => `<li>${h(lang, k)}</li>`).join('');
+  return `<ul class="ticks">${li}<li>${h(lang, 'home.trust.f5')} <a href="${pathFor(lang, 'refund')}">${h(lang, 'home.trust.refund')}</a></li></ul>`;
+}
+// home FAQ ("Straight answers", bottom of the page): the FAQ page's entries without the Brand Deck block
+const FAQ_HOME = [19, 20, 21, 22, 23, 24, 25, 26, 1, 7, 2, 4, 5, 17, 9, 18];
+const FAQ_HOME_SWAP = { 'faq.1a2': 'home.faq.1a2' };
+
+// ---- home "See what working with Crier looks like": the client portal walkthrough (approved mockup v2, 2026-10-18) ----
+// An HTML/CSS recreation of the portal Overview for an example client, driven by assets/dash.js (14.4 s loop). Portal labels
+// are the portal's own (dash.* keys); posts, names and the caption are example content. Steps: wt.<n>l / t / x / screen.
+const WT_STEPS = 5;
+const DASH_URL = 'portal.crierstudio.com', DASH_EMAIL = 'sara@nakha.example';
+// icon paths copied from the portal's own set (portal/public/app.js)
+const PI = {
+  overview: 'M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z', layers: 'M12 3l9 5-9 5-9-5zM3 13l9 5 9-5', review: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8 12l3 3 5-6',
+  folder: 'M3 6h6l2 2h10v11H3z', card: 'M3 6h18v12H3zM3 10h18M7 15h3', chat: 'M4 5h16v11H9l-5 4z', menu: 'M4 7h16M4 12h16M4 17h16', chev: 'M9 6l6 6-6 6', check: 'M4 12l5 5L20 6',
+  settings: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7 7 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z',
+  spark: 'M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18', work: 'M12 3v12M7 10l5 5 5-5M4 20h16', comment: 'M4 5h16v11H9l-5 4z',
+};
+const ic = (k) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${PI[k]}"/></svg>`;
+const digits = (lang, n) => (lang === 'ar' ? String(n).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]) : String(n)); // Arabic-Indic on /ar/, as the portal does
+function dash(lang) {
+  const T = (k) => t(lang, 'dash.' + k), D = (k) => esc(T(k)), ar = lang === 'ar';
+  const posts = [1, 2, 3, 4].map((i) => ({ t: T(`p${i}t`), s: T(`p${i}s`), date: T(`p${i}d`) }));
+  const dlogo = partials.logo.replace('role="img" aria-label="Crier Studio"', 'aria-hidden="true"');
+  const art = (i) => `<span class="art art-${i + 1}" data-art="${i}"><span class="art-b">${D('artBrand')}</span><span class="art-ring"></span><span class="art-dot"></span><span class="art-t">${esc(posts[i].t)}</span><span class="art-s">${esc(posts[i].s)}</span></span>`;
+  const link = (k, label, active, badge) => `<span class="d-link${active ? ' on' : ''}">${ic(k)}<span class="d-nl">${D(label)}</span>${badge ? `<span class="d-badge" data-k="${badge}">0</span>` : ''}</span>`;
+  const pill = (k, cls, label) => `<span class="d-pill ${cls}" data-k="${k}"><i></i><span>${D(label)}</span></span>`;
+  const tile = (k, label, sub, dark) => `<span class="d-tile${dark ? ' dark' : ''}"><span class="d-tl">${D(label)}</span><span class="d-tv" data-k="${k}">0</span><span class="d-ts" data-k="${k}Sub">${esc(sub)}</span></span>`;
+  const user = T('user'), u0 = esc(user.charAt(0));
+  const post = (i) => `<span class="d-slot"><span class="d-post" data-p="${i}">
+        <span class="d-media">${art(i)}<span class="d-id" dir="ltr">#0${i + 1}</span><span class="d-ver" dir="ltr">v2</span>${pill('st' + i, 'amber d-st', 'waiting')}${i === 2 ? `
+          <span class="d-bubs"><span class="d-bub cl" data-k="b1"><span class="d-bav">${u0}</span><span>${D('note')}</span></span><span class="d-bub st" data-k="b2"><span class="d-bav c">C</span><span>${D('reply')}</span></span></span>
+          <span class="d-cchip" data-k="cchip">${ic('comment')}<b>${digits(lang, 2)}</b></span>` : ''}</span>
+        <span class="d-info"><strong>${esc(posts[i].t)}</strong><small><span>${D('kind')}</span><span class="d-date">${esc(posts[i].date)}</span></small></span>
+      </span></span>`;
+  const rvTop = `<span class="d-rv-top"><span class="d-rv-ic">${ic('spark')}</span><span class="d-ct"><strong>${D('review')}</strong><small>${D('reviewSub')}</small></span></span><span class="d-rv-line"><span data-k="line">${D('pillNone')}</span>${ic('chev')}</span>`;
+  // the strings the script needs (pill lines, sub lines, status names)
+  const js = Object.fromEntries(['pill', 'pillOne', 'pillNone', 'inTotal', 'awaitSub', 'awaitNone', 'ofDecided', 'waiting', 'approved', 'changesAsked', 'ready', 'brand', 'note'].map((k) => [k, T(k)]));
+  js.titles = posts.map((p) => p.t);
+  return `<div class="dash" id="dash" role="img" aria-label="${D('aria')}">
+  <span class="d-bar" aria-hidden="true"><span class="d-dots"><i></i><i></i><i></i></span><span class="d-url" dir="ltr">${DASH_URL}</span><span class="ex-badge">${D('ex')}</span></span>
+  <span class="d-vp" aria-hidden="true"><span class="d-cv">
+    <span class="d-side">
+      <span class="d-logo">${dlogo}</span>
+      <span class="d-client"><span class="d-mark">${D('mark')}</span><span class="d-ct"><strong>${D('brand')}</strong><small>${D('ws')}</small></span></span>
+      <span class="d-nav">${link('overview', 'overview', 1)}${link('layers', 'deliverables', 0, 'delivB')}${link('review', 'review', 0, 'awaitB')}${link('folder', 'library')}</span>
+      <span class="d-group">${D('group')}</span>
+      <span class="d-nav">${link('card', 'billing')}${link('chat', 'messages')}${link('settings', 'settings')}</span>
+      <span class="d-foot">
+        <span class="d-rv">${rvTop}</span>
+        <span class="d-user"><span class="d-av">${u0}</span><span class="d-ct"><strong>${esc(user)}</strong><small>${D('client')}</small></span></span>
+      </span>
+    </span>
+    <span class="d-mtop"><span class="d-mmenu">${ic('menu')}</span><span class="d-logo">${dlogo}</span><span class="d-pill amber d-mpill" data-k="mpill"><i></i><span data-k="line">${D('pillNone')}</span></span></span>
+    <span class="d-main">
+      <span class="d-head"><span class="d-h1">${D('greet')}</span><span class="d-pill amber d-hpill" data-k="hpill"><i></i><span data-k="line">${D('pillNone')}</span></span><span class="d-acts"><span class="d-btn dark">${D('planMonth')}</span><span class="d-btn sec">${D('askPost')}</span></span></span>
+      <span class="d-mclient"><span class="d-mark">${D('mark')}</span><strong>${D('brand')}</strong></span>
+      <span class="d-card d-stats"><span class="d-ch"><strong>${D('glance')}</strong><span class="d-more">${D('seeAll')}${ic('chev')}</span></span>
+        <span class="d-tiles">${tile('deliv', 'delivered', T('inTotal').replace('{n}', digits(lang, 0)), 1)}${tile('await', 'awaiting', T('awaitNone'))}${tile('appr', 'approved', T('ofDecided').replace('{n}', digits(lang, 0)))}${tile('new', 'newT', T('newSub'))}</span></span>
+      <span class="d-row">
+        <span class="d-card d-week"><span class="d-ch"><strong>${D('week')}</strong><span class="d-count" data-k="weekN">0</span></span>
+          <span class="d-grid"><span class="d-empty">${D('firstDelivery')}</span>${[0, 1, 2, 3].map(post).join('')}</span></span>
+        <span class="d-panel">
+          <span class="d-layer" data-l="A"><span class="d-card d-att"><span class="d-ch"><strong>${D('attention')}</strong><span class="d-count">${digits(lang, 1)}</span></span><span class="d-subh">${D('todo')}</span>
+            <span class="d-need" data-k="need"><strong>${D('qT')}</strong><span class="d-btn lime" data-b="q">${D('qBtn')}</span><span class="d-allset"><span class="d-tick">${ic('check')}</span>${D('done')}</span></span></span></span>
+          <span class="d-layer" data-l="B"><span class="d-card d-lime"><strong>${D('newReady')}</strong><span class="d-btn dark">${D('openWork')}</span></span>
+            <span class="d-card d-rvcard">${rvTop}</span></span>
+          <span class="d-layer" data-l="C"><span class="d-card d-rev">
+            <span class="d-rhead"><span class="d-mini">${[0, 1, 2, 3].map(art).join('')}</span><span class="d-ct"><strong data-k="selT">${esc(posts[0].t)}</strong><small>${D('kind')}</small></span></span>
+            <span class="d-dl"><span class="d-dt">${D('status')}</span>${pill('selPill', 'amber', 'waiting')}<span class="d-dt">${D('version')}</span><span class="d-dd" dir="ltr" data-k="selV">v1</span></span>
+            <span class="d-dec"><span class="d-btn lime" data-b="approve">${D('approve')}</span><span class="d-btn sec" data-b="changes">${D('changes')}</span></span>
+            <span class="d-lab">${D('comment')}</span><span class="d-ta"><span data-k="ta"></span><i class="d-caret"></i></span>
+            <span class="d-btn lime d-send" data-b="send">${D('send')}</span></span></span>
+          <span class="d-layer" data-l="D"><span class="d-card d-sheet">
+            <span class="d-sh-head"><strong>${esc(posts[0].t)}</strong><span class="d-chip">${D('ready')}</span></span>
+            <span class="d-sh-art">${art(0)}</span>
+            <span class="d-cap">${D('caption')}</span>
+            <span class="d-sh-btns"><span class="d-btn lime d-copy" data-b="copy"><span class="a">${D('copyCap')}</span><span class="b">${ic('check')}${D('copied')}</span></span><span class="d-btn sec" data-b="dl">${ic('work')}${D('download')}</span><span class="d-btn sec" data-b="mark">${D('markPosted')}</span></span></span></span>
+        </span>
+      </span>
+    </span>
+    <span class="d-bnav">${[['overview', 'overview', 1], ['layers', 'deliverables', 0, 'delivB'], ['review', 'review', 0, 'awaitB'], ['chat', 'messages'], ['settings', 'settings']].map(([k, l, on, b]) => `<span class="d-bn${on ? ' on' : ''}">${ic(k)}${b ? `<span class="d-badge" data-k="${b}">0</span>` : ''}<span>${D(l)}</span></span>`).join('')}</span>
+    <span class="d-modal" data-k="modal"><span class="d-mbox">
+      <span class="d-logo">${dlogo}</span><strong class="d-mt">${D('signup')}</strong>
+      <span class="d-f"><span class="d-fl">${D('company')}</span><span class="d-fi" data-c="company"><span data-k="type"></span><i class="d-caret"></i></span></span>
+      <span class="d-f"><span class="d-fl">${D('yourName')}</span><span class="d-fi">${esc(user)}</span></span>
+      <span class="d-f"><span class="d-fl">${D('email')}</span><span class="d-fi" dir="ltr">${DASH_EMAIL}</span></span>
+      <span class="d-btn lime d-wide" data-b="create">${D('signup')}</span>
+    </span></span>
+    <span class="d-cursor"><svg viewBox="0 0 24 24"><path d="M5 3l14 8.2-6.1 1.3 3.6 6.9-2.7 1.4-3.6-7L5 18.2z" fill="#0E0F0C" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
+  </span></span>
+  <script type="application/json" id="dash-s">${jsonScript(js)}</script>
+</div>`;
+}
+function walkthrough(lang) {
+  const n = Array.from({ length: WT_STEPS }, (_, i) => i + 1), two = (i) => String(i).padStart(2, '0');
+  const wtSteps = n.map((i) => `<li class="wt-step${i > 1 ? '' : ' is-active'}" data-step="${i}"><button type="button" class="wt-btn" aria-controls="dash" aria-current="${i > 1 ? 'false' : 'step'}"><span class="wt-num" aria-hidden="true">${two(i)}</span><span class="wt-text"><span class="wt-label">${h(lang, `wt.${i}l`)}</span><span class="wt-title">${h(lang, `wt.${i}t`)}</span></span></button><span class="wt-bar" aria-hidden="true"><i></i></span></li>`).join('');
+  // the active step's detail sits in one fixed-height box (all five stacked in one grid cell) so the page never shifts
+  const wtDetails = n.map((i) => `<div class="wt-d${i > 1 ? '' : ' is-on'}" data-step="${i}"><p class="wt-sub">${h(lang, `wt.${i}x`)}</p><p class="wt-screen"><span>${h(lang, 'wt.screen')}:</span> ${h(lang, `wt.${i}screen`)}</p></div>`).join('');
+  // "Get started": the client portal's own sign-up, in the page language
+  return { dash: dash(lang), wtSteps, wtDetails, wtTotal: two(WT_STEPS), signupHref: esc(`${PORTAL}#/signup?lang=${lang}`) };
 }
 // pricing: The Store Kit card (label, name, one line, "Coming soon" where the price sits, the waitlist as a secondary button)
 function storePlanCard(lang) {
@@ -320,8 +428,10 @@ function pageVars(lang, page) {
     buyKit: buyBtn(lang, 'kit', false), buyDeck: buyBtn(lang, 'deck', false), conv: lang === 'en' ? '' : `<p class="conv">${h(lang, 'leg.conv')}</p>`,
     waFoot: waLink(lang), waAbout: WA ? `<p>${waLink(lang)}</p>` : '',
   };
-  // sid: the suffix that keeps the In-store illustrations' SVG ids unique per page (home teaser "h", In-store page "b")
-  if (page === 'index') Object.assign(v, { kitPrice: money(lang, 'kit'), kitVat: vatNote(lang, 'kit'), curPick: curPick(lang), inds: inds(lang), seasons: seasons(lang), homePlans: homePlans(lang), trust: ticks(lang, 'home.trust'), sid: 'h' });
+  // Home v2 (2026-10-18): hero, the client portal walkthrough, three packages, Good to know, FAQ. The industries, seasons and
+  // In-store teaser sections are gone from the home page (In-store content lives on /in-store/ only).
+  // sid: the suffix that keeps the In-store illustrations' SVG ids unique per page (In-store page "b")
+  if (page === 'index') Object.assign(v, { kitPrice: money(lang, 'kit'), homePlans: homePlans(lang), trust: homeTrust(lang), faqHome: faqItems(lang, FAQ_HOME, false, FAQ_HOME_SWAP), ...walkthrough(lang) });
   if (page === 'social') Object.assign(v, kitVars(lang));
   if (page === 'in-store') Object.assign(v, storeVars(lang), { sid: 'b' });
   if (page === 'pricing') Object.assign(v, { planCards: planCards(lang), deckCards: deckCards(lang), billItems: billItems(lang), curPick: curPick(lang) });
@@ -512,6 +622,8 @@ const minCss = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '').split(/("[^"\n]*"|'
 // inside :not()/:is()/:where()/:has() and [attribute] tests are not checked, so those rules stay. @font-face, @keyframes
 // and the like are kept as they are; @media/@supports blocks are filtered inside and dropped when empty.
 const JS_WORDS = new Set([rd('site.js'), rd('assets/studio.js'), rd('assets/deck.js'), CONSENT_JS].join('\n').match(/[A-Za-z_][\w-]*/g));
+// assets/dash.js (the home dashboard) only runs on pages with #dash, so its words count only there
+const DASH_WORDS = rd('assets/dash.js').match(/[A-Za-z_][\w-]*/g);
 function cssBlocks(css) {
   const out = []; let start = 0, depth = 0, q = null, pre = '';
   for (let i = 0; i < css.length; i++) {
@@ -527,6 +639,7 @@ function cssBlocks(css) {
 }
 function purgeCss(css, html) {
   const have = new Set(JS_WORDS);
+  if (html.includes('id="dash"')) for (const w of DASH_WORDS) have.add(w);
   for (const m of html.matchAll(/\sclass="([^"]*)"/g)) for (const c of m[1].split(/\s+/)) have.add(c);
   for (const m of html.matchAll(/\sid="([^"]*)"/g)) have.add(m[1]);
   const split = (s) => { const r = []; let d = 0, st = 0; for (let i = 0; i < s.length; i++) { const c = s[i]; if (c === '(' || c === '[') d++; else if (c === ')' || c === ']') d--; else if (c === ',' && !d) { r.push(s.slice(st, i)); st = i + 1; } } r.push(s.slice(st)); return r; };
@@ -563,7 +676,7 @@ function hashed(url) {
   hashedUrls.set(url, out);
   return out;
 }
-const hashUrls = (html) => html.replace(/\/(?:fonts|assets)\/[\w.-]+\.(?:woff2|avif|webp|png)\b|\/site\.js\b/g, hashed);
+const hashUrls = (html) => html.replace(/\/(?:fonts|assets)\/[\w.-]+\.(?:woff2|avif|webp|png)\b|\/site\.js\b|\/assets\/dash\.js\b/g, hashed);
 
 // ---------- build ----------
 function write(rel, content) {
@@ -579,7 +692,7 @@ for (const [lang] of LANGS) {
     htmlCc = LEGAL.includes(page) ? null : DEFAULT_CC; // the legal pages keep the US-dollar price list
     const ctx = { lang, v: pageVars(lang, page) };
     const body = render(rd(`templates/${page === 'index' ? 'home' : page}.html`), ctx);
-    const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${!LEGAL.includes(page) && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n</body>\n</html>\n`;
+    const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${!LEGAL.includes(page) && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${page === 'index' ? '<script src="/assets/dash.js" defer></script>\n' : ''}</body>\n</html>\n`;
     const html = `${head(lang, page, purgeCss(cssFor(lang, page), bodyHtml))}\n${trimIndent(bodyHtml)}`;
     write(dirFor(lang, page) + 'index.html', hashUrls(html));
     built.push([lang, page]);

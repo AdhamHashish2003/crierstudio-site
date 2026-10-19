@@ -90,6 +90,9 @@
       ps[i].textContent = money(cur, +v) + (cur !== "USD" && !big ? " " + CD.plusVat : "");
       ps[i].dir = cur !== "USD" && de.dir === "rtl" ? "rtl" : "ltr";
     }
+    // home: the "+ VAT" written next to a big price (hero, package cards); US dollars carry no VAT
+    var vt = document.querySelectorAll("[data-vat]");
+    for (var vi = 0; vi < vt.length; vi++) vt[vi].hidden = cur === "USD";
     var us = document.querySelectorAll(".usdnote[data-pkg]");
     for (var j = 0; j < us.length; j++) { var cd = us[j].closest(".plan"); if (!(cd && cd.querySelector(".platpick"))) vatNote(us[j], us[j].getAttribute("data-pkg"), 0, us[j].getAttribute("data-per") || ""); }
     var note = document.getElementById("vat-note"); if (note) note.textContent = (CD["note" + cur] || "").replace("{vat}", isLocal(cc) ? CC[cc].vat_pct : "");

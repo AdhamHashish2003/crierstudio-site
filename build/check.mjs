@@ -36,7 +36,9 @@ for (const l of LANGS) for (const p of PAGES) {
   ok((h.match(/<link rel="alternate" hreflang="/g) || []).length === LANGS.length + 1, `hreflang ${file}`); // each language + x-default
   ok(/<title>[^<]{8,}<\/title>/.test(h) && /<meta name="description" content="[^"]{40,}">/.test(h), `title/description ${file}`);
   const headerNav = (h.match(/<nav class="main-nav"[\s\S]*?<\/nav>/) || [''])[0];
-  for (const nav of ['social/', 'in-store/', 'samples/', 'pricing/', 'faq/']) ok(headerNav.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `nav link ${nav} in ${file}`);
+  // Home v2 (2026-10-18): the header is Social · In-store · Pricing · Client portal; Samples and FAQ are in the footer only
+  for (const nav of ['social/', 'in-store/', 'pricing/']) ok(headerNav.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `nav link ${nav} in ${file}`);
+  for (const nav of ['samples/', 'faq/', 'about/']) ok(!headerNav.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `no header nav link ${nav} in ${file}`);
   ok(headerNav.includes('href="https://portal.crierstudio.com/"'), `portal link ${file}`);
   // the footer keeps every destination (About and Brand Deck moved there from the header)
   const footNav = (h.match(/<footer>[\s\S]*?<\/footer>/) || [''])[0];
@@ -59,8 +61,17 @@ for (const l of LANGS) for (const p of PAGES) {
     if (pk.extra_platform_price) ok(h.includes(`data-extra="${pk.extra_platform_price}"`), `extra platform ${pk.extra_platform_price} USD (${pk.id}) on ${file}`);
   }
   if (p === 'pricing/') ok((h.match(/data-product="/g) || []).length === 3 && h.includes('disabled data-unavailable="deck"'), `3 buy buttons and unavailable Brand Deck on ${file}`);
-  // The Store Kit: a card on home and pricing with no price, no VAT line and no buy button; its only action is the waitlist
-  if (p === '' || p === 'pricing/') {
+  // The Store Kit: a card on pricing with no price, no VAT line and no buy button; its only action is the waitlist
+  // (Home v2, 2026-10-18: the home page shows the three Social packages only, no Store Kit card and no In-store teaser)
+  if (p === '') {
+    ok(!/store-card|is-teaser|id="businesses"|id="seasons"/.test(h), `no Store Kit card, In-store teaser, industries or seasons section on ${file}`);
+    ok((h.match(/<div class="inds three">[\s\S]*?<\/div>\s*<p class="more">/) || [''])[0].split('class="price amt"').length === 4, `three Social packages with prices on ${file}`);
+    for (const id of ['id="walkthrough"', 'id="dash"', 'id="dash-s"', 'id="plans"', 'id="trust"', 'id="faq"']) ok(h.includes(id), `${id} on ${file}`);
+    ok(h.includes(`href="https://portal.crierstudio.com/#/signup?lang=${l}"`), `walkthrough Get started -> portal sign-up (lang=${l}) on ${file}`);
+    ok(/<script src="\/assets\/h\/dash\.[0-9a-f]{10}\.js" defer><\/script>/.test(h), `dashboard script (hashed, from 'self') on ${file}`);
+    ok(h.indexOf('id="walkthrough"') < h.indexOf('id="plans"') && h.indexOf('id="plans"') < h.indexOf('id="trust"') && h.indexOf('id="trust"') < h.indexOf('id="faq"'), `home section order on ${file}`);
+  }
+  if (p === 'pricing/') {
     const card = (h.match(/<(article|div) class="(plan|ind) cream store-card"[\s\S]*?<\/\1>/) || [''])[0];
     ok(card && !/data-usd|data-product|usdnote/.test(card) && card.includes(`href="/${l === 'en' ? '' : l + '/'}in-store/#waitlist"`), `Store Kit card (waitlist only, no price) on ${file}`);
   }

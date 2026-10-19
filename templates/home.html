@@ -1,35 +1,29 @@
 <main id="main-content">
     {{>hero}}
 
-    <section id="businesses" aria-labelledby="ind-title">
-      <div class="sec-head"><h2 id="ind-title">{{t:ind.title}}</h2></div>
-      <div class="inds">{{=inds}}</div>
-    </section>
-
-    <section id="seasons" aria-labelledby="seasons-title">
-      <div class="sec-head">
-        <h2 id="seasons-title">{{t:season.title}}</h2>
-        <p class="lead">{{t:season.lead}}</p>
+    <section id="walkthrough" class="wt" aria-labelledby="wt-title">
+      <div class="wt-head">
+        <span class="eyebrow">{{t:nav.portal}}</span>
+        <h2 id="wt-title">{{t:wt.h2}}</h2>
+        <p class="lead">{{t:wt.sub}}</p>
       </div>
-      <div class="inds seasons">{{=seasons}}</div>
-    </section>
-
-    <section id="in-store" class="cream is-teaser" aria-labelledby="teaser-title">
-      <div class="is-top">
-        <div class="is-head">
-          <div class="is-eye"><span>{{t:nav.instore}}</span></div>
-          <h2 id="teaser-title">{{t:is.h1a}}<br>{{t:is.h1b}}</h2>
+      <div class="wt-grid">
+        <div class="wt-stage">
+          {{=dash}}
         </div>
-        <div class="is-side">
-          <div class="is-ctas"><a class="btn" href="{{=storeWaitHref}}">{{t:is.cta1}}</a><a class="is-link" href="{{=storeKitHref}}">{{t:is.cta2}}</a></div>
+        <div class="wt-side">
+          <div class="wt-progress" aria-hidden="true"><span class="wt-count"><bdi dir="ltr"><b>01</b> / {{=wtTotal}}</bdi></span><span class="wt-track"><i></i></span></div>
+          <ol class="wt-steps" aria-label="{{a:wt.steps}}">{{=wtSteps}}</ol>
+          <div class="wt-detail">{{=wtDetails}}</div>
+          <div class="wt-cta"><a class="btn" href="{{=signupHref}}">{{t:wt.cta}}</a><span class="wt-from">{{t:wt.from}}</span></div>
         </div>
       </div>
-      {{>panels}}
+      <p class="wt-big">{{t:wt.big}}</p>
     </section>
 
     <section id="plans" aria-labelledby="plans-title">
       <div class="sec-head"><h2 id="plans-title">{{t:home.plans.title}}</h2></div>
-      <div class="inds four">{{=homePlans}}</div>
+      <div class="inds three">{{=homePlans}}</div>
       <p class="more"><a href="{{=pricingHref}}">{{t:home.plans.more}}</a></p>
     </section>
 
@@ -39,5 +33,10 @@
         {{=trust}}
         <p>{{t:home.contact}}</p>{{=waAbout}}
       </div>
+    </section>
+
+    <section id="faq" class="home-faq" aria-labelledby="faq-title">
+      <div class="sec-head"><h2 id="faq-title">{{t:faq.title}}</h2></div>
+      <div class="faq">{{=faqHome}}</div>
     </section>
   </main>

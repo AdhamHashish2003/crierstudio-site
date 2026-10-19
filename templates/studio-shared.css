@@ -85,8 +85,10 @@ footer a{color:inherit;text-decoration:none}footer a:hover{text-decoration:under
 
 .studio-home .physical-scene .concept-label{color:#B7BCA9}
 
-/* Header nav: Social · In-store · Samples · Pricing · FAQ · Client portal (About and Brand Deck are in the footer). */
+/* Header nav (Home v2, 2026-10-18): Social · In-store · Pricing · Client portal (Samples, FAQ, About and Brand Deck are in the
+   footer). On desktop the four links sit on the logo row. */
 @media(min-width:801px){.top{flex-wrap:wrap;gap:8px 24px}.top .right{margin-inline-start:auto}.top .main-nav{order:3;width:100%;flex-wrap:wrap;justify-content:space-between;gap:4px 22px}.top .main-nav a{white-space:nowrap}}
+@media(min-width:801px){.top{flex-wrap:nowrap}.top .main-nav{order:0;width:auto;flex-wrap:nowrap;justify-content:flex-start;gap:4px 30px;margin-inline-start:48px}.top .right{margin-inline-start:auto}}
 .top .main-nav a[aria-current=page]{text-decoration:underline;text-underline-offset:7px;text-decoration-color:var(--accent)}
 .top .main-nav a[href="https://portal.crierstudio.com/"]{color:var(--accent);font-weight:700}
 .btn.coming-soon,.btn.coming-soon:hover{background:var(--line);color:var(--ink);border-color:var(--muted);cursor:default;opacity:1;text-decoration:none;transform:none}
@@ -184,3 +186,4 @@ body.studio-inner{--cream-bg:#f3f1ea;--cream-ink:#1b1b17;--cream-panel:#fbfaf6;-
 @media(min-width:860px){.plans.four{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(min-width:1100px){.plans.four{grid-template-columns:repeat(4,minmax(0,1fr))}}
 html[lang=ar] :is(.is-eye,.is-tag,.is-pill,.is-num,.is-foot,.zone-col h4){letter-spacing:0;text-transform:none}
+.top .main-nav a{font-size:14px}
