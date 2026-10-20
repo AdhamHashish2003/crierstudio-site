@@ -13,6 +13,9 @@ import { fileURLToPath } from 'node:url';
 // false = the tag is left out. Flip it only when the launch trigger in the SEO plan (section 2.4) is met, then rebuild.
 const NOINDEX = false;
 // ============================================================================================
+// SCULPTURES SWITCH (2026-10-19, owner: hidden for now). false = /sculptures/ and /ar/sculptures/ are still built but carry
+// noindex, are left out of the header nav, footer and sitemap, and nothing links to them. true = shown everywhere again.
+const SHOW_SCULPTURES = false;
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SITE = 'https://crierstudio.com';
@@ -35,9 +38,13 @@ const MOVED = { kit: 'social', physical: 'in-store#custom', snapshot: 'social', 
 const WIDE = new Set(['index', 'pricing', 'brand-deck', 'social', 'in-store', 'sculptures', 'samples', 'about']); // wide layout; the rest use the narrow reading layout
 const LEGAL = ['terms', 'privacy', 'refund'];
 // Home v2 (2026-10-18): the header shows Social · In-store · Sculptures · Pricing · Client portal; Samples and FAQ moved to the footer only
-const NAV = [['social', 'nav.social'], ['in-store', 'nav.instore'], ['sculptures', 'nav.sculptures'], ['pricing', 'nav.pricing'], [PORTAL, 'nav.portal']];
+// (Sculptures only while SHOW_SCULPTURES is true)
+const SC_NAV = SHOW_SCULPTURES ? [['sculptures', 'nav.sculptures']] : [];
+const NAV = [['social', 'nav.social'], ['in-store', 'nav.instore'], ...SC_NAV, ['pricing', 'nav.pricing'], [PORTAL, 'nav.portal']];
 // the footer keeps every destination: the header nav plus Samples, FAQ, About and Brand Deck
-const NAV_FOOT = [['social', 'nav.social'], ['in-store', 'nav.instore'], ['sculptures', 'nav.sculptures'], ['samples', 'nav.samples'], ['pricing', 'nav.pricing'], ['faq', 'nav.faq'], ['about', 'nav.about'], ['brand-deck', 'nav.deck'], [PORTAL, 'nav.portal']];
+const NAV_FOOT = [['social', 'nav.social'], ['in-store', 'nav.instore'], ...SC_NAV, ['samples', 'nav.samples'], ['pricing', 'nav.pricing'], ['faq', 'nav.faq'], ['about', 'nav.about'], ['brand-deck', 'nav.deck'], [PORTAL, 'nav.portal']];
+// pages built but kept out of search and the sitemap
+const HIDDEN = new Set(SHOW_SCULPTURES ? [] : ['sculptures']);
 const CRUMB_KEY = { pricing: 'nav.pricing', 'brand-deck': 'nav.deck', social: 'nav.social', 'in-store': 'nav.instore', sculptures: 'nav.sculptures', samples: 'nav.samples', faq: 'nav.faq', about: 'nav.about', terms: 'foot.terms', privacy: 'foot.privacy', refund: 'foot.refund' };
 // In-store waitlist "business type": the value is the matching INDUSTRY_VALUES string (the CRM's industry field)
 const STORE_TYPES = [['Cafés and dessert shops', 'is.zone.cafe'], ['Restaurants', 'is.zone.restaurant'], ['Salons', 'is.zone.salon'], ['Abayas and fashion', 'is.zone.abaya'], ['Other local business', 'ind.other']];
@@ -617,7 +624,7 @@ function head(lang, page, css) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-${NOINDEX ? '<meta name="robots" content="noindex">\n' : ''}<meta http-equiv="Content-Security-Policy" content="${esc(CSP)}">
+${NOINDEX || HIDDEN.has(page) ? '<meta name="robots" content="noindex">\n' : ''}<meta http-equiv="Content-Security-Policy" content="${esc(CSP)}">
 ${GA_HEAD}
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>${esc(title)}</title>
@@ -839,7 +846,7 @@ ${trimIndent(body404)}`));
 // robots.txt, sitemap.xml, webmanifest
 write('robots.txt', `User-agent: *\nAllow: /\nSitemap: ${SITE}/sitemap.xml\n`);
 const sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">'];
-for (const page of PAGES) for (const [lang] of LANGS) {
+for (const page of PAGES.filter((p) => !HIDDEN.has(p))) for (const [lang] of LANGS) {
   sm.push('<url>', `<loc>${urlFor(lang, page)}</loc>`);
   for (const [c] of LANGS) sm.push(`<xhtml:link rel="alternate" hreflang="${c}" href="${urlFor(c, page)}"/>`);
   sm.push(`<xhtml:link rel="alternate" hreflang="x-default" href="${urlFor('en', page)}"/>`, '</url>');

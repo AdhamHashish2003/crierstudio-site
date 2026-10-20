@@ -27,10 +27,12 @@ for (const f of fs.readdirSync(path.join(ROOT, 'templates'))) ok(!PRICE_RE.test(
 const en = Object.keys(d.en).sort();
 for (const l of LANGS.slice(1)) { const k = Object.keys(d[l]).sort(); ok(JSON.stringify(k) === JSON.stringify(en), `i18n key set differs in ${l}: ${k.filter((x) => !en.includes(x)).concat(en.filter((x) => !k.includes(x))).join(',')}`); }
 for (const l of LANGS) for (const [k, v] of Object.entries(d[l])) ok(typeof v === 'string' && v.trim() !== '', `empty ${l}:${k}`);
-const urls = [];
+const SHOW_SC = /const SHOW_SCULPTURES = true/.test(rd('build/build.mjs'));
+const SC_NAV = SHOW_SC ? ['sculptures/'] : [];
+const urls = [], hiddenUrls = [];
 for (const l of LANGS) for (const p of PAGES) {
   const rel = (l === 'en' ? '' : l + '/') + p, file = rel + 'index.html', u = 'https://crierstudio.com/' + rel;
-  urls.push(u);
+  (p === 'sculptures/' && !SHOW_SC ? hiddenUrls : urls).push(u);
   ok(fs.existsSync(path.join(ROOT, file)), 'missing ' + file); if (!fs.existsSync(path.join(ROOT, file))) continue;
   const h = rd(file);
   ok(h.includes(`<link rel="canonical" href="${u}">`), `canonical ${file}`);
@@ -39,9 +41,13 @@ for (const l of LANGS) for (const p of PAGES) {
   ok(/<title>[^<]{8,}<\/title>/.test(h) && /<meta name="description" content="[^"]{40,}">/.test(h), `title/description ${file}`);
   const headerNav = (h.match(/<nav class="main-nav"[\s\S]*?<\/nav>/) || [''])[0];
   // Home v2 (2026-10-18): the header is Social · In-store · Sculptures · Pricing · Client portal; Samples and FAQ are in the footer only
-  for (const nav of ['social/', 'in-store/', 'sculptures/', 'pricing/']) ok(headerNav.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `nav link ${nav} in ${file}`);
-  { const order = ['social/', 'in-store/', 'sculptures/', 'pricing/'].map((n) => headerNav.indexOf(`href="/${(l === 'en' ? '' : l + '/') + n}"`)); ok(order.every((x, i) => i === 0 || x > order[i - 1]) && order[3] < headerNav.indexOf('href="https://portal.crierstudio.com/"'), `header nav order Social, In-store, Sculptures, Pricing, Client portal in ${file}`); }
-  ok((headerNav.match(/aria-current="page"/g) || []).length === (p === 'sculptures/' || p === 'social/' || p === 'in-store/' || p === 'pricing/' ? 1 : 0) && (p !== 'sculptures/' || headerNav.includes(`href="/${l === 'en' ? '' : l + '/'}sculptures/" aria-current="page"`)), `header nav active state in ${file}`);
+  // (2026-10-19: Sculptures only while SHOW_SCULPTURES is true in build/build.mjs; hidden, no page links to it)
+  const HEAD_NAV = ['social/', 'in-store/', ...SC_NAV, 'pricing/'];
+  for (const nav of HEAD_NAV) ok(headerNav.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `nav link ${nav} in ${file}`);
+  { const order = HEAD_NAV.map((n) => headerNav.indexOf(`href="/${(l === 'en' ? '' : l + '/') + n}"`)); ok(order.every((x, i) => i === 0 || x > order[i - 1]) && order[order.length - 1] < headerNav.indexOf('href="https://portal.crierstudio.com/"'), `header nav order ${HEAD_NAV.join(', ')}, Client portal in ${file}`); }
+  ok((headerNav.match(/aria-current="page"/g) || []).length === (HEAD_NAV.includes(p) ? 1 : 0) && (p !== 'sculptures/' || !SHOW_SC || headerNav.includes(`href="/${l === 'en' ? '' : l + '/'}sculptures/" aria-current="page"`)), `header nav active state in ${file}`);
+  if (!SHOW_SC && p !== 'sculptures/') ok(!/href="\/(?:ar\/)?sculptures\//.test(h), `link to the hidden Sculptures page in ${file}`);
+  ok(/<meta name="robots" content="noindex">/.test(h) || !(p === 'sculptures/' && !SHOW_SC), `hidden Sculptures page without noindex: ${file}`);
   for (const nav of ['samples/', 'faq/', 'about/']) ok(!headerNav.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `no header nav link ${nav} in ${file}`);
   ok(headerNav.includes('href="https://portal.crierstudio.com/"'), `portal link ${file}`);
   // the In-store link carries a decorative "Coming soon" chip (aria-hidden) and a visually hidden " (coming soon)"; the footer does not
@@ -49,7 +55,7 @@ for (const l of LANGS) for (const p of PAGES) {
     ok(a.includes(`<span class="sr"> (${soon})</span><span class="nav-soon" aria-hidden="true">${soon}</span>`) && (headerNav.match(/class="nav-soon"/g) || []).length === 1, `In-store "Coming soon" chip in the header nav of ${file}`); }
   // the footer keeps every destination (About and Brand Deck moved there from the header)
   const footNav = (h.match(/<footer>[\s\S]*?<\/footer>/) || [''])[0];
-  for (const nav of ['social/', 'in-store/', 'sculptures/', 'samples/', 'pricing/', 'faq/', 'about/', 'brand-deck/']) ok(footNav.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `footer link ${nav} in ${file}`);
+  for (const nav of ['social/', 'in-store/', ...SC_NAV, 'samples/', 'pricing/', 'faq/', 'about/', 'brand-deck/']) ok(footNav.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `footer link ${nav} in ${file}`);
   // the social line's old name is gone everywhere (EN and AR)
   ok(!/Complete Kit|complete kit|الحزمة الكاملة/.test(h), `old name "Complete Kit" in ${file}`);
   ok(h.includes('team@crierstudio.com'), `email in ${file}`);
@@ -144,7 +150,7 @@ for (const l of LANGS) for (const p of PAGES) {
   ok(!/snapshot|سنابشوت|سناب شوت/i.test(vis + ' ' + (h.match(/<script type="application\/ld\+json">[\s\S]*?<\/script>/) || [''])[0].replace(/"(url|@id)":"[^"]*"/g, '') + ' ' + (h.match(/<meta (name|property)="[^"]+" content="[^"]*">/g) || []).filter((m) => !/content="https?:/.test(m)).join(' ')), `"snapshot" wording in ${file}`);
   // retired packages and prices must not come back (Snapshot, Starter/Growth/Pro, Crier Deck + Print Kit, old discounts)
   for (const bad of [/\$(99|199|399|149|249|39)\b/, /Snapshot/, /Starter/, /Growth/, /\bPro\b/, /Print Kit/, /Crier Deck/]) ok(!bad.test(vis + ' ' + (h.match(/<script type="application\/ld\+json">[\s\S]*?<\/script>/) || [''])[0] + ' ' + (h.match(/<meta[^>]+>/g) || []).join(' ')), `retired wording ${bad} in ${file}`);
-  ok(/<meta name="robots" content="noindex">/.test(h) === /const NOINDEX = true/.test(rd('build/build.mjs')), `noindex consistency ${file}`);
+  ok(/<meta name="robots" content="noindex">/.test(h) === (/const NOINDEX = true/.test(rd('build/build.mjs')) || (p === 'sculptures/' && !SHOW_SC)), `noindex consistency ${file}`);
   // every internal href resolves to a built page or a file
   for (const m of h.matchAll(/href="(\/[^"#?]*)/g)) { const t = m[1]; const f = t.endsWith('/') ? t + 'index.html' : t; ok(fs.existsSync(path.join(ROOT, f)), `dead link ${t} in ${file}`); }
 }
@@ -155,6 +161,7 @@ for (const l of LANGS) for (const p of PAGES) {
 const sm = rd('sitemap.xml');
 ok((sm.match(/<url>/g) || []).length === urls.length, 'sitemap url count');
 for (const u of urls) ok(sm.includes(`<loc>${u}</loc>`), 'sitemap missing ' + u);
+for (const u of hiddenUrls) ok(!sm.includes(u), 'hidden page in sitemap ' + u);
 ok(rd('brand-deck/index.html').includes('"@type":"Service"') && !rd('brand-deck/index.html').includes('"@type":"Offer"'), 'Brand Deck Service is informational, without an active offer');
 ok(rd('social/index.html').includes('"@type":"Service"') && !rd('social/index.html').includes('"offers"'), 'Social Service JSON-LD is informational, without offers');
 ok(rd('in-store/index.html').includes('"@type":"Service"') && !rd('in-store/index.html').includes('"offers"'), 'In-store Services are informational, without offers');
@@ -198,7 +205,7 @@ ok(rd('index.html').includes('"alternateName":"Crier"') && rd('index.html').incl
     return e.name.endsWith('.html') ? [rel] : [];
   });
   const files = walk('');
-  ok(files.length === urls.length + 1 + 3 + LANGS.length * Object.keys(MOVED).length + REMOVED.length * (PAGES.length + Object.keys(MOVED).length), `GA: expected every built HTML file, found ${files.length}`);
+  ok(files.length === urls.length + hiddenUrls.length + 1 + 3 + LANGS.length * Object.keys(MOVED).length + REMOVED.length * (PAGES.length + Object.keys(MOVED).length), `GA: expected every built HTML file, found ${files.length}`);
   for (const f of files) {
     const h = rd(f), headEnd = h.indexOf('</head>');
     // delayed load (2026-10-11): no blocking/parsed gtag.js <script src> anywhere; the inline head script injects it on the first
