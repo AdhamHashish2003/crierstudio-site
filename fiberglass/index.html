@@ -7,12 +7,12 @@
 <meta http-equiv="Content-Security-Policy" content="default-src &#39;self&#39;; script-src &#39;self&#39; &#39;sha256-4jmdAzOL8C3pYkl28Own0UBXcKkIH+i3PuJLg3AA0Ak=&#39; &#39;sha256-gKVSQWEQhGQFKQi70QhvxduQigVbTRLq3Dw8kqAgEgo=&#39; https://static.cloudflareinsights.com https://*.googletagmanager.com; connect-src &#39;self&#39; https://crm-production-d789.up.railway.app https://cloudflareinsights.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; img-src &#39;self&#39; data: https://*.google-analytics.com https://*.googletagmanager.com; style-src &#39;self&#39; &#39;unsafe-inline&#39;; font-src &#39;self&#39;; base-uri &#39;self&#39;; form-action &#39;self&#39;">
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});try{if(localStorage.getItem('crier_consent')==='granted'){gtag('consent','update',{analytics_storage:'granted'});}}catch(e){}gtag('js',new Date());gtag('config','G-QLQ443CQ8E');(function(){var w=window,d=document,n=0,E=['pointerdown','touchstart','keydown','scroll','wheel'],O={passive:true,capture:true};function L(){if(n)return;n=1;for(var i=0;i<E.length;i++)w.removeEventListener(E[i],L,O);var s=d.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=G-QLQ443CQ8E';d.head.appendChild(s);}for(var i=0;i<E.length;i++)w.addEventListener(E[i],L,O);function T(){setTimeout(L,6000);}if(d.readyState==='complete')T();else w.addEventListener('load',T);d.addEventListener('click',function(e){var t=e.target;if(t&&t.closest&&t.closest('#consent-bar,[data-consent-open],a[href$="#cookie-settings"]'))L();},true);})();</script>
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<title>Fiberglass catalogs: decor and sculptural pieces | Crier Studio</title>
-<meta name="description" content="Fiberglass decor and sculptural pieces for hospitality, retail and brand spaces. Home decor supplying, customized B2B and advertising catalogs.">
+<title>Fiberglass catalogs | Crier Studio</title>
+<meta name="description" content="Fiberglass sculptural pieces and giant brand figures. Advertising and Luxury Showroom catalogs.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Crier Studio">
-<meta property="og:title" content="Fiberglass catalogs: decor and sculptural pieces | Crier Studio">
-<meta property="og:description" content="Fiberglass decor and sculptural pieces for hospitality, retail and brand spaces. Home decor supplying, customized B2B and advertising catalogs.">
+<meta property="og:title" content="Fiberglass catalogs | Crier Studio">
+<meta property="og:description" content="Fiberglass sculptural pieces and giant brand figures. Advertising and Luxury Showroom catalogs.">
 <meta property="og:url" content="https://crierstudio.com/fiberglass/">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://crierstudio.com/og.png">
@@ -20,8 +20,8 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Crier Studio">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Fiberglass catalogs: decor and sculptural pieces | Crier Studio">
-<meta name="twitter:description" content="Fiberglass decor and sculptural pieces for hospitality, retail and brand spaces. Home decor supplying, customized B2B and advertising catalogs.">
+<meta name="twitter:title" content="Fiberglass catalogs | Crier Studio">
+<meta name="twitter:description" content="Fiberglass sculptural pieces and giant brand figures. Advertising and Luxury Showroom catalogs.">
 <meta name="twitter:image" content="https://crierstudio.com/og.png">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -47,8 +47,13 @@
 .fg-hero h1 b{color:var(--fg-lime);font-weight:inherit}
 .fg-hero p.fg-lead{font:400 var(--step-1)/1.5 var(--body);margin:0 0 20px;color:var(--fg-cream)}
 .fg-ctas{display:flex;flex-wrap:wrap;gap:12px}
-.fg-hero .btn.ghost{color:var(--fg-cream);border-color:var(--fg-cream)}
-.fg-hero .btn.ghost:hover{box-shadow:4px 4px 0 var(--fg-lime)}
+.fg-talk{position:relative}
+.fg-talk summary{list-style:none}
+.fg-talk summary::-webkit-details-marker{display:none}
+.fg-talk[open] summary{box-shadow:4px 4px 0 var(--fg-cream)}
+.fg-talk-list{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px;min-width:240px}
+.fg-talk-list a{display:flex;align-items:center;min-height:48px;padding:0 16px;background:var(--fg-cream);color:var(--fg-green);border:2px solid var(--fg-cream);border-radius:3px;font:700 var(--step-0)/1.1 var(--body);text-decoration:none}
+.fg-talk-list a:hover,.fg-talk-list a:focus-visible{background:var(--fg-lime);border-color:var(--fg-lime);color:var(--fg-ink)}
 .fg-hero .btn:hover{box-shadow:4px 4px 0 var(--fg-cream)}
 .fg-dots{display:flex;gap:10px;margin-top:24px}
 .fg-dots i{width:18px;height:18px;transform:rotate(45deg)}
@@ -58,7 +63,7 @@
 .fg-shead h2{font:800 var(--step-3)/1.05 var(--display);letter-spacing:-.01em;margin:0}
 .fg-shead p{margin:0;color:var(--cream-muted);font-size:var(--step-1);line-height:1.5}
 .fg-grid{list-style:none;margin:0;padding:0;display:grid;gap:24px}
-@media(min-width:760px){.fg-grid{grid-template-columns:1fr 1fr;gap:28px}.fg-grid.lux>li:first-child{grid-column:1/-1}}
+@media(min-width:760px){.fg-grid{grid-template-columns:1fr 1fr;gap:28px}}
 .fg-card{background:var(--cream-panel);border:2px solid var(--fg-ink);border-radius:4px;overflow:hidden;display:flex;flex-direction:column;height:100%}
 .fg-card .fg-img{border-bottom:2px solid var(--fg-ink);background:var(--fg-cream)}
 .fg-card .fg-img a{display:block}
@@ -110,13 +115,19 @@
 <section class="fg-hero" aria-labelledby="fg-title">
 <div>
 <p class="eyebrow">Fiberglass catalogs 2026</p>
-<h1 id="fg-title">Fiberglass decor and <b>sculptural pieces</b> for spaces people remember.</h1>
+<h1 id="fg-title">Fiberglass pieces, <b>made to be noticed</b>.</h1>
 </div>
 <div>
-<p class="fg-lead">Made in fiberglass for hotels, restaurants, cafes, shops and brand spaces. Download a catalog below, or tell us about your space.</p>
+<p class="fg-lead">Hand-finished fiberglass, made to order. Download a catalog below, or tell us what you need.</p>
 <div class="fg-ctas">
-<a class="btn" href="/assets/fiberglass/Crier-Fiberglass-Home-Decor-Supplying-2026.pdf" download>Home Decor catalog (PDF)</a>
-<a class="btn ghost" href="mailto:team@crierstudio.com?subject=Fiberglass%20catalog%20request">Talk to us</a>
+<details class="fg-talk">
+<summary class="btn">Talk to us</summary>
+<ul class="fg-talk-list">
+<li><a href="mailto:team@crierstudio.com?subject=Retail%20store%20enquiry">Retail store</a></li>
+<li><a href="mailto:team@crierstudio.com?subject=B2B%20Customized%20enquiry">B2B Customized</a></li>
+<li><a href="mailto:team@crierstudio.com?subject=Advertising%20B2B%20enquiry">Advertising B2B</a></li>
+</ul>
+</details>
 </div>
 <div class="fg-dots" aria-hidden="true"><i style="background:var(--fg-lime)"></i><i style="background:var(--fg-coral)"></i><i style="background:var(--fg-sun)"></i><i style="background:var(--fg-pink)"></i><i style="background:var(--fg-blue)"></i></div>
 </div>
@@ -182,29 +193,11 @@
 
 <section class="fg-sec" aria-labelledby="fg-cats-h">
 <div class="fg-shead">
-<span class="fg-label" style="background:var(--fg-sun)">The catalogs</span>
-<h2 id="fg-cats-h">Three catalogs, one studio</h2>
-<p>Ready-made collections, pieces made to your brief, and giant figures for food brands.</p>
+<span class="fg-label" style="background:var(--fg-sun)">The catalog</span>
+<h2 id="fg-cats-h">The advertising catalog</h2>
+<p>Giant fiberglass figures, signage and mascots for food brands.</p>
 </div>
 <ul class="fg-cats">
-<li class="fg-card" style="--c:var(--fg-lime)">
-<div class="fg-img"><img src="/assets/fiberglass/Crier-Fiberglass-Home-Decor-Supplying-2026-cover.webp" width="936" height="662" decoding="async" alt="Home Decor Supplying catalog cover: Home decor, hand-laid and light"></div>
-<div class="fg-body">
-<p class="fg-tag">Catalog 2026</p>
-<h3>Home Decor Supplying</h3>
-<p>Sculptural fiberglass objects for boutiques, concept stores, interior designers, hotels and gift shops. Light, hand-finished, ready to stock.</p>
-<p class="fg-dl"><a class="btn" href="/assets/fiberglass/Crier-Fiberglass-Home-Decor-Supplying-2026.pdf" download><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" stroke="currentColor" stroke-width="2.5" fill="none"/></svg>Download catalog (PDF)</a></p>
-</div>
-</li>
-<li class="fg-card" style="--c:var(--fg-coral)">
-<div class="fg-img"><img src="/assets/fiberglass/Crier-Fiberglass-Customized-B2B-2026-cover.webp" width="936" height="662" decoding="async" alt="Customized B2B catalog cover: Made for your space. Made by hand, with a faceted hare on a shelf"></div>
-<div class="fg-body">
-<p class="fg-tag">Catalog 2026</p>
-<h3>Customized B2B</h3>
-<p>Decor, display pieces and sculpture for hotels, cafes, offices and retail, in your colours, finishes and sizes.</p>
-<p class="fg-dl"><a class="btn" href="/assets/fiberglass/Crier-Fiberglass-Customized-B2B-2026.pdf" download><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" stroke="currentColor" stroke-width="2.5" fill="none"/></svg>Download catalog (PDF)</a></p>
-</div>
-</li>
 <li class="fg-card" style="--c:var(--fg-pink)">
 <div class="fg-img"><img src="/assets/fiberglass/Crier-Fiberglass-Advertising-2026-cover.webp" width="936" height="662" decoding="async" alt="Advertising catalog cover: Giant ideas for food brands, with an ice cream cone and donut figure"></div>
 <div class="fg-body">
@@ -216,116 +209,13 @@
 </li>
 </ul>
 <ul class="fg-inside">
-<li><figure><img src="/assets/fiberglass/Crier-Fiberglass-Home-Decor-Supplying-2026-p02.webp" width="468" height="331" loading="lazy" decoding="async" alt="Home Decor Supplying page: Objects that sell on a shelf and hold a room"><figcaption>Inside Home Decor Supplying</figcaption></figure></li>
-<li><figure><img src="/assets/fiberglass/Crier-Fiberglass-Customized-B2B-2026-p03.webp" width="468" height="331" loading="lazy" decoding="async" alt="Customized B2B page: the same bookend in four finishes"><figcaption>Inside Customized B2B</figcaption></figure></li>
 <li><figure><img src="/assets/fiberglass/Crier-Fiberglass-Advertising-2026-p02.webp" width="468" height="331" loading="lazy" decoding="async" alt="Advertising page: Signage you can hug, with entrance figures, mascots and counter displays"><figcaption>Inside Advertising</figcaption></figure></li>
-</ul>
-</section>
-
-<section class="fg-sec" aria-labelledby="fg-lux-h">
-<div class="fg-shead">
-<span class="fg-label" style="background:var(--fg-lime)">01 Luxury collection</span>
-<h2 id="fg-lux-h">Luxury collection</h2>
-<p>Five editions of quiet, sculptural pieces in stone, plaster and bronze-look finishes. Made for hotel lobbies, suites, lounges and fine dining.</p>
-</div>
-<ul class="fg-grid lux">
-<li class="fg-card" style="--c:var(--fg-lime)">
-<div class="fg-img"><img src="/assets/fiberglass/Crier-Studio-Luxury-A-Monolith-2026-preview.webp" width="1180" height="838" loading="lazy" decoding="async" alt="Monolith pages: a travertine-look console in a quiet room"></div>
-<div class="fg-body">
-<p class="fg-tag">Luxury A</p>
-<h3>Monolith</h3>
-<p>Weighty, stone-like forms with long horizontal lines, like the Quarry Console. Calm presence for lobbies and suites.</p>
-<p class="fg-in">In the catalog: <a href="/assets/fiberglass/Crier-Fiberglass-Home-Decor-Supplying-2026.pdf" download>Home Decor Supplying (PDF)</a></p>
-</div>
-</li>
-<li class="fg-card" style="--c:var(--fg-coral)">
-<div class="fg-img"><img src="/assets/fiberglass/Crier-Studio-Luxury-B-Echoes-2026-preview.webp" width="1180" height="838" loading="lazy" decoding="async" alt="Echoes pages: a fluted plinth shown from several angles"></div>
-<div class="fg-body">
-<p class="fg-tag">Luxury B</p>
-<h3>Echoes</h3>
-<p>Classical forms, reworked. Fluted plinths and columns in a soft stone finish.</p>
-<p class="fg-in">In the catalog: <a href="/assets/fiberglass/Crier-Fiberglass-Home-Decor-Supplying-2026.pdf" download>Home Decor Supplying (PDF)</a></p>
-</div>
-</li>
-<li class="fg-card" style="--c:var(--fg-sun)">
-<div class="fg-img"><img src="/assets/fiberglass/Crier-Studio-Luxury-C-Still-Wild-2026-preview.webp" width="1180" height="838" loading="lazy" decoding="async" alt="Still Wild pages: a bronze-look resting hare on a stone table"></div>
-<div class="fg-body">
-<p class="fg-tag">Luxury C</p>
-<h3>Still Wild</h3>
-<p>Quiet animal sculptures in a bronze-look finish, such as the Resting Hare.</p>
-<p class="fg-in">In the catalog: <a href="/assets/fiberglass/Crier-Fiberglass-Home-Decor-Supplying-2026.pdf" download>Home Decor Supplying (PDF)</a></p>
-</div>
-</li>
-<li class="fg-card" style="--c:var(--fg-pink)">
-<div class="fg-img"><img src="/assets/fiberglass/Crier-Studio-Luxury-D-Folded-Nature-2026-preview.webp" width="1180" height="838" loading="lazy" decoding="async" alt="Folded Nature pages: a faceted folded leaf bowl on a dining table"></div>
-<div class="fg-body">
-<p class="fg-tag">Luxury D</p>
-<h3>Folded Nature</h3>
-<p>Natural shapes folded into crisp facets. Bowls and centrepieces for tables and counters.</p>
-<p class="fg-in">In the catalog: <a href="/assets/fiberglass/Crier-Fiberglass-Home-Decor-Supplying-2026.pdf" download>Home Decor Supplying (PDF)</a></p>
-</div>
-</li>
-<li class="fg-card" style="--c:var(--fg-blue)">
-<div class="fg-img"><img src="/assets/fiberglass/Crier-Studio-Luxury-E-Atelier-2026-preview.webp" width="1180" height="838" loading="lazy" decoding="async" alt="Atelier pages: a layered strata bench in a gallery hallway"></div>
-<div class="fg-body">
-<p class="fg-tag">Luxury E</p>
-<h3>Atelier</h3>
-<p>Layered, strata-like benches and pieces with a hand-finished feel.</p>
-<p class="fg-in">In the catalog: <a href="/assets/fiberglass/Crier-Fiberglass-Home-Decor-Supplying-2026.pdf" download>Home Decor Supplying (PDF)</a></p>
-</div>
-</li>
-</ul>
-</section>
-
-<section class="fg-sec" aria-labelledby="fg-mod-h">
-<div class="fg-shead">
-<span class="fg-label" style="background:var(--fg-coral)">02 Modern sets</span>
-<h2 id="fg-mod-h">Modern sets</h2>
-<p>Four design movements as small object sets, from bookends to shelf pieces. Made for retail displays, offices and cafes.</p>
-</div>
-<ul class="fg-grid">
-<li class="fg-card" style="--c:var(--fg-sun)">
-<div class="fg-img"><img src="/assets/fiberglass/Crier-Studio-Modern-Bauhaus-2026-preview.webp" width="1170" height="828" loading="lazy" decoding="async" alt="Bauhaus set pages: black half-round bookends on brass-tone bases"></div>
-<div class="fg-body">
-<p class="fg-tag">Modern set</p>
-<h3>Bauhaus</h3>
-<p>Primary geometry: half-round forms in matte black on brass-tone bases.</p>
-<p class="fg-in">In the catalog: <a href="/assets/fiberglass/Crier-Fiberglass-Home-Decor-Supplying-2026.pdf" download>Home Decor Supplying (PDF)</a></p>
-</div>
-</li>
-<li class="fg-card" style="--c:var(--fg-coral)">
-<div class="fg-img"><img src="/assets/fiberglass/Crier-Studio-Modern-Brutalist-2026-preview.webp" width="1170" height="828" loading="lazy" decoding="async" alt="Brutalist set pages: concrete-look cantilever bookends on a shelf"></div>
-<div class="fg-body">
-<p class="fg-tag">Modern set</p>
-<h3>Brutalist</h3>
-<p>Raw, concrete-look blocks with honest edges and heavy proportions.</p>
-<p class="fg-in">In the catalog: <a href="/assets/fiberglass/Crier-Fiberglass-Home-Decor-Supplying-2026.pdf" download>Home Decor Supplying (PDF)</a></p>
-</div>
-</li>
-<li class="fg-card" style="--c:var(--fg-blue)">
-<div class="fg-img"><img src="/assets/fiberglass/Crier-Studio-Modern-ColorPop-2026-preview.webp" width="1170" height="828" loading="lazy" decoding="async" alt="ColorPop set pages: cobalt blue folded bookends"></div>
-<div class="fg-body">
-<p class="fg-tag">Modern set</p>
-<h3>ColorPop</h3>
-<p>Folded forms in one bold, flat colour. Made to stand out on a shelf or counter.</p>
-<p class="fg-in">In the catalog: <a href="/assets/fiberglass/Crier-Fiberglass-Home-Decor-Supplying-2026.pdf" download>Home Decor Supplying (PDF)</a></p>
-</div>
-</li>
-<li class="fg-card" style="--c:var(--fg-pink)">
-<div class="fg-img"><img src="/assets/fiberglass/Crier-Studio-Modern-MidCentury-2026-preview.webp" width="1170" height="828" loading="lazy" decoding="async" alt="MidCentury set pages: walnut-look boomerang bookends in a wood-panelled office"></div>
-<div class="fg-body">
-<p class="fg-tag">Modern set</p>
-<h3>MidCentury</h3>
-<p>Warm walnut-look curves on brass-tone bases, in a mid-century spirit.</p>
-<p class="fg-in">In the catalog: <a href="/assets/fiberglass/Crier-Fiberglass-Home-Decor-Supplying-2026.pdf" download>Home Decor Supplying (PDF)</a></p>
-</div>
-</li>
 </ul>
 </section>
 
 <section class="fg-sec fg-food" aria-labelledby="fg-food-h">
 <div class="fg-shead">
-<span class="fg-label" style="background:var(--fg-pink)">03 Food brand figures</span>
+<span class="fg-label" style="background:var(--fg-pink)">01 Food brand figures</span>
 <h2 id="fg-food-h">Food Brand Figures</h2>
 <p>Giant fiberglass figures for HoReCa signage and mascots. Built to be seen from the street and photographed inside.</p>
 </div>
