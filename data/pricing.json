@@ -1,5 +1,5 @@
 {
- "generated_from": "portal/lib/pricing.json sha256 a85abaaa02943118cfbcaeec446a20c09382c8745ce06e5e15f1d513f62837b3",
+ "generated_from": "portal/lib/pricing.json sha256 1ce39f003e358d9360c6a52497f8b956fedd3cac59f9648faa648bb397de9f21",
  "currency": "USD",
  "local": {
   "about": "Launch pricing (Adham, 2026-10-15): a buyer in Saudi Arabia, the UAE or Egypt is quoted and charged in their own currency, with VAT ADDED on top of the package's local price: total = net + VAT, shown as \"price + VAT = total\". packages[].prices.<CUR> and extra_platform_prices.<CUR> are the NET prices before VAT. VAT = net x vat_pct / 100, rounded half-up to 0.01 on the whole order (base + extra platforms). The country comes from the client (SA / AE / EG only, never typed free text); any other country pays the USD price above with no VAT. Read by mena-batch/app/core/local-price.mjs (engine, portal), the Launchpad's pricing.py (checkout, a byte-for-byte copy of this file) and the site's data/pricing.json (republished from this file). vat_registration: PLACEHOLDER, Adham supplies each country's VAT / tax registration number before it is printed or sent to Stripe; null = not registered yet, nothing is printed.",
@@ -29,11 +29,11 @@
   {
    "id": "kit",
    "name": "The Social Kit",
-   "price": 29,
+   "price": 15,
    "prices": {
-    "SAR": 109,
-    "AED": 109,
-    "EGP": 1420
+    "SAR": 59,
+    "AED": 59,
+    "EGP": 740
    },
    "billing": "once",
    "platforms_included": 1,
@@ -48,24 +48,30 @@
     "seo_priorities": 1,
     "plan_30d": 1,
     "revision_rounds": 1
+   },
+   "list_price": 30,
+   "list_prices": {
+    "SAR": 118,
+    "AED": 118,
+    "EGP": 1480
    }
   },
   {
    "id": "visible",
    "name": "Stay Visible",
-   "price": 45,
+   "price": 15,
    "prices": {
-    "SAR": 169,
-    "AED": 169,
-    "EGP": 2210
+    "SAR": 59,
+    "AED": 59,
+    "EGP": 740
    },
    "billing": "monthly",
    "platforms_included": 1,
-   "extra_platform_price": 20,
+   "extra_platform_price": 0,
    "extra_platform_prices": {
-    "SAR": 79,
-    "AED": 69,
-    "EGP": 980
+    "SAR": 0,
+    "AED": 0,
+    "EGP": 0
    },
    "items": {
     "posts": 10,
@@ -74,24 +80,30 @@
     "calendar": 1,
     "recap": 1,
     "revision_rounds": 1
+   },
+   "list_price": 30,
+   "list_prices": {
+    "SAR": 118,
+    "AED": 118,
+    "EGP": 1480
    }
   },
   {
    "id": "growing",
    "name": "Keep Growing",
-   "price": 60,
+   "price": 15,
    "prices": {
-    "SAR": 229,
-    "AED": 219,
-    "EGP": 2940
+    "SAR": 59,
+    "AED": 59,
+    "EGP": 740
    },
    "billing": "monthly",
    "platforms_included": 1,
-   "extra_platform_price": 30,
+   "extra_platform_price": 0,
    "extra_platform_prices": {
-    "SAR": 109,
-    "AED": 109,
-    "EGP": 1470
+    "SAR": 0,
+    "AED": 0,
+    "EGP": 0
    },
    "items": {
     "posts": 20,
@@ -105,16 +117,22 @@
     "calendar": 1,
     "recap": 1,
     "revision_rounds": 2
+   },
+   "list_price": 30,
+   "list_prices": {
+    "SAR": 118,
+    "AED": 118,
+    "EGP": 1480
    }
   },
   {
    "id": "deck",
    "name": "Brand Deck",
-   "price": 250,
+   "price": 15,
    "prices": {
-    "SAR": 939,
-    "AED": 919,
-    "EGP": 12250
+    "SAR": 59,
+    "AED": 59,
+    "EGP": 740
    },
    "billing": "once",
    "coming_soon": true,
@@ -124,6 +142,12 @@
     "deck_print_pdf": 1,
     "products": 11,
     "revision_rounds": 1
+   },
+   "list_price": 30,
+   "list_prices": {
+    "SAR": 118,
+    "AED": 118,
+    "EGP": 1480
    }
   }
  ],

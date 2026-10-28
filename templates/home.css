@@ -72,12 +72,13 @@ section{padding-block:56px;border-top:2px solid var(--ink)}
 .hero.gl-on .deck-stage canvas{opacity:1}
 .hero.gl-on .fallback{opacity:0}
 .fallback{position:absolute;inset:0;transition:opacity .5s}
-.fc{position:absolute;left:50%;top:50%;width:min(38%,180px);aspect-ratio:3/4;border-radius:12px;box-shadow:0 24px 50px rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.1);background:#1a1d14}
+.fc{position:absolute;inset-inline-start:50%;top:50%;width:min(38%,180px);aspect-ratio:3/4;border-radius:12px;box-shadow:0 24px 50px rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.1);background:#1a1d14}
 .fc:nth-child(1){transform:translate(-50%,-50%) translateX(-62%) rotate(-15deg)}
 .fc:nth-child(2){transform:translate(-50%,-50%) translateX(-22%) rotate(-5deg);background:#F6F8EF}
 .fc:nth-child(3){transform:translate(-50%,-50%) translateX(22%) rotate(5deg);background:#121410}
 .fc:nth-child(4){transform:translate(-50%,-50%) translateX(62%) rotate(15deg);background:#C6FF00}
-.fc::after{content:"";position:absolute;left:14%;right:14%;top:14%;height:8px;background:#C6FF00}
+[dir=rtl] .fc:nth-child(1){transform:translate(50%,-50%) translateX(62%) rotate(15deg)}[dir=rtl] .fc:nth-child(2){transform:translate(50%,-50%) translateX(22%) rotate(5deg)}[dir=rtl] .fc:nth-child(3){transform:translate(50%,-50%) translateX(-22%) rotate(-5deg)}[dir=rtl] .fc:nth-child(4){transform:translate(50%,-50%) translateX(-62%) rotate(-15deg)}
+.fc::after{content:"";position:absolute;inset-inline:14%;top:14%;height:8px;background:#C6FF00}
 .fc:nth-child(2)::after,.fc:nth-child(4)::after{background:#0E0F0C}
 @media (min-width:960px){.hero{grid-template-columns:1.05fr .95fr;gap:16px;padding:56px 48px;align-items:center;margin-top:16px}.hero .deck-stage{min-height:460px;order:0}}
 
@@ -91,8 +92,8 @@ section{padding-block:56px;border-top:2px solid var(--ink)}
 .mini.score span{flex:1;background:var(--muted)}
 .mini.score span:first-child{background:var(--accent)}
 .mini.fix{display:grid;gap:8px;padding:12px;align-content:center}
-.mini.fix span{height:12px;background:var(--line);position:relative;margin-left:22px}
-.mini.fix span::before{content:"";position:absolute;left:-22px;top:0;width:12px;height:12px;background:var(--coral)}
+.mini.fix span{height:12px;background:var(--line);position:relative;margin-inline-start:22px}
+.mini.fix span::before{content:"";position:absolute;inset-inline-start:-22px;top:0;width:12px;height:12px;background:var(--coral)}
 .mini.posts{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
 .mini.posts span{background:var(--sun);box-shadow:inset 0 0 0 1.5px var(--ink)}
 .mini.posts span+span{background:var(--ink)}
@@ -100,7 +101,7 @@ section{padding-block:56px;border-top:2px solid var(--ink)}
 @media (min-width:760px){.pages{grid-template-columns:repeat(3,1fr)}}
 
 /* form */
-.formbox{background:var(--surface);padding:22px 18px;display:grid;gap:18px;border-left:6px solid var(--accent)}
+.formbox{background:var(--surface);padding:22px 18px;display:grid;gap:18px;border-inline-start:6px solid var(--accent)}
 @media (min-width:760px){.formbox{padding:32px}}
 .fields{display:grid;gap:14px}
 @media (min-width:760px){.fields{grid-template-columns:1fr 1fr}.fields .full{grid-column:1/-1}}
@@ -149,9 +150,9 @@ section{padding-block:56px;border-top:2px solid var(--ink)}
 /* faq */
 .faq{display:grid;border-top:2px solid var(--ink)}
 .faq details{border-bottom:2px solid var(--line)}
-.faq summary{cursor:pointer;list-style:none;padding:18px 40px 18px 0;position:relative;font:750 var(--step-1)/1.3 var(--display);font-stretch:105%}
+.faq summary{cursor:pointer;list-style:none;padding-block:18px;padding-inline-start:0;padding-inline-end:40px;position:relative;font:750 var(--step-1)/1.3 var(--display);font-stretch:105%}
 .faq summary::-webkit-details-marker{display:none}
-.faq summary::after{content:"";position:absolute;right:6px;top:50%;width:14px;height:14px;margin-top:-7px;background:linear-gradient(var(--ink),var(--ink)) center/14px 3px no-repeat,linear-gradient(var(--ink),var(--ink)) center/3px 14px no-repeat}
+.faq summary::after{content:"";position:absolute;inset-inline-end:6px;top:50%;width:14px;height:14px;margin-top:-7px;background:linear-gradient(var(--ink),var(--ink)) center/14px 3px no-repeat,linear-gradient(var(--ink),var(--ink)) center/3px 14px no-repeat}
 .faq details[open] summary::after{background:linear-gradient(var(--ink),var(--ink)) center/14px 3px no-repeat}
 .faq .ans{padding-bottom:20px;color:var(--muted);display:grid;gap:10px}
 
@@ -206,9 +207,9 @@ html[lang=ar] .hc-exnote{margin-top:-6px;font-size:13px}
 
 /* the stage: phone + kit pieces, mirrored on /ar/ */
 .hc-stage{position:relative;min-width:0}
-.hc-rig{position:absolute;top:0;left:50%;width:680px;height:702px;margin-left:-340px;transform:scale(var(--k));transform-origin:50% 50%}
-.hc-phone{position:absolute;top:40px;left:50%;margin-left:-172px;width:344px;padding:11px;background:#1B1D17;border-radius:52px;box-shadow:0 0 0 1px #34382C,0 50px 100px rgba(0,0,0,.6);transform:scale(.92);transform-origin:50% 0}
-.hc-phone::after{content:"";position:absolute;top:22px;left:50%;width:96px;height:26px;margin-left:-48px;background:#0E0F0C;border-radius:20px}
+.hc-rig{position:absolute;top:0;inset-inline-start:50%;width:680px;height:702px;margin-inline-start:-340px;transform:scale(var(--k));transform-origin:50% 50%}
+.hc-phone{position:absolute;top:40px;inset-inline-start:50%;margin-inline-start:-172px;width:344px;padding:11px;background:#1B1D17;border-radius:52px;box-shadow:0 0 0 1px #34382C,0 50px 100px rgba(0,0,0,.6);transform:scale(.92);transform-origin:50% 0}
+.hc-phone::after{content:"";position:absolute;top:22px;inset-inline-start:50%;width:96px;height:26px;margin-inline-start:-48px;background:#0E0F0C;border-radius:20px}
 .hc-scr{position:relative;height:690px;overflow:hidden;border-radius:42px;background:#fff;color:#111;font:400 12px/1.35 var(--body);letter-spacing:0;text-align:start}
 html[lang=ar] .hc-scr{line-height:1.5}
 .ig-sb{display:flex;justify-content:flex-end;align-items:center;gap:5px;height:44px;padding:8px 26px 0;direction:ltr}
@@ -262,7 +263,8 @@ html[lang=ar] .ig-ty .ig-t{top:12cqh;bottom:auto;max-width:84cqw;font-size:15cqh
 .ig-n3{background:#E7EBDA;color:#0E0F0C}.ig-n3 .ig-s{color:#2B2E25}.ig-n3 .ig-ring{border-color:#B9BDAD}.ig-n3 .ig-dot{background:#23251F}
 .ig-n4{background:#23261D;color:#fff}.ig-n4 .ig-ring{border-color:rgba(198,255,0,.5)}.ig-n4 .ig-s{color:#C6FF00}
 /* the tag on the phone's top edge */
-.hc-tag{position:absolute;z-index:4;top:12px;left:50%;transform:translateX(-50%);display:inline-flex;align-items:center;gap:7px;white-space:nowrap;background:#C6FF00;color:#0E0F0C;font:700 11px/1 var(--body);letter-spacing:.06em;text-transform:uppercase;padding:9px 13px;border-radius:999px;box-shadow:0 10px 24px rgba(0,0,0,.45)}
+.hc-tag{position:absolute;z-index:4;top:12px;inset-inline-start:50%;transform:translateX(-50%);display:inline-flex;align-items:center;gap:7px;white-space:nowrap;background:#C6FF00;color:#0E0F0C;font:700 11px/1 var(--body);letter-spacing:.06em;text-transform:uppercase;padding:9px 13px;border-radius:999px;box-shadow:0 10px 24px rgba(0,0,0,.45)}
+[dir=rtl] .hc-tag{transform:translateX(50%)}
 html[lang=ar] .hc-tag{font-size:13px;line-height:1.2;letter-spacing:0;text-transform:none;padding:8px 14px}
 .hc-tag svg{width:12px;height:12px;flex:none}
 /* the other kit pieces: brand book, story, 30-day plan */
@@ -292,7 +294,7 @@ html[lang=ar] .hc-aa span{font-size:11px;line-height:1.45}
 .hc-cal i.cp{background:#0E0F0C}.hc-cal i.cs{background:#C6FF00}
 .hc-story{position:relative;aspect-ratio:9/16;border-radius:9px;overflow:hidden;background:#C6FF00;container-type:size}
 .hc-story>*{position:absolute}
-.st-bar{top:3cqh;left:6cqw;right:6cqw;height:.8cqh;background:rgba(14,15,12,.25);border-radius:9px}
+.st-bar{top:3cqh;inset-inline:6cqw;height:.8cqh;background:rgba(14,15,12,.25);border-radius:9px}
 .st-bar::before{content:"";position:absolute;inset-block:0;inset-inline:0 45%;background:#0E0F0C;border-radius:9px}
 .st-ring{width:90cqw;height:90cqw;top:14cqh;inset-inline-end:-30cqw;border-radius:50%;border:5cqw solid rgba(14,15,12,.18)}
 .st-dot{width:40cqw;height:40cqw;top:22cqh;inset-inline-end:8cqw;border-radius:50%;background:#22260F}
@@ -330,9 +332,9 @@ html[lang=ar] .st-s{bottom:8cqh;font-size:3.4cqh;line-height:1.2;padding:1.6cqh 
   .hc .price{font-size:34px}.hc .priceline .vat{font-size:16px}
   html[lang=ar] .hc .price{font-size:32px}html[lang=ar] .hc .priceline .vat{font-size:14px}
   .hc-stage{height:344px}
-  .hc-rig{left:0;width:100%;height:100%;margin-left:0;transform:none}
-  .hc-phone{top:20px;width:256px;margin-left:-128px;padding:8px;border-radius:40px;transform:none}
-  .hc-phone::after{top:16px;width:70px;height:19px;margin-left:-35px}
+  .hc-rig{inset-inline-start:0;width:100%;height:100%;margin-inline-start:0;transform:none}
+  .hc-phone{top:20px;width:256px;margin-inline-start:-128px;padding:8px;border-radius:40px;transform:none}
+  .hc-phone::after{top:16px;width:70px;height:19px;margin-inline-start:-35px}
   .hc-scr{height:420px;border-radius:33px;font-size:10px}
   .ig-sb{height:34px;padding:6px 20px 0}
   .ig-tb{padding:4px 12px 2px}.ig-tb b{font-size:13.5px}.ig-acts{gap:12px}.ig-acts svg{width:17px;height:17px}
@@ -367,7 +369,7 @@ html[lang=ar] .wt-head h2{line-height:1.35}
 /* ---- tablet frame: an even lime bezel (--bz) round the screen, camera dot in the top bezel, the EXAMPLE tag as a small tab
    on the top edge. The bezel hangs into the margins (negative margin-inline) so the screen keeps its old width. ---- */
 .dash{--bz:14px;--br:30px;position:relative;display:block;margin-inline:calc(1px - var(--bz));padding:var(--bz);background:var(--accent);border-radius:var(--br)}
-.d-cam{position:absolute;top:calc(var(--bz) / 2 - 3px);left:calc(50% - 3px);width:6px;height:6px;border-radius:50%;background:var(--accent-ink)}
+.d-cam{position:absolute;top:calc(var(--bz) / 2 - 3px);inset-inline-start:calc(50% - 3px);width:6px;height:6px;border-radius:50%;background:var(--accent-ink)}
 .dash .ex-badge{position:absolute;bottom:calc(100% - 1px);inset-inline-end:calc(var(--br) + 6px);background:var(--accent);color:var(--accent-ink);font:700 10px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;padding:6px 9px 5px;border-radius:6px 6px 0 0}
 html[lang=ar] .dash .ex-badge{letter-spacing:0;font-size:11px;padding-block:5px 4px}
 .d-vp{position:relative;display:block;overflow:hidden;aspect-ratio:860/600;background:#F4F6F8;border-radius:calc(var(--br) - var(--bz))}
@@ -552,7 +554,7 @@ html[lang=ar] .v2 .art-3 .art-t{font-size:16.5cqh}
 [dir=rtl] .d-mt{letter-spacing:0;font-weight:700}
 .d-f{display:grid;gap:4px}.d-fl{font-size:11px;font-weight:600}
 .d-fi{display:block;border:1px solid #D1D5DB;border-radius:10px;padding:7px 10px;font-size:12px;min-height:32px;box-sizing:border-box;transition:border-color .2s,box-shadow .2s}
-[dir=rtl] .d-fi[dir=ltr]{text-align:right}
+[dir=rtl] .d-fi[dir=ltr]{text-align:end}
 .d-fi.on{border-color:#0E0F0C;box-shadow:0 0 0 1px #0E0F0C}
 .d-wide{width:100%;box-sizing:border-box;padding:9px;margin-top:4px}
 

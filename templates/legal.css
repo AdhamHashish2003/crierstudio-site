@@ -33,7 +33,7 @@ h1,h2{font-family:var(--display);line-height:1.08;font-stretch:112%;letter-spaci
 h1{font-size:clamp(2rem,7vw,3.2rem);font-weight:900}
 h2{font-size:var(--step-2);font-weight:850;margin-top:2.2rem}
 p,li{max-width:66ch}
-ul{padding-left:1.2rem}
+ul{padding-inline-start:1.2rem}
 a{color:inherit}
 :focus-visible{outline:3px solid var(--focus);outline-offset:3px}
 .top{padding-block:18px;display:flex;justify-content:space-between;align-items:center;gap:12px}

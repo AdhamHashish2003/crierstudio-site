@@ -1,5 +1,5 @@
 {
  "enabled": true,
  "endpoint": "https://crm-production-d789.up.railway.app/api/public/checkout",
- "about": "L1: when enabled, the request form becomes Pay: the buyer picks the package, the platform(s) and their country, sees the live total (the checkout server's quote: price + VAT = total in SAR / AED / EGP, or USD for other countries) and goes to Stripe Checkout; the Brand Deck is coming soon and cannot be paid for. On since 2026-10-05 (Adham: ship checkout)."
+ "about": "L1: the static site no longer reads this legacy order-form switch. Active plans are priced at $15 USD (list price $30 USD); the checkout backend reads portal/lib/pricing.json and charges the selected plan amount in USD. Additional platform charges are zero."
 }

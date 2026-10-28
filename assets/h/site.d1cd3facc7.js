@@ -4,7 +4,7 @@
   var KEY = "crier.lang", CODES = ["en", "ar"];
   var de = document.documentElement, page = document.body.getAttribute("data-page");
   function saved() { try { var s = localStorage.getItem(KEY); return CODES.indexOf(s) > -1 ? s : null; } catch (e) { return null; } }
-  function pathFor(lang, p) { return "/" + (lang === "en" ? "" : lang + "/") + (p === "index" ? "" : p + "/"); }
+  function pathFor(lang, p) { return "/" + (lang === "en" ? "en/" : "") + (p === "index" ? "" : p + "/"); }
 
   // old URLs: /?lang=xx and /terms.html?lang=xx
   var q = null;
@@ -14,7 +14,7 @@
     // renamed pages (/kit/ and /snapshot/ -> /social/, /physical/ -> /in-store/#custom, /crier-deck/ -> /brand-deck/) carry
     // their own language and keep the full query string; the visitor's own #hash wins over the target's (data-hash)
     var own = document.body.getAttribute("data-lang"), th = document.body.getAttribute("data-hash");
-    location.replace(pathFor(own || q || saved() || "en", document.body.getAttribute("data-target")) + (own ? location.search : "") + (location.hash || (th ? "#" + th : "")));
+    location.replace(pathFor(own || q || saved() || "ar", document.body.getAttribute("data-target")) + (own ? location.search : "") + (location.hash || (th ? "#" + th : "")));
     return;
   }
   if (page === "index" && location.pathname === "/") {
@@ -81,12 +81,12 @@
     el.hidden = !q; el.textContent = q ? display(q) + (per || "") : "";
   }
   function setCountry(c) {
-    cc = c || null; cur = curOf(cc); if (!CD) return;
+    cc = c || null; cur = page === "pricing" ? "USD" : curOf(cc); if (!CD) return;
     var ps = document.querySelectorAll(".amt[data-usd]");
     for (var i = 0; i < ps.length; i++) {
       var v = ps[i].getAttribute(cur === "USD" ? "data-usd" : "data-" + cur.toLowerCase()); if (v == null) continue;
       // a card's big price is followed by its VAT line; a price inside a sentence says "+ VAT" itself
-      var big = /(^|\s)price(\s|$)/.test(ps[i].className);
+      var big = /(^|\s)(?:price|price-list)(\s|$)/.test(ps[i].className);
       ps[i].textContent = money(cur, +v) + (cur !== "USD" && !big ? " " + CD.plusVat : "");
       ps[i].dir = cur !== "USD" && de.dir === "rtl" ? "rtl" : "ltr";
     }

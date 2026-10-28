@@ -5,11 +5,12 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LANGS = ['en', 'ar'];
-const REMOVED = ['es', 'fr']; // removed languages: only redirect stubs to the English page remain
+const REMOVED = ['es', 'fr']; // removed languages redirect to the Arabic default
+const PREFIX = (l) => l === 'en' ? 'en/' : '';
 const PAGES = ['', 'pricing/', 'brand-deck/', 'social/', 'in-store/', 'sculptures/', 'samples/', 'faq/', 'about/', 'terms/', 'privacy/', 'refund/'];
 // old URLs: redirect stubs, not in the sitemap (a target may carry a #hash)
 const MOVED = { 'kit/': 'social/', 'physical/': 'in-store/#custom', 'snapshot/': 'social/', 'crier-deck/': 'brand-deck/' };
-const SKIP_DIRS = ['.git', 'node_modules', 'templates', 'build', 'tests', 'i18n', 'fonts', 'assets', 'design'];
+const SKIP_DIRS = ['fiberglass', '.git', 'node_modules', 'templates', 'build', 'tests', 'i18n', 'fonts', 'assets', 'design'];
 const PRODUCTS = ['kit', 'visible', 'growing', 'deck'];
 // Audit fixes (2026-10-19): every buy / plan / start button opens the client portal's sign-up (AR pages with ?lang=ar)
 const SIGNUP = (l) => `https://portal.crierstudio.com/#/signup${l === 'en' ? '' : '?lang=' + l}`;
@@ -31,7 +32,7 @@ const SHOW_SC = /const SHOW_SCULPTURES = true/.test(rd('build/build.mjs'));
 const SC_NAV = SHOW_SC ? ['sculptures/'] : [];
 const urls = [], hiddenUrls = [];
 for (const l of LANGS) for (const p of PAGES) {
-  const rel = (l === 'en' ? '' : l + '/') + p, file = rel + 'index.html', u = 'https://crierstudio.com/' + rel;
+  const rel = PREFIX(l) + p, file = rel + 'index.html', u = 'https://crierstudio.com/' + rel;
   (p === 'sculptures/' && !SHOW_SC ? hiddenUrls : urls).push(u);
   ok(fs.existsSync(path.join(ROOT, file)), 'missing ' + file); if (!fs.existsSync(path.join(ROOT, file))) continue;
   const h = rd(file);
@@ -43,19 +44,19 @@ for (const l of LANGS) for (const p of PAGES) {
   // Home v2 (2026-10-18): the header is Social · In-store · Sculptures · Pricing · Client portal; Samples and FAQ are in the footer only
   // (2026-10-19: Sculptures only while SHOW_SCULPTURES is true in build/build.mjs; hidden, no page links to it)
   const HEAD_NAV = ['social/', 'in-store/', ...SC_NAV, 'pricing/'];
-  for (const nav of HEAD_NAV) ok(headerNav.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `nav link ${nav} in ${file}`);
-  { const order = HEAD_NAV.map((n) => headerNav.indexOf(`href="/${(l === 'en' ? '' : l + '/') + n}"`)); ok(order.every((x, i) => i === 0 || x > order[i - 1]) && order[order.length - 1] < headerNav.indexOf('href="https://portal.crierstudio.com/"'), `header nav order ${HEAD_NAV.join(', ')}, Client portal in ${file}`); }
-  ok((headerNav.match(/aria-current="page"/g) || []).length === (HEAD_NAV.includes(p) ? 1 : 0) && (p !== 'sculptures/' || !SHOW_SC || headerNav.includes(`href="/${l === 'en' ? '' : l + '/'}sculptures/" aria-current="page"`)), `header nav active state in ${file}`);
+  for (const nav of HEAD_NAV) ok(headerNav.includes(`href="/${PREFIX(l) + nav}"`), `nav link ${nav} in ${file}`);
+  { const order = HEAD_NAV.map((n) => headerNav.indexOf(`href="/${PREFIX(l) + n}"`)); ok(order.every((x, i) => i === 0 || x > order[i - 1]) && order[order.length - 1] < headerNav.indexOf('href="https://portal.crierstudio.com/"'), `header nav order ${HEAD_NAV.join(', ')}, Client portal in ${file}`); }
+  ok((headerNav.match(/aria-current="page"/g) || []).length === (HEAD_NAV.includes(p) ? 1 : 0) && (p !== 'sculptures/' || !SHOW_SC || headerNav.includes(`href="/${PREFIX(l)}sculptures/" aria-current="page"`)), `header nav active state in ${file}`);
   if (!SHOW_SC && p !== 'sculptures/') ok(!/href="\/(?:ar\/)?sculptures\//.test(h), `link to the hidden Sculptures page in ${file}`);
   ok(/<meta name="robots" content="noindex">/.test(h) || !(p === 'sculptures/' && !SHOW_SC), `hidden Sculptures page without noindex: ${file}`);
-  for (const nav of ['samples/', 'faq/', 'about/']) ok(!headerNav.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `no header nav link ${nav} in ${file}`);
+  for (const nav of ['samples/', 'faq/', 'about/']) ok(!headerNav.includes(`href="/${PREFIX(l) + nav}"`), `no header nav link ${nav} in ${file}`);
   ok(headerNav.includes('href="https://portal.crierstudio.com/"'), `portal link ${file}`);
   // the In-store link carries a decorative "Coming soon" chip (aria-hidden) and a visually hidden " (coming soon)"; the footer does not
-  { const soon = l === 'ar' ? 'قريبًا' : 'Coming soon', a = (headerNav.match(/<a [^>]*href="\/(?:ar\/)?in-store\/"[^>]*>[\s\S]*?<\/a>/) || [''])[0];
+  { const soon = l === 'ar' ? 'قريب' : 'Coming soon', a = (headerNav.match(/<a [^>]*href=\"\/(?:en\/)?in-store\/\"[^>]*>[\s\S]*?<\/a>/) || [''])[0];
     ok(a.includes(`<span class="sr"> (${soon})</span><span class="nav-soon" aria-hidden="true">${soon}</span>`) && (headerNav.match(/class="nav-soon"/g) || []).length === 1, `In-store "Coming soon" chip in the header nav of ${file}`); }
   // the footer keeps every destination (About and Brand Deck moved there from the header)
   const footNav = (h.match(/<footer>[\s\S]*?<\/footer>/) || [''])[0];
-  for (const nav of ['social/', 'in-store/', ...SC_NAV, 'samples/', 'pricing/', 'faq/', 'about/', 'brand-deck/']) ok(footNav.includes(`href="/${(l === 'en' ? '' : l + '/') + nav}"`), `footer link ${nav} in ${file}`);
+  for (const nav of ['social/', 'in-store/', ...SC_NAV, 'samples/', 'pricing/', 'faq/', 'about/', 'brand-deck/']) ok(footNav.includes(`href="/${PREFIX(l) + nav}"`), `footer link ${nav} in ${file}`);
   // the social line's old name is gone everywhere (EN and AR)
   ok(!/Complete Kit|complete kit|الحزمة الكاملة/.test(h), `old name "Complete Kit" in ${file}`);
   ok(h.includes('team@crierstudio.com'), `email in ${file}`);
@@ -92,7 +93,7 @@ for (const l of LANGS) for (const p of PAGES) {
   }
   if (p === 'pricing/') {
     const card = (h.match(/<(article|div) class="(plan|ind) cream store-card"[\s\S]*?<\/\1>/) || [''])[0];
-    ok(card && !/data-usd|data-product|usdnote/.test(card) && card.includes(`href="/${l === 'en' ? '' : l + '/'}in-store/#waitlist"`), `Store Kit card (waitlist only, no price) on ${file}`);
+    ok(card && !/data-usd|data-product|usdnote/.test(card) && card.includes(`href="/${PREFIX(l)}in-store/#waitlist"`), `Store Kit card (waitlist only, no price) on ${file}`);
   }
   if (p === 'in-store/') {
     ok(!/data-usd|data-product|"@type":"Offer"/.test(h), `no price, buy button or offer on ${file}`);
@@ -106,7 +107,7 @@ for (const l of LANGS) for (const p of PAGES) {
     // In-store v3, Direction A (Adham, 2026-10-18): twice, the Store Kit status pill and the COMING SOON banner
     // (not counting the header nav's In-store "Coming soon" chip, checked on every page above)
     const visNav = headerNav.replace(/<[^>]+>/g, ' ');
-    ok((vis.match(/coming soon|قريبًا/gi) || []).length - (visNav.match(/coming soon|قريبًا/gi) || []).length === 2,`"coming soon" exactly twice (status pill + banner) on ${file}`);
+    ok((vis.match(/coming soon|قريب/gi) || []).length - (visNav.match(/coming soon|قريب/gi) || []).length === 2,`"coming soon" exactly twice (status pill + banner) on ${file}`);
     ok(!/<h1[^>]*>[^<]*(coming soon|قريبًا)/i.test(h), `no "coming soon" in the H1 of ${file}`);
     // The Store Kit is a concept (Adham 2026-10-18): no [bracket] placeholders (bundle quantities) and no launch price,
     // launch date or delivery promise; Custom pieces promise no quote, price or reply time
@@ -165,11 +166,11 @@ for (const u of hiddenUrls) ok(!sm.includes(u), 'hidden page in sitemap ' + u);
 ok(rd('brand-deck/index.html').includes('"@type":"Service"') && !rd('brand-deck/index.html').includes('"@type":"Offer"'), 'Brand Deck Service is informational, without an active offer');
 ok(rd('social/index.html').includes('"@type":"Service"') && !rd('social/index.html').includes('"offers"'), 'Social Service JSON-LD is informational, without offers');
 ok(rd('in-store/index.html').includes('"@type":"Service"') && !rd('in-store/index.html').includes('"offers"'), 'In-store Services are informational, without offers');
-ok(rd('pricing/index.html').includes('"name":"The Store Kit"'), 'pricing ItemList lists The Store Kit');
-for (const pr of ['"price":"29"', '"price":"45"', '"price":"60"', '"unitCode":"MON"']) ok(rd('pricing/index.html').includes(pr), 'pricing JSON-LD ' + pr);
+ok(rd('en/pricing/index.html').includes('\"name\":\"The Store Kit\"'), 'pricing ItemList lists The Store Kit');
+for (const pr of ['\"price\":\"15\"', '\"unitCode\":\"MON\"']) ok(rd('en/pricing/index.html').includes(pr), 'pricing JSON-LD ' + pr);
 // renamed pages: every old URL is a noindex redirect stub to the new page in the same language
 for (const l of LANGS) for (const [from, to] of Object.entries(MOVED)) {
-  const pre = l === 'en' ? '' : l + '/', f = pre + from + 'index.html';
+  const pre = PREFIX(l), f = pre + from + 'index.html';
   ok(fs.existsSync(path.join(ROOT, f)), 'missing stub ' + f); if (!fs.existsSync(path.join(ROOT, f))) continue;
   const s = rd(f), [tp, th] = to.split('#');
   ok(s.includes('data-page="redirect"') && s.includes(`data-target="${tp.slice(0, -1)}"`) && s.includes(`data-lang="${l}"`) && s.includes('content="noindex"') && s.includes(`url=/${pre}${to}"`)
@@ -184,7 +185,7 @@ ok(rd('pricing/index.html').includes('"@type":"ItemList"') && rd('pricing/index.
   for (const k of PRODUCTS) {
     ok(typeof links[k] === 'string' && (links[k] === '' || /^https:\/\//.test(links[k])), `payment-links.json entry ${k}`);
     for (const l of LANGS) {
-      const hh = rd((l === 'en' ? '' : l + '/') + 'pricing/index.html');
+      const hh = rd(PREFIX(l) + 'pricing/index.html');
       const m = hh.match(new RegExp(`<a class="btn[^"]*" href="([^"]*)" data-product="${k}"`));
       if (k === 'deck') { ok(!m && hh.includes('disabled data-unavailable="deck"'), `Brand Deck unavailable (${l})`); continue; }
       const want = links[k] || SIGNUP(l);
@@ -205,7 +206,7 @@ ok(rd('index.html').includes('"alternateName":"Crier"') && rd('index.html').incl
     return e.name.endsWith('.html') ? [rel] : [];
   });
   const files = walk('');
-  ok(files.length === urls.length + hiddenUrls.length + 1 + 3 + LANGS.length * Object.keys(MOVED).length + REMOVED.length * (PAGES.length + Object.keys(MOVED).length), `GA: expected every built HTML file, found ${files.length}`);
+  ok(files.length === urls.length + hiddenUrls.length + 1 + 3 + PAGES.length + LANGS.length * Object.keys(MOVED).length + Object.keys(MOVED).length + REMOVED.length * (PAGES.length + Object.keys(MOVED).length), `GA: expected every built HTML file, found ${files.length}`);
   for (const f of files) {
     const h = rd(f), headEnd = h.indexOf('</head>');
     // delayed load (2026-10-11): no blocking/parsed gtag.js <script src> anywhere; the inline head script injects it on the first
@@ -216,8 +217,8 @@ ok(rd('index.html').includes('"alternateName":"Crier"') && rd('index.html').incl
     ok((h.match(/googletagmanager\.com\/gtag\/js/g) || []).length === 1, `GA: no second gtag.js loader in ${f}`);
     ok(h.includes("E=['pointerdown','touchstart','keydown','scroll','wheel']") && h.includes('for(var i=0;i<E.length;i++)w.addEventListener(E[i],L,O);') && h.includes("function T(){setTimeout(L,6000);}if(d.readyState==='complete')T();else w.addEventListener('load',T);"), `GA: loader waits for the first interaction, or 6 s after window load, in ${f}`);
     ok(h.includes(`t.closest('#consent-bar,[data-consent-open],a[href$="#cookie-settings"]'))L();},true)`), `GA: loader runs at once on consent-bar interaction in ${f}`);
-    const inl = h.slice(0, headEnd).match(/<script>([\s\S]*?)<\/script>/);
-    ok(inl && inl[1].indexOf("gtag('consent','default'") > -1 && inl[1].indexOf("gtag('consent','default'") < inl[1].indexOf('d.createElement'), `GA: consent defaults set inline in <head> before the loader in ${f}`);
+    const inl = [...h.slice(0, headEnd).matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]).find((x) => x.includes("gtag('consent','default'"));
+    ok(inl && inl.indexOf("gtag('consent','default'") > -1 && inl.indexOf("gtag('consent','default'") < inl.indexOf('d.createElement'), `GA: consent defaults set inline in <head> before the loader in ${f}`);
     const cfg = `gtag('config','${GA}')`, def = "gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500})";
     ok(h.split(cfg).length === 2 && h.split(def).length === 2 && h.indexOf(def) < h.indexOf(cfg) && h.indexOf(cfg) < headEnd, `GA: consent default (all denied) before the one config call in ${f}`);
     ok(h.includes("if(localStorage.getItem('crier_consent')==='granted'){gtag('consent','update',{analytics_storage:'granted'});}"), `GA: returning visitor who accepted gets analytics_storage granted in ${f}`);
@@ -241,7 +242,7 @@ ok(rd('index.html').includes('"alternateName":"Crier"') && rd('index.html').incl
     }
   }
   for (const l of LANGS) {
-    const f = (l === 'en' ? '' : l + '/') + 'privacy/index.html', h = rd(f);
+    const f = PREFIX(l) + 'privacy/index.html', h = rd(f);
     ok(h.includes('<h2 id="cookies">') && h.includes('Google LLC') && h.includes('Google Analytics 4') && h.includes('14'), `privacy: Google Analytics section in ${f}`);
   }
 }

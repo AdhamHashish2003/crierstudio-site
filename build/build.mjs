@@ -49,7 +49,7 @@ const CRUMB_KEY = { pricing: 'nav.pricing', 'brand-deck': 'nav.deck', social: 'n
 // In-store waitlist "business type": the value is the matching INDUSTRY_VALUES string (the CRM's industry field)
 const STORE_TYPES = [['Cafés and dessert shops', 'is.zone.cafe'], ['Restaurants', 'is.zone.restaurant'], ['Salons', 'is.zone.salon'], ['Abayas and fashion', 'is.zone.abaya'], ['Other local business', 'ind.other']];
 // MENA (2026-10-14): Gulf and Egyptian business types. The value goes to the intake API as free text (the CRM's industry field).
-const INDUSTRY_VALUES = ['Cafés and dessert shops', 'Restaurants', 'Abayas and fashion', 'Perfume and oud', 'Salons', 'Clinics', 'Real estate', 'Other local business'];
+const INDUSTRY_VALUES = ['Cafés and dessert shops', 'Restaurants', 'Abayas and fashion', 'Perfume and oud', 'Salons', 'Real estate', 'Other local business'];
 for (const [v] of STORE_TYPES) if (!INDUSTRY_VALUES.includes(v)) throw new Error('STORE_TYPES: not an INDUSTRY_VALUES string: ' + v);
 const IND_N = INDUSTRY_VALUES.length - 1; // ind.1n … ind.<IND_N>n, then ind.other
 const IND_NOTE = 6; // clinics carry the "no health claims" note (ind.<IND_NOTE>note)
@@ -154,7 +154,7 @@ const htmlCur = () => (htmlCc ? COUNTRIES[htmlCc].currency : 'USD');
 // a card's big price is followed by its VAT line instead)
 function priceSpan(lang, vals, cls = 'amt') {
   const [usd, ...loc] = String(vals).split('|'), cur = htmlCur();
-  const text = cur === 'USD' ? '$' + usd : fmtMoney(lang, cur, +loc[CURS.indexOf(cur) - 1]) + (/(^|\s)price(\s|$)/.test(cls) ? '' : ' ' + t(lang, 'cur.plusVat'));
+  const text = cur === 'USD' ? '$' + usd : fmtMoney(lang, cur, +loc[CURS.indexOf(cur) - 1]) + (/(^|\s)(?:price|price-list)(\s|$)/.test(cls) ? '' : ' ' + t(lang, 'cur.plusVat'));
   return `<span class="${cls}" dir="${cur !== 'USD' && RTL.has(lang) ? 'rtl' : 'ltr'}" data-usd="${usd}"${CURS.slice(1).map((c, i) => ` data-${c.toLowerCase()}="${loc[i]}"`).join('')}>${esc(text)}</span>`;
 }
 const t = (lang, key) => raw(lang, key).replace(PRICE_MARK, (m, vals) => '$' + vals.split('|')[0]).replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m).replace(/<\/?(?:b|a)>/g, '');
@@ -168,7 +168,7 @@ function h(lang, key, href) {
 const jsonScript = (o) => JSON.stringify(o).replace(/</g, '\\u003c');
 
 // ---------- URLs ----------
-const dirFor = (lang, page) => (lang === 'en' ? '' : lang + '/') + (page === 'index' ? '' : page + '/');
+const dirFor = (lang, page) => (lang === 'en' ? 'en/' : '') + (page === 'index' ? '' : page + '/');
 const pathFor = (lang, page) => '/' + dirFor(lang, page);
 const urlFor = (lang, page) => SITE + pathFor(lang, page);
 
@@ -210,8 +210,12 @@ function faqItems(lang, ids, openFirst, swap = {}) {
 // dir="ltr" so RTL pages do not swap them). The accessible name is the language's own name with the visible code in it
 // ("English (EN)", "العربية (AR)"), and only the page's own language carries aria-current.
 function langpick(lang, page) {
-  const links = LANGS.map(([c, name]) => { const label = `${name} (${c.toUpperCase()})`; return `<a href="${pathFor(c, page)}" lang="${c}" hreflang="${c}" dir="${RTL.has(c) ? 'rtl' : 'ltr'}" aria-label="${esc(label)}" title="${esc(name)}"${c === lang ? ' aria-current="true"' : ''}>${c.toUpperCase()}</a>`; }).join('');
-  return `<div class="langpick" role="group" dir="ltr" aria-label="${esc(t(lang, 'lang.label'))}">${links}</div>`;
+  const links = LANGS.map(([c, name]) => {
+    const label = name + ' (' + c.toUpperCase() + ')';
+    const href = pathFor(c, page) + '?lang=' + c;
+    return '<a href="' + esc(href) + '" lang="' + c + '" hreflang="' + c + '" dir="' + (RTL.has(c) ? 'rtl' : 'ltr') + '" aria-label="' + esc(label) + '" title="' + esc(name) + '"' + (c === lang ? ' aria-current="true"' : '') + '>' + c.toUpperCase() + '</a>';
+  }).join('');
+  return '<div class="langpick" role="group" dir="ltr" aria-label="' + esc(t(lang, 'lang.label')) + '">' + links + '</div>';
 }
 // header nav only: a decorative "Coming soon" chip beside In-store; screen readers hear " (coming soon)" from the .sr span.
 // The label sits in its own span so the active underline is drawn under the label only, never through the chip.
@@ -247,7 +251,7 @@ function sheet(lang, n) {
 }
 const fig = (lang, n) => `<figure class="sheetfig">${sheet(lang, n)}<figcaption>${h(lang, `sample.c${n}`)}</figcaption></figure>`;
 
-const money = (lang, p) => priceSpan(lang, [PRICES[p], ...CURS.slice(1).map((c) => PKG[p].prices[c])].join('|'), 'price amt');
+const money = (lang, p) => `<span class="price-pair"><s class="price-was">${priceSpan(lang, [PKG[p].list_price, ...CURS.slice(1).map((c) => PKG[p].list_prices[c])].join('|'), 'price-list amt')}</s>${priceSpan(lang, [PRICES[p], ...CURS.slice(1).map((c) => PKG[p].prices[c])].join('|'), 'price amt')}</span>`;
 // "Your country" dropdown: Saudi Arabia / UAE / Egypt first, "Another country (US dollars)" last (never free text). Used above
 // the prices (home, pricing and kit pages) and in the order form; site.js keeps every one of them on the same country and sends
 // that country to the checkout. Selected in the HTML: the default country (Saudi Arabia).
@@ -272,7 +276,7 @@ function curData(lang) {
   return `<script type="application/json" id="cur-data">${jsonScript(o)}</script>`;
 }
 // M14: a WhatsApp link only when data/contact.json has a number (the label key is always read, so it is never "unused")
-function waLink(lang) { const label = t(lang, 'contact.wa'); return WA ? `<a href="https://wa.me/${WA}" dir="ltr" rel="noopener">${esc(label)}</a>` : ''; }
+function waLink() { return ''; }
 const pname = (lang, p) => t(lang, `name.${p}`);
 const isLinked = (p) => LINKS[p] !== '';
 // Audit fixes (2026-10-19): every buy / plan button opens the client portal's sign-up (AR pages with ?lang=ar); the public
@@ -286,9 +290,9 @@ function buyBtn(lang, p, ghost) {
 }
 // home hero (audit fixes, 2026-10-19): a "Start in your portal" card whose button opens the portal sign-up (no price, no
 // package name: those are on /pricing/ only)
-const ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+const ARROW = (lang) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${lang === 'ar' ? 'M19 12H5M11 6l-6 6 6 6' : 'M5 12h14M13 6l6 6-6 6'}"/></svg>`;
 function heroStart(lang) {
-  return { heroBtn: `<a class="btn" href="${esc(signupUrl(lang))}">${h(lang, 'hero.start.btn')} ${ARROW}</a>` };
+  return { heroBtn: `<a class="btn" href="${esc(signupUrl(lang))}">${h(lang, 'hero.start.btn')} ${ARROW(lang)}</a>` };
 }
 function ticks(lang, prefix, cls) {
   const out = [];
@@ -301,7 +305,7 @@ function planCard(lang, p, hot) {
   const bill = MONTHLY.has(p) ? 'plan.bill' : `pkg.${p}.bill`;
   // the VAT line ("SAR 109 + VAT 15% SAR 16.35 = SAR 125.35"), hidden in US dollars (no VAT). The Brand Deck is coming soon
   // and is never payable, so its card has no such line.
-  const vatLine = PKG[p].coming_soon ? '' : vatNote(lang, p, platPick(lang, p) ? t(lang, 'plan.perShort') : '');
+  const vatLine = '';
   return `<article class="plan${hot ? ' hot' : ''}" data-plan="${p}"><span class="badge">${h(lang, `pkg.${p}.eye`)}</span><h3>${esc(pname(lang, p))}</h3><p class="pt">${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(lang, p)}<span class="per">${h(lang, per)}</span></div>${vatLine}<p class="billnote">${h(lang, bill)}</p>${platPick(lang, p)}${ticks(lang, `pkg.${p}`)}<p class="pnote">${h(lang, `pkg.${p}.note`)}</p><div class="buyrow">${buyBtn(lang, p, !hot)}</div></article>`;
 }
 // home "Good to know": four lines, the last one links the refund policy
@@ -325,7 +329,7 @@ const PI = {
   settings: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7 7 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z',
   spark: 'M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18', work: 'M12 3v12M7 10l5 5 5-5M4 20h16', comment: 'M4 5h16v11H9l-5 4z',
 };
-const ic = (k) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${PI[k]}"/></svg>`;
+const ic = (k, lang) => { const d = k === 'chev' && lang === 'ar' ? 'M15 6l-6 6 6 6' : PI[k]; return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`; };
 const digits = (lang, n) => (lang === 'ar' ? String(n).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]) : String(n)); // Arabic-Indic on /ar/, as the portal does
 function dash(lang) {
   const T = (k) => t(lang, 'dash.' + k), D = (k) => esc(T(k)), ar = lang === 'ar';
@@ -334,7 +338,7 @@ function dash(lang) {
   // The markup is the finished (?static=1) state, so the dashboard reads without JavaScript; dash.js adds .is-live and resets it.
   const art = (i, on = '') => `<span class="art art-${i + 1}${on}" data-art="${i}"><span class="art-b">${D('artBrand')}</span><span class="art-ring"></span><span class="art-dot"></span><span class="art-t">${esc(posts[i].t)}</span><span class="art-s">${esc(posts[i].s)}</span></span>`;
   const END = { delivB: 4, awaitB: 2 }; // the finished state's counts: four delivered, two approved, two awaiting
-  const link = (k, label, active, badge) => `<span class="d-link${active ? ' on' : ''}">${ic(k)}<span class="d-nl">${D(label)}</span>${badge ? `<span class="d-badge" data-k="${badge}">${digits(lang, END[badge])}</span>` : ''}</span>`;
+  const link = (k, label, active, badge) => `<span class="d-link${active ? ' on' : ''}">${ic(k, lang)}<span class="d-nl">${D(label)}</span>${badge ? `<span class="d-badge" data-k="${badge}">${digits(lang, END[badge])}</span>` : ''}</span>`;
   const pill = (k, cls, label) => `<span class="d-pill ${cls}" data-k="${k}"><i></i><span>${D(label)}</span></span>`;
   const tile = (k, label, sub, n, dark) => `<span class="d-tile${dark ? ' dark' : ''}"><span class="d-tl">${D(label)}</span><span class="d-tv" data-k="${k}">${digits(lang, n)}</span><span class="d-ts" data-k="${k}Sub">${esc(sub)}</span></span>`;
   const user = T('user'), u0 = esc(user.charAt(0));
@@ -342,11 +346,11 @@ function dash(lang) {
   const post = (i) => `<span class="d-slot"><span class="d-post${i === 2 ? ' v2' : ''}" data-p="${i}">
         <span class="d-media">${art(i)}<span class="d-id" dir="ltr">#0${i + 1}</span><span class="d-ver" dir="ltr">v2</span>${pill('st' + i, st[i][0] + ' d-st', st[i][1])}${i === 2 ? `
           <span class="d-bubs"><span class="d-bub cl" data-k="b1"><span class="d-bav">${u0}</span><span>${D('note')}</span></span><span class="d-bub st" data-k="b2"><span class="d-bav c">C</span><span>${D('reply')}</span></span></span>
-          <span class="d-cchip" data-k="cchip">${ic('comment')}<b>${digits(lang, 2)}</b></span>` : ''}</span>
+          <span class="d-cchip" data-k="cchip">${ic('comment', lang)}<b>${digits(lang, 2)}</b></span>` : ''}</span>
         <span class="d-info"><strong>${esc(posts[i].t)}</strong><small><span>${D('kind')}</span><span class="d-date">${esc(posts[i].date)}</span></small></span>
       </span></span>`;
   const line = esc(T('pill').replace('{n}', digits(lang, 2)));
-  const rvTop = `<span class="d-rv-top"><span class="d-rv-ic">${ic('spark')}</span><span class="d-ct"><strong>${D('review')}</strong><small>${D('reviewSub')}</small></span></span><span class="d-rv-line"><span data-k="line">${line}</span>${ic('chev')}</span>`;
+  const rvTop = `<span class="d-rv-top"><span class="d-rv-ic">${ic('spark', lang)}</span><span class="d-ct"><strong>${D('review')}</strong><small>${D('reviewSub')}</small></span></span><span class="d-rv-line"><span data-k="line">${line}</span>${ic('chev', lang)}</span>`;
   // the strings the script needs (pill lines, sub lines, status names)
   const js = Object.fromEntries(['pill', 'pillOne', 'pillNone', 'inTotal', 'awaitSub', 'awaitNone', 'ofDecided', 'waiting', 'approved', 'changesAsked', 'ready', 'brand', 'note'].map((k) => [k, T(k)]));
   js.titles = posts.map((p) => p.t);
@@ -368,14 +372,14 @@ function dash(lang) {
     <span class="d-main">
       <span class="d-head"><span class="d-h1">${D('greet')}</span><span class="d-pill amber d-hpill" data-k="hpill"><i></i><span data-k="line">${line}</span></span><span class="d-acts"><span class="d-btn dark">${D('planMonth')}</span><span class="d-btn sec">${D('askPost')}</span></span></span>
       <span class="d-mclient"><span class="d-mark">${D('mark')}</span><strong>${D('brand')}</strong></span>
-      <span class="d-card d-stats"><span class="d-ch"><strong>${D('glance')}</strong><span class="d-more">${D('seeAll')}${ic('chev')}</span></span>
+      <span class="d-card d-stats"><span class="d-ch"><strong>${D('glance')}</strong><span class="d-more">${D('seeAll')}${ic('chev', lang)}</span></span>
         <span class="d-tiles">${tile('deliv', 'delivered', T('inTotal').replace('{n}', digits(lang, 4)), 4, 1)}${tile('await', 'awaiting', T('awaitSub'), 2)}${tile('appr', 'approved', T('ofDecided').replace('{n}', digits(lang, 2)), 2)}${tile('new', 'newT', T('newSub'), 2)}</span></span>
       <span class="d-row">
         <span class="d-card d-week"><span class="d-ch"><strong>${D('week')}</strong><span class="d-count" data-k="weekN">${digits(lang, 4)}</span></span>
           <span class="d-grid"><span class="d-empty">${D('firstDelivery')}</span>${[0, 1, 2, 3].map(post).join('')}</span></span>
         <span class="d-panel">
           <span class="d-layer" data-l="A"><span class="d-card d-att"><span class="d-ch"><strong>${D('attention')}</strong><span class="d-count">${digits(lang, 1)}</span></span><span class="d-subh">${D('todo')}</span>
-            <span class="d-need done" data-k="need"><strong>${D('qT')}</strong><span class="d-btn lime" data-b="q">${D('qBtn')}</span><span class="d-allset"><span class="d-tick">${ic('check')}</span>${D('done')}</span></span></span></span>
+            <span class="d-need done" data-k="need"><strong>${D('qT')}</strong><span class="d-btn lime" data-b="q">${D('qBtn')}</span><span class="d-allset"><span class="d-tick">${ic('check', lang)}</span>${D('done')}</span></span></span></span>
           <span class="d-layer" data-l="B"><span class="d-card d-lime"><strong>${D('newReady')}</strong><span class="d-btn dark">${D('openWork')}</span></span>
             <span class="d-card d-rvcard">${rvTop}</span></span>
           <span class="d-layer" data-l="C"><span class="d-card d-rev">
@@ -388,11 +392,11 @@ function dash(lang) {
             <span class="d-sh-head"><strong>${esc(posts[0].t)}</strong><span class="d-chip">${D('ready')}</span></span>
             <span class="d-sh-art">${art(0)}</span>
             <span class="d-cap">${D('caption')}</span>
-            <span class="d-sh-btns"><span class="d-btn lime d-copy" data-b="copy"><span class="a">${D('copyCap')}</span><span class="b">${ic('check')}${D('copied')}</span></span><span class="d-btn sec" data-b="dl">${ic('work')}${D('download')}</span><span class="d-btn sec" data-b="mark">${D('markPosted')}</span></span></span></span>
+            <span class="d-sh-btns"><span class="d-btn lime d-copy" data-b="copy"><span class="a">${D('copyCap')}</span><span class="b">${ic('check', lang)}${D('copied')}</span></span><span class="d-btn sec" data-b="dl">${ic('work', lang)}${D('download')}</span><span class="d-btn sec" data-b="mark">${D('markPosted')}</span></span></span></span>
         </span>
       </span>
     </span>
-    <span class="d-bnav">${[['overview', 'overview', 1], ['layers', 'deliverables', 0, 'delivB'], ['review', 'review', 0, 'awaitB'], ['chat', 'messages'], ['settings', 'settings']].map(([k, l, on, b]) => `<span class="d-bn${on ? ' on' : ''}">${ic(k)}${b ? `<span class="d-badge" data-k="${b}">0</span>` : ''}<span>${D(l)}</span></span>`).join('')}</span>
+    <span class="d-bnav">${[['overview', 'overview', 1], ['layers', 'deliverables', 0, 'delivB'], ['review', 'review', 0, 'awaitB'], ['chat', 'messages'], ['settings', 'settings']].map(([k, l, on, b]) => `<span class="d-bn${on ? ' on' : ''}">${ic(k, lang)}${b ? `<span class="d-badge" data-k="${b}">0</span>` : ''}<span>${D(l)}</span></span>`).join('')}</span>
     <span class="d-modal" data-k="modal"><span class="d-mbox">
       <span class="d-logo">${dlogo}</span><strong class="d-mt">${D('signup')}</strong>
       <span class="d-f"><span class="d-fl">${D('company')}</span><span class="d-fi" data-c="company"><span data-k="type">${D('brand')}</span><i class="d-caret"></i></span></span>
@@ -537,14 +541,9 @@ function sculptVars(lang) {
 // Offer is the US-dollar price for every other country, with no VAT, labelled as the international price.
 function offerNode(lang, p) {
   const monthly = MONTHLY.has(p), url = urlFor(lang, 'pricing');
-  const local = Object.keys(COUNTRIES).map((cc) => {
-    const q = localQuote(p, cc), price = minorStr(q.total);
-    return { '@type': 'Offer', name: pname(lang, p), price, priceCurrency: q.currency, eligibleRegion: { '@type': 'Country', name: cc },
-      priceSpecification: { '@type': 'UnitPriceSpecification', price, priceCurrency: q.currency, valueAddedTaxIncluded: true, ...(monthly ? { unitCode: 'MON' } : {}) }, url };
-  });
   const o = { '@type': 'Offer', name: pname(lang, p), description: t(lang, 'ld.intl'), price: String(PRICES[p]), priceCurrency: 'USD', url };
   if (monthly) o.priceSpecification = { '@type': 'UnitPriceSpecification', price: String(PRICES[p]), priceCurrency: 'USD', unitCode: 'MON' };
-  return [...local, o];
+  return [o];
 }
 function jsonLd(lang, page) {
   const orgId = SITE + '/#organization';
@@ -605,11 +604,13 @@ const CONSENT_JS = (partials.consent.match(/<script>([\s\S]*?)<\/script>/) || []
 if (!CONSENT_JS || CONSENT_JS.includes('{{')) throw new Error('templates/consent.html: one inline <script> without template tags expected');
 // the site allows no 'unsafe-inline' scripts: each inline script is allowed by its sha256 hash (recomputed on every build)
 const sha = (js) => `'sha256-${crypto.createHash('sha256').update(js, 'utf8').digest('base64')}'`;
-const SCRIPT_HASHES = [sha(GA_INLINE), sha(CONSENT_JS)];
+const LANGUAGE_INLINE = "(function(){try{var k='crier.lang',q=new URLSearchParams(location.search).get('lang'),v=/^(en|ar)$/.test(q||'')?q:localStorage.getItem(k);if(!/^(en|ar)$/.test(v||''))v=null;var m=location.pathname.match(/^\\/(?:en|ar|es|fr)(?=\\/|$)/),tail=m?location.pathname.slice(m[0].length):location.pathname;if(!tail)tail='/';if(tail.charAt(0)!=='/')tail='/'+tail;if(/^\\/(?:terms|privacy|refund)\\.html$/.test(tail))tail=tail.slice(0,-5)+'/';if(!v)v=m&&m[0]==='/en'?'en':'ar';localStorage.setItem(k,v);var target=(v==='en'?'/en':'')+tail;if(target!==location.pathname||q){document.documentElement.style.visibility='hidden';var u=new URL(location.href);u.pathname=target;u.searchParams.delete('lang');location.replace(u.pathname+u.search+u.hash);}}catch(e){}})();";
+const LANGUAGE_HEAD = `<script>${LANGUAGE_INLINE}</script>`;
+const SCRIPT_HASHES = [sha(GA_INLINE), sha(LANGUAGE_INLINE), sha(CONSENT_JS)];
 const CSP = "default-src 'self'; script-src 'self' " + SCRIPT_HASHES.join(' ') + " https://static.cloudflareinsights.com https://*.googletagmanager.com; connect-src 'self' https://crm-production-d789.up.railway.app https://cloudflareinsights.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; img-src 'self' data: https://*.google-analytics.com https://*.googletagmanager.com; style-src 'self' 'unsafe-inline'; font-src 'self'; base-uri 'self'; form-action 'self'";
 function head(lang, page, css) {
   const title = t(lang, `meta.t.${page}`), desc = t(lang, `meta.d.${page}`), url = urlFor(lang, page);
-  const alt = LANGS.map(([c]) => `<link rel="alternate" hreflang="${c}" href="${urlFor(c, page)}">`).join('\n') + `\n<link rel="alternate" hreflang="x-default" href="${urlFor('en', page)}">`;
+  const alt = LANGS.map(([c]) => `<link rel="alternate" hreflang="${c}" href="${urlFor(c, page)}">`).join('\n') + `\n<link rel="alternate" hreflang="x-default" href="${urlFor('ar', page)}">`;
   const ogAlt = LANGS.filter(([c]) => c !== lang).map(([, , loc]) => `<meta property="og:locale:alternate" content="${loc}">`).join('\n');
   const loc = LANGS.find(([c]) => c === lang)[2];
   const pl = (f) => `<link rel="preload" href="/fonts/${f}.subset.woff2" as="font" type="font/woff2" crossorigin>`;
@@ -625,6 +626,7 @@ function head(lang, page, css) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 ${NOINDEX || HIDDEN.has(page) ? '<meta name="robots" content="noindex">\n' : ''}<meta http-equiv="Content-Security-Policy" content="${esc(CSP)}">
+${LANGUAGE_HEAD}
 ${GA_HEAD}
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>${esc(title)}</title>
@@ -740,12 +742,13 @@ function write(rel, content) {
 const built = [];
 for (const [lang] of LANGS) {
   for (const page of PAGES) {
-    htmlCc = LEGAL.includes(page) ? null : DEFAULT_CC; // the legal pages keep the US-dollar price list
+    htmlCc = LEGAL.includes(page) || page === 'pricing' ? null : DEFAULT_CC; // the legal pages keep the US-dollar price list
     const ctx = { lang, v: pageVars(lang, page) };
     const body = render(rd(`templates/${page === 'index' ? 'home' : page}.html`), ctx);
-    const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${!LEGAL.includes(page) && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${page === 'index' ? '<script src="/assets/dash.js" defer></script>\n' : ''}${page === 'sculptures' ? '<script src="/assets/sculptures.js" defer></script>\n' : ''}</body>\n</html>\n`;
+    const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${!LEGAL.includes(page) && page !== 'pricing' && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${page === 'index' ? '<script src="/assets/dash.js" defer></script>\n' : ''}${page === 'sculptures' ? '<script src="/assets/sculptures.js" defer></script>\n' : ''}</body>\n</html>\n`;
     const html = `${head(lang, page, purgeCss(cssFor(lang, page), bodyHtml))}\n${trimIndent(bodyHtml)}`;
     write(dirFor(lang, page) + 'index.html', hashUrls(html));
+    if (lang === 'ar') write('ar/' + dirFor(lang, page) + 'index.html', hashUrls(html));
     built.push([lang, page]);
   }
 }
@@ -754,21 +757,22 @@ for (const [lang] of LANGS) {
 write('assets/studio-deck/index.html', rd('templates/studio-deck.html'));
 write('assets/social-preview.html', rd('templates/social-preview.html'));
 
-// old URL stubs: /terms.html etc. (JS picks the language from ?lang= or the saved choice; no-JS goes to English)
+// old legal URL stubs redirect to the Arabic default; saved language is applied before paint
 for (const page of LEGAL) {
   write(`${page}.html`, hashUrls(`<!doctype html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 ${NOINDEX ? '<meta name="robots" content="noindex">\n' : ''}<meta http-equiv="Content-Security-Policy" content="${esc(CSP)}">
 ${GA_HEAD}
+${LANGUAGE_HEAD}
 <title>${BRAND}</title>
-<link rel="canonical" href="${urlFor('en', page)}">
-<noscript><meta http-equiv="refresh" content="0;url=${pathFor('en', page)}"></noscript>
+<link rel="canonical" href="${urlFor('ar', page)}">
+<noscript><meta http-equiv="refresh" content="0;url=${pathFor('ar', page)}"></noscript>
 </head>
 <body data-page="redirect" data-target="${page}">
-<p><a href="${pathFor('en', page)}">${BRAND}</a></p>
+<p><a href="${pathFor('ar', page)}">${BRAND}</a></p>
 <script src="/site.js"></script>
 </body>
 </html>
@@ -780,14 +784,16 @@ ${GA_HEAD}
 // target's; without JS the meta refresh goes to the new page (with the target's #hash). Not in the sitemap.
 function stub(dir, from, lang, to) {
   const [pg, hash = ''] = to.split('#'), href = pathFor(lang, pg) + (hash ? '#' + hash : '');
-  write(dirFor(dir, from) + 'index.html', hashUrls(`<!doctype html>
-<html lang="${lang}"${RTL.has(lang) ? ' dir="rtl"' : ''}>
+  const folder = (dir ? dir + '/' : '') + (from === 'index' ? '' : from + '/');
+  write(folder + 'index.html', hashUrls(`<!doctype html>
+<html lang="${lang}" dir="${RTL.has(lang) ? 'rtl' : 'ltr'}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
 <meta http-equiv="Content-Security-Policy" content="${esc(CSP)}">
 ${GA_HEAD}
+${LANGUAGE_HEAD}
 <title>${BRAND}</title>
 <link rel="canonical" href="${urlFor(lang, pg)}">
 <noscript><meta http-equiv="refresh" content="0;url=${href}"></noscript>
@@ -799,16 +805,16 @@ ${GA_HEAD}
 </html>
 `));
 }
-// renamed pages: /kit/ -> /social/, /physical/ -> /in-store/#custom, /snapshot/ -> /social/, /crier-deck/ -> /brand-deck/ in every language
-for (const [lang] of LANGS) for (const [from, to] of Object.entries(MOVED)) stub(lang, from, lang, to);
-// removed languages: /es/… and /fr/… (every page and the renamed-page stubs) redirect to the same English page
-for (const lang of REMOVED) for (const [from, to] of [...PAGES.map((p) => [p, p]), ...Object.entries(MOVED)]) stub(lang, from, 'en', to);
+// renamed pages: Arabic defaults at root, English under /en/, and legacy /ar/ aliases
+for (const [from, to] of Object.entries(MOVED)) { stub('', from, 'ar', to); stub('en', from, 'en', to); stub('ar', from, 'ar', to); }
+// removed languages: /es/… and /fr/… redirect to the default Arabic page
+for (const lang of REMOVED) for (const [from, to] of [...PAGES.map((p) => [p, p]), ...Object.entries(MOVED)]) stub(lang, from, 'ar', to);
 
 // 404 (one file, two languages; header and footer in English, one block per language)
 {
   htmlCc = null;
-  const ctx = { lang: 'en', v: { ...pageVars('en', '404'), langpick: '', crumbs: '' } };
-  const sections = LANGS.map(([c]) => {
+  const ctx = { lang: 'ar', v: { ...pageVars('ar', '404'), langpick: langpick('ar', 'index'), crumbs: '' } };
+  const sections = [...LANGS].sort(([a], [b]) => a === 'ar' ? -1 : b === 'ar' ? 1 : 0).map(([c]) => {
     const links = [['index', 'crumb.home'], ['social', 'nav.social'], ['in-store', 'nav.instore'], ['pricing', 'nav.pricing']].map(([p, k]) => `<a href="${pathFor(c, p)}">${esc(t(c, k))}</a>`).join(' · ');
     return `<section lang="${c}" dir="${RTL.has(c) ? 'rtl' : 'ltr'}"><h2>${esc(t(c, 'e404.title'))}</h2><p>${esc(t(c, 'e404.p'))} <a href="${pathFor(c, 'index')}">${esc(t(c, 'e404.home'))}</a></p><p>${esc(t(c, 'e404.nav'))} ${links}</p></section>`;
   }).join('\n');
@@ -826,11 +832,12 @@ ${render(partials.footer, ctx)}
 </html>
 `;
   write('404.html', hashUrls(`<!doctype html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 ${NOINDEX ? '<meta name="robots" content="noindex">\n' : ''}<meta http-equiv="Content-Security-Policy" content="${esc(CSP)}">
+${LANGUAGE_HEAD}
 ${GA_HEAD}
 <title>404 | ${BRAND}</title>
 <link rel="icon" href="/favicon.ico" sizes="32x32">
@@ -846,10 +853,12 @@ ${trimIndent(body404)}`));
 // robots.txt, sitemap.xml, webmanifest
 write('robots.txt', `User-agent: *\nAllow: /\nSitemap: ${SITE}/sitemap.xml\n`);
 const sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">'];
-for (const page of PAGES.filter((p) => !HIDDEN.has(p))) for (const [lang] of LANGS) {
-  sm.push('<url>', `<loc>${urlFor(lang, page)}</loc>`);
-  for (const [c] of LANGS) sm.push(`<xhtml:link rel="alternate" hreflang="${c}" href="${urlFor(c, page)}"/>`);
-  sm.push(`<xhtml:link rel="alternate" hreflang="x-default" href="${urlFor('en', page)}"/>`, '</url>');
+for (const page of PAGES.filter((p) => !HIDDEN.has(p))) {
+  for (const lang of ['ar', 'en']) {
+    sm.push('<url>', `<loc>${urlFor(lang, page)}</loc>`);
+    for (const [c] of LANGS) sm.push(`<xhtml:link rel="alternate" hreflang="${c}" href="${urlFor(c, page)}"/>`);
+    sm.push(`<xhtml:link rel="alternate" hreflang="x-default" href="${urlFor('ar', page)}"/>`, '</url>');
+  }
 }
 sm.push('</urlset>', '');
 write('sitemap.xml', sm.join('\n'));
