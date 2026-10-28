@@ -323,89 +323,78 @@ const DASH_EMAIL = 'team@crierstudio.com';
 // icon paths copied from the portal's own set (portal/public/app.js)
 const PI = {
   overview: 'M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z', layers: 'M12 3l9 5-9 5-9-5zM3 13l9 5 9-5', review: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8 12l3 3 5-6',
-  folder: 'M3 6h6l2 2h10v11H3z', card: 'M3 6h18v12H3zM3 10h18M7 15h3', chat: 'M4 5h16v11H9l-5 4z', menu: 'M4 7h16M4 12h16M4 17h16', chev: 'M9 6l6 6-6 6', check: 'M4 12l5 5L20 6',
+  folder: 'M3 6h6l2 2h10v11H3z', calendar: 'M4 5h16v15H4zM8 3v4M16 3v4M4 10h16', card: 'M3 6h18v12H3zM3 10h18M7 15h3', chat: 'M4 5h16v11H9l-5 4z', menu: 'M4 7h16M4 12h16M4 17h16', chev: 'M9 6l6 6-6 6', check: 'M4 12l5 5L20 6',
   settings: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7 7 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z',
   spark: 'M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18', work: 'M12 3v12M7 10l5 5 5-5M4 20h16', comment: 'M4 5h16v11H9l-5 4z',
 };
 const ic = (k, lang) => { const d = k === 'chev' && lang === 'ar' ? 'M15 6l-6 6 6 6' : PI[k]; return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`; };
 const digits = (lang, n) => (lang === 'ar' ? String(n).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]) : String(n)); // Arabic-Indic on /ar/, as the portal does
+
 function dash(lang) {
   const T = (k) => t(lang, 'dash.' + k), D = (k) => esc(T(k)), ar = lang === 'ar';
-  const posts = [1, 2, 3, 4].map((i) => ({ t: T(`p${i}t`), s: T(`p${i}s`), date: T(`p${i}d`) }));
-  const dlogo = partials.logo.replace('role="img" aria-label="Crier Studio"', 'aria-hidden="true"');
-  // The markup is the finished (?static=1) state, so the dashboard reads without JavaScript; dash.js adds .is-live and resets it.
-  const art = (i, on = '') => `<span class="art art-${i + 1}${on}" data-art="${i}"><span class="art-b">${D('artBrand')}</span><span class="art-ring"></span><span class="art-dot"></span><span class="art-t">${esc(posts[i].t)}</span><span class="art-s">${esc(posts[i].s)}</span></span>`;
-  const END = { delivB: 4, awaitB: 2 }; // the finished state's counts: four delivered, two approved, two awaiting
-  const link = (k, label, active, badge) => `<span class="d-link${active ? ' on' : ''}">${ic(k, lang)}<span class="d-nl">${D(label)}</span>${badge ? `<span class="d-badge" data-k="${badge}">${digits(lang, END[badge])}</span>` : ''}</span>`;
-  const pill = (k, cls, label) => `<span class="d-pill ${cls}" data-k="${k}"><i></i><span>${D(label)}</span></span>`;
-  const tile = (k, label, sub, n, dark) => `<span class="d-tile${dark ? ' dark' : ''}"><span class="d-tl">${D(label)}</span><span class="d-tv" data-k="${k}">${digits(lang, n)}</span><span class="d-ts" data-k="${k}Sub">${esc(sub)}</span></span>`;
-  const user = T('user'), u0 = esc(user.charAt(0));
-  const st = [['ready', 'ready'], ['amber', 'waiting'], ['lime', 'approved'], ['amber', 'waiting']];
-  const post = (i) => `<span class="d-slot"><span class="d-post${i === 2 ? ' v2' : ''}" data-p="${i}">
-        <span class="d-media">${art(i)}<span class="d-id" dir="ltr">#0${i + 1}</span><span class="d-ver" dir="ltr">v2</span>${pill('st' + i, st[i][0] + ' d-st', st[i][1])}${i === 2 ? `
-          <span class="d-bubs"><span class="d-bub cl" data-k="b1"><span class="d-bav">${u0}</span><span>${D('note')}</span></span><span class="d-bub st" data-k="b2"><span class="d-bav c">C</span><span>${D('reply')}</span></span></span>
-          <span class="d-cchip" data-k="cchip">${ic('comment', lang)}<b>${digits(lang, 2)}</b></span>` : ''}</span>
-        <span class="d-info"><strong>${esc(posts[i].t)}</strong><small><span>${D('kind')}</span><span class="d-date">${esc(posts[i].date)}</span></small></span>
-      </span></span>`;
-  const line = esc(T('pill').replace('{n}', digits(lang, 2)));
-  const rvTop = `<span class="d-rv-top"><span class="d-rv-ic">${ic('spark', lang)}</span><span class="d-ct"><strong>${D('review')}</strong><small>${D('reviewSub')}</small></span></span><span class="d-rv-line"><span data-k="line">${line}</span>${ic('chev', lang)}</span>`;
-  // the strings the script needs (pill lines, sub lines, status names)
-  const js = Object.fromEntries(['pill', 'pillOne', 'pillNone', 'inTotal', 'awaitSub', 'awaitNone', 'ofDecided', 'waiting', 'approved', 'changesAsked', 'ready', 'brand', 'note'].map((k) => [k, T(k)]));
-  js.titles = posts.map((p) => p.t);
-  return `<div class="dash" id="dash" role="img" aria-label="${D('aria')}">
-  <span class="d-cam" aria-hidden="true"></span><span class="ex-badge" aria-hidden="true">${D('ex')}</span>
-  <span class="d-vp" aria-hidden="true"><span class="d-cv">
-    <span class="d-side">
-      <span class="d-logo">${dlogo}</span>
-      <span class="d-client"><span class="d-mark">${D('mark')}</span><span class="d-ct"><strong>${D('brand')}</strong><small>${D('ws')}</small></span></span>
-      <span class="d-nav">${link('overview', 'overview', 1)}${link('layers', 'deliverables', 0, 'delivB')}${link('review', 'review', 0, 'awaitB')}${link('folder', 'library')}</span>
-      <span class="d-group">${D('group')}</span>
-      <span class="d-nav">${link('card', 'billing')}${link('chat', 'messages')}${link('settings', 'settings')}</span>
-      <span class="d-foot">
-        <span class="d-rv">${rvTop}</span>
-        <span class="d-user"><span class="d-av">${u0}</span><span class="d-ct"><strong>${esc(user)}</strong><small>${D('client')}</small></span></span>
-      </span>
-    </span>
-    <span class="d-mtop"><span class="d-mmenu">${ic('menu')}</span><span class="d-logo">${dlogo}</span><span class="d-pill amber d-mpill" data-k="mpill"><i></i><span data-k="line">${line}</span></span></span>
-    <span class="d-main">
-      <span class="d-head"><span class="d-h1">${D('greet')}</span><span class="d-pill amber d-hpill" data-k="hpill"><i></i><span data-k="line">${line}</span></span><span class="d-acts"><span class="d-btn dark">${D('planMonth')}</span><span class="d-btn sec">${D('askPost')}</span></span></span>
-      <span class="d-mclient"><span class="d-mark">${D('mark')}</span><strong>${D('brand')}</strong></span>
-      <span class="d-card d-stats"><span class="d-ch"><strong>${D('glance')}</strong><span class="d-more">${D('seeAll')}${ic('chev', lang)}</span></span>
-        <span class="d-tiles">${tile('deliv', 'delivered', T('inTotal').replace('{n}', digits(lang, 4)), 4, 1)}${tile('await', 'awaiting', T('awaitSub'), 2)}${tile('appr', 'approved', T('ofDecided').replace('{n}', digits(lang, 2)), 2)}${tile('new', 'newT', T('newSub'), 2)}</span></span>
-      <span class="d-row">
-        <span class="d-card d-week"><span class="d-ch"><strong>${D('week')}</strong><span class="d-count" data-k="weekN">${digits(lang, 4)}</span></span>
-          <span class="d-grid"><span class="d-empty">${D('firstDelivery')}</span>${[0, 1, 2, 3].map(post).join('')}</span></span>
-        <span class="d-panel">
-          <span class="d-layer" data-l="A"><span class="d-card d-att"><span class="d-ch"><strong>${D('attention')}</strong><span class="d-count">${digits(lang, 1)}</span></span><span class="d-subh">${D('todo')}</span>
-            <span class="d-need done" data-k="need"><strong>${D('qT')}</strong><span class="d-btn lime" data-b="q">${D('qBtn')}</span><span class="d-allset"><span class="d-tick">${ic('check', lang)}</span>${D('done')}</span></span></span></span>
-          <span class="d-layer" data-l="B"><span class="d-card d-lime"><strong>${D('newReady')}</strong><span class="d-btn dark">${D('openWork')}</span></span>
-            <span class="d-card d-rvcard">${rvTop}</span></span>
-          <span class="d-layer" data-l="C"><span class="d-card d-rev">
-            <span class="d-rhead"><span class="d-mini">${[0, 1, 2, 3].map((i) => art(i, [' on', '', ' v2', ''][i])).join('')}</span><span class="d-ct"><strong data-k="selT">${esc(posts[0].t)}</strong><small>${D('kind')}</small></span></span>
-            <span class="d-dl"><span class="d-dt">${D('status')}</span>${pill('selPill', 'lime', 'approved')}<span class="d-dt">${D('version')}</span><span class="d-dd" dir="ltr" data-k="selV">v1</span></span>
-            <span class="d-dec"><span class="d-btn lime" data-b="approve">${D('approve')}</span><span class="d-btn sec" data-b="changes">${D('changes')}</span></span>
-            <span class="d-lab">${D('comment')}</span><span class="d-ta"><span data-k="ta"></span><i class="d-caret"></i></span>
-            <span class="d-btn lime d-send" data-b="send">${D('send')}</span></span></span>
-          <span class="d-layer" data-l="D"><span class="d-card d-sheet">
-            <span class="d-sh-head"><strong>${esc(posts[0].t)}</strong><span class="d-chip">${D('ready')}</span></span>
-            <span class="d-sh-art">${art(0)}</span>
-            <span class="d-cap">${D('caption')}</span>
-            <span class="d-sh-btns"><span class="d-btn lime d-copy" data-b="copy"><span class="a">${D('copyCap')}</span><span class="b">${ic('check', lang)}${D('copied')}</span></span><span class="d-btn sec" data-b="dl">${ic('work', lang)}${D('download')}</span><span class="d-btn sec" data-b="mark">${D('markPosted')}</span></span></span></span>
-        </span>
-      </span>
-    </span>
-    <span class="d-bnav">${[['overview', 'overview', 1], ['layers', 'deliverables', 0, 'delivB'], ['review', 'review', 0, 'awaitB'], ['chat', 'messages'], ['settings', 'settings']].map(([k, l, on, b]) => `<span class="d-bn${on ? ' on' : ''}">${ic(k, lang)}${b ? `<span class="d-badge" data-k="${b}">0</span>` : ''}<span>${D(l)}</span></span>`).join('')}</span>
-    <span class="d-modal" data-k="modal"><span class="d-mbox">
-      <span class="d-logo">${dlogo}</span><strong class="d-mt">${D('signup')}</strong>
-      <span class="d-f"><span class="d-fl">${D('company')}</span><span class="d-fi" data-c="company"><span data-k="type">${D('brand')}</span><i class="d-caret"></i></span></span>
-      <span class="d-f"><span class="d-fl">${D('yourName')}</span><span class="d-fi">${esc(user)}</span></span>
-      <span class="d-f"><span class="d-fl">${D('email')}</span><span class="d-fi" dir="ltr">${DASH_EMAIL}</span></span>
-      <span class="d-btn lime d-wide" data-b="create">${D('signup')}</span>
-    </span></span>
-    <span class="d-cursor"><svg viewBox="0 0 24 24"><path d="M5 3l14 8.2-6.1 1.3 3.6 6.9-2.7 1.4-3.6-7L5 18.2z" fill="#0E0F0C" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
-  </span></span>
-  <script type="application/json" id="dash-s">${jsonScript(js)}</script>
-</div>`;
+  const posts = [
+    { file: 'post-oct21.jpg', day: 21, kind: 'typePost' },
+    { file: 'reel-oct22.jpg', day: 22, kind: 'typeReel' },
+    { file: 'reel-oct23.jpg', day: 23, kind: 'typeReel' },
+    { file: 'reel-oct24.jpg', day: 24, kind: 'typeReel' },
+    { file: 'carousel-oct25.jpg', day: 25, kind: 'typeCarousel' },
+    { file: 'reel-oct26.jpg', day: 26, kind: 'typeReel' },
+    { file: 'reel-oct27.jpg', day: 27, kind: 'typeReel' },
+    { file: 'reel-oct28.jpg', day: 28, kind: 'typeReel' },
+  ].map((p) => ({ ...p, label: T(p.kind) }));
+  const date = (day) => ar ? digits(lang, day) + ' ' + T('monthShort') : T('monthShort') + ' ' + digits(lang, day);
+  const image = (file, cls) => '<img class="' + cls + '" src="/assets/sahm-demo/' + file + '" alt="" loading="lazy" decoding="async">';
+  const logo = (cls) => image('sahm-logo.png', cls);
+  const postCard = (p) => '<span class="d-post-card"><span class="d-post-visual">' + image(p.file, 'd-post-img') + '<span class="d-post-kind">' + esc(p.label) + '</span></span><span class="d-post-copy"><strong>' + esc(p.label) + '</strong><small>' + esc(date(p.day)) + '</small></span></span>';
+  const postGrid = (arr, cls) => '<span class="d-post-grid ' + cls + '">' + arr.map(postCard).join('') + '</span>';
+  const calendarCell = (p) => '<span class="d-calendar-cell"><span class="d-calendar-day">' + digits(lang, p.day) + '</span><span class="d-calendar-thumb">' + image(p.file, 'd-calendar-img') + '</span><span class="d-calendar-type">' + esc(p.label) + '</span></span>';
+  const nav = (icon, key, screen, active) => '<span class="d-link' + (active ? ' on' : '') + '" data-nav="' + screen + '">' + ic(icon, lang) + '<span class="d-nl">' + D(key) + '</span></span>';
+  const tab = (key, screen, active) => '<span class="d-tab' + (active ? ' on' : '') + '" data-nav="' + screen + '">' + D(key) + '</span>';
+  const view = (screen, title, body, active) => '<span class="d-view' + (active ? ' is-on' : '') + '" data-screen="' + screen + '"><span class="d-view-head"><strong>' + D(title) + '</strong></span>' + body + '</span>';
+  const row = (key, label) => '<span class="d-brief-row" data-brief="' + key + '"><span class="d-brief-label">' + D('brief' + key.charAt(0).toUpperCase() + key.slice(1)) + '</span><strong>' + D(label) + '</strong><span class="d-brief-check">' + ic('check', lang) + '</span></span>';
+  const overviewBody = '<span class="d-summary-grid">' +
+    '<span class="d-summary-tile dark"><small>' + D('delivered') + '</small><strong data-k="delivered">' + digits(lang, 9) + '</strong></span>' +
+    '<span class="d-summary-tile"><small>' + D('awaiting') + '</small><strong data-k="await">' + digits(lang, 0) + '</strong></span>' +
+    '<span class="d-summary-tile"><small>' + D('approved') + '</small><strong data-k="approved">' + digits(lang, 0) + '</strong></span>' +
+    '<span class="d-summary-tile"><small>' + D('channels') + '</small><strong>' + digits(lang, 2) + '</strong></span>' +
+    '</span>' + postGrid(posts.slice(0, 4), 'd-overview-grid');
+  const briefBody = '<span class="d-brief-list">' + row('industry', 'industryValue') + row('audience', 'audienceValue') + row('channels', 'channelsValue') + row('language', 'languageValue') + '</span><span class="d-brief-footer"><span class="d-brief-submitted" data-k="briefSubmitted">' + D('briefSubmitted') + '</span><span class="d-btn lime" data-b="submit-brief">' + D('submitBrief') + '</span></span>';
+  const deliverablesBody = '<span class="d-view-note"><b data-k="delivered">' + digits(lang, 9) + '</b> ' + D('postsDelivered') + '</span>' + postGrid(posts, 'd-many-grid');
+  const calendarBody = '<span class="d-calendar-title">' + D('calendarMonth') + '</span><span class="d-calendar-grid">' + posts.map(calendarCell).join('') + '</span>';
+  const libraryBody = '<span class="d-view-note">' + D('libraryNote') + '</span>' + postGrid(posts, 'd-many-grid d-library-grid');
+  const reviewPost = posts[4];
+  const reviewBody = '<span class="d-review-card"><span class="d-review-image">' + image(reviewPost.file, 'd-review-img') + '</span><span class="d-review-copy"><small>' + esc(reviewPost.label + ' · ' + date(reviewPost.day)) + '</small><strong>' + D('reviewPostTitle') + '</strong><span class="d-review-note">' + D('reviewNote') + '</span><span class="d-review-status" data-k="reviewStatus">' + D('pendingStatus') + '</span><span class="d-review-actions"><span class="d-btn sec" data-b="changes">' + D('changes') + '</span><span class="d-btn lime" data-b="approve">' + D('approve') + '</span></span></span></span>';
+  const readyBody = '<span class="d-ready-card"><span class="d-ready-image">' + image(posts[0].file, 'd-ready-img') + '</span><span class="d-ready-copy"><span class="d-chip">' + D('ready') + '</span><strong>' + D('readyTitle') + '</strong><small>' + D('caption') + '</small><span class="d-ready-actions"><span class="d-btn lime" data-b="copy"><span data-k="copyLabel">' + D('copyCap') + '</span></span><span class="d-btn sec" data-b="dl">' + D('download') + '</span><span class="d-btn sec" data-b="mark">' + D('markPosted') + '</span></span></span></span>';
+  const briefView = view('brief', 'briefTitle', briefBody, false);
+  const overviewView = view('overview', 'glance', overviewBody, false);
+  const deliverablesView = view('deliverables', 'deliverables', deliverablesBody, false);
+  const calendarView = view('calendar', 'calendar', calendarBody, false);
+  const libraryView = view('library', 'library', libraryBody, false);
+  const reviewView = view('review', 'reviewTitle', reviewBody, false);
+  const readyView = view('ready', 'readyTitle', readyBody, true);
+  const js = Object.fromEntries(['brand', 'site', 'briefSubmitted', 'pendingStatus', 'approvedStatus', 'approve', 'copied', 'copyCap'].map((k) => [k, T(k)]));
+  js.posts = 9;
+  const navLinks = nav('overview', 'overview', 'overview', true) + nav('layers', 'deliverables', 'deliverables', false) + nav('card', 'calendar', 'calendar', false) + nav('folder', 'library', 'library', false) + nav('review', 'review', 'review', false);
+  const bottomLinks = [['overview', 'overview'], ['layers', 'deliverables'], ['card', 'calendar'], ['folder', 'library'], ['review', 'review']].map(([icon, key]) => '<span class="d-bn" data-nav="' + key + '">' + ic(icon, lang) + '<span>' + D(key) + '</span></span>').join('');
+  return '<div class="dash" id="dash" role="img" aria-label="' + D('aria') + '">' +
+    '<span class="d-cam" aria-hidden="true"></span><span class="ex-badge" aria-hidden="true">' + D('ex') + '</span>' +
+    '<span class="d-vp" aria-hidden="true"><span class="d-cv">' +
+      '<span class="d-side"><span class="d-logo">' + logo('d-brand-logo') + '</span>' +
+        '<span class="d-client"><span class="d-mark">' + logo('d-brand-avatar') + '</span><span class="d-ct"><strong>' + D('brand') + '</strong><small>' + D('ws') + '</small></span></span>' +
+        '<span class="d-nav">' + navLinks + '</span><span class="d-group">' + D('group') + '</span>' +
+        '<span class="d-foot"><span class="d-user"><span class="d-av">' + logo('d-user-avatar') + '</span><span class="d-ct"><strong>' + D('user') + '</strong><small>' + D('client') + '</small></span></span></span></span>' +
+      '<span class="d-mtop"><span class="d-mmenu">' + ic('menu', lang) + '</span><span class="d-mbrand">' + logo('d-brand-avatar') + '<strong>' + D('brand') + '</strong></span><span class="d-pill lime d-mpill">' + D('ready') + '</span></span>' +
+      '<span class="d-main"><span class="d-head"><span class="d-h1">' + D('greet') + '</span><span class="d-pill lime d-hpill">' + D('ready') + '</span></span>' +
+        '<span class="d-tabs">' + tab('overview', 'overview', true) + tab('deliverables', 'deliverables', false) + tab('calendar', 'calendar', false) + tab('library', 'library', false) + '</span>' +
+        '<span class="d-stage">' + briefView + overviewView + deliverablesView + calendarView + libraryView + reviewView + readyView + '</span>' +
+      '</span><span class="d-bnav">' + bottomLinks + '</span>' +
+      '<span class="d-time-later" data-k="timeLater">' + D('timeLater') + '</span>' +
+      '<span class="d-modal" data-k="modal"><span class="d-mbox"><span class="d-mbrand modal-brand">' + logo('d-brand-avatar') + '<strong>' + D('brand') + '</strong></span><strong class="d-mt">' + D('signup') + '</strong>' +
+        '<span class="d-f"><span class="d-fl">' + D('company') + '</span><span class="d-fi" data-c="company"><span data-k="type">' + D('brand') + '</span><i class="d-caret"></i></span></span>' +
+        '<span class="d-f"><span class="d-fl">' + D('website') + '</span><span class="d-fi" data-c="site" dir="ltr"><span data-k="typedSite">' + D('site') + '</span><i class="d-caret"></i></span></span>' +
+        '<span class="d-btn lime d-wide" data-b="create">' + D('signup') + '</span></span></span>' +
+      '<span class="d-cursor"><svg viewBox="0 0 24 24"><path d="M5 3l14 8.2-6.1 1.3 3.6 6.9-2.7 1.4-3.6-7L5 18.2z" fill="#0E0F0C" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></span>' +
+    '</span></span><script type="application/json" id="dash-s">' + jsonScript(js) + '</script></div>';
 }
 function walkthrough(lang) {
   const n = Array.from({ length: WT_STEPS }, (_, i) => i + 1), two = (i) => String(i).padStart(2, '0');
