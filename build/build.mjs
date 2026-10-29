@@ -31,16 +31,17 @@ const RTL = new Set(['ar']);
 // Two product lines (2026-10-18): Social (/social/: The Social Kit + the monthly plans) and In-store (/in-store/: The Store
 // Kit waitlist + Custom pieces, whose quotes are asked in the client portal after a free sign-up).
 // Sculptures (2026-10-18): /sculptures/, the fiberglass catalog (data/sculptures.json) and custom pieces, quoted in the portal.
+// /fiberglass/ is a standalone Concept A catalog page maintained in place and intentionally excluded from generated pages.
 const PAGES = ['index', 'pricing', 'brand-deck', 'social', 'in-store', 'sculptures', 'samples', 'faq', 'about', 'terms', 'privacy', 'refund'];
 // renamed pages: the old URLs stay as redirect stubs in every language (full query kept; the visitor's #hash wins over the
 // target's), not in the sitemap. A target may carry a #hash: /physical/ -> /in-store/#custom.
 const MOVED = { kit: 'social', physical: 'in-store#custom', snapshot: 'social', 'crier-deck': 'brand-deck' };
 const WIDE = new Set(['index', 'pricing', 'brand-deck', 'social', 'in-store', 'sculptures', 'samples', 'about']); // wide layout; the rest use the narrow reading layout
 const LEGAL = ['terms', 'privacy', 'refund'];
-// Home v2 (2026-10-18): the header shows Social · In-store · Sculptures · Pricing · Client portal; Samples and FAQ moved to the footer only
-// (Sculptures only while SHOW_SCULPTURES is true)
+// Home v2 (2026-10-18): the header shows Social · Sculptures · Pricing · Client portal; Samples and FAQ moved to the footer only
+// (In-store remains on the page and in the footer; Sculptures appears only while SHOW_SCULPTURES is true)
 const SC_NAV = SHOW_SCULPTURES ? [['sculptures', 'nav.sculptures']] : [];
-const NAV = [['social', 'nav.social'], ['in-store', 'nav.instore'], ...SC_NAV, ['pricing', 'nav.pricing'], [PORTAL, 'nav.portal']];
+const NAV = [['social', 'nav.social'], ...SC_NAV, ['pricing', 'nav.pricing'], [PORTAL, 'nav.portal']];
 // the footer keeps every destination: the header nav plus Samples, FAQ, About and Brand Deck
 const NAV_FOOT = [['social', 'nav.social'], ['in-store', 'nav.instore'], ...SC_NAV, ['samples', 'nav.samples'], ['pricing', 'nav.pricing'], ['faq', 'nav.faq'], ['about', 'nav.about'], ['brand-deck', 'nav.deck'], [PORTAL, 'nav.portal']];
 // pages built but kept out of search and the sitemap
@@ -217,13 +218,10 @@ function langpick(lang, page) {
   }).join('');
   return '<div class="langpick" role="group" dir="ltr" aria-label="' + esc(t(lang, 'lang.label')) + '">' + links + '</div>';
 }
-// header nav only: a decorative "Coming soon" chip beside In-store; screen readers hear " (coming soon)" from the .sr span.
-// The label sits in its own span so the active underline is drawn under the label only, never through the chip.
 function navLinks(lang, page, mark, list = NAV) {
   return list.map(([target, key]) => {
-    const ext = target.startsWith('http'), soon = list === NAV && target === 'in-store';
-    const label = soon ? `<span class="nav-lbl">${esc(t(lang, key))}</span><span class="sr"> (${esc(t(lang, 'nav.soon'))})</span><span class="nav-soon" aria-hidden="true">${esc(t(lang, 'nav.soon'))}</span>` : esc(t(lang, key));
-    return `<a href="${ext ? target : pathFor(lang, target)}"${mark && target === page ? ' aria-current="page"' : ''}${soon ? ' class="has-soon"' : ''}>${label}</a>`;
+    const ext = target.startsWith('http');
+    return `<a href="${ext ? target : pathFor(lang, target)}"${mark && target === page ? ' aria-current="page"' : ''}>${esc(t(lang, key))}</a>`;
   }).join('');
 }
 function crumbs(lang, page) {

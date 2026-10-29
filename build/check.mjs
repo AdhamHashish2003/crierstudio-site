@@ -21,6 +21,9 @@ const d = Object.fromEntries(LANGS.map((l) => [l, JSON.parse(rd(`i18n/${l}.json`
 // portal/scripts/publish-pricing.cjs from portal/lib/pricing.json). The texts carry placeholders, never a price.
 const PRICING = JSON.parse(rd('data/pricing.json'));
 ok(/^portal\/lib\/pricing\.json sha256 [0-9a-f]{64}$/.test(PRICING.generated_from || ''), 'data/pricing.json was not written by publish-pricing.cjs');
+for (const p of PRICING.packages.filter((p) => !p.coming_soon)) {
+  ok(p.list_price === 30 && p.price === 15 && p.price === p.list_price / 2, `$30 list / 50% off = $15 (${p.id})`);
+}
 const PRICE_NUMS = [...new Set(PRICING.packages.flatMap((p) => [p.price, p.extra_platform_price].filter(Boolean)))];
 const PRICE_RE = new RegExp('\\$\\s?(' + PRICE_NUMS.join('|') + ')(?!\\d)|(?<![\\d.,])(' + PRICE_NUMS.join('|') + ')\\s?\\$');
 for (const l of LANGS) for (const [k, v] of Object.entries(d[l])) ok(!PRICE_RE.test(v), `a price is written into i18n ${l}:${k} (use {price:<id>})`);
@@ -41,19 +44,17 @@ for (const l of LANGS) for (const p of PAGES) {
   ok((h.match(/<link rel="alternate" hreflang="/g) || []).length === LANGS.length + 1, `hreflang ${file}`); // each language + x-default
   ok(/<title>[^<]{8,}<\/title>/.test(h) && /<meta name="description" content="[^"]{40,}">/.test(h), `title/description ${file}`);
   const headerNav = (h.match(/<nav class="main-nav"[\s\S]*?<\/nav>/) || [''])[0];
-  // Home v2 (2026-10-18): the header is Social · In-store · Sculptures · Pricing · Client portal; Samples and FAQ are in the footer only
-  // (2026-10-19: Sculptures only while SHOW_SCULPTURES is true in build/build.mjs; hidden, no page links to it)
-  const HEAD_NAV = ['social/', 'in-store/', ...SC_NAV, 'pricing/'];
+  // The header is Social · Sculptures · Pricing · Client portal; In-store stays on the page and in the footer.
+  // (Sculptures only while SHOW_SCULPTURES is true in build/build.mjs; hidden, no page links to it)
+  const HEAD_NAV = ['social/', ...SC_NAV, 'pricing/'];
   for (const nav of HEAD_NAV) ok(headerNav.includes(`href="/${PREFIX(l) + nav}"`), `nav link ${nav} in ${file}`);
+  ok(!headerNav.includes(`href="/${PREFIX(l)}in-store/"`), `no In-store header tab in ${file}`);
   { const order = HEAD_NAV.map((n) => headerNav.indexOf(`href="/${PREFIX(l) + n}"`)); ok(order.every((x, i) => i === 0 || x > order[i - 1]) && order[order.length - 1] < headerNav.indexOf('href="https://portal.crierstudio.com/"'), `header nav order ${HEAD_NAV.join(', ')}, Client portal in ${file}`); }
   ok((headerNav.match(/aria-current="page"/g) || []).length === (HEAD_NAV.includes(p) ? 1 : 0) && (p !== 'sculptures/' || !SHOW_SC || headerNav.includes(`href="/${PREFIX(l)}sculptures/" aria-current="page"`)), `header nav active state in ${file}`);
   if (!SHOW_SC && p !== 'sculptures/') ok(!/href="\/(?:ar\/)?sculptures\//.test(h), `link to the hidden Sculptures page in ${file}`);
   ok(/<meta name="robots" content="noindex">/.test(h) || !(p === 'sculptures/' && !SHOW_SC), `hidden Sculptures page without noindex: ${file}`);
   for (const nav of ['samples/', 'faq/', 'about/']) ok(!headerNav.includes(`href="/${PREFIX(l) + nav}"`), `no header nav link ${nav} in ${file}`);
   ok(headerNav.includes('href="https://portal.crierstudio.com/"'), `portal link ${file}`);
-  // the In-store link carries a decorative "Coming soon" chip (aria-hidden) and a visually hidden " (coming soon)"; the footer does not
-  { const soon = l === 'ar' ? 'قريب' : 'Coming soon', a = (headerNav.match(/<a [^>]*href=\"\/(?:en\/)?in-store\/\"[^>]*>[\s\S]*?<\/a>/) || [''])[0];
-    ok(a.includes(`<span class="sr"> (${soon})</span><span class="nav-soon" aria-hidden="true">${soon}</span>`) && (headerNav.match(/class="nav-soon"/g) || []).length === 1, `In-store "Coming soon" chip in the header nav of ${file}`); }
   // the footer keeps every destination (About and Brand Deck moved there from the header)
   const footNav = (h.match(/<footer>[\s\S]*?<\/footer>/) || [''])[0];
   for (const nav of ['social/', 'in-store/', ...SC_NAV, 'samples/', 'pricing/', 'faq/', 'about/', 'brand-deck/']) ok(footNav.includes(`href="/${PREFIX(l) + nav}"`), `footer link ${nav} in ${file}`);
@@ -72,6 +73,7 @@ for (const l of LANGS) for (const p of PAGES) {
   // and local prices in data-* for site.js
   if (p === 'pricing/') for (const pk of PRICING.packages) {
     ok(h.includes(`data-usd="${pk.price}" data-sar="${pk.prices.SAR}"`), `price ${pk.price} USD / ${pk.prices.SAR} SAR (${pk.id}, data/pricing.json) on ${file}`);
+    if (!pk.coming_soon) ok(h.includes(`class="price-list amt" dir="ltr" data-usd="${pk.list_price}"`) && h.includes(`class="price amt" dir="ltr" data-usd="${pk.price}"`), `list and sale price (${pk.list_price} -> ${pk.price} USD) on ${file}`);
     if (pk.extra_platform_price) ok(h.includes(`data-extra="${pk.extra_platform_price}"`), `extra platform ${pk.extra_platform_price} USD (${pk.id}) on ${file}`);
   }
   if (p === 'pricing/') ok((h.match(/data-product="/g) || []).length === 3 && h.includes('disabled data-unavailable="deck"'), `3 buy buttons and unavailable Brand Deck on ${file}`);
@@ -104,10 +106,8 @@ for (const l of LANGS) for (const p of PAGES) {
     ok(h.includes(`id="quote-login" href="https://portal.crierstudio.com/#/login?intent=quote&amp;lang=${l}"`), `quote log-in link -> portal sign-in (lang=${l}) on ${file}`);
     ok((h.match(/id="lead-msgs"/g) || []).length === 1, `waitlist messages on ${file}`);
     ok(!/mailto:/.test(h.replace(/<noscript>[\s\S]*?<\/noscript>/g, '').replace(/<footer>[\s\S]*?<\/footer>/, '')), `no mailto outside noscript/footer on ${file}`);
-    // In-store v3, Direction A (Adham, 2026-10-18): twice, the Store Kit status pill and the COMING SOON banner
-    // (not counting the header nav's In-store "Coming soon" chip, checked on every page above)
-    const visNav = headerNav.replace(/<[^>]+>/g, ' ');
-    ok((vis.match(/coming soon|قريب/gi) || []).length - (visNav.match(/coming soon|قريب/gi) || []).length === 2,`"coming soon" exactly twice (status pill + banner) on ${file}`);
+    // In-store v3, Direction A (Adham, 2026-10-18): twice, the Store Kit status pill and the COMING SOON banner.
+    ok((vis.match(/coming soon|قريب/gi) || []).length === 2,`"coming soon" exactly twice (status pill + banner) on ${file}`);
     ok(!/<h1[^>]*>[^<]*(coming soon|قريبًا)/i.test(h), `no "coming soon" in the H1 of ${file}`);
     // The Store Kit is a concept (Adham 2026-10-18): no [bracket] placeholders (bundle quantities) and no launch price,
     // launch date or delivery promise; Custom pieces promise no quote, price or reply time
@@ -158,11 +158,20 @@ for (const l of LANGS) for (const p of PAGES) {
 {
   const h = rd('404.html'), vis = h.replace(/<(style|script)\b[\s\S]*?<\/\1>/g, '').replace(/<[^>]+>/g, ' ');
   ok(!/snapshot|سنابشوت|سناب شوت/i.test(vis), '"snapshot" wording in 404.html');
+  const headerNav = (h.match(/<nav class="main-nav"[\s\S]*?<\/nav>/) || [''])[0];
+  ok(!headerNav.includes('href="/in-store/"'), 'no In-store header tab in 404.html');
 }
 const sm = rd('sitemap.xml');
 ok((sm.match(/<url>/g) || []).length === urls.length, 'sitemap url count');
 for (const u of urls) ok(sm.includes(`<loc>${u}</loc>`), 'sitemap missing ' + u);
 for (const u of hiddenUrls) ok(!sm.includes(u), 'hidden page in sitemap ' + u);
+ok(!sm.includes('<loc>https://crierstudio.com/fiberglass/</loc>'), 'standalone Fiberglass page omitted from sitemap');
+{
+  const h = rd('fiberglass/index.html');
+  ok(h.includes('<meta name="robots" content="noindex,nofollow">'), 'standalone Fiberglass page remains noindex,nofollow');
+  ok(!/(?:Egypt|manufacturer|factory|\bAI\b|Cortex|\bUMA\b|\$\s?\d)/i.test(h), 'standalone Fiberglass page has no prohibited content or prices');
+  ok((h.match(/Download 4K/g) || []).length === 6, 'standalone Fiberglass page keeps all six 4K catalog links');
+}
 ok(rd('brand-deck/index.html').includes('"@type":"Service"') && !rd('brand-deck/index.html').includes('"@type":"Offer"'), 'Brand Deck Service is informational, without an active offer');
 ok(rd('social/index.html').includes('"@type":"Service"') && !rd('social/index.html').includes('"offers"'), 'Social Service JSON-LD is informational, without offers');
 ok(rd('in-store/index.html').includes('"@type":"Service"') && !rd('in-store/index.html').includes('"offers"'), 'In-store Services are informational, without offers');
@@ -209,6 +218,9 @@ ok(rd('index.html').includes('"alternateName":"Crier"') && rd('index.html').incl
   ok(files.length === urls.length + hiddenUrls.length + 1 + 3 + PAGES.length + LANGS.length * Object.keys(MOVED).length + Object.keys(MOVED).length + REMOVED.length * (PAGES.length + Object.keys(MOVED).length), `GA: expected every built HTML file, found ${files.length}`);
   for (const f of files) {
     const h = rd(f), headEnd = h.indexOf('</head>');
+    const nav = (h.match(/<nav class="main-nav"[\s\S]*?<\/nav>/) || [''])[0];
+    ok(!nav.includes('href="/in-store/"') && !nav.includes('href="/en/in-store/"'), `no In-store tab in the main header of ${f}`);
+    ok(!/href="\/(?:en\/|ar\/)?fiberglass\//.test(h), `no page links to the standalone Fiberglass page in ${f}`);
     // delayed load (2026-10-11): no blocking/parsed gtag.js <script src> anywhere; the inline head script injects it on the first
     // interaction or 6 s after window load, or at once on a consent-bar / Cookie settings click
     ok(!/<script[^>]*\ssrc="[^"]*googletagmanager\.com/.test(h), `GA: no gtag.js <script src> in the HTML of ${f} (it is injected after load)`);
