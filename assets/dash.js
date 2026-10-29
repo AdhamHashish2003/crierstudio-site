@@ -8,7 +8,7 @@
   var S = JSON.parse(data.textContent);
   var ar = document.documentElement.lang === 'ar';
   var nf = new Intl.NumberFormat(ar ? 'ar-EG' : 'en');
-  var RATE = 1, CYCLE = 45, STEP_AT = [0, 8, 12, 28, 37], STATIC_T = 39;
+  var RATE = 2, CYCLE = 45, STEP_AT = [0, 8, 12, 28, 37], STATIC_T = 39;
   var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var isStatic = q.get('static') === '1' || reduced;
   var tq = parseFloat(q.get('t'));
@@ -182,7 +182,7 @@
   function render() { paint(t); }
   var raf = 0, last = null, inView = true, visible = !document.hidden;
   function frame(now) {
-    if (last !== null) t = (t + Math.min(.1, (now - last) / 1000) * RATE) % CYCLE;
+    if (last !== null) t = (t + Math.min(.1, (now - last) / 1000) * RATE * (t >= 12.2 && t < 16.2 ? 2 : 1)) % CYCLE;
     last = now;
     render();
     raf = requestAnimationFrame(frame);
