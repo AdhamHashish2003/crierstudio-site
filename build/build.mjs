@@ -316,7 +316,7 @@ const FAQ_HOME = [19, 20, 21, 22, 23, 24, 25, 26, 1, 7, 2, 4, 5, 17, 9, 18];
 const FAQ_HOME_SWAP = { 'faq.1a2': 'home.faq.1a2' };
 
 // ---- home "See what working with Crier looks like": the client portal walkthrough (approved mockup v2, 2026-10-18) ----
-// An HTML/CSS recreation of the portal Overview for an example client, driven by assets/dash.js (14.4 s loop). Portal labels
+// An HTML/CSS recreation of the client portal, driven by assets/dash.js (45 s story loop). Portal labels
 // are the portal's own (dash.* keys); posts, names and the caption are example content. Steps: wt.<n>l / t / x / screen.
 const WT_STEPS = 5;
 const DASH_EMAIL = 'team@crierstudio.com';
@@ -352,28 +352,37 @@ function dash(lang) {
   const tab = (key, screen, active) => '<span class="d-tab' + (active ? ' on' : '') + '" data-nav="' + screen + '">' + D(key) + '</span>';
   const view = (screen, title, body, active) => '<span class="d-view' + (active ? ' is-on' : '') + '" data-screen="' + screen + '"><span class="d-view-head"><strong>' + D(title) + '</strong></span>' + body + '</span>';
   const row = (key, label) => '<span class="d-brief-row" data-brief="' + key + '"><span class="d-brief-label">' + D('brief' + key.charAt(0).toUpperCase() + key.slice(1)) + '</span><strong>' + D(label) + '</strong><span class="d-brief-check">' + ic('check', lang) + '</span></span>';
-  const overviewBody = '<span class="d-summary-grid">' +
-    '<span class="d-summary-tile dark"><small>' + D('delivered') + '</small><strong data-k="delivered">' + digits(lang, 9) + '</strong></span>' +
-    '<span class="d-summary-tile"><small>' + D('awaiting') + '</small><strong data-k="await">' + digits(lang, 0) + '</strong></span>' +
-    '<span class="d-summary-tile"><small>' + D('approved') + '</small><strong data-k="approved">' + digits(lang, 0) + '</strong></span>' +
-    '<span class="d-summary-tile"><small>' + D('channels') + '</small><strong>' + digits(lang, 2) + '</strong></span>' +
-    '</span>' + postGrid(posts.slice(0, 4), 'd-overview-grid');
+  const summary = (delivered, awaiting, approved, fourth, fourthCount) => '<span class="d-summary-grid">' +
+    '<span class="d-summary-tile dark"><small>' + D('delivered') + '</small><strong data-k="delivered">' + digits(lang, delivered) + '</strong></span>' +
+    '<span class="d-summary-tile"><small>' + D('awaiting') + '</small><strong data-k="await">' + digits(lang, awaiting) + '</strong></span>' +
+    '<span class="d-summary-tile"><small>' + D('approved') + '</small><strong data-k="approved">' + digits(lang, approved) + '</strong></span>' +
+    '<span class="d-summary-tile"><small>' + D(fourth) + '</small><strong data-k="' + (fourth === 'channels' ? 'channels' : 'readyCount') + '">' + digits(lang, fourthCount) + '</strong></span>' +
+    '</span>';
+  const emptyBody = summary(0, 0, 0, 'ready', 0) + '<span class="d-empty-state"><strong>' + D('emptyTitle') + '</strong><span class="d-empty-prompt"><span class="d-empty-spark">' + ic('spark', lang) + '</span><span><b>' + D('tellBusiness') + '</b><small>' + D('emptyHint') + '</small></span><span class="d-btn lime" data-b="answer">' + D('answerQuestions') + '</span></span></span>';
+  const overviewBody = summary(8, 8, 0, 'channels', 2) + postGrid(posts.slice(0, 4), 'd-overview-grid');
   const briefBody = '<span class="d-brief-list">' + row('industry', 'industryValue') + row('audience', 'audienceValue') + row('channels', 'channelsValue') + row('language', 'languageValue') + '</span><span class="d-brief-footer"><span class="d-brief-submitted" data-k="briefSubmitted">' + D('briefSubmitted') + '</span><span class="d-btn lime" data-b="submit-brief">' + D('submitBrief') + '</span></span>';
-  const deliverablesBody = '<span class="d-view-note"><b data-k="delivered">' + digits(lang, 9) + '</b> ' + D('postsDelivered') + '</span>' + postGrid(posts, 'd-many-grid');
+  const deliverablesBody = '<span class="d-view-note"><b data-k="delivered">' + digits(lang, 8) + '</b> ' + D('postsDelivered') + '</span>' + postGrid(posts, 'd-many-grid');
   const calendarBody = '<span class="d-calendar-title">' + D('calendarMonth') + '</span><span class="d-calendar-grid">' + posts.map(calendarCell).join('') + '</span>';
   const libraryBody = '<span class="d-view-note">' + D('libraryNote') + '</span>' + postGrid(posts, 'd-many-grid d-library-grid');
+  const waitingBody = '<span class="d-wait-card"><span class="d-clock" aria-hidden="true"><i class="d-clock-hand d-hour"></i><i class="d-clock-hand d-minute"></i><b></b></span><span class="d-wait-copy"><small>' + D('waitSub') + '</small><span class="d-clock-label">' + D('clockLabel') + '</span><span class="d-clock-jump"><span>' + D('now') + '</span><i aria-hidden="true">→</i><b>' + D('timeLater') + '</b></span></span></span>';
   const reviewPost = posts[4];
-  const reviewBody = '<span class="d-review-card"><span class="d-review-image">' + image(reviewPost.file, 'd-review-img') + '</span><span class="d-review-copy"><small>' + esc(reviewPost.label + ' · ' + date(reviewPost.day)) + '</small><strong>' + D('reviewPostTitle') + '</strong><span class="d-review-note">' + D('reviewNote') + '</span><span class="d-review-status" data-k="reviewStatus">' + D('pendingStatus') + '</span><span class="d-review-actions"><span class="d-btn sec" data-b="changes">' + D('changes') + '</span><span class="d-btn lime" data-b="approve">' + D('approve') + '</span></span></span></span>';
-  const readyBody = '<span class="d-ready-card"><span class="d-ready-image">' + image(posts[0].file, 'd-ready-img') + '</span><span class="d-ready-copy"><span class="d-chip">' + D('ready') + '</span><strong>' + D('readyTitle') + '</strong><small>' + D('caption') + '</small><span class="d-ready-actions"><span class="d-btn lime" data-b="copy"><span data-k="copyLabel">' + D('copyCap') + '</span></span><span class="d-btn sec" data-b="dl">' + D('download') + '</span><span class="d-btn sec" data-b="mark">' + D('markPosted') + '</span></span></span></span>';
+  const reviewBody = '<span class="d-review-card"><span class="d-review-image">' + image(reviewPost.file, 'd-review-img') + '</span><span class="d-review-copy"><small>' + esc(reviewPost.label + ' · ' + date(reviewPost.day)) + '</small><strong>' + D('reviewPostTitle') + '</strong><span class="d-review-note">' + D('reviewNote') + '</span><span class="d-review-status" data-k="reviewStatus">' + D('pendingStatus') + '</span><span class="d-review-actions"><span class="d-btn sec" data-b="changes">' + D('changes') + '</span><span class="d-btn lime" data-b="approve">' + D('approve') + '</span></span><span class="d-change-box"><span class="d-change-text"><span data-k="changeTyped"></span><i class="d-caret"></i></span><span class="d-btn sec d-send" data-b="sendChange">' + D('sendRequest') + '</span></span><span class="d-change-sent" data-k="changeSent">' + D('changeSent') + '</span></span></span>';
+  const readyBody = '<span class="d-ready-card"><span class="d-ready-image">' + image(reviewPost.file, 'd-ready-img') + '</span><span class="d-ready-copy"><span class="d-ready-chips"><span class="d-chip">' + D('approvedStatus') + '</span><span class="d-chip">' + D('ready') + '</span></span><strong>' + D('readyTitle') + '</strong><small>' + D('caption') + '</small><span class="d-ready-actions"><span class="d-btn lime" data-b="copy"><span data-k="copyLabel">' + D('copyCap') + '</span></span><span class="d-btn sec" data-b="dl">' + D('download') + '</span><span class="d-btn sec" data-b="mark">' + D('markPosted') + '</span></span></span></span>';
+  const instagramBody = '<span class="d-instagram-card"><span class="d-ig-head"><span class="d-ig-avatar">' + logo('d-ig-logo') + '</span><strong>' + D('instagramHandle') + '</strong><span class="d-ig-network">' + D('instagram') + '</span></span><span class="d-ig-image">' + image(reviewPost.file, 'd-ig-post') + '<span class="d-ig-posted">' + D('posted') + '</span></span><span class="d-ig-footer"><span class="d-ig-icons" aria-hidden="true">♡　○　↗</span><small>' + D('caption') + '</small></span></span>';
   const briefView = view('brief', 'briefTitle', briefBody, false);
+  const emptyView = view('empty', 'glance', emptyBody, false);
   const overviewView = view('overview', 'glance', overviewBody, false);
+  const waitingView = view('waiting', 'waitTitle', waitingBody, false);
   const deliverablesView = view('deliverables', 'deliverables', deliverablesBody, false);
   const calendarView = view('calendar', 'calendar', calendarBody, false);
   const libraryView = view('library', 'library', libraryBody, false);
   const reviewView = view('review', 'reviewTitle', reviewBody, false);
   const readyView = view('ready', 'readyTitle', readyBody, true);
-  const js = Object.fromEntries(['brand', 'site', 'briefSubmitted', 'pendingStatus', 'approvedStatus', 'approve', 'copied', 'copyCap'].map((k) => [k, T(k)]));
-  js.posts = 9;
+  const instagramView = view('instagram', 'instagram', instagramBody, false);
+  const js = Object.fromEntries(['brand', 'site', 'briefSubmitted', 'pendingStatus', 'approvedStatus', 'approve', 'copied', 'copyCap', 'changeSent'].map((k) => [k, T(k)]));
+  js.changeText = T('changeText');
+  js.changeStatus = T('changeStatus');
+  js.posts = 8;
   const navLinks = nav('overview', 'overview', 'overview', true) + nav('layers', 'deliverables', 'deliverables', false) + nav('card', 'calendar', 'calendar', false) + nav('folder', 'library', 'library', false) + nav('review', 'review', 'review', false);
   const bottomLinks = [['overview', 'overview'], ['layers', 'deliverables'], ['card', 'calendar'], ['folder', 'library'], ['review', 'review']].map(([icon, key]) => '<span class="d-bn" data-nav="' + key + '">' + ic(icon, lang) + '<span>' + D(key) + '</span></span>').join('');
   return '<div class="dash" id="dash" role="img" aria-label="' + D('aria') + '">' +
@@ -386,7 +395,7 @@ function dash(lang) {
       '<span class="d-mtop"><span class="d-mmenu">' + ic('menu', lang) + '</span><span class="d-mbrand">' + logo('d-brand-avatar') + '<strong>' + D('brand') + '</strong></span><span class="d-pill lime d-mpill">' + D('ready') + '</span></span>' +
       '<span class="d-main"><span class="d-head"><span class="d-h1">' + D('greet') + '</span><span class="d-pill lime d-hpill">' + D('ready') + '</span></span>' +
         '<span class="d-tabs">' + tab('overview', 'overview', true) + tab('deliverables', 'deliverables', false) + tab('calendar', 'calendar', false) + tab('library', 'library', false) + '</span>' +
-        '<span class="d-stage">' + briefView + overviewView + deliverablesView + calendarView + libraryView + reviewView + readyView + '</span>' +
+        '<span class="d-stage">' + briefView + emptyView + overviewView + waitingView + deliverablesView + calendarView + libraryView + reviewView + readyView + instagramView + '</span>' +
       '</span><span class="d-bnav">' + bottomLinks + '</span>' +
       '<span class="d-time-later" data-k="timeLater">' + D('timeLater') + '</span>' +
       '<span class="d-modal" data-k="modal"><span class="d-mbox"><span class="d-mbrand modal-brand">' + logo('d-brand-avatar') + '<strong>' + D('brand') + '</strong></span><strong class="d-mt">' + D('signup') + '</strong>' +

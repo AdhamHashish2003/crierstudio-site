@@ -8,7 +8,7 @@
   var S = JSON.parse(data.textContent);
   var ar = document.documentElement.lang === 'ar';
   var nf = new Intl.NumberFormat(ar ? 'ar-EG' : 'en');
-  var RATE = 22 / 20, CYCLE = 22, STEP_AT = [0, 3.2, 6.9, 14, 18], STATIC_T = 19.4;
+  var RATE = 1, CYCLE = 45, STEP_AT = [0, 8, 12, 28, 37], STATIC_T = 39;
   var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var isStatic = q.get('static') === '1' || reduced;
   var tq = parseFloat(q.get('t'));
@@ -43,25 +43,31 @@
     all('[data-k=' + key + ']').forEach(function (el) { txt(el, nf.format(value)); });
   }
   function state(tt) {
-    var screen = 'overview';
-    if (tt >= 3.2 && tt < 6.4) screen = 'brief';
-    else if (tt >= 8.8 && tt < 9.9) screen = 'deliverables';
-    else if (tt >= 9.9 && tt < 11.2) screen = 'calendar';
-    else if (tt >= 11.2 && tt < 12.5) screen = 'library';
-    else if (tt >= 14 && tt < 18) screen = 'review';
-    else if (tt >= 18) screen = 'ready';
+    var screen = 'empty';
+    if (tt >= 8 && tt < 12) screen = 'brief';
+    else if (tt >= 12 && tt < 16) screen = 'waiting';
+    else if (tt >= 16 && tt < 20) screen = 'overview';
+    else if (tt >= 20 && tt < 24) screen = 'calendar';
+    else if (tt >= 24 && tt < 28) screen = 'library';
+    else if (tt >= 28 && tt < 37) screen = 'review';
+    else if (tt >= 37 && tt < 41) screen = 'ready';
+    else if (tt >= 41) screen = 'instagram';
+    var sent = tt >= 30.4;
+    var approved = tt >= 33;
     return {
       screen: screen,
-      modal: 1 - ramp(tt, 2.65, .55),
-      later: tt >= 6.35 && tt < 7.25,
-      delivered: tt >= 7.2 ? 9 : 0,
-      awaiting: tt >= 14 && tt < 16.25 ? 1 : 0,
-      approved: tt >= 16.25 ? 9 : 0,
-      approvedReview: tt >= 16.25,
-      briefDone: tt >= 5.9,
-      copyDone: tt >= 19.25,
-      company: S.brand.slice(0, Math.round(S.brand.length * lin(tt, .35, 1))),
-      site: S.site.slice(0, Math.round(S.site.length * lin(tt, 1.3, 1.25)))
+      modal: 1 - ramp(tt, 3.5, .5),
+      delivered: tt >= 16 ? 8 : 0,
+      awaiting: approved ? 7 : (tt >= 16 ? 8 : 0),
+      approved: approved ? 1 : 0,
+      readyCount: approved ? 1 : 0,
+      approvedReview: approved,
+      briefDone: tt >= 11.45,
+      changeSent: sent,
+      changeTyped: S.changeText.slice(0, Math.round(S.changeText.length * lin(tt, 29, 1.05))),
+      copyDone: tt >= 39.2,
+      company: S.brand.slice(0, Math.round(S.brand.length * lin(tt, .25, 1))),
+      site: S.site.slice(0, Math.round(S.site.length * lin(tt, 1.35, 1.1)))
     };
   }
   function stepper(tt) {
@@ -92,7 +98,7 @@
       views.forEach(function (view) { cls(view, 'is-on', view.getAttribute('data-screen') === activeView); });
       navItems.forEach(function (item) {
         var target = item.getAttribute('data-nav');
-        var current = activeView === 'brief' ? 'overview' : activeView;
+        var current = activeView === 'brief' || activeView === 'empty' || activeView === 'waiting' ? 'overview' : activeView;
         cls(item, 'on', target === current);
       });
     }
@@ -101,19 +107,24 @@
     css(modal, 'visibility', s.modal > .01 ? 'visible' : 'hidden');
     css(modal, 'pointer-events', s.modal > .01 ? 'auto' : 'none');
     css(one('.d-mbox'), 'transform', 'translateY(' + ((1 - s.modal) * 12).toFixed(1) + 'px) scale(' + (.97 + .03 * s.modal).toFixed(3) + ')');
-    cls(one('[data-c=company]'), 'on', tt >= .35 && tt < 1.35);
-    cls(one('[data-c=site]'), 'on', tt >= 1.3 && tt < 2.55);
+    cls(one('[data-c=company]'), 'on', tt >= .25 && tt < 1.35);
+    cls(one('[data-c=site]'), 'on', tt >= 1.35 && tt < 2.55);
     txt(one('[data-k=type]'), s.company);
     txt(one('[data-k=typedSite]'), s.site);
     briefRows.forEach(function (row, i) {
-      cls(row, 'is-filled', tt >= [3.55, 4.15, 4.75, 5.35][i]);
+      cls(row, 'is-filled', tt >= [8.45, 9.1, 9.75, 10.4][i]);
     });
     cls(one('[data-k=briefSubmitted]'), 'is-on', s.briefDone);
-    cls(one('.d-time-later'), 'is-on', s.later);
+    cls(one('.d-change-box'), 'is-on', tt >= 28.5 && tt < 32.9);
+    cls(one('.d-change-text'), 'on', tt >= 29 && tt < 30.2);
+    txt(one('[data-k=changeTyped]'), s.changeTyped);
+    cls(one('.d-change-sent'), 'is-on', s.changeSent);
+    cls(one('[data-b=sendChange]'), 'done', s.changeSent);
     number('delivered', s.delivered);
     number('await', s.awaiting);
     number('approved', s.approved);
-    txt(one('[data-k=reviewStatus]'), s.approvedReview ? S.approvedStatus : S.pendingStatus);
+    number('readyCount', s.readyCount);
+    txt(one('[data-k=reviewStatus]'), s.approvedReview ? S.approvedStatus : (s.changeSent ? S.changeStatus : S.pendingStatus));
     txt(one('[data-b=approve]'), s.approvedReview ? S.approvedStatus : S.approve);
     txt(one('[data-k=copyLabel]'), s.copyDone ? S.copied : S.copyCap);
     cls(one('[data-b=copy]'), 'done', s.copyDone);
@@ -123,16 +134,17 @@
   }
 
   var MOVES = [
-    [.25, '[data-c=company]'], [1.35, '[data-c=site]'], [2.2, '[data-b=create]'],
-    [3.6, '[data-brief=industry]'], [4.35, '[data-brief=audience]'], [5.55, '[data-b=submit-brief]'],
-    [7.55, '[data-nav=overview]'], [8.95, '[data-nav=deliverables]'], [10.05, '[data-nav=calendar]'],
-    [11.45, '[data-nav=library]'], [14.45, '[data-b=approve]'], [16.3, '[data-b=approve]'],
-    [18.45, '[data-b=copy]'], [19.65, '[data-b=dl]'], [20.8, 'rest']
+    [.25, '[data-c=company]'], [1.4, '[data-c=site]'], [2.75, '[data-b=create]'],
+    [4.3, '[data-b=answer]'], [8.4, '[data-brief=industry]'], [9.2, '[data-brief=audience]'],
+    [10, '[data-brief=channels]'], [10.55, '[data-brief=language]'], [11.15, '[data-b=submit-brief]'],
+    [13, '.d-clock'], [16.35, '[data-nav=overview]'], [20.2, '[data-nav=calendar]'],
+    [24.2, '[data-nav=library]'], [28.35, '[data-b=changes]'], [30.1, '[data-b=sendChange]'],
+    [33.15, '[data-b=approve]'], [38.25, '[data-b=copy]'], [41.2, 'rest']
   ];
   var CLICKS = [
-    [2.55, '[data-b=create]'], [5.95, '[data-b=submit-brief]'], [8.55, '[data-nav=overview]'],
-    [9.75, '[data-nav=deliverables]'], [10.95, '[data-nav=calendar]'], [12.15, '[data-nav=library]'],
-    [14.6, '[data-b=approve]'], [16.35, '[data-b=approve]'], [19.25, '[data-b=copy]'], [20.0, '[data-b=dl]']
+    [2.95, '[data-b=create]'], [7.6, '[data-b=answer]'], [11.45, '[data-b=submit-brief]'],
+    [20.4, '[data-nav=calendar]'], [24.4, '[data-nav=library]'], [28.55, '[data-b=changes]'],
+    [30.25, '[data-b=sendChange]'], [33.35, '[data-b=approve]'], [38.5, '[data-b=copy]']
   ];
   var positions = {};
   function at(selector) {
@@ -141,7 +153,7 @@
     if (!el) return [20, 20];
     var x = 0, y = 0, node = el;
     while (node && node !== cv) { x += node.offsetLeft; y += node.offsetTop; node = node.offsetParent; }
-    var post = /d-post/.test(selector);
+    var post = /d-post|d-clock/.test(selector);
     return positions[selector] = selector === 'rest'
       ? [x + el.offsetWidth * .7, y + el.offsetHeight * .6]
       : [x + el.offsetWidth * (post ? .5 : .56), y + el.offsetHeight * (post ? .45 : .6)];
