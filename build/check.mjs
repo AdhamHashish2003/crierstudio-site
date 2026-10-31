@@ -5,8 +5,8 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LANGS = ['en', 'ar'];
-const REMOVED = ['es', 'fr']; // removed languages redirect to the Arabic default
-const PREFIX = (l) => l === 'en' ? 'en/' : '';
+const REMOVED = ['es', 'fr']; // removed languages redirect to the English default
+const PREFIX = (l) => l === 'en' ? '' : l + '/'; // English (the default) at the root, Arabic under /ar/
 const PAGES = ['', 'pricing/', 'brand-deck/', 'social/', 'in-store/', 'sculptures/', 'samples/', 'faq/', 'about/', 'terms/', 'privacy/', 'refund/'];
 // old URLs: redirect stubs, not in the sitemap (a target may carry a #hash)
 const MOVED = { 'kit/': 'social/', 'physical/': 'in-store/#custom', 'snapshot/': 'social/', 'crier-deck/': 'brand-deck/' };
@@ -88,10 +88,10 @@ for (const l of LANGS) for (const p of PAGES) {
     // Home hero (audit fixes, 2026-10-19): a "Start in your portal" card (no price, no package name, no geo price data) whose
     // button opens the portal sign-up; the example posts labelled as examples, and no place name, clock or count in the phone
     const hero = (h.match(/<section class="hc" id="hero"[\s\S]*?<\/section>/) || [''])[0];
-    ok(!/data-usd|data-vat|data-product|id="cur-data"/.test(h) && hero.includes('href="#walkthrough"') && hero.includes(l === 'en' ? 'Start in your portal' : 'ابدأ من بوابتك'), `hero "Start in your portal" card, no price data, walkthrough link on ${file}`);
+    ok(!/data-usd|data-vat|data-product|id="cur-data"/.test(h) && hero.includes('href="#walkthrough"') && hero.includes(d[l]['hero.start.t']), `hero "Start in your portal" card, no price data, walkthrough link on ${file}`);
     ok((hero.match(/<div class="hc-card[^"]*">[\s\S]*?<a class="btn" href="([^"]*)"/) || [])[1] === SIGNUP(l), `hero button -> ${SIGNUP(l)} on ${file}`);
-    ok(/Example posts|منشورات للمثال/.test(hero) && !/Riyadh|الرياض|\d:\d\d|<img\b/.test(hero), `hero example labelled, no city, clock or image on ${file}`);
-    ok(hero.includes(l === 'en' ? 'Instagram-ready posts for local shops. Built on your logo. Approve in your portal, post it yourself.' : d.ar['hero.ig.bio']), `hero phone bio on ${file}`);
+    ok(hero.includes(d[l]['hero.exnote']) && !/Riyadh|الرياض|\d:\d\d|<img\b/.test(hero), `hero example labelled, no city, clock or image on ${file}`);
+    ok(hero.includes(d[l]['hero.ig.bio']) && !/built on your logo|مبنية على شعارك/i.test(hero), `hero phone bio on ${file}`);
   }
   if (p === 'pricing/') {
     const card = (h.match(/<(article|div) class="(plan|ind) cream store-card"[\s\S]*?<\/\1>/) || [''])[0];
@@ -120,7 +120,7 @@ for (const l of LANGS) for (const p of PAGES) {
     ok(!/\[[A-Z][A-Z _-]+\]/.test(h) && !/\[[^\]]*\]/.test(vis), `a [bracket] placeholder in ${file}`);
     const main = (h.match(/<main[\s\S]*?<\/main>/) || [''])[0];
     ok(!/data-usd|data-product|"@type":"Offer"|"offers"/.test(h) && !/price|lead time|MOQ|minimum order|السعر|أسعار|مدة التنفيذ|الحد الأدنى/i.test(main.replace(/<[^>]+>/g, ' ') + ' ' + (main.match(/<li class="sc-card"[^>]*>/g) || []).join(' ')), `no price, lead time or minimum order on ${file}`);
-    ok(vis.includes(l === 'en' ? 'Images are concept renders.' : 'الصور تصاميم مفاهيمية.'), `"concept renders" line on ${file}`);
+    ok(vis.includes(d[l]['sc.renders']), `"concept renders" line on ${file}`);
     ok((h.match(/<li class="sc-card"/g) || []).length === JSON.parse(rd('data/sculptures.json')).items.length, `every catalog piece on ${file}`);
     const quotes = [...h.matchAll(/<a class="btn"[^>]* href="(https:\/\/portal[^"]*)"/g)].map((m) => m[1]);
     ok(quotes.length === 3 && quotes.every((u) => u === `https://portal.crierstudio.com/#/signup?intent=quote&amp;lang=${l}`), `quote buttons -> portal sign-up (lang=${l}) on ${file}`);
@@ -175,8 +175,8 @@ ok(!sm.includes('<loc>https://crierstudio.com/fiberglass/</loc>'), 'standalone F
 ok(rd('brand-deck/index.html').includes('"@type":"Service"') && !rd('brand-deck/index.html').includes('"@type":"Offer"'), 'Brand Deck Service is informational, without an active offer');
 ok(rd('social/index.html').includes('"@type":"Service"') && !rd('social/index.html').includes('"offers"'), 'Social Service JSON-LD is informational, without offers');
 ok(rd('in-store/index.html').includes('"@type":"Service"') && !rd('in-store/index.html').includes('"offers"'), 'In-store Services are informational, without offers');
-ok(rd('en/pricing/index.html').includes('\"name\":\"The Store Kit\"'), 'pricing ItemList lists The Store Kit');
-for (const pr of ['\"price\":\"15\"', '\"unitCode\":\"MON\"']) ok(rd('en/pricing/index.html').includes(pr), 'pricing JSON-LD ' + pr);
+ok(rd('pricing/index.html').includes('\"name\":\"The Store Kit\"'), 'pricing ItemList lists The Store Kit');
+for (const pr of ['\"price\":\"15\"', '\"unitCode\":\"MON\"']) ok(rd('pricing/index.html').includes(pr), 'pricing JSON-LD ' + pr);
 // renamed pages: every old URL is a noindex redirect stub to the new page in the same language
 for (const l of LANGS) for (const [from, to] of Object.entries(MOVED)) {
   const pre = PREFIX(l), f = pre + from + 'index.html';

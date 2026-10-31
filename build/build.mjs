@@ -169,7 +169,7 @@ function h(lang, key, href) {
 const jsonScript = (o) => JSON.stringify(o).replace(/</g, '\\u003c');
 
 // ---------- URLs ----------
-const dirFor = (lang, page) => (lang === 'en' ? 'en/' : '') + (page === 'index' ? '' : page + '/');
+const dirFor = (lang, page) => (lang === 'en' ? '' : lang + '/') + (page === 'index' ? '' : page + '/');
 const pathFor = (lang, page) => '/' + dirFor(lang, page);
 const urlFor = (lang, page) => SITE + pathFor(lang, page);
 
@@ -333,18 +333,19 @@ const digits = (lang, n) => (lang === 'ar' ? String(n).replace(/\d/g, (d) => '٠
 function dash(lang) {
   const T = (k) => t(lang, 'dash.' + k), D = (k) => esc(T(k)), ar = lang === 'ar';
   const posts = [
-    { file: 'post-oct21.jpg', day: 21, kind: 'typePost' },
-    { file: 'reel-oct22.jpg', day: 22, kind: 'typeReel' },
-    { file: 'reel-oct23.jpg', day: 23, kind: 'typeReel' },
-    { file: 'reel-oct24.jpg', day: 24, kind: 'typeReel' },
-    { file: 'carousel-oct25.jpg', day: 25, kind: 'typeCarousel' },
-    { file: 'reel-oct26.jpg', day: 26, kind: 'typeReel' },
-    { file: 'reel-oct27.jpg', day: 27, kind: 'typeReel' },
-    { file: 'reel-oct28.jpg', day: 28, kind: 'typeReel' },
+    { file: 'post-1.svg', day: 21, kind: 'typePost' },
+    { file: 'post-2.svg', day: 22, kind: 'typeReel' },
+    { file: 'post-3.svg', day: 23, kind: 'typeReel' },
+    { file: 'post-4.svg', day: 24, kind: 'typeReel' },
+    { file: 'post-5.svg', day: 25, kind: 'typeCarousel' },
+    { file: 'post-6.svg', day: 26, kind: 'typeReel' },
+    { file: 'post-7.svg', day: 27, kind: 'typeReel' },
+    { file: 'post-8.svg', day: 28, kind: 'typeReel' },
   ].map((p) => ({ ...p, label: T(p.kind) }));
   const date = (day) => ar ? digits(lang, day) + ' ' + T('monthShort') : T('monthShort') + ' ' + digits(lang, day);
-  const image = (file, cls) => '<img class="' + cls + '" src="/assets/sahm-demo/' + file + '" alt="" loading="lazy" decoding="async">';
-  const logo = (cls) => image('sahm-logo.png', cls);
+  // the demo business is fictional (Lulu Bakery); its posts and logo are drawn shapes with no text, the same in both languages
+  const image = (file, cls) => '<img class="' + cls + '" src="/assets/demo/' + file + '" alt="" loading="lazy" decoding="async">';
+  const logo = (cls) => image('logo.svg', cls);
   const postCard = (p) => '<span class="d-post-card"><span class="d-post-visual">' + image(p.file, 'd-post-img') + '<span class="d-post-kind">' + esc(p.label) + '</span></span><span class="d-post-copy"><strong>' + esc(p.label) + '</strong><small>' + esc(date(p.day)) + '</small></span></span>';
   const postGrid = (arr, cls) => '<span class="d-post-grid ' + cls + '">' + arr.map(postCard).join('') + '</span>';
   const calendarCell = (p) => '<span class="d-calendar-cell"><span class="d-calendar-day">' + digits(lang, p.day) + '</span><span class="d-calendar-thumb">' + image(p.file, 'd-calendar-img') + '</span><span class="d-calendar-type">' + esc(p.label) + '</span></span>';
@@ -600,13 +601,13 @@ const CONSENT_JS = (partials.consent.match(/<script>([\s\S]*?)<\/script>/) || []
 if (!CONSENT_JS || CONSENT_JS.includes('{{')) throw new Error('templates/consent.html: one inline <script> without template tags expected');
 // the site allows no 'unsafe-inline' scripts: each inline script is allowed by its sha256 hash (recomputed on every build)
 const sha = (js) => `'sha256-${crypto.createHash('sha256').update(js, 'utf8').digest('base64')}'`;
-const LANGUAGE_INLINE = "(function(){try{var k='crier.lang',q=new URLSearchParams(location.search).get('lang'),v=/^(en|ar)$/.test(q||'')?q:localStorage.getItem(k);if(!/^(en|ar)$/.test(v||''))v=null;var m=location.pathname.match(/^\\/(?:en|ar|es|fr)(?=\\/|$)/),tail=m?location.pathname.slice(m[0].length):location.pathname;if(!tail)tail='/';if(tail.charAt(0)!=='/')tail='/'+tail;if(/^\\/(?:terms|privacy|refund)\\.html$/.test(tail))tail=tail.slice(0,-5)+'/';if(!v)v=m&&m[0]==='/en'?'en':'ar';localStorage.setItem(k,v);var target=(v==='en'?'/en':'')+tail;if(target!==location.pathname||q){document.documentElement.style.visibility='hidden';var u=new URL(location.href);u.pathname=target;u.searchParams.delete('lang');location.replace(u.pathname+u.search+u.hash);}}catch(e){}})();";
+const LANGUAGE_INLINE = "(function(){try{var k='crier.lang',q=new URLSearchParams(location.search).get('lang'),v=/^(en|ar)$/.test(q||'')?q:localStorage.getItem(k);if(!/^(en|ar)$/.test(v||''))v=null;var m=location.pathname.match(/^\\/(?:en|ar|es|fr)(?=\\/|$)/),tail=m?location.pathname.slice(m[0].length):location.pathname;if(!tail)tail='/';if(tail.charAt(0)!=='/')tail='/'+tail;if(/^\\/(?:terms|privacy|refund)\\.html$/.test(tail))tail=tail.slice(0,-5)+'/';if(!v)v=m&&m[0]==='/ar'?'ar':'en';localStorage.setItem(k,v);var target=(v==='ar'?'/ar':'')+tail;if(target!==location.pathname||q){document.documentElement.style.visibility='hidden';var u=new URL(location.href);u.pathname=target;u.searchParams.delete('lang');location.replace(u.pathname+u.search+u.hash);}}catch(e){}})();";
 const LANGUAGE_HEAD = `<script>${LANGUAGE_INLINE}</script>`;
 const SCRIPT_HASHES = [sha(GA_INLINE), sha(LANGUAGE_INLINE), sha(CONSENT_JS)];
 const CSP = "default-src 'self'; script-src 'self' " + SCRIPT_HASHES.join(' ') + " https://static.cloudflareinsights.com https://*.googletagmanager.com; connect-src 'self' https://crm-production-d789.up.railway.app https://cloudflareinsights.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; img-src 'self' data: https://*.google-analytics.com https://*.googletagmanager.com; style-src 'self' 'unsafe-inline'; font-src 'self'; base-uri 'self'; form-action 'self'";
 function head(lang, page, css) {
   const title = t(lang, `meta.t.${page}`), desc = t(lang, `meta.d.${page}`), url = urlFor(lang, page);
-  const alt = LANGS.map(([c]) => `<link rel="alternate" hreflang="${c}" href="${urlFor(c, page)}">`).join('\n') + `\n<link rel="alternate" hreflang="x-default" href="${urlFor('ar', page)}">`;
+  const alt = LANGS.map(([c]) => `<link rel="alternate" hreflang="${c}" href="${urlFor(c, page)}">`).join('\n') + `\n<link rel="alternate" hreflang="x-default" href="${urlFor('en', page)}">`;
   const ogAlt = LANGS.filter(([c]) => c !== lang).map(([, , loc]) => `<meta property="og:locale:alternate" content="${loc}">`).join('\n');
   const loc = LANGS.find(([c]) => c === lang)[2];
   const pl = (f) => `<link rel="preload" href="/fonts/${f}.subset.woff2" as="font" type="font/woff2" crossorigin>`;
@@ -744,7 +745,6 @@ for (const [lang] of LANGS) {
     const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${!LEGAL.includes(page) && page !== 'pricing' && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${page === 'index' ? '<script src="/assets/dash.js" defer></script>\n' : ''}${page === 'sculptures' ? '<script src="/assets/sculptures.js" defer></script>\n' : ''}</body>\n</html>\n`;
     const html = `${head(lang, page, purgeCss(cssFor(lang, page), bodyHtml))}\n${trimIndent(bodyHtml)}`;
     write(dirFor(lang, page) + 'index.html', hashUrls(html));
-    if (lang === 'ar') write('ar/' + dirFor(lang, page) + 'index.html', hashUrls(html));
     built.push([lang, page]);
   }
 }
@@ -753,10 +753,10 @@ for (const [lang] of LANGS) {
 write('assets/studio-deck/index.html', rd('templates/studio-deck.html'));
 write('assets/social-preview.html', rd('templates/social-preview.html'));
 
-// old legal URL stubs redirect to the Arabic default; saved language is applied before paint
+// old legal URL stubs redirect to the English default; a saved language is applied before paint
 for (const page of LEGAL) {
   write(`${page}.html`, hashUrls(`<!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -764,11 +764,11 @@ ${NOINDEX ? '<meta name="robots" content="noindex">\n' : ''}<meta http-equiv="Co
 ${GA_HEAD}
 ${LANGUAGE_HEAD}
 <title>${BRAND}</title>
-<link rel="canonical" href="${urlFor('ar', page)}">
-<noscript><meta http-equiv="refresh" content="0;url=${pathFor('ar', page)}"></noscript>
+<link rel="canonical" href="${urlFor('en', page)}">
+<noscript><meta http-equiv="refresh" content="0;url=${pathFor('en', page)}"></noscript>
 </head>
 <body data-page="redirect" data-target="${page}">
-<p><a href="${pathFor('ar', page)}">${BRAND}</a></p>
+<p><a href="${pathFor('en', page)}">${BRAND}</a></p>
 <script src="/site.js"></script>
 </body>
 </html>
@@ -801,16 +801,19 @@ ${LANGUAGE_HEAD}
 </html>
 `));
 }
-// renamed pages: Arabic defaults at root, English under /en/, and legacy /ar/ aliases
-for (const [from, to] of Object.entries(MOVED)) { stub('', from, 'ar', to); stub('en', from, 'en', to); stub('ar', from, 'ar', to); }
-// removed languages: /es/… and /fr/… redirect to the default Arabic page
-for (const lang of REMOVED) for (const [from, to] of [...PAGES.map((p) => [p, p]), ...Object.entries(MOVED)]) stub(lang, from, 'ar', to);
+// renamed pages: English (the default) at the root, Arabic under /ar/
+for (const [from, to] of Object.entries(MOVED)) { stub('', from, 'en', to); stub('ar', from, 'ar', to); }
+// English lived under /en/ while Arabic was the default (2026-10-28 to 2026-10-30): every old /en/… URL redirects to the same
+// English page at the root
+for (const [from, to] of [...PAGES.map((p) => [p, p]), ...Object.entries(MOVED)]) stub('en', from, 'en', to);
+// removed languages: /es/… and /fr/… redirect to the default English page
+for (const lang of REMOVED) for (const [from, to] of [...PAGES.map((p) => [p, p]), ...Object.entries(MOVED)]) stub(lang, from, 'en', to);
 
 // 404 (one file, two languages; header and footer in English, one block per language)
 {
   htmlCc = null;
-  const ctx = { lang: 'ar', v: { ...pageVars('ar', '404'), langpick: langpick('ar', 'index'), crumbs: '' } };
-  const sections = [...LANGS].sort(([a], [b]) => a === 'ar' ? -1 : b === 'ar' ? 1 : 0).map(([c]) => {
+  const ctx = { lang: 'en', v: { ...pageVars('en', '404'), langpick: langpick('en', 'index'), crumbs: '' } };
+  const sections = LANGS.map(([c]) => {
     const links = [['index', 'crumb.home'], ['social', 'nav.social'], ['in-store', 'nav.instore'], ['pricing', 'nav.pricing']].map(([p, k]) => `<a href="${pathFor(c, p)}">${esc(t(c, k))}</a>`).join(' · ');
     return `<section lang="${c}" dir="${RTL.has(c) ? 'rtl' : 'ltr'}"><h2>${esc(t(c, 'e404.title'))}</h2><p>${esc(t(c, 'e404.p'))} <a href="${pathFor(c, 'index')}">${esc(t(c, 'e404.home'))}</a></p><p>${esc(t(c, 'e404.nav'))} ${links}</p></section>`;
   }).join('\n');
@@ -828,7 +831,7 @@ ${render(partials.footer, ctx)}
 </html>
 `;
   write('404.html', hashUrls(`<!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -850,10 +853,10 @@ ${trimIndent(body404)}`));
 write('robots.txt', `User-agent: *\nAllow: /\nSitemap: ${SITE}/sitemap.xml\n`);
 const sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">'];
 for (const page of PAGES.filter((p) => !HIDDEN.has(p))) {
-  for (const lang of ['ar', 'en']) {
+  for (const [lang] of LANGS) {
     sm.push('<url>', `<loc>${urlFor(lang, page)}</loc>`);
     for (const [c] of LANGS) sm.push(`<xhtml:link rel="alternate" hreflang="${c}" href="${urlFor(c, page)}"/>`);
-    sm.push(`<xhtml:link rel="alternate" hreflang="x-default" href="${urlFor('ar', page)}"/>`, '</url>');
+    sm.push(`<xhtml:link rel="alternate" hreflang="x-default" href="${urlFor('en', page)}"/>`, '</url>');
   }
 }
 sm.push('</urlset>', '');
@@ -864,4 +867,4 @@ write('site.webmanifest', JSON.stringify({ name: BRAND, short_name: BRAND, start
 // keys in the JSON that no page used (the check script fails on these)
 const unused = Object.keys(dicts.en).filter((k) => !used.has(k));
 if (unused.length) console.warn('UNUSED i18n keys: ' + unused.join(', '));
-console.log(`built ${built.length} pages + ${LEGAL.length + LANGS.length * Object.keys(MOVED).length + REMOVED.length * (PAGES.length + Object.keys(MOVED).length)} stubs + 404 + robots/sitemap/manifest (noindex ${NOINDEX ? 'ON' : 'off'})`);
+console.log(`built ${built.length} pages + ${LEGAL.length + LANGS.length * Object.keys(MOVED).length + PAGES.length + Object.keys(MOVED).length + REMOVED.length * (PAGES.length + Object.keys(MOVED).length)} stubs + 404 + robots/sitemap/manifest (noindex ${NOINDEX ? 'ON' : 'off'})`);

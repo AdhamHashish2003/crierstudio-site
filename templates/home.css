@@ -681,7 +681,7 @@ html[lang=ar] .home-faq summary{letter-spacing:0;line-height:1.6}
 @media(max-width:640px){.d-vp{aspect-ratio:380/800}}
 
 
-/* SAHM client portal walkthrough */
+/* client portal walkthrough (demo business: Lulu Bakery, fictional) */
 .d-main{position:relative;display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0;height:100%;overflow:hidden;padding:4px 4px 0}
 .d-head{display:flex;align-items:center;gap:10px;min-height:34px;flex:none}
 .d-head .d-hpill{margin-inline-start:auto}
@@ -813,7 +813,7 @@ html[lang=ar] .home-faq summary{letter-spacing:0;line-height:1.6}
 
 
 
-/* SAHM walkthrough story scenes */
+/* walkthrough story scenes */
 .d-empty-state{display:flex;flex:1;min-height:0;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:14px;border:1px dashed #D1D5DB;border-radius:15px;background:#fff;text-align:center}
 .d-empty-state>strong{color:#111827;font:650 14px/1.3 var(--display)}
 .d-empty-prompt{display:grid;grid-template-columns:32px minmax(0,1fr) auto;align-items:center;gap:10px;width:min(100%,560px);padding:13px;border:2px solid #C6FF00;border-radius:14px;background:#FBFDF6;box-shadow:0 8px 24px rgba(14,15,12,.08);text-align:start}

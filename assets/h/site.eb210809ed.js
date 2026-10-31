@@ -4,7 +4,7 @@
   var KEY = "crier.lang", CODES = ["en", "ar"];
   var de = document.documentElement, page = document.body.getAttribute("data-page");
   function saved() { try { var s = localStorage.getItem(KEY); return CODES.indexOf(s) > -1 ? s : null; } catch (e) { return null; } }
-  function pathFor(lang, p) { return "/" + (lang === "en" ? "en/" : "") + (p === "index" ? "" : p + "/"); }
+  function pathFor(lang, p) { return "/" + (lang === "en" ? "" : lang + "/") + (p === "index" ? "" : p + "/"); }
 
   // old URLs: /?lang=xx and /terms.html?lang=xx
   var q = null;
@@ -14,7 +14,7 @@
     // renamed pages (/kit/ and /snapshot/ -> /social/, /physical/ -> /in-store/#custom, /crier-deck/ -> /brand-deck/) carry
     // their own language and keep the full query string; the visitor's own #hash wins over the target's (data-hash)
     var own = document.body.getAttribute("data-lang"), th = document.body.getAttribute("data-hash");
-    location.replace(pathFor(own || q || saved() || "ar", document.body.getAttribute("data-target")) + (own ? location.search : "") + (location.hash || (th ? "#" + th : "")));
+    location.replace(pathFor(own || q || saved() || "en", document.body.getAttribute("data-target")) + (own ? location.search : "") + (location.hash || (th ? "#" + th : "")));
     return;
   }
   if (page === "index" && location.pathname === "/") {
