@@ -10,7 +10,8 @@ const PREFIX = (l) => l === 'en' ? '' : l + '/'; // English (the default) at the
 const PAGES = ['', 'pricing/', 'brand-deck/', 'social/', 'in-store/', 'sculptures/', 'samples/', 'faq/', 'about/', 'terms/', 'privacy/', 'refund/'];
 // old URLs: redirect stubs, not in the sitemap (a target may carry a #hash)
 const MOVED = { 'kit/': 'social/', 'physical/': 'in-store/#custom', 'snapshot/': 'social/', 'crier-deck/': 'brand-deck/' };
-const SKIP_DIRS = ['fiberglass', '.git', 'node_modules', 'templates', 'build', 'tests', 'i18n', 'fonts', 'assets', 'design'];
+// standalone hand-maintained pages (not generated): /fiberglass/, /branddeck/ and /ar/branddeck/ (dirs are matched by name)
+const SKIP_DIRS = ['fiberglass', 'branddeck', '.git', 'node_modules', 'templates', 'build', 'tests', 'i18n', 'fonts', 'assets', 'design'];
 const PRODUCTS = ['kit', 'visible', 'growing', 'deck'];
 // Audit fixes (2026-10-19): every buy / plan / start button opens the client portal's sign-up (AR pages with ?lang=ar)
 const SIGNUP = (l) => `https://portal.crierstudio.com/#/signup${l === 'en' ? '' : '?lang=' + l}`;
@@ -172,6 +173,22 @@ ok(!sm.includes('<loc>https://crierstudio.com/fiberglass/</loc>'), 'standalone F
   ok(!/(?:Egypt|manufacturer|factory|\bAI\b|Cortex|\bUMA\b|\$\s?\d)/i.test(h), 'standalone Fiberglass page has no prohibited content or prices');
   ok((h.match(/Download 4K/g) || []).length === 6, 'standalone Fiberglass page keeps all six 4K catalog links');
 }
+// /branddeck/ (EN) and /ar/branddeck/ (AR): standalone physical-branding pages, kept like /fiberglass/ (build/branddeck-pages.mjs)
+ok(!sm.includes('/branddeck/'), 'standalone Brand Deck physical pages omitted from sitemap');
+{
+  const BAD = /(?:\bAI\b|Cortex|\bUMA\b|SAHM|WhatsApp|\bfree\b|clinic|portal|approve|brief|\$\s?\d)/i;
+  const BAD_AR = /مجان|ببلاش/; // Arabic for "free"
+  const en = rd('branddeck/index.html'), ar = rd('ar/branddeck/index.html');
+  for (const [f, h] of [['branddeck/index.html', en], ['ar/branddeck/index.html', ar]]) {
+    ok(h.includes('<meta name="robots" content="noindex,nofollow">'), `standalone ${f} remains noindex,nofollow`);
+    ok(!BAD.test(h), `standalone ${f} has no prohibited content or prices`);
+  }
+  ok(ar.includes('<html lang="ar" dir="rtl">') && ar.includes('noto-sans-arabic'), 'standalone ar/branddeck is RTL Arabic with the Arabic font');
+  ok(!BAD_AR.test(ar), 'standalone ar/branddeck has no Arabic "free"');
+  ok(!ar.includes('??'), 'standalone ar/branddeck has no "??" (broken Arabic text)');
+  ok(en.includes('href="/ar/branddeck/"') && ar.includes('href="/branddeck/"'), 'the two branddeck pages link to each other');
+  ok(!/href="\/(?:en\/|ar\/)?branddeck\//.test(rd('fiberglass/index.html')), 'no page links to the standalone branddeck pages in fiberglass/index.html');
+}
 ok(rd('brand-deck/index.html').includes('"@type":"Service"') && !rd('brand-deck/index.html').includes('"@type":"Offer"'), 'Brand Deck Service is informational, without an active offer');
 ok(rd('social/index.html').includes('"@type":"Service"') && !rd('social/index.html').includes('"offers"'), 'Social Service JSON-LD is informational, without offers');
 ok(rd('in-store/index.html').includes('"@type":"Service"') && !rd('in-store/index.html').includes('"offers"'), 'In-store Services are informational, without offers');
@@ -221,6 +238,7 @@ ok(rd('index.html').includes('"alternateName":"Crier"') && rd('index.html').incl
     const nav = (h.match(/<nav class="main-nav"[\s\S]*?<\/nav>/) || [''])[0];
     ok(!nav.includes('href="/in-store/"') && !nav.includes('href="/en/in-store/"'), `no In-store tab in the main header of ${f}`);
     ok(!/href="\/(?:en\/|ar\/)?fiberglass\//.test(h), `no page links to the standalone Fiberglass page in ${f}`);
+    ok(!/href="\/(?:en\/|ar\/)?branddeck\//.test(h), `no page links to the standalone branddeck pages in ${f}`);
     // delayed load (2026-10-11): no blocking/parsed gtag.js <script src> anywhere; the inline head script injects it on the first
     // interaction or 6 s after window load, or at once on a consent-bar / Cookie settings click
     ok(!/<script[^>]*\ssrc="[^"]*googletagmanager\.com/.test(h), `GA: no gtag.js <script src> in the HTML of ${f} (it is injected after load)`);

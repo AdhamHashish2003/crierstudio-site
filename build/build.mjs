@@ -32,6 +32,8 @@ const RTL = new Set(['ar']);
 // Kit waitlist + Custom pieces, whose quotes are asked in the client portal after a free sign-up).
 // Sculptures (2026-10-18): /sculptures/, the fiberglass catalog (data/sculptures.json) and custom pieces, quoted in the portal.
 // /fiberglass/ is a standalone Concept A catalog page maintained in place and intentionally excluded from generated pages.
+// /branddeck/ and /ar/branddeck/ are standalone physical-branding pages (build/branddeck-pages.mjs, images from
+// build/branddeck_mockups.py), maintained in place and intentionally excluded from generated pages: this build never writes or deletes them.
 const PAGES = ['index', 'pricing', 'brand-deck', 'social', 'in-store', 'sculptures', 'samples', 'faq', 'about', 'terms', 'privacy', 'refund'];
 // renamed pages: the old URLs stay as redirect stubs in every language (full query kept; the visitor's #hash wins over the
 // target's), not in the sitemap. A target may carry a #hash: /physical/ -> /in-store/#custom.
