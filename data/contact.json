@@ -1,4 +1,4 @@
 {
  "whatsapp": "",
- "about": "ADHAM: supply the WhatsApp business number here, digits only in international format (country code + number, no +, no spaces, no leading 0), then rebuild. While it is empty the build shows NO WhatsApp link anywhere (no broken wa.me link). When it is set, the build adds a https://wa.me/<number> link to the footer, the homepage and the About page contact section. Also update the 'by email' wording (about.contact.p, faq.18a1, terms.who.p) in both languages at the same time."
+ "about": "ADHAM: supply the WhatsApp business number here, digits only in international format (country code + number, no +, no spaces, no leading 0), then rebuild. While it is empty the build shows NO WhatsApp link anywhere (no broken wa.me link). When it is set, the build adds a https://wa.me/<number> link to the footer, the homepage and the About page contact section. Also update the 'by email' wording (about.contact.p, terms.who.p) in both languages at the same time."
 }

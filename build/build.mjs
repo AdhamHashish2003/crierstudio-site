@@ -192,7 +192,7 @@ const syms = [
 ];
 const INDCOLORS = [['sun', 'coral'], ['coral', 'accent'], ['accent', 'ink'], ['ink', 'sun'], ['sun', 'accent']];
 // FAQ ids (keys faq.<id>q, faq.<id>a1, faq.<id>a2)
-const FAQ_ALL = [19, 20, 21, 22, 23, 24, 25, 26, 11, 12, 13, 14, 15, 16, 1, 7, 2, 4, 5, 17, 9, 18];
+const FAQ_ALL = [19, 20, 21, 22, 23, 24, 25, 26, 11, 12, 13, 14, 15, 16, 1, 7, 2, 4, 5, 17, 9];
 const FAQ_DECK = [11, 12, 13, 14, 15, 16];
 
 function faqAnswers(lang, i) {
@@ -312,7 +312,7 @@ function homeTrust(lang) {
   return `<ul class="ticks">${li}<li>${h(lang, 'home.trust.f5')} <a href="${pathFor(lang, 'refund')}">${h(lang, 'home.trust.refund')}</a></li></ul>`;
 }
 // home FAQ ("Straight answers", bottom of the page): the FAQ page's entries without the Brand Deck block
-const FAQ_HOME = [19, 20, 21, 22, 23, 24, 25, 26, 1, 7, 2, 4, 5, 17, 9, 18];
+const FAQ_HOME = [19, 20, 21, 22, 23, 24, 25, 26, 1, 7, 2, 4, 5, 17, 9];
 const FAQ_HOME_SWAP = { 'faq.1a2': 'home.faq.1a2' };
 
 // ---- home "See what working with Crier looks like": the client portal walkthrough (approved mockup v2, 2026-10-18) ----
