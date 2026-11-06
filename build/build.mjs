@@ -345,7 +345,7 @@ function dash(lang) {
     { file: 'post-8.svg', day: 28, kind: 'typeReel' },
   ].map((p) => ({ ...p, label: T(p.kind) }));
   const date = (day) => ar ? digits(lang, day) + ' ' + T('monthShort') : T('monthShort') + ' ' + digits(lang, day);
-  // the demo business is fictional (Lulu Bakery); its posts and logo are drawn shapes with no text, the same in both languages
+  // the example business is Sahm Mena; its posts and SM logo are drawn shapes with no text, the same in both languages
   const image = (file, cls) => '<img class="' + cls + '" src="/assets/demo/' + file + '" alt="" loading="lazy" decoding="async">';
   const logo = (cls) => image('logo.svg', cls);
   const postCard = (p) => '<span class="d-post-card"><span class="d-post-visual">' + image(p.file, 'd-post-img') + '<span class="d-post-kind">' + esc(p.label) + '</span></span><span class="d-post-copy"><strong>' + esc(p.label) + '</strong><small>' + esc(date(p.day)) + '</small></span></span>';
