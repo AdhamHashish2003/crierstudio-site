@@ -417,10 +417,6 @@ function walkthrough(lang) {
   // "Get started": the client portal's own sign-up, in the page language
   return { dash: dash(lang), wtSteps, wtDetails, wtTotal: two(WT_STEPS), signupHref: esc(signupUrl(lang)) };
 }
-// pricing: The Store Kit card (label, name, one line, "Coming soon" where the price sits, the waitlist as a secondary button)
-function storePlanCard(lang) {
-  return `<article class="plan cream store-card" data-plan="store"><span class="badge">${h(lang, 'pkg.store.eye')}</span><h3>${h(lang, 'name.store')}</h3><p class="pt">${h(lang, 'is.kit.line')}</p><p class="soon-price">${h(lang, 'availability.soon')}</p><div class="buyrow"><a class="btn ghost" href="${pathFor(lang, 'in-store')}#waitlist">${h(lang, 'is.cta1')}</a></div></article>`;
-}
 // P1: a monthly package picks its platforms on the card; the live line ("Keep Growing · Instagram + Facebook · $90/mo") is computed in
 // the browser from the numbers below (data/pricing.json: price + (platforms - included) × extra_platform_price), never typed.
 // The first platform is ticked; the server-side line is the one-platform price so the page reads right without JavaScript.
@@ -434,7 +430,7 @@ function platPick(lang, p) {
   const local = Object.fromEntries(CURS.slice(1).map((c) => [c, [k.prices[c], k.extra_platform_prices[c]]]));
   return `<fieldset class="platpick" data-pkg="${p}" data-price="${k.price}" data-extra="${k.extra_platform_price}" data-local="${esc(JSON.stringify(local))}" data-included="${k.platforms_included || 1}" data-name="${esc(pname(lang, p))}" data-tpl="${esc(t(lang, 'plan.live'))}" data-per="${esc(t(lang, 'plan.perShort'))}"><legend>${h(lang, 'plan.pickPlatforms')}</legend><div class="opts">${boxes}</div><p class="liveprice" aria-live="polite" dir="auto">${esc(line)}</p><p class="fine">${h(lang, 'plan.extraNote')}</p></fieldset>`;
 }
-const planCards = (lang) => ['kit', 'visible', 'growing'].map((p) => planCard(lang, p, p === 'kit')).join('') + storePlanCard(lang);
+const planCards = (lang) => ['kit', 'visible', 'growing'].map((p) => planCard(lang, p, p === 'kit')).join('');
 const deckCards = (lang) => planCard(lang, 'deck', false);
 const billItems = (lang) => { const out = []; for (let i = 1; dicts[lang][`bill.${i}`] != null; i++) out.push(`<li>${h(lang, `bill.${i}`)}</li>`); return out.join(''); };
 
@@ -569,7 +565,6 @@ function jsonLd(lang, page) {
     if (page === 'sculptures') nodes.push({ '@type': 'Service', name: t(lang, 'nav.sculptures'), description: t(lang, 'meta.d.sculptures'), url: urlFor(lang, page), provider });
     if (page === 'pricing') {
       const items = PRODUCTS.map((p) => ({ '@type': 'Service', name: pname(lang, p), provider, ...(p === 'deck' ? { description: t(lang, 'availability.deck') } : { offers: offerNode(lang, p) }) }));
-      items.splice(3, 0, { '@type': 'Service', name: t(lang, 'name.store'), description: t(lang, 'is.kit.line'), url: urlFor(lang, 'in-store') + '#kit', provider });
       nodes.push({ '@type': 'ItemList', name: t(lang, 'pricing.h1'), itemListElement: items.map((item, i) => ({ '@type': 'ListItem', position: i + 1, item })) });
     }
     if (page === 'faq') {

@@ -101,8 +101,8 @@ footer a{color:inherit;text-decoration:none}footer a:hover{text-decoration:under
 .physical-grid h3{font-size:28px;margin-bottom:16px}.physical-grid p{color:var(--muted);line-height:1.7}
 @media(max-width:700px){.physical-grid{grid-template-columns:1fr}.physical-grid article{padding:24px}}
 
-/* In-store (2026-10-18): cream means physical, dark means digital. The In-store page body, the home-page In-store teaser and
-   the Store Kit cards are cream blocks inside the global dark header and footer. The cream set below is the only place these
+/* In-store (2026-10-18): cream means physical, dark means digital. The In-store page body and the home-page In-store teaser
+   are cream blocks inside the global dark header and footer. The cream set below is the only place these
    colours are written; the inline SVG fills in the illustrations belong to the fictional sample brand (Karak House) and stay
    as drawn in design/reference/in-store-hero-B.html. Contrast on cream: --cream-muted-2 (#8d8a7e, ~3.2:1) is used only for
    input borders; small labels use --cream-label (#6c6a60, 4.8:1) and small terracotta text --sample-terra-text (5:1). */
@@ -127,13 +127,8 @@ body.studio-inner{--cream-bg:#f3f1ea;--cream-ink:#1b1b17;--cream-panel:#fbfaf6;-
 .cream .field input,.cream .field select,.cream .field textarea{background:var(--cream-bg);border-color:var(--cream-muted-2)}
 .cream .availability-note{border-inline-start-color:var(--cream-ink);background:var(--cream-bg)}
 .cream .physical-grid .physical-number{color:var(--sample-terra-text)}
-/* The Store Kit card on the home page and on /pricing/: no price, "Coming soon" where the price sits, the waitlist only */
-.store-card.cream{border-color:var(--cream-line)}
-.soon-price{font:600 clamp(1.6rem,4vw,2rem)/1.1 var(--display);font-stretch:100%;letter-spacing:-.02em;color:var(--cream-ink)}
 .more-link{display:inline-flex;align-items:center;min-height:44px;width:fit-content;font-weight:700;color:var(--cream-ink);text-decoration:underline;text-underline-offset:4px}
 @media(min-width:980px){.inds.four{grid-template-columns:repeat(4,minmax(0,1fr))}}
-@media(min-width:860px){.plans.four{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(min-width:1100px){.plans.four{grid-template-columns:repeat(4,minmax(0,1fr))}}
 html[lang=ar] :is(.is-eye,.is-tag,.is-pill,.is-num,.is-foot,.zone-col h4){letter-spacing:0;text-transform:none}
 /* In-store v3, Direction A (2026-10-18): product first. The Karak House flat-lay, the ink COMING SOON banner holding the Store
    Kit waitlist, then Custom pieces. One status language: Coming soon = dashed outline pill with a hollow dot; Open now = solid
