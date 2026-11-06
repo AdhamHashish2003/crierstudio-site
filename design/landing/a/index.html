@@ -134,14 +134,6 @@ td.no{color:#5d6252}
 .box .btn{align-self:flex-start;margin-top:auto;background:var(--cream-ink);color:var(--cream-bg);border-color:var(--cream-ink)}
 .box .btn.out{background:transparent;color:var(--cream-ink)}
 
-/* FAQ */
-.faq{display:grid;grid-template-columns:1fr 1fr;gap:0 48px}
-details{border-top:1px solid var(--line);padding:22px 0}
-summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:20px;font-weight:600;font-size:19px}
-summary::-webkit-details-marker{display:none}
-summary::after{content:"";flex:none;width:12px;height:12px;margin:7px 3px 0 0;background:var(--accent);transform:rotate(45deg);transition:transform .2s}
-details[open] summary::after{transform:rotate(45deg) scale(.55)}
-details p{color:var(--muted);margin-top:12px;max-width:60ch}
 
 /* Closing + footer */
 .close{padding:clamp(80px,11vw,160px) 0 clamp(48px,6vw,80px);border-top:1px solid var(--line)}
@@ -195,7 +187,7 @@ footer{border-top:1px solid var(--line);padding:56px 0 40px;font-size:15px;color
   .steps::before{left:8px;right:auto;top:0;bottom:0;width:1px;height:auto}
   .steps li{padding:0}
   .steps li::before{left:-33px;top:6px}
-  .two,.faq,.fgrid{grid-template-columns:1fr}
+  .two,.fgrid{grid-template-columns:1fr}
 }
 @media (max-width:560px){
   header .right .lang,header .right .plink{display:none}
@@ -370,21 +362,6 @@ footer{border-top:1px solid var(--line);padding:56px 0 40px;font-size:15px;color
     </div>
   </section>
 
-  <section class="sec wrap" id="faq">
-    <div class="sec-head"><h2>Straight answers</h2><p>More on the <a class="link" href="/faq/">FAQ page</a>, or email <a class="link" href="mailto:team@crierstudio.com">team@crierstudio.com</a>.</p></div>
-    <div class="faq">
-      <div>
-        <details><summary>How does billing work?</summary><p>You pay securely on Stripe from your client portal. Monthly plans are billed each month; the one-time package is paid once. Checkout is in US dollars.</p></details>
-        <details><summary>Can I cancel?</summary><p>Yes. Cancel any time before your next renewal by emailing team@crierstudio.com. You keep your plan until the end of the month you have paid for.</p></details>
-        <details><summary>Can I pay once, with no subscription?</summary><p>Yes. The Social Kit is a one-time payment, for one business, with no subscription.</p></details>
-      </div>
-      <div>
-        <details><summary>Who publishes the posts?</summary><p>You do. The designs, captions and plans are files ready for you or your team to publish. Nothing is published for you.</p></details>
-        <details><summary>Which languages do you work in?</summary><p>Your posts and captions can be in Arabic, English or both. You can write to us in either.</p></details>
-        <details><summary>Can you promise more customers?</summary><p>No. Nobody can honestly promise that. We deliver the designs and the plans described on the pricing page. Results depend on your business, your market and what you do with them.</p></details>
-      </div>
-    </div>
-  </section>
 
   <section class="close wrap">
     <h2>Ready to see your first posts?</h2>
