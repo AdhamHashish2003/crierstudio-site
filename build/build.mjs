@@ -331,6 +331,8 @@ const SAHM_POSTS = [
   'قاعدة ٤ · نصايح الجروبات · نصيحة جروب واتساب مش دراسة',
   'أساسيات ٤ · الترند · الترند يعني إيه؟',
 ];
+// the day in November 2026 each reel went up on instagram.com/sahmmena (same order as SAHM_POSTS)
+const SAHM_DAYS = [6, 6, 6, 6, 5, 5];
 // icon paths copied from the portal's own set (portal/public/app.js)
 const PI = {
   overview: 'M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z', layers: 'M12 3l9 5-9 5-9-5zM3 13l9 5 9-5', review: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8 12l3 3 5-6',
@@ -345,8 +347,8 @@ function dash(lang) {
   const T = (k) => t(lang, 'dash.' + k), D = (k) => esc(T(k)), ar = lang === 'ar';
   // the example business is Sahm Mena (instagram.com/sahmmena, a free Arab stock-market app): the six reels on its profile,
   // titles verbatim (Arabic in both languages), thumbnails and the round SAHM logo cut from screenshots of the profile
-  // (build/demo-images.py). Nothing invented beyond the mock's own dates.
-  const posts = SAHM_POSTS.map((title, i) => ({ file: 'post-' + (i + 1) + '.webp', day: 21 + i, title, label: T('typeReel') }));
+  // (build/demo-images.py). Dates are the reels' real post dates (SAHM_DAYS, November 2026).
+  const posts = SAHM_POSTS.map((title, i) => ({ file: 'post-' + (i + 1) + '.webp', day: SAHM_DAYS[i], title, label: T('typeReel') }));
   const date = (day) => ar ? digits(lang, day) + ' ' + T('monthShort') : T('monthShort') + ' ' + digits(lang, day);
   const image = (file, cls) => '<img class="' + cls + '" src="/assets/demo/' + file + '" alt="" loading="lazy" decoding="async">';
   const logo = (cls) => image('logo.webp', cls);
@@ -368,11 +370,11 @@ function dash(lang) {
   const overviewBody = summary(posts.length, posts.length, 0, 'channels', 1) + postGrid(posts.slice(0, 4), 'd-overview-grid');
   const briefBody = '<span class="d-brief-list">' + row('industry', 'industryValue') + row('audience', 'audienceValue') + row('channels', 'channelsValue') + row('language', 'languageValue') + '</span><span class="d-brief-footer"><span class="d-brief-submitted" data-k="briefSubmitted">' + D('briefSubmitted') + '</span><span class="d-btn lime" data-b="submit-brief">' + D('submitBrief') + '</span></span>';
   const deliverablesBody = '<span class="d-view-note"><b data-k="delivered">' + digits(lang, posts.length) + '</b> ' + D('postsDelivered') + '</span>' + postGrid(posts, 'd-many-grid');
-  const calendarBody = '<span class="d-calendar-title">' + D('calendarMonth') + '</span><span class="d-calendar-grid">' + posts.map(calendarCell).join('') + '</span>';
+  const calendarBody = '<span class="d-calendar-title">' + D('calendarMonth') + '</span><span class="d-calendar-grid">' + posts.slice().sort((a, b) => a.day - b.day).map(calendarCell).join('') + '</span>';
   const libraryBody = '<span class="d-view-note">' + D('libraryNote') + '</span>' + postGrid(posts, 'd-many-grid d-library-grid');
   const waitingBody = '<span class="d-wait-card"><span class="d-clock" aria-hidden="true"><i class="d-clock-hand d-hour"></i><i class="d-clock-hand d-minute"></i><b></b></span><span class="d-wait-copy"><small>' + D('waitSub') + '</small><span class="d-clock-label">' + D('clockLabel') + '</span><span class="d-clock-jump"><span>' + D('now') + '</span><i aria-hidden="true">→</i><b>' + D('timeLater') + '</b></span></span></span>';
   const reviewPost = posts[4];
-  const reviewBody = '<span class="d-review-card"><span class="d-review-image">' + image(reviewPost.file, 'd-review-img') + '</span><span class="d-review-copy"><small>' + esc(reviewPost.label + ' · ' + date(reviewPost.day)) + '</small>' + title(reviewPost) + '<span class="d-review-note">' + D('reviewNote') + '</span><span class="d-review-status" data-k="reviewStatus">' + D('pendingStatus') + '</span><span class="d-review-actions"><span class="d-btn sec" data-b="changes">' + D('changes') + '</span><span class="d-btn lime" data-b="approve">' + D('approve') + '</span></span><span class="d-change-box"><span class="d-change-text"><span data-k="changeTyped"></span><i class="d-caret"></i></span><span class="d-btn sec d-send" data-b="sendChange">' + D('sendRequest') + '</span></span><span class="d-change-sent" data-k="changeSent">' + D('changeSent') + '</span></span></span>';
+  const reviewBody = '<span class="d-review-card"><span class="d-review-image">' + image(reviewPost.file, 'd-review-img') + '</span><span class="d-review-copy"><small>' + esc(reviewPost.label + ' · ' + date(reviewPost.day)) + '</small>' + title(reviewPost) + '<span class="d-review-status" data-k="reviewStatus">' + D('pendingStatus') + '</span><span class="d-review-actions"><span class="d-btn sec" data-b="changes">' + D('changes') + '</span><span class="d-btn lime" data-b="approve">' + D('approve') + '</span></span></span></span>';
   const readyBody = '<span class="d-ready-card"><span class="d-ready-image">' + image(reviewPost.file, 'd-ready-img') + '</span><span class="d-ready-copy"><span class="d-ready-chips"><span class="d-chip">' + D('approvedStatus') + '</span><span class="d-chip">' + D('ready') + '</span></span><strong>' + D('readyTitle') + '</strong><small dir="rtl" lang="ar">' + esc(reviewPost.title) + '</small><span class="d-ready-actions"><span class="d-btn lime" data-b="copy"><span data-k="copyLabel">' + D('copyCap') + '</span></span><span class="d-btn sec" data-b="dl">' + D('download') + '</span><span class="d-btn sec" data-b="mark">' + D('markPosted') + '</span></span></span></span>';
   const instagramBody = '<span class="d-instagram-card"><span class="d-ig-head"><span class="d-ig-avatar">' + logo('d-ig-logo') + '</span><strong>' + D('instagramHandle') + '</strong><span class="d-ig-network">' + D('instagram') + '</span></span><span class="d-ig-image">' + image(reviewPost.file, 'd-ig-post') + '<span class="d-ig-posted">' + D('posted') + '</span></span><span class="d-ig-footer"><span class="d-ig-icons" aria-hidden="true">♡　○　↗</span><small dir="rtl" lang="ar">' + esc(reviewPost.title) + '</small></span></span>';
   const briefView = view('brief', 'briefTitle', briefBody, false);
@@ -385,9 +387,7 @@ function dash(lang) {
   const reviewView = view('review', 'reviewTitle', reviewBody, false);
   const readyView = view('ready', 'readyTitle', readyBody, true);
   const instagramView = view('instagram', 'instagram', instagramBody, false);
-  const js = Object.fromEntries(['brand', 'site', 'briefSubmitted', 'pendingStatus', 'approvedStatus', 'approve', 'copied', 'copyCap', 'changeSent'].map((k) => [k, T(k)]));
-  js.changeText = T('changeText');
-  js.changeStatus = T('changeStatus');
+  const js = Object.fromEntries(['brand', 'site', 'briefSubmitted', 'pendingStatus', 'approvedStatus', 'approve', 'copied', 'copyCap'].map((k) => [k, T(k)]));
   js.posts = posts.length;
   const navLinks = nav('overview', 'overview', 'overview', true) + nav('layers', 'deliverables', 'deliverables', false) + nav('card', 'calendar', 'calendar', false) + nav('folder', 'library', 'library', false) + nav('review', 'review', 'review', false);
   const bottomLinks = [['overview', 'overview'], ['layers', 'deliverables'], ['card', 'calendar'], ['folder', 'library'], ['review', 'review']].map(([icon, key]) => '<span class="d-bn" data-nav="' + key + '">' + ic(icon, lang) + '<span>' + D(key) + '</span></span>').join('');
