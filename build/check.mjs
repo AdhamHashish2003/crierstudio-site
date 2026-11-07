@@ -78,7 +78,6 @@ for (const l of LANGS) for (const p of PAGES) {
     if (pk.extra_platform_price) ok(h.includes(`data-extra="${pk.extra_platform_price}"`), `extra platform ${pk.extra_platform_price} USD (${pk.id}) on ${file}`);
   }
   if (p === 'pricing/') ok((h.match(/data-product="/g) || []).length === 3 && h.includes('disabled data-unavailable="deck"'), `3 buy buttons and unavailable Brand Deck on ${file}`);
-  // The Store Kit: a card on pricing with no price, no VAT line and no buy button; its only action is the waitlist
   // (Home v2, 2026-10-18: the home page shows the three Social packages only, no Store Kit card and no In-store teaser)
   if (p === '') {
     ok(!/store-card|is-teaser|id="businesses"|id="seasons"|id="plans"/.test(h), `no package cards, Store Kit card, In-store teaser, industries or seasons section on ${file}`);
@@ -95,8 +94,9 @@ for (const l of LANGS) for (const p of PAGES) {
     ok(hero.includes(d[l]['hero.ig.bio']) && !/built on your logo|مبنية على شعارك/i.test(hero), `hero phone bio on ${file}`);
   }
   if (p === 'pricing/') {
-    const card = (h.match(/<(article|div) class="(plan|ind) cream store-card"[\s\S]*?<\/\1>/) || [''])[0];
-    ok(card && !/data-usd|data-product|usdnote/.test(card) && card.includes(`href="/${PREFIX(l)}in-store/#waitlist"`), `Store Kit card (waitlist only, no price) on ${file}`);
+    // The Store Kit card was removed from pricing (owner request, 2026-11-06); the waitlist stays on /in-store/
+    ok(!/store-card|soon-price|data-plan="store"|plans four/.test(h), `no Store Kit card on ${file}`);
+    ok(![d.en['name.store'], d[l]['name.store']].some((n) => h.includes(n)), `no Store Kit name (visible, meta, JSON-LD) on ${file}`);
   }
   if (p === 'in-store/') {
     ok(!/data-usd|data-product|"@type":"Offer"/.test(h), `no price, buy button or offer on ${file}`);
@@ -192,7 +192,6 @@ ok(!sm.includes('/branddeck/'), 'standalone Brand Deck physical pages omitted fr
 ok(rd('brand-deck/index.html').includes('"@type":"Service"') && !rd('brand-deck/index.html').includes('"@type":"Offer"'), 'Brand Deck Service is informational, without an active offer');
 ok(rd('social/index.html').includes('"@type":"Service"') && !rd('social/index.html').includes('"offers"'), 'Social Service JSON-LD is informational, without offers');
 ok(rd('in-store/index.html').includes('"@type":"Service"') && !rd('in-store/index.html').includes('"offers"'), 'In-store Services are informational, without offers');
-ok(rd('pricing/index.html').includes('\"name\":\"The Store Kit\"'), 'pricing ItemList lists The Store Kit');
 for (const pr of ['\"price\":\"15\"', '\"unitCode\":\"MON\"']) ok(rd('pricing/index.html').includes(pr), 'pricing JSON-LD ' + pr);
 // renamed pages: every old URL is a noindex redirect stub to the new page in the same language
 for (const l of LANGS) for (const [from, to] of Object.entries(MOVED)) {
