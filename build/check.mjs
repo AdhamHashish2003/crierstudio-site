@@ -45,7 +45,7 @@ for (const l of LANGS) for (const p of PAGES) {
   ok((h.match(/<link rel="alternate" hreflang="/g) || []).length === LANGS.length + 1, `hreflang ${file}`); // each language + x-default
   ok(/<title>[^<]{8,}<\/title>/.test(h) && /<meta name="description" content="[^"]{40,}">/.test(h), `title/description ${file}`);
   const headerNav = (h.match(/<nav class="main-nav"[\s\S]*?<\/nav>/) || [''])[0];
-  // The header is Social · Sculptures · Pricing · Client portal; In-store stays on the page and in the footer.
+  // The header is Social · Sculptures · Pricing · Client portal; In-store stays in the footer.
   // (Sculptures only while SHOW_SCULPTURES is true in build/build.mjs; hidden, no page links to it)
   const HEAD_NAV = ['social/', ...SC_NAV, 'pricing/'];
   for (const nav of HEAD_NAV) ok(headerNav.includes(`href="/${PREFIX(l) + nav}"`), `nav link ${nav} in ${file}`);
@@ -78,11 +78,11 @@ for (const l of LANGS) for (const p of PAGES) {
     if (pk.extra_platform_price) ok(h.includes(`data-extra="${pk.extra_platform_price}"`), `extra platform ${pk.extra_platform_price} USD (${pk.id}) on ${file}`);
   }
   if (p === 'pricing/') ok((h.match(/data-product="/g) || []).length === 3 && h.includes('disabled data-unavailable="deck"'), `3 buy buttons and unavailable Brand Deck on ${file}`);
-  // Home: Landing A (Adham, 2026-11-06; walkthrough kept 2026-11-07): hero (SAHM's real Instagram posts), The Social Kit in
-  // numbers, the client-portal walkthrough, the OK rule, the package table, the cream In-store teaser, a closing call. No FAQ.
+  // Home: Landing A (Adham, 2026-11-06; walkthrough kept 2026-11-07; In-store section removed 2026-11-06): hero (SAHM's real
+  // Instagram posts), The Social Kit in numbers, the client-portal walkthrough, the OK rule, the package table, a closing call. No FAQ.
   if (p === '') {
-    ok(!/store-card|is-teaser|id="businesses"|id="seasons"|id="plans"/.test(h), `no package cards, Store Kit card, industries or seasons section on ${file}`);
-    const HOME_IDS = ['hero', 'kit', 'walkthrough', 'trust', 'pricing', 'in-store', 'start'];
+    ok(!/store-card|is-teaser|id="businesses"|id="seasons"|id="plans"|id="in-store"|la-store/.test(h), `no package cards, Store Kit card, In-store section, industries or seasons section on ${file}`);
+    const HOME_IDS = ['hero', 'kit', 'walkthrough', 'trust', 'pricing', 'start'];
     const at = HOME_IDS.map((id) => h.indexOf(`id="${id}"`));
     ok(at.every((x, i) => x > -1 && (i === 0 || x > at[i - 1])), `home sections ${HOME_IDS.join(', ')} in order on ${file}`);
     ok(!/id="faq"/.test(h) && h.includes('id="dash"') && h.includes('id="dash-s"'), `walkthrough and dashboard data, no FAQ, on ${file}`);

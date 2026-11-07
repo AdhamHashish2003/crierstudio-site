@@ -458,14 +458,11 @@ function walkthrough(lang) {
   // "Get started": the client portal's own sign-up, in the page language
   return { dash: dash(lang), wtSteps, wtDetails, wtTotal: two(WT_STEPS), signupHref: esc(signupUrl(lang)) };
 }
-const STORE_PIECES = ['apron', 'menu', 'mat', 'cup', 'qr', 'card'];
-const storePieces = (lang) => STORE_PIECES.map((k) => `<span>${h(lang, `is.pc.${k}`)}</span>`).join(' <i aria-hidden="true">/</i> ');
 function homeVars(lang) {
   return {
     heroH1: heroH1(lang), sahmPosts: sahmPosts(), sahmStory: sahmStory(), sahmLogo, ...heroStart(lang),
     kitNums: kitNums(lang), kitPrice: money(lang, 'kit'), kitBtn: `<a class="btn lime" href="${esc(buyHref(lang, 'kit'))}">${h(lang, 'pkg.kit.btn')}</a>`,
     trust: homeTrust(lang), ...walkthrough(lang), curPick: curPick(lang), priceTable: priceTable(lang),
-    storePieces: storePieces(lang), quoteHref: esc(portalAuth('signup', lang)),
   };
 }
 // P1: a monthly package picks its platforms on the card; the live line ("Keep Growing · Instagram + Facebook · $90/mo") is computed in
