@@ -57,8 +57,8 @@
     return {
       screen: screen,
       modal: 1 - ramp(tt, 3.5, .5),
-      delivered: tt >= 16 ? 8 : 0,
-      awaiting: approved ? 7 : (tt >= 16 ? 8 : 0),
+      delivered: tt >= 16 ? S.posts : 0,
+      awaiting: approved ? S.posts - 1 : (tt >= 16 ? S.posts : 0),
       approved: approved ? 1 : 0,
       readyCount: approved ? 1 : 0,
       approvedReview: approved,
