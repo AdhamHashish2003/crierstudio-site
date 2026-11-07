@@ -681,7 +681,7 @@ html[lang=ar] .home-faq summary{letter-spacing:0;line-height:1.6}
 @media(max-width:640px){.d-vp{aspect-ratio:380/800}}
 
 
-/* client portal walkthrough (demo business: Lulu Bakery, fictional) */
+/* client portal walkthrough (example business: Sahm Mena) */
 .d-main{position:relative;display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0;height:100%;overflow:hidden;padding:4px 4px 0}
 .d-head{display:flex;align-items:center;gap:10px;min-height:34px;flex:none}
 .d-head .d-hpill{margin-inline-start:auto}
@@ -1058,4 +1058,6 @@ html[lang=ar] .la-tag{letter-spacing:0;font-size:13px}
   .la-cta .btn{flex:1 1 100%}
 }
 /* phones: a taller phone so SAHM's posts show under its profile */
-@media(max-width:800px){.la-hero .hc-stage{height:500px}.la-hero .hc-scr{height:560px}}
+@media(max-width:800px){.la-hero .hc-stage{height:520px}}
+/* the screen ends under SAHM's two rows of reels (six real posts), not on an empty band */
+.la-hero .hc-scr{height:auto}

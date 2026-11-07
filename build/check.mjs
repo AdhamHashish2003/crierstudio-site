@@ -78,33 +78,32 @@ for (const l of LANGS) for (const p of PAGES) {
     if (pk.extra_platform_price) ok(h.includes(`data-extra="${pk.extra_platform_price}"`), `extra platform ${pk.extra_platform_price} USD (${pk.id}) on ${file}`);
   }
   if (p === 'pricing/') ok((h.match(/data-product="/g) || []).length === 3 && h.includes('disabled data-unavailable="deck"'), `3 buy buttons and unavailable Brand Deck on ${file}`);
-  // The Store Kit: a card on pricing with no price, no VAT line and no buy button; its only action is the waitlist
-  // Home: Landing A (Adham, 2026-11-06): hero (SAHM's real Instagram posts), The Social Kit in numbers, the OK rule, five
-  // steps, the package table, the cream In-store teaser, a closing call. No walkthrough and no FAQ on the home page.
+  // Home: Landing A (Adham, 2026-11-06; walkthrough kept 2026-11-07): hero (SAHM's real Instagram posts), The Social Kit in
+  // numbers, the client-portal walkthrough, the OK rule, the package table, the cream In-store teaser, a closing call. No FAQ.
   if (p === '') {
     ok(!/store-card|is-teaser|id="businesses"|id="seasons"|id="plans"/.test(h), `no package cards, Store Kit card, industries or seasons section on ${file}`);
-    const HOME_IDS = ['hero', 'kit', 'trust', 'how', 'pricing', 'in-store', 'start'];
+    const HOME_IDS = ['hero', 'kit', 'walkthrough', 'trust', 'pricing', 'in-store', 'start'];
     const at = HOME_IDS.map((id) => h.indexOf(`id="${id}"`));
     ok(at.every((x, i) => x > -1 && (i === 0 || x > at[i - 1])), `home sections ${HOME_IDS.join(', ')} in order on ${file}`);
-    ok(!/id="walkthrough"|id="dash"|id="faq"|\/assets\/h\/dash\./.test(h), `no walkthrough, dashboard script or FAQ on ${file}`);
+    ok(!/id="faq"/.test(h) && h.includes('id="dash"') && h.includes('id="dash-s"'), `walkthrough and dashboard data, no FAQ, on ${file}`);
+    ok(/<script src="\/assets\/h\/dash\.[0-9a-f]{10}\.js" defer><\/script>/.test(h), `dashboard script (hashed, from 'self') on ${file}`);
     const hero = (h.match(/<section class="hc la-hero" id="hero"[\s\S]*?<\/section>/) || [''])[0];
     ok((hero.match(/<div class="la-cta">\s*<a class="btn" href="([^"]*)"/) || [])[1] === SIGNUP(l), `hero button -> ${SIGNUP(l)} on ${file}`);
-    ok(hero.includes('href="#how"') && hero.includes('href="#pricing"'), `hero links to #how and #pricing on ${file}`);
+    ok(hero.includes('href="#walkthrough"') && hero.includes('href="#pricing"'), `hero links to #walkthrough and #pricing on ${file}`);
     ok(hero.includes(d[l]['hero.exnote']) && hero.includes('sahmmena') && !/data-usd|data-product/.test(hero), `hero labelled as SAHM's real posts, no price in it, on ${file}`);
-    const imgs = [...hero.matchAll(/<img src="(\/assets\/h\/sahm-(?:p\d|story)\.[0-9a-f]{10}\.webp)" alt="" width="\d+" height="\d+"/g)].map((m) => m[1]);
-    ok(imgs.length === 10 && imgs.every((u) => fs.existsSync(path.join(ROOT, u.slice(1)))), `hero: 9 SAHM posts + 1 story, hashed and sized, on ${file}`);
+    // the phone: SAHM's real logo and its six real reel covers (assets/demo/, crops of its Instagram profile, build/demo-images.py)
+    const imgs = [...hero.matchAll(/<img [^>]*src="(\/assets\/demo\/(?:post-\d|logo)\.webp)" alt="" width="\d+" height="\d+"/g)].map((m) => m[1]);
+    ok(imgs.length === 8 && imgs.every((u) => fs.existsSync(path.join(ROOT, u.slice(1)))) && !/\/assets\/(?:h\/)?sahm-(?:p\d|story)/.test(hero), `hero: SAHM logo, 6 reels + 1 story, real files, on ${file}`);
     // the package table: every Social package at its list and sale price from data/pricing.json, with its sign-up button
     for (const pk of PRICING.packages.filter((x) => ['kit', 'visible', 'growing'].includes(x.id))) {
       ok(new RegExp(`class="price-list amt" dir="(ltr|rtl)" data-usd="${pk.list_price}" data-sar="${pk.list_prices.SAR}"`).test(h) && new RegExp(`class="price amt" dir="(ltr|rtl)" data-usd="${pk.price}" data-sar="${pk.prices.SAR}"`).test(h), `table price ${pk.list_price} -> ${pk.price} USD (${pk.id}) on ${file}`);
     }
-    // TEMPORARY (2026-11-07): the SAHM images are placeholders until Adham sends the real post files; fail until they are replaced
-    const TEMP_SAHM = new Set(['1c56434fc4e4ea73','b58a88d52d62c17f','880f3c9ca78ed024','cc7ad8ebdabbf200','880b985d637a8904','2984d2d273f424b4','7ff452af5bc01583','1248c95c8428baf8','f15c0017db17fd71','7313c6c8501d8d99']);
-    for (const u of imgs) ok(!TEMP_SAHM.has(crypto.createHash('sha256').update(fs.readFileSync(path.join(ROOT, u.slice(1)))).digest('hex').slice(0, 16)), `placeholder SAHM image ${u} on ${file} (replace assets/sahm-*.webp with the real posts)`);
     ok((h.match(/<table class="la-table">/g) || []).length === 1 && /id="cur-data"/.test(h), `one package table with its currency data on ${file}`);
   }
   if (p === 'pricing/') {
-    const card = (h.match(/<(article|div) class="(plan|ind) cream store-card"[\s\S]*?<\/\1>/) || [''])[0];
-    ok(card && !/data-usd|data-product|usdnote/.test(card) && card.includes(`href="/${PREFIX(l)}in-store/#waitlist"`), `Store Kit card (waitlist only, no price) on ${file}`);
+    // The Store Kit card was removed from pricing (owner request, 2026-11-06); the waitlist stays on /in-store/
+    ok(!/store-card|soon-price|data-plan="store"|plans four/.test(h), `no Store Kit card on ${file}`);
+    ok(![d.en['name.store'], d[l]['name.store']].some((n) => h.includes(n)), `no Store Kit name (visible, meta, JSON-LD) on ${file}`);
   }
   if (p === 'in-store/') {
     ok(!/data-usd|data-product|"@type":"Offer"/.test(h), `no price, buy button or offer on ${file}`);
@@ -201,7 +200,6 @@ ok(!sm.includes('/branddeck/'), 'standalone Brand Deck physical pages omitted fr
 ok(rd('brand-deck/index.html').includes('"@type":"Service"') && !rd('brand-deck/index.html').includes('"@type":"Offer"'), 'Brand Deck Service is informational, without an active offer');
 ok(rd('social/index.html').includes('"@type":"Service"') && !rd('social/index.html').includes('"offers"'), 'Social Service JSON-LD is informational, without offers');
 ok(rd('in-store/index.html').includes('"@type":"Service"') && !rd('in-store/index.html').includes('"offers"'), 'In-store Services are informational, without offers');
-ok(rd('pricing/index.html').includes('\"name\":\"The Store Kit\"'), 'pricing ItemList lists The Store Kit');
 for (const pr of ['\"price\":\"15\"', '\"unitCode\":\"MON\"']) ok(rd('pricing/index.html').includes(pr), 'pricing JSON-LD ' + pr);
 // renamed pages: every old URL is a noindex redirect stub to the new page in the same language
 for (const l of LANGS) for (const [from, to] of Object.entries(MOVED)) {

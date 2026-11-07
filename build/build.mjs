@@ -112,7 +112,7 @@ for (const k of PRODUCTS) {
 }
 const dicts = Object.fromEntries(LANGS.map(([c]) => [c, JSON.parse(rd(`i18n/${c}.json`))]));
 const partials = {
-  hero: rd('templates/hero.html'), logo: rd('templates/logo.svg.html'), sahmLogo: rd('templates/sahm-logo.svg.html'), footer: rd('templates/footer.html'), header: rd('templates/header.html'),
+  hero: rd('templates/hero.html'), logo: rd('templates/logo.svg.html'), footer: rd('templates/footer.html'), header: rd('templates/header.html'),
   consent: rd('templates/consent.html'), panels: rd('templates/instore-panels.html'),
 };
 const CSS = {
@@ -310,17 +310,20 @@ function planCard(lang, p, hot) {
 }
 // ---- home: Landing A "Billboard" (Adham, 2026-11-06) ----
 // Hero headline + the Instagram-ready phone (SAHM, @sahmmena: the owner's own project, with its real posts), The Social Kit in
-// numbers, the OK rule, five steps, the package table, the cream In-store teaser and a closing call. No FAQ on the home page.
+// numbers, the client-portal walkthrough (kept, Adham 2026-11-07), the OK rule, the package table, the cream In-store teaser and
+// a closing call. No FAQ on the home page.
 // the headline's second sentence carries the lime highlight: split after the first sentence ("." in English, "…" in Arabic)
 function heroH1(lang) {
   const m = t(lang, 'home.h1').match(/^(.+?[.…])\s*(\S.*)$/);
   if (!m) throw new Error(`home.h1 (${lang}): no sentence break to split the hero headline`);
   return `${esc(m[1])} <span class="hl">${esc(m[2])}</span>`;
 }
-// SAHM's own post covers, cropped from its Instagram grid (assets/sahm-p<n>.webp, 3:4, newest first) and one story
-const SAHM_POSTS = 9;
-const sahmPosts = () => Array.from({ length: SAHM_POSTS }, (_, i) => `<img src="/assets/sahm-p${i + 1}.webp" alt="" width="300" height="400" decoding="async">`).join('');
-const sahmStory = () => '<img src="/assets/sahm-story.webp" alt="" width="270" height="480" decoding="async">';
+// SAHM's real reel covers and logo: the crops of its Instagram profile in assets/demo/ (build/demo-images.py, 240 x 320,
+// grid order), the same files the walkthrough uses. The Story card shows reel 3 (the emotions gauge).
+const HERO_POSTS = 6, HERO_STORY = 3;
+const sahmPosts = () => Array.from({ length: HERO_POSTS }, (_, i) => `<img src="/assets/demo/post-${i + 1}.webp" alt="" width="240" height="320" decoding="async">`).join('');
+const sahmStory = () => `<img src="/assets/demo/post-${HERO_STORY}.webp" alt="" width="240" height="320" decoding="async">`;
+const sahmLogo = '<img class="sahm-logo" src="/assets/demo/logo.webp" alt="" width="128" height="128" decoding="async">';
 // The Social Kit in numbers: every number is a count from data/pricing.json
 const KIT_NUMS = [['posts', 'la.n.posts', 'la.n.postsx'], ['stories', 'la.n.stories', 'la.n.storiesx'], ['competitor_profiles', 'la.n.comp', 'la.n.compx'], ['mockups', 'la.n.mock', 'la.n.mockx']];
 const kitNums = (lang) => KIT_NUMS.map(([item, k, x]) => `<div class="la-num"><b dir="ltr">${PKG.kit.items[item]}</b><span>${h(lang, k)}</span><small>${h(lang, x)}</small></div>`).join('');
@@ -329,8 +332,6 @@ function homeTrust(lang) {
   const li = [['la.ok.1', 'home.trust.approve'], ['la.ok.2', 'home.trust.own'], ['la.ok.3', 'home.trust.f2']].map(([b, k]) => `<li><b>${h(lang, b)}</b>${h(lang, k)}</li>`).join('');
   return `<ul class="la-oklist">${li}<li><b>${h(lang, 'la.ok.4')}</b>${h(lang, 'home.trust.f5')} <a href="${pathFor(lang, 'refund')}">${h(lang, 'home.trust.refund')}</a></li></ul>`;
 }
-// five steps: when (la.s<n>w), the step name (wt.<n>l, the portal's own words) and what happens (la.s<n>x)
-const homeSteps = (lang) => [1, 2, 3, 4, 5].map((i) => `<li><span class="la-when">${h(lang, `la.s${i}w`)}</span><h3>${h(lang, `wt.${i}l`)}</h3><p>${h(lang, `la.s${i}x`)}</p></li>`).join('');
 // the package table: one column per Social package; cells are i18n keys (counts as {n:<id>.<item>}), a cell key may be shared
 const TABLE_PKGS = ['kit', 'visible', 'growing'];
 const TABLE_ROWS = [
@@ -353,19 +354,119 @@ function priceTable(lang) {
   const buy = `<tr class="la-buy"><td></td>${TABLE_PKGS.map((p) => `<td${hot(p)}><a class="btn${p === 'visible' ? '' : ' la-line'}" href="${esc(buyHref(lang, p))}">${h(lang, `pkg.${p}.btn`)}</a></td>`).join('')}</tr>`;
   return `<table class="la-table">${head}<tbody>${price}${rows}${buy}</tbody></table>`;
 }
+
+// ---- home "See what working with Crier looks like": the client portal walkthrough (approved mockup v2, 2026-10-18) ----
+// An HTML/CSS recreation of the client portal, driven by assets/dash.js (45 s story loop). Portal labels
+// are the portal's own (dash.* keys); posts, names and the caption are example content. Steps: wt.<n>l / t / x / screen.
+const WT_STEPS = 5;
+const DASH_EMAIL = 'team@crierstudio.com';
+// Sahm Mena's six reels (instagram.com/sahmmena, 2026-11-05/06), titles verbatim, in profile-grid order = assets/demo/post-<n>.webp
+const SAHM_POSTS = [
+  'أساسيات ٦ · السهم · يعني إيه سهم أصلاً؟',
+  'أساسيات ٧ · الطرح العام · يعني إيه الطرح العام؟',
+  'قاعدة ٥ · المشاعر · المشاعر أغلى غلطة',
+  'أساسيات ٥ · التنويع · التنويع يعني إيه؟',
+  'قاعدة ٤ · نصايح الجروبات · نصيحة جروب واتساب مش دراسة',
+  'أساسيات ٤ · الترند · الترند يعني إيه؟',
+];
+// the day in November 2026 each reel went up on instagram.com/sahmmena (same order as SAHM_POSTS)
+const SAHM_DAYS = [6, 6, 6, 6, 5, 5];
+// icon paths copied from the portal's own set (portal/public/app.js)
+const PI = {
+  overview: 'M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z', layers: 'M12 3l9 5-9 5-9-5zM3 13l9 5 9-5', review: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8 12l3 3 5-6',
+  folder: 'M3 6h6l2 2h10v11H3z', calendar: 'M4 5h16v15H4zM8 3v4M16 3v4M4 10h16', card: 'M3 6h18v12H3zM3 10h18M7 15h3', chat: 'M4 5h16v11H9l-5 4z', menu: 'M4 7h16M4 12h16M4 17h16', chev: 'M9 6l6 6-6 6', check: 'M4 12l5 5L20 6',
+  settings: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7 7 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z',
+  spark: 'M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18', work: 'M12 3v12M7 10l5 5 5-5M4 20h16', comment: 'M4 5h16v11H9l-5 4z',
+};
+const ic = (k, lang) => { const d = k === 'chev' && lang === 'ar' ? 'M15 6l-6 6 6 6' : PI[k]; return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`; };
+const digits = (lang, n) => (lang === 'ar' ? String(n).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]) : String(n)); // Arabic-Indic on /ar/, as the portal does
+
+function dash(lang) {
+  const T = (k) => t(lang, 'dash.' + k), D = (k) => esc(T(k)), ar = lang === 'ar';
+  // the example business is Sahm Mena (instagram.com/sahmmena, a free Arab stock-market app): the six reels on its profile,
+  // titles verbatim (Arabic in both languages), thumbnails and the round SAHM logo cut from screenshots of the profile
+  // (build/demo-images.py). Dates are the reels' real post dates (SAHM_DAYS, November 2026).
+  const posts = SAHM_POSTS.map((title, i) => ({ file: 'post-' + (i + 1) + '.webp', day: SAHM_DAYS[i], title, label: T('typeReel') }));
+  const date = (day) => ar ? digits(lang, day) + ' ' + T('monthShort') : T('monthShort') + ' ' + digits(lang, day);
+  const image = (file, cls) => '<img class="' + cls + '" src="/assets/demo/' + file + '" alt="" loading="lazy" decoding="async">';
+  const logo = (cls) => image('logo.webp', cls);
+  const title = (p) => '<strong dir="rtl" lang="ar">' + esc(p.title) + '</strong>';
+  const postCard = (p) => '<span class="d-post-card"><span class="d-post-visual">' + image(p.file, 'd-post-img') + '<span class="d-post-kind">' + esc(p.label) + '</span></span><span class="d-post-copy">' + title(p) + '<small>' + esc(date(p.day)) + '</small></span></span>';
+  const postGrid = (arr, cls) => '<span class="d-post-grid ' + cls + '">' + arr.map(postCard).join('') + '</span>';
+  const calendarCell = (p) => '<span class="d-calendar-cell"><span class="d-calendar-day">' + digits(lang, p.day) + '</span><span class="d-calendar-thumb">' + image(p.file, 'd-calendar-img') + '</span><span class="d-calendar-type">' + esc(p.label) + '</span></span>';
+  const nav = (icon, key, screen, active) => '<span class="d-link' + (active ? ' on' : '') + '" data-nav="' + screen + '">' + ic(icon, lang) + '<span class="d-nl">' + D(key) + '</span></span>';
+  const tab = (key, screen, active) => '<span class="d-tab' + (active ? ' on' : '') + '" data-nav="' + screen + '">' + D(key) + '</span>';
+  const view = (screen, title, body, active) => '<span class="d-view' + (active ? ' is-on' : '') + '" data-screen="' + screen + '"><span class="d-view-head"><strong>' + D(title) + '</strong></span>' + body + '</span>';
+  const row = (key, label) => '<span class="d-brief-row" data-brief="' + key + '"><span class="d-brief-label">' + D('brief' + key.charAt(0).toUpperCase() + key.slice(1)) + '</span><strong>' + D(label) + '</strong><span class="d-brief-check">' + ic('check', lang) + '</span></span>';
+  const summary = (delivered, awaiting, approved, fourth, fourthCount) => '<span class="d-summary-grid">' +
+    '<span class="d-summary-tile dark"><small>' + D('delivered') + '</small><strong data-k="delivered">' + digits(lang, delivered) + '</strong></span>' +
+    '<span class="d-summary-tile"><small>' + D('awaiting') + '</small><strong data-k="await">' + digits(lang, awaiting) + '</strong></span>' +
+    '<span class="d-summary-tile"><small>' + D('approved') + '</small><strong data-k="approved">' + digits(lang, approved) + '</strong></span>' +
+    '<span class="d-summary-tile"><small>' + D(fourth) + '</small><strong data-k="' + (fourth === 'channels' ? 'channels' : 'readyCount') + '">' + digits(lang, fourthCount) + '</strong></span>' +
+    '</span>';
+  const emptyBody = summary(0, 0, 0, 'ready', 0) + '<span class="d-empty-state"><strong>' + D('emptyTitle') + '</strong><span class="d-empty-prompt"><span class="d-empty-spark">' + ic('spark', lang) + '</span><span><b>' + D('tellBusiness') + '</b><small>' + D('emptyHint') + '</small></span><span class="d-btn lime" data-b="answer">' + D('answerQuestions') + '</span></span></span>';
+  const overviewBody = summary(posts.length, posts.length, 0, 'channels', 1) + postGrid(posts.slice(0, 4), 'd-overview-grid');
+  const briefBody = '<span class="d-brief-list">' + row('industry', 'industryValue') + row('audience', 'audienceValue') + row('channels', 'channelsValue') + row('language', 'languageValue') + '</span><span class="d-brief-footer"><span class="d-brief-submitted" data-k="briefSubmitted">' + D('briefSubmitted') + '</span><span class="d-btn lime" data-b="submit-brief">' + D('submitBrief') + '</span></span>';
+  const deliverablesBody = '<span class="d-view-note"><b data-k="delivered">' + digits(lang, posts.length) + '</b> ' + D('postsDelivered') + '</span>' + postGrid(posts, 'd-many-grid');
+  const calendarBody = '<span class="d-calendar-title">' + D('calendarMonth') + '</span><span class="d-calendar-grid">' + posts.slice().sort((a, b) => a.day - b.day).map(calendarCell).join('') + '</span>';
+  const libraryBody = '<span class="d-view-note">' + D('libraryNote') + '</span>' + postGrid(posts, 'd-many-grid d-library-grid');
+  const waitingBody = '<span class="d-wait-card"><span class="d-clock" aria-hidden="true"><i class="d-clock-hand d-hour"></i><i class="d-clock-hand d-minute"></i><b></b></span><span class="d-wait-copy"><small>' + D('waitSub') + '</small><span class="d-clock-label">' + D('clockLabel') + '</span><span class="d-clock-jump"><span>' + D('now') + '</span><i aria-hidden="true">→</i><b>' + D('timeLater') + '</b></span></span></span>';
+  const reviewPost = posts[4];
+  const reviewBody = '<span class="d-review-card"><span class="d-review-image">' + image(reviewPost.file, 'd-review-img') + '</span><span class="d-review-copy"><small>' + esc(reviewPost.label + ' · ' + date(reviewPost.day)) + '</small>' + title(reviewPost) + '<span class="d-review-status" data-k="reviewStatus">' + D('pendingStatus') + '</span><span class="d-review-actions"><span class="d-btn sec" data-b="changes">' + D('changes') + '</span><span class="d-btn lime" data-b="approve">' + D('approve') + '</span></span></span></span>';
+  const readyBody = '<span class="d-ready-card"><span class="d-ready-image">' + image(reviewPost.file, 'd-ready-img') + '</span><span class="d-ready-copy"><span class="d-ready-chips"><span class="d-chip">' + D('approvedStatus') + '</span><span class="d-chip">' + D('ready') + '</span></span><strong>' + D('readyTitle') + '</strong><small dir="rtl" lang="ar">' + esc(reviewPost.title) + '</small><span class="d-ready-actions"><span class="d-btn lime" data-b="copy"><span data-k="copyLabel">' + D('copyCap') + '</span></span><span class="d-btn sec" data-b="dl">' + D('download') + '</span><span class="d-btn sec" data-b="mark">' + D('markPosted') + '</span></span></span></span>';
+  const instagramBody = '<span class="d-instagram-card"><span class="d-ig-head"><span class="d-ig-avatar">' + logo('d-ig-logo') + '</span><strong>' + D('instagramHandle') + '</strong><span class="d-ig-network">' + D('instagram') + '</span></span><span class="d-ig-image">' + image(reviewPost.file, 'd-ig-post') + '<span class="d-ig-posted">' + D('posted') + '</span></span><span class="d-ig-footer"><span class="d-ig-icons" aria-hidden="true">♡　○　↗</span><small dir="rtl" lang="ar">' + esc(reviewPost.title) + '</small></span></span>';
+  const briefView = view('brief', 'briefTitle', briefBody, false);
+  const emptyView = view('empty', 'glance', emptyBody, false);
+  const overviewView = view('overview', 'glance', overviewBody, false);
+  const waitingView = view('waiting', 'waitTitle', waitingBody, false);
+  const deliverablesView = view('deliverables', 'deliverables', deliverablesBody, false);
+  const calendarView = view('calendar', 'calendar', calendarBody, false);
+  const libraryView = view('library', 'library', libraryBody, false);
+  const reviewView = view('review', 'reviewTitle', reviewBody, false);
+  const readyView = view('ready', 'readyTitle', readyBody, true);
+  const instagramView = view('instagram', 'instagram', instagramBody, false);
+  const js = Object.fromEntries(['brand', 'site', 'briefSubmitted', 'pendingStatus', 'approvedStatus', 'approve', 'copied', 'copyCap'].map((k) => [k, T(k)]));
+  js.posts = posts.length;
+  const navLinks = nav('overview', 'overview', 'overview', true) + nav('layers', 'deliverables', 'deliverables', false) + nav('card', 'calendar', 'calendar', false) + nav('folder', 'library', 'library', false) + nav('review', 'review', 'review', false);
+  const bottomLinks = [['overview', 'overview'], ['layers', 'deliverables'], ['card', 'calendar'], ['folder', 'library'], ['review', 'review']].map(([icon, key]) => '<span class="d-bn" data-nav="' + key + '">' + ic(icon, lang) + '<span>' + D(key) + '</span></span>').join('');
+  return '<div class="dash" id="dash" role="img" aria-label="' + D('aria') + '">' +
+    '<span class="d-cam" aria-hidden="true"></span><span class="ex-badge" aria-hidden="true">' + D('ex') + '</span>' +
+    '<span class="d-vp" aria-hidden="true"><span class="d-cv">' +
+      '<span class="d-side"><span class="d-logo">' + logo('d-brand-logo') + '</span>' +
+        '<span class="d-client"><span class="d-mark">' + logo('d-brand-avatar') + '</span><span class="d-ct"><strong>' + D('brand') + '</strong><small>' + D('ws') + '</small></span></span>' +
+        '<span class="d-nav">' + navLinks + '</span><span class="d-group">' + D('group') + '</span>' +
+        '<span class="d-foot"><span class="d-user"><span class="d-av">' + logo('d-user-avatar') + '</span><span class="d-ct"><strong>' + D('user') + '</strong><small>' + D('client') + '</small></span></span></span></span>' +
+      '<span class="d-mtop"><span class="d-mmenu">' + ic('menu', lang) + '</span><span class="d-mbrand">' + logo('d-brand-avatar') + '<strong>' + D('brand') + '</strong></span><span class="d-pill lime d-mpill">' + D('ready') + '</span></span>' +
+      '<span class="d-main"><span class="d-head"><span class="d-h1">' + D('greet') + '</span><span class="d-pill lime d-hpill">' + D('ready') + '</span></span>' +
+        '<span class="d-tabs">' + tab('overview', 'overview', true) + tab('deliverables', 'deliverables', false) + tab('calendar', 'calendar', false) + tab('library', 'library', false) + '</span>' +
+        '<span class="d-stage">' + briefView + emptyView + overviewView + waitingView + deliverablesView + calendarView + libraryView + reviewView + readyView + instagramView + '</span>' +
+      '</span><span class="d-bnav">' + bottomLinks + '</span>' +
+      '<span class="d-time-later" data-k="timeLater">' + D('timeLater') + '</span>' +
+      '<span class="d-modal" data-k="modal"><span class="d-mbox"><span class="d-mbrand modal-brand">' + logo('d-brand-avatar') + '<strong>' + D('brand') + '</strong></span><strong class="d-mt">' + D('signup') + '</strong>' +
+        '<span class="d-f"><span class="d-fl">' + D('company') + '</span><span class="d-fi" data-c="company"><span data-k="type">' + D('brand') + '</span><i class="d-caret"></i></span></span>' +
+        '<span class="d-f"><span class="d-fl">' + D('website') + '</span><span class="d-fi" data-c="site" dir="ltr"><span data-k="typedSite">' + D('site') + '</span><i class="d-caret"></i></span></span>' +
+        '<span class="d-btn lime d-wide" data-b="create">' + D('signup') + '</span></span></span>' +
+      '<span class="d-cursor"><svg viewBox="0 0 24 24"><path d="M5 3l14 8.2-6.1 1.3 3.6 6.9-2.7 1.4-3.6-7L5 18.2z" fill="#0E0F0C" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></span>' +
+    '</span></span><script type="application/json" id="dash-s">' + jsonScript(js) + '</script></div>';
+}
+function walkthrough(lang) {
+  const n = Array.from({ length: WT_STEPS }, (_, i) => i + 1), two = (i) => String(i).padStart(2, '0');
+  // the finished state: the last step active, the ones before it done (dash.js resets this when it runs)
+  const wtSteps = n.map((i) => `<li class="wt-step ${i < WT_STEPS ? 'is-done' : 'is-active'}" data-step="${i}"><button type="button" class="wt-btn" aria-controls="dash" aria-current="${i < WT_STEPS ? 'false' : 'step'}"><span class="wt-num" aria-hidden="true">${two(i)}</span><span class="wt-text"><span class="wt-label">${h(lang, `wt.${i}l`)}</span><span class="wt-title">${h(lang, `wt.${i}t`)}</span></span></button><span class="wt-bar" aria-hidden="true"><i></i></span></li>`).join('');
+  // the active step's detail sits in one fixed-height box (all five stacked in one grid cell) so the page never shifts
+  const wtDetails = n.map((i) => `<div class="wt-d${i < WT_STEPS ? '' : ' is-on'}" data-step="${i}"><p class="wt-sub">${h(lang, `wt.${i}x`)}</p><p class="wt-screen"><span>${h(lang, 'wt.screen')}:</span> ${h(lang, `wt.${i}screen`)}</p></div>`).join('');
+  // "Get started": the client portal's own sign-up, in the page language
+  return { dash: dash(lang), wtSteps, wtDetails, wtTotal: two(WT_STEPS), signupHref: esc(signupUrl(lang)) };
+}
 const STORE_PIECES = ['apron', 'menu', 'mat', 'cup', 'qr', 'card'];
 const storePieces = (lang) => STORE_PIECES.map((k) => `<span>${h(lang, `is.pc.${k}`)}</span>`).join(' <i aria-hidden="true">/</i> ');
 function homeVars(lang) {
   return {
-    heroH1: heroH1(lang), sahmPosts: sahmPosts(), sahmStory: sahmStory(), ...heroStart(lang),
+    heroH1: heroH1(lang), sahmPosts: sahmPosts(), sahmStory: sahmStory(), sahmLogo, ...heroStart(lang),
     kitNums: kitNums(lang), kitPrice: money(lang, 'kit'), kitBtn: `<a class="btn lime" href="${esc(buyHref(lang, 'kit'))}">${h(lang, 'pkg.kit.btn')}</a>`,
-    trust: homeTrust(lang), steps: homeSteps(lang), curPick: curPick(lang), priceTable: priceTable(lang),
+    trust: homeTrust(lang), ...walkthrough(lang), curPick: curPick(lang), priceTable: priceTable(lang),
     storePieces: storePieces(lang), quoteHref: esc(portalAuth('signup', lang)),
   };
-}
-// pricing: The Store Kit card (label, name, one line, "Coming soon" where the price sits, the waitlist as a secondary button)
-function storePlanCard(lang) {
-  return `<article class="plan cream store-card" data-plan="store"><span class="badge">${h(lang, 'pkg.store.eye')}</span><h3>${h(lang, 'name.store')}</h3><p class="pt">${h(lang, 'is.kit.line')}</p><p class="soon-price">${h(lang, 'availability.soon')}</p><div class="buyrow"><a class="btn ghost" href="${pathFor(lang, 'in-store')}#waitlist">${h(lang, 'is.cta1')}</a></div></article>`;
 }
 // P1: a monthly package picks its platforms on the card; the live line ("Keep Growing · Instagram + Facebook · $90/mo") is computed in
 // the browser from the numbers below (data/pricing.json: price + (platforms - included) × extra_platform_price), never typed.
@@ -380,7 +481,7 @@ function platPick(lang, p) {
   const local = Object.fromEntries(CURS.slice(1).map((c) => [c, [k.prices[c], k.extra_platform_prices[c]]]));
   return `<fieldset class="platpick" data-pkg="${p}" data-price="${k.price}" data-extra="${k.extra_platform_price}" data-local="${esc(JSON.stringify(local))}" data-included="${k.platforms_included || 1}" data-name="${esc(pname(lang, p))}" data-tpl="${esc(t(lang, 'plan.live'))}" data-per="${esc(t(lang, 'plan.perShort'))}"><legend>${h(lang, 'plan.pickPlatforms')}</legend><div class="opts">${boxes}</div><p class="liveprice" aria-live="polite" dir="auto">${esc(line)}</p><p class="fine">${h(lang, 'plan.extraNote')}</p></fieldset>`;
 }
-const planCards = (lang) => ['kit', 'visible', 'growing'].map((p) => planCard(lang, p, p === 'kit')).join('') + storePlanCard(lang);
+const planCards = (lang) => ['kit', 'visible', 'growing'].map((p) => planCard(lang, p, p === 'kit')).join('');
 const deckCards = (lang) => planCard(lang, 'deck', false);
 const billItems = (lang) => { const out = []; for (let i = 1; dicts[lang][`bill.${i}`] != null; i++) out.push(`<li>${h(lang, `bill.${i}`)}</li>`); return out.join(''); };
 
@@ -515,7 +616,6 @@ function jsonLd(lang, page) {
     if (page === 'sculptures') nodes.push({ '@type': 'Service', name: t(lang, 'nav.sculptures'), description: t(lang, 'meta.d.sculptures'), url: urlFor(lang, page), provider });
     if (page === 'pricing') {
       const items = PRODUCTS.map((p) => ({ '@type': 'Service', name: pname(lang, p), provider, ...(p === 'deck' ? { description: t(lang, 'availability.deck') } : { offers: offerNode(lang, p) }) }));
-      items.splice(3, 0, { '@type': 'Service', name: t(lang, 'name.store'), description: t(lang, 'is.kit.line'), url: urlFor(lang, 'in-store') + '#kit', provider });
       nodes.push({ '@type': 'ItemList', name: t(lang, 'pricing.h1'), itemListElement: items.map((item, i) => ({ '@type': 'ListItem', position: i + 1, item })) });
     }
     if (page === 'faq') {
@@ -690,7 +790,7 @@ for (const [lang] of LANGS) {
     htmlCc = LEGAL.includes(page) || page === 'pricing' ? null : DEFAULT_CC; // the legal pages keep the US-dollar price list
     const ctx = { lang, v: pageVars(lang, page) };
     const body = render(rd(`templates/${page === 'index' ? 'home' : page}.html`), ctx);
-    const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${!LEGAL.includes(page) && page !== 'pricing' && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${page === 'sculptures' ? '<script src="/assets/sculptures.js" defer></script>\n' : ''}</body>\n</html>\n`;
+    const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${!LEGAL.includes(page) && page !== 'pricing' && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${page === 'index' ? '<script src="/assets/dash.js" defer></script>\n' : ''}${page === 'sculptures' ? '<script src="/assets/sculptures.js" defer></script>\n' : ''}</body>\n</html>\n`;
     const html = `${head(lang, page, purgeCss(cssFor(lang, page), bodyHtml))}\n${trimIndent(bodyHtml)}`;
     write(dirFor(lang, page) + 'index.html', hashUrls(html));
     built.push([lang, page]);

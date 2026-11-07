@@ -14,19 +14,30 @@
       </div>
     </section>
 
+    <section id="walkthrough" class="wt" aria-labelledby="wt-title">
+      <div class="wt-head">
+        <span class="eyebrow">{{t:wt.eye}}</span>
+        <h2 id="wt-title">{{t:wt.h2}}</h2>
+        <p class="lead">{{t:wt.sub}}</p>
+      </div>
+      <div class="wt-grid">
+        <div class="wt-stage">
+          {{=dash}}
+        </div>
+        <div class="wt-side">
+          <div class="wt-progress" aria-hidden="true"><span class="wt-count"><bdi dir="ltr"><b>{{=wtTotal}}</b> / {{=wtTotal}}</bdi></span><span class="wt-track"><i></i></span></div>
+          <ol class="wt-steps" aria-label="{{a:wt.steps}}">{{=wtSteps}}</ol>
+          <div class="wt-detail">{{=wtDetails}}</div>
+          <div class="wt-cta"><a class="btn" href="{{=signupHref}}">{{t:wt.cta}}</a><a class="wt-from" href="{{=pricingHref}}">{{t:wt.from}}</a></div>
+        </div>
+      </div>
+    </section>
+
     <section id="trust" class="la-ok" aria-labelledby="trust-title">
       <h2 id="trust-title">{{t:wt.big}}</h2>
       {{=trust}}
     </section>
 
-    <section id="how" class="la-how" aria-labelledby="how-title">
-      <div class="la-head">
-        <h2 id="how-title">{{t:la.how.h2}}</h2>
-        <p class="lead">{{t:wt.sub}}</p>
-      </div>
-      <ol class="la-steps">{{=steps}}</ol>
-      <div class="la-cta"><a class="btn" href="{{=signupHref}}">{{t:wt.cta}}</a><a class="la-link" href="{{=samplesHref}}">{{t:la.how.samples}}</a></div>
-    </section>
 
     <section id="pricing" class="la-price" aria-labelledby="price-title">
       <div class="la-head">
