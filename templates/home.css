@@ -902,7 +902,7 @@ html[lang=ar] .home-faq summary{letter-spacing:0;line-height:1.6}
 /* ================= Home: Landing A "Billboard" (Adham, 2026-11-06; design/landing/a/) =================
    The hero keeps the Instagram-ready phone (now SAHM, @sahmmena, with its real posts) beside a bigger headline whose second
    sentence sits on a lime band. Then: The Social Kit in numbers, the OK rule on a full-bleed lime band, five steps, the package
-   table, the cream In-store teaser (cream = physical) and a closing call. Full-bleed bands paint past body>.wrap with a spread
+   table and a closing call (the cream In-store teaser was removed 2026-11-06). Full-bleed bands paint past body>.wrap with a spread
    box-shadow clipped to the band's own height, so nothing widens the page. */
 .la-link{display:inline-flex;align-items:center;min-height:44px;font:600 15px/1.2 var(--body);color:var(--ink);text-decoration:underline;text-underline-offset:6px;text-decoration-color:var(--accent);text-decoration-thickness:2px}
 html[lang=ar] .la-link{font-size:16px}
@@ -1005,26 +1005,6 @@ html[lang=ar] .la-pname{font-weight:700;letter-spacing:0;line-height:1.3}
 .la-fine{margin-top:18px;color:var(--muted);font-size:15px;max-width:80ch}
 .la-fine a{font-weight:600;text-underline-offset:4px;text-decoration-color:var(--accent)}
 
-/* In-store: cream (physical), full-bleed */
-.la-store.cream{box-shadow:0 0 0 100vmax var(--cream-bg);clip-path:inset(0 -100vmax);border-top:0}
-.la-store .lead{color:var(--cream-muted)}
-.la-pieces{font:800 clamp(32px,4.8vw,70px)/1.04 var(--display);letter-spacing:-.035em;margin-bottom:52px;max-width:none}
-html[lang=ar] .la-pieces{font-weight:700;letter-spacing:0;line-height:1.45}
-.la-pieces span{white-space:nowrap}
-.la-pieces i{font-style:normal;color:var(--sample-terra-text);padding-inline:.12em}
-.la-two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-.la-box{display:flex;flex-direction:column;gap:14px;padding:30px;background:var(--cream-panel);border:1px solid var(--cream-line)}
-.la-box h3{font-size:34px;font-weight:800;letter-spacing:-.03em}
-html[lang=ar] .la-box h3{font-weight:700;letter-spacing:0;line-height:1.3}
-.la-box p{color:var(--cream-muted)}
-html[lang=ar] .la-box p{line-height:1.8}
-.la-box .btn{align-self:flex-start;margin-top:auto}
-.la-box .btn.la-line{color:var(--cream-ink);border-color:var(--cream-ink);background:transparent}
-.la-tag{align-self:flex-start;font:700 12px/1 var(--body);letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;border:1.5px solid currentColor}
-html[lang=ar] .la-tag{letter-spacing:0;font-size:13px}
-.la-tag.soon{color:var(--sample-terra-text)}
-.la-tag.open{background:var(--accent);border-color:var(--accent);color:var(--cream-ink)}
-
 /* closing call */
 .la-close h2{max-width:14ch;margin-bottom:36px}
 .la-contact{margin-top:28px;color:var(--muted)}
@@ -1043,7 +1023,6 @@ html[lang=ar] .la-tag{letter-spacing:0;font-size:13px}
   .la-steps::before{inset-inline:8px auto;top:0;bottom:0;width:1px;height:auto}
   .la-steps li{padding:0}
   .la-steps li::before{inset-inline-start:-33px;top:6px}
-  .la-two{grid-template-columns:1fr}
 }
 @media(max-width:600px){
   .la-nums{grid-template-columns:1fr}
@@ -1054,7 +1033,6 @@ html[lang=ar] .la-tag{letter-spacing:0;font-size:13px}
   .la-oklist li{padding-top:18px}
   .la-kitprice{padding:20px}
   .la-kitprice .btn{margin-inline-start:0;width:100%}
-  .la-box{padding:22px}
   .la-cta .btn{flex:1 1 100%}
 }
 /* phones: a taller phone so SAHM's posts show under its profile */
