@@ -52,19 +52,16 @@
     else if (tt >= 28 && tt < 37) screen = 'review';
     else if (tt >= 37 && tt < 41) screen = 'ready';
     else if (tt >= 41) screen = 'instagram';
-    var sent = tt >= 30.4;
     var approved = tt >= 33;
     return {
       screen: screen,
       modal: 1 - ramp(tt, 3.5, .5),
-      delivered: tt >= 16 ? 8 : 0,
-      awaiting: approved ? 7 : (tt >= 16 ? 8 : 0),
+      delivered: tt >= 16 ? S.posts : 0,
+      awaiting: approved ? S.posts - 1 : (tt >= 16 ? S.posts : 0),
       approved: approved ? 1 : 0,
       readyCount: approved ? 1 : 0,
       approvedReview: approved,
       briefDone: tt >= 11.45,
-      changeSent: sent,
-      changeTyped: S.changeText.slice(0, Math.round(S.changeText.length * lin(tt, 29, 1.05))),
       copyDone: tt >= 39.2,
       company: S.brand.slice(0, Math.round(S.brand.length * lin(tt, .25, 1))),
       site: S.site.slice(0, Math.round(S.site.length * lin(tt, 1.35, 1.1)))
@@ -115,16 +112,11 @@
       cls(row, 'is-filled', tt >= [8.45, 9.1, 9.75, 10.4][i]);
     });
     cls(one('[data-k=briefSubmitted]'), 'is-on', s.briefDone);
-    cls(one('.d-change-box'), 'is-on', tt >= 28.5 && tt < 32.9);
-    cls(one('.d-change-text'), 'on', tt >= 29 && tt < 30.2);
-    txt(one('[data-k=changeTyped]'), s.changeTyped);
-    cls(one('.d-change-sent'), 'is-on', s.changeSent);
-    cls(one('[data-b=sendChange]'), 'done', s.changeSent);
     number('delivered', s.delivered);
     number('await', s.awaiting);
     number('approved', s.approved);
     number('readyCount', s.readyCount);
-    txt(one('[data-k=reviewStatus]'), s.approvedReview ? S.approvedStatus : (s.changeSent ? S.changeStatus : S.pendingStatus));
+    txt(one('[data-k=reviewStatus]'), s.approvedReview ? S.approvedStatus : S.pendingStatus);
     txt(one('[data-b=approve]'), s.approvedReview ? S.approvedStatus : S.approve);
     txt(one('[data-k=copyLabel]'), s.copyDone ? S.copied : S.copyCap);
     cls(one('[data-b=copy]'), 'done', s.copyDone);
@@ -138,13 +130,12 @@
     [4.3, '[data-b=answer]'], [8.4, '[data-brief=industry]'], [9.2, '[data-brief=audience]'],
     [10, '[data-brief=channels]'], [10.55, '[data-brief=language]'], [11.15, '[data-b=submit-brief]'],
     [13, '.d-clock'], [16.35, '[data-nav=overview]'], [20.2, '[data-nav=calendar]'],
-    [24.2, '[data-nav=library]'], [28.35, '[data-b=changes]'], [30.1, '[data-b=sendChange]'],
+    [24.2, '[data-nav=library]'], [29.5, '.d-review-card strong'],
     [33.15, '[data-b=approve]'], [38.25, '[data-b=copy]'], [41.2, 'rest']
   ];
   var CLICKS = [
     [2.95, '[data-b=create]'], [7.6, '[data-b=answer]'], [11.45, '[data-b=submit-brief]'],
-    [20.4, '[data-nav=calendar]'], [24.4, '[data-nav=library]'], [28.55, '[data-b=changes]'],
-    [30.25, '[data-b=sendChange]'], [33.35, '[data-b=approve]'], [38.5, '[data-b=copy]']
+    [20.4, '[data-nav=calendar]'], [24.4, '[data-nav=library]'], [33.35, '[data-b=approve]'], [38.5, '[data-b=copy]']
   ];
   var positions = {};
   function at(selector) {
