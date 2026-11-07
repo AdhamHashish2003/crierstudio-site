@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Crier Studio · Landing A: Billboard</title>
+<link rel="icon" href="../../../favicon.svg" type="image/svg+xml">
+<style>
+@font-face{font-family:"Archivo";font-style:normal;font-weight:100 900;font-display:swap;src:url(../../../fonts/archivo-latin-wght-normal.woff2) format("woff2")}
+@font-face{font-family:"Instrument Sans";font-weight:400;font-display:swap;src:url(../../../fonts/instrument-sans-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Instrument Sans";font-weight:500;font-display:swap;src:url(../../../fonts/instrument-sans-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Instrument Sans";font-weight:600;font-display:swap;src:url(../../../fonts/instrument-sans-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Instrument Sans";font-weight:700;font-display:swap;src:url(../../../fonts/instrument-sans-latin-700-normal.woff2) format("woff2")}
+
+:root{--bg:#0E0F0C;--surface:#171913;--paper:#1A1C16;--ink:#F6F8EF;--muted:#B7BCA9;--line:#2D3027;--accent:#C6FF00;--accent-ink:#0E0F0C;--dia:#C6FF00;
+--cream-bg:#f3f1ea;--cream-ink:#1b1b17;--cream-panel:#fbfaf6;--cream-line:#e3e0d5;--cream-muted:#4a4942;--terra-text:#b4492a;
+--display:"Archivo",system-ui,sans-serif;--body:"Instrument Sans",system-ui,sans-serif;--pad:clamp(16px,4vw,48px);color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:400 17px/1.55 var(--body);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.wrap{max-width:1360px;margin:0 auto;padding:0 var(--pad)}
+.wm{height:30px;width:auto;display:block}
+h1,h2,h3{font-family:var(--display);letter-spacing:-.035em;line-height:.92;font-weight:800;text-wrap:balance}
+.btn{display:inline-flex;align-items:center;gap:10px;font:600 16px/1 var(--body);text-decoration:none;padding:17px 22px;border-radius:4px;background:var(--accent);color:var(--accent-ink);border:2px solid var(--accent);transition:transform .15s}
+.btn:hover{transform:translateY(-2px)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.dark{background:var(--bg);color:var(--ink);border-color:var(--bg)}
+.btn svg{width:16px;height:16px}
+.link{font-weight:600;text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:5px}
+
+/* Header */
+header{border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;gap:32px;height:76px}
+header nav{display:flex;gap:28px;font-weight:500;font-size:15px}
+header nav a{text-decoration:none;color:var(--muted)}
+header nav a:hover{color:var(--ink)}
+header .right{margin-left:auto;display:flex;align-items:center;gap:20px;font-size:15px}
+header .right .btn{padding:12px 16px;font-size:15px}
+.lang{color:var(--muted);text-decoration:none;font-weight:500}
+
+/* Hero */
+.hero{padding:clamp(40px,7vw,96px) 0 0}
+.where{font-weight:600;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:28px}
+.hero h1{font-size:clamp(50px,8.6vw,138px)}
+.hero h1 .hl{background:var(--accent);color:var(--accent-ink);padding:0 .1em;-webkit-box-decoration-break:clone;box-decoration-break:clone;line-height:1.02}
+.hero-foot{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:end;margin-top:clamp(32px,4vw,56px);padding-bottom:clamp(40px,5vw,64px)}
+.hero-foot p{font-size:clamp(18px,1.6vw,22px);color:var(--muted);max-width:40ch}
+.hero-foot p strong{color:var(--ink);font-weight:600}
+.cta{display:flex;flex-wrap:wrap;align-items:center;gap:14px 28px;justify-content:flex-end}
+
+/* Moving strip of example posts */
+.strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:28px 0 18px;overflow:hidden}
+.strip-track{display:flex;gap:16px;width:max-content;animation:roll 60s linear infinite}
+.strip-track .post{width:clamp(170px,17vw,240px);flex:none}
+.strip:hover .strip-track{animation-play-state:paused}
+@keyframes roll{to{transform:translateX(calc(-50% - 8px))}}
+@media (prefers-reduced-motion:reduce){.strip-track{animation:none}}
+.strip-note{font-size:13px;color:var(--muted);margin-top:14px}
+
+/* Kit numbers */
+.sec{padding-top:clamp(72px,10vw,140px);padding-bottom:clamp(72px,10vw,140px)}
+.sec-head{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:end;margin-bottom:clamp(40px,5vw,72px)}
+.sec-head h2{font-size:clamp(40px,5.6vw,84px)}
+.sec-head p{color:var(--muted);font-size:19px;max-width:44ch;justify-self:end}
+.nums{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line)}
+.num{padding:28px 24px 8px 0;border-right:1px solid var(--line)}
+.num+.num{padding-left:24px}
+.num:last-child{border-right:0}
+.num b{display:block;font:800 clamp(72px,10vw,156px)/.85 var(--display);letter-spacing:-.05em;color:var(--accent)}
+.num span{display:block;margin-top:18px;font-weight:600;font-size:18px}
+.num small{display:block;color:var(--muted);font-size:15px;margin-top:4px}
+.kit-price{margin-top:48px;display:flex;flex-wrap:wrap;gap:16px 32px;align-items:center;padding:26px 28px;background:var(--surface);border:1px solid var(--line);border-radius:6px}
+.kit-price .p{font:800 44px/1 var(--display);letter-spacing:-.03em}
+.kit-price s{color:var(--muted);font-size:22px;font-weight:500;margin-right:8px}
+.kit-price .t{color:var(--muted)}
+.kit-price .btn{margin-left:auto}
+
+/* OK rule (lime band) */
+.okband{background:var(--accent);color:var(--accent-ink)}
+.okband h2{font-size:clamp(56px,10.5vw,170px);max-width:12ch}
+.oklist{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:clamp(48px,6vw,88px);border-top:2px solid var(--accent-ink)}
+.oklist li{list-style:none;padding:22px 22px 0 0;font-size:18px;font-weight:500;line-height:1.4}
+.oklist li+li{padding-left:22px;border-left:1px solid rgba(14,15,12,.25)}
+.oklist li b{display:block;font:800 24px/1.05 var(--display);letter-spacing:-.02em;margin-bottom:10px}
+.oklist a{font-weight:600}
+.okband ul{padding:0}
+
+/* Steps */
+.steps{display:grid;grid-template-columns:repeat(5,1fr);position:relative;padding:0}
+.steps::before{content:"";position:absolute;left:0;right:0;top:10px;height:1px;background:var(--line)}
+.steps li{list-style:none;position:relative;padding:44px 24px 0 0}
+.steps li::before{content:"";position:absolute;top:3px;left:2px;width:14px;height:14px;background:var(--accent);transform:rotate(45deg)}
+.steps h3{font-size:clamp(28px,2.6vw,38px);letter-spacing:-.03em;margin-bottom:14px}
+.steps p{color:var(--muted);font-size:16px}
+.steps .when{display:block;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.steps-cta{margin-top:56px;display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+
+/* Pricing table */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+table{width:100%;min-width:760px;border-collapse:collapse;font-size:16px}
+th,td{text-align:left;padding:18px 22px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+thead th{vertical-align:bottom;padding-top:28px;background:var(--surface)}
+thead th:first-child{color:var(--muted);font-weight:500;font-size:14px}
+.plan-name{display:block;font:800 30px/1 var(--display);letter-spacing:-.03em;margin-bottom:6px}
+.plan-tag{display:block;color:var(--muted);font-weight:400;font-size:15px}
+td:first-child{color:var(--muted);width:24%}
+td.no{color:#5d6252}
+.price-row td{background:var(--surface)}
+.price{font:800 40px/1 var(--display);letter-spacing:-.03em}
+.price s{font-size:18px;color:var(--muted);font-weight:500;margin-right:6px}
+.price small{font:500 15px var(--body);color:var(--muted);letter-spacing:0}
+.hot{box-shadow:inset 3px 0 0 var(--accent)}
+.buy-row td{padding:22px}
+.buy-row .btn{width:100%;justify-content:center}
+.fine{margin-top:20px;color:var(--muted);font-size:15px;max-width:80ch}
+
+/* In-store (cream = physical, the site's own convention) */
+.cream{background:var(--cream-bg);color:var(--cream-ink)}
+.cream .sec-head p{color:var(--cream-muted)}
+.pieces{font:800 clamp(34px,5vw,72px)/1.02 var(--display);letter-spacing:-.035em;margin-bottom:56px}
+.pieces span{white-space:nowrap}
+.pieces i{font-style:normal;color:var(--terra-text);padding:0 .15em}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.box{background:var(--cream-panel);border:1px solid var(--cream-line);border-radius:6px;padding:32px;display:flex;flex-direction:column;gap:16px}
+.box h3{font-size:36px;letter-spacing:-.03em}
+.box p{color:var(--cream-muted)}
+.tag{align-self:flex-start;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;border-radius:3px;border:1.5px solid currentColor}
+.tag.soon{color:var(--terra-text)}
+.tag.open{color:var(--cream-ink);background:var(--accent);border-color:var(--accent)}
+.box .btn{align-self:flex-start;margin-top:auto;background:var(--cream-ink);color:var(--cream-bg);border-color:var(--cream-ink)}
+.box .btn.out{background:transparent;color:var(--cream-ink)}
+
+
+/* Closing + footer */
+.close{padding:clamp(80px,11vw,160px) 0 clamp(48px,6vw,80px);border-top:1px solid var(--line)}
+.close h2{font-size:clamp(48px,8vw,128px);max-width:14ch}
+.close .cta{justify-content:flex-start;margin-top:40px}
+footer{border-top:1px solid var(--line);padding:56px 0 40px;font-size:15px;color:var(--muted)}
+.fgrid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:32px}
+.fgrid h4{font:600 13px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);margin-bottom:14px}
+.fgrid ul{padding:0;list-style:none;display:grid;gap:8px}
+.fgrid a{text-decoration:none}
+.fgrid a:hover{color:var(--ink)}
+.bigmark{margin-top:64px;color:var(--ink)}
+.bigmark .wm{width:100%;height:auto}
+.copy{margin-top:28px;display:flex;justify-content:space-between}
+
+/* Example post tiles (shared by all three versions). Sizes are relative to the tile, so one tile works at any width. */
+.post{container-type:inline-size;position:relative;aspect-ratio:4/5;overflow:hidden;border-radius:var(--post-r,6px);padding:0;display:flex;flex-direction:column;justify-content:flex-end;background:var(--pb);color:var(--pi)}
+.post.story{aspect-ratio:9/16}
+.post.sq{aspect-ratio:1}
+.post b{margin:0 8cqw;font-family:"Archivo",sans-serif;font-weight:800;font-size:12.5cqw;line-height:.95;letter-spacing:-.02em;position:relative}
+.post small{margin:2.5cqw 8cqw 8cqw;font-size:5.6cqw;font-weight:500;opacity:.78;position:relative}
+.post .art{position:absolute;display:block}
+.pv-lime{--pb:#C6FF00;--pi:#0E0F0C;--pa:#0E0F0C}
+.pv-ink{--pb:#0E0F0C;--pi:#F6F8EF;--pa:#C6FF00;box-shadow:inset 0 0 0 1px #2D3027}
+.pv-dark{--pb:#1A1C16;--pi:#F6F8EF;--pa:#C6FF00}
+.pv-pale{--pb:#E9EEDA;--pi:#0E0F0C;--pa:#0E0F0C}
+.pv-paper{--pb:#F6F8EF;--pi:#0E0F0C;--pa:#0E0F0C}
+.a-ring{width:56cqw;aspect-ratio:1;border-radius:50%;border:9cqw solid var(--pa);top:-8cqw;right:-8cqw}
+.a-dot{width:42cqw;aspect-ratio:1;border-radius:50%;background:var(--pa);top:11cqw;left:9cqw}
+.a-half{width:72cqw;height:36cqw;border-radius:72cqw 72cqw 0 0;background:var(--pa);top:16cqw;left:14cqw}
+.a-dia{width:28cqw;aspect-ratio:1;background:var(--pa);transform:rotate(45deg);top:16cqw;right:18cqw}
+.a-bars{top:9cqw;left:8cqw;right:8cqw;height:30cqw;background:repeating-linear-gradient(90deg,var(--pa) 0 5cqw,transparent 5cqw 10cqw)}
+.a-cup{width:40cqw;height:34cqw;border:7cqw solid var(--pa);border-top:0;border-radius:0 0 22cqw 22cqw;top:14cqw;left:16cqw}
+.a-cup::after{content:"";position:absolute;width:14cqw;height:16cqw;border:5cqw solid var(--pa);border-left:0;border-radius:0 12cqw 12cqw 0;right:-21cqw;top:2cqw}
+.post.sq .art{scale:.72;transform-origin:50% 0}
+.post.sq b{font-size:11cqw}
+
+
+@media (max-width:1000px){
+  header nav{display:none}
+  .hero-foot,.sec-head{grid-template-columns:1fr}
+  .cta,.sec-head p{justify-content:flex-start;justify-self:start}
+  .nums{grid-template-columns:1fr 1fr}
+  .num:nth-child(2){border-right:0}
+  .num:nth-child(3){padding-left:0}
+  .num:nth-child(n+3){border-top:1px solid var(--line)}
+  .oklist{grid-template-columns:1fr 1fr}
+  .oklist li:nth-child(3){padding-left:0;border-left:0}
+  .oklist li{padding-bottom:22px}
+  .steps{grid-template-columns:1fr;gap:36px;padding-left:34px}
+  .steps::before{left:8px;right:auto;top:0;bottom:0;width:1px;height:auto}
+  .steps li{padding:0}
+  .steps li::before{left:-33px;top:6px}
+  .two,.fgrid{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  header .right .lang,header .right .plink{display:none}
+  .nums{grid-template-columns:1fr}
+  .num,.num+.num{padding:24px 0 8px;border-right:0}
+  .num+.num{border-top:1px solid var(--line)}
+  .oklist{grid-template-columns:1fr}
+  .oklist li+li{padding-left:0;border-left:0;border-top:1px solid rgba(14,15,12,.25)}
+  .kit-price .btn{margin-left:0;width:100%;justify-content:center}
+  .box{padding:24px}
+  .copy{flex-direction:column;gap:8px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a href="/" aria-label="Crier Studio home"><svg class="wm" viewBox="37.55 15.66 364.21 87.63" role="img" aria-label="Crier Studio" xmlns="http://www.w3.org/2000/svg"><g transform="translate(30 -6) scale(1.15)"><path d="M45.75 57.62A18.5 18.5 0 1 0 45.75 82.38" fill="none" stroke="currentColor" stroke-width="13"/>
+<path d="M70 95V70A18.5 18.5 0 0 1 88.5 51.5" fill="none" stroke="currentColor" stroke-width="13"/>
+<rect x="101.5" y="45" width="13" height="50" fill="currentColor"/>
+<path d="M121.5 70H158.5A18.5 18.5 0 1 0 154.58 81.39" fill="none" stroke="currentColor" stroke-width="13"/>
+<path d="M182 95V70A18.5 18.5 0 0 1 200.5 51.5" fill="none" stroke="currentColor" stroke-width="13"/></g><g transform="translate(30 -6) scale(1.15)"><rect x="101" y="22" width="14" height="14" fill="var(--dia)" transform="rotate(45 108 29)"/></g><path d="M306.43 103.36q-1.83 0-3.1-.59q-1.27-.59-1.93-1.62q-.66-1.03-.66-2.35h2.64q0 .56.31 1.08q.3.52.97.84q.67.32 1.77.32q1 0 1.66-.28q.66-.28.99-.75q.32-.47.32-1.06q0-.73-.62-1.17q-.63-.45-1.95-.57l-1.22-.1q-1.99-.17-3.18-1.24q-1.19-1.08-1.19-2.84q0-1.33.63-2.28q.63-.96 1.76-1.49q1.13-.53 2.65-.53q1.58 0 2.72.55q1.15.55 1.77 1.55q.62 1 .62 2.35h-2.64q0-.56-.27-1.05q-.27-.48-.82-.78q-.54-.3-1.38-.3q-.8 0-1.33.27q-.53.27-.8.72q-.26.45-.26.99q0 .64.47 1.13q.48.48 1.5.57l1.22.1q1.49.12 2.61.64q1.11.51 1.73 1.38q.63.87.63 2.1q0 1.31-.69 2.31q-.69 1-1.95 1.55q-1.26.55-2.98.55zm15.82-.36v-11.88h2.7v11.88zm-4.01-11.5v-2.37h10.72v2.37zm23.58 11.86q-1.94 0-3.27-.74q-1.33-.73-2.02-2.07q-.69-1.34-.69-3.15v-8.27h2.7v8.43q0 .98.38 1.73q.38.75 1.11 1.15q.73.41 1.79.41q1.05 0 1.78-.4q.72-.4 1.1-1.15q.37-.74.37-1.74v-8.43h2.7v8.27q0 1.81-.68 3.15q-.68 1.34-2 2.07q-1.33.74-3.27.74zm16.42-.28v-2.51h2.87q1.08 0 1.92-.33q.85-.34 1.44-.94q.59-.6.91-1.43q.31-.84.31-1.83q0-1.05-.31-1.88q-.32-.82-.91-1.41q-.59-.59-1.44-.9q-.84-.31-1.92-.31h-2.87v-2.51h2.7q1.88 0 3.28.56q1.41.56 2.34 1.52q.94.96 1.4 2.18q.47 1.22.47 2.54v.42q0 1.24-.47 2.46q-.46 1.22-1.4 2.2q-.93.99-2.34 1.58q-1.4.59-3.28.59zm-2.31 0v-14.05h2.69v14.05zm19.95-.08v-13.87h2.7v13.87zm17.66.36q-1.88 0-3.26-.66q-1.37-.66-2.28-1.74q-.9-1.08-1.34-2.32q-.44-1.25-.44-2.4v-.42q0-1.27.45-2.53q.46-1.26 1.38-2.29q.92-1.03 2.29-1.65q1.37-.62 3.2-.62q1.83 0 3.19.62q1.37.62 2.29 1.65q.93 1.03 1.39 2.29q.46 1.26.46 2.53v.42q0 1.15-.45 2.4q-.45 1.24-1.35 2.32q-.9 1.08-2.28 1.74q-1.38.66-3.25.66zm0-2.51q1.07 0 1.92-.38q.85-.38 1.45-1.05q.59-.67.91-1.53q.31-.87.31-1.84q0-1.04-.32-1.91q-.32-.88-.91-1.53q-.6-.65-1.45-1.01q-.85-.36-1.91-.36q-1.06 0-1.91.36q-.85.36-1.45 1.01q-.6.65-.91 1.53q-.32.87-.32 1.91q0 .97.32 1.84q.31.86.91 1.53q.6.67 1.45 1.05q.85.38 1.91.38z" fill="currentColor"/></svg></a>
+    <nav aria-label="Main"><a href="/social/">Social</a><a href="/in-store/">In-store</a><a href="/samples/">Samples</a><a href="/pricing/">Pricing</a><a href="/faq/">FAQ</a></nav>
+    <div class="right">
+      <a class="lang" href="/ar/?lang=ar" lang="ar">AR</a>
+      <a class="plink link" href="https://portal.crierstudio.com/">Client portal</a>
+      <a class="btn" href="https://portal.crierstudio.com/#/signup">Get started</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero wrap">
+    <p class="where">Saudi Arabia · UAE · Egypt</p>
+    <h1>Tell us about your business. <span class="hl">We make your social media posts.</span></h1>
+    <div class="hero-foot">
+      <p>Posts, stories, captions and a 30-day plan for Instagram and Facebook, in Arabic, English or both. <strong>You see and OK every post before you share it.</strong></p>
+      <div class="cta">
+        <a class="btn" href="https://portal.crierstudio.com/#/signup">Create your account <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a>
+        <a class="link" href="#how">See how it works</a>
+        <a class="link" href="#pricing">See pricing</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="strip" aria-label="Example posts">
+    <div class="strip-track">
+      <div class="post pv-lime"><i class="art a-cup"></i><b>Cardamom latte</b><small>New this week</small></div>
+<div class="post pv-ink"><i class="art a-half"></i><b>Fresh every morning.</b><small>Open early</small></div>
+<div class="post pv-pale"><i class="art a-dot"></i><b>Iced Spanish latte</b><small>Cold and creamy</small></div>
+<div class="post pv-dark"><i class="art a-dia"></i><b>Date cake</b><small>Baked in-house</small></div>
+<div class="post pv-lime"><i class="art a-bars"></i><b>Your table is ready.</b><small>Book for the weekend</small></div>
+<div class="post pv-pale"><i class="art a-half"></i><b>Weekend breakfast</b><small>For the whole table</small></div>
+<div class="post pv-ink"><i class="art a-dot"></i><b>Slow mornings.</b><small>Come early</small></div>
+<div class="post pv-lime"><i class="art a-dia"></i><b>Saffron cookies</b><small>With your coffee</small></div>
+<div class="post pv-dark"><i class="art a-ring"></i><b>Arabic coffee</b><small>Made the old way</small></div>
+
+      <div aria-hidden="true" class="post pv-lime"><i class="art a-cup"></i><b>Cardamom latte</b><small>New this week</small></div>
+<div aria-hidden="true" class="post pv-ink"><i class="art a-half"></i><b>Fresh every morning.</b><small>Open early</small></div>
+<div aria-hidden="true" class="post pv-pale"><i class="art a-dot"></i><b>Iced Spanish latte</b><small>Cold and creamy</small></div>
+<div aria-hidden="true" class="post pv-dark"><i class="art a-dia"></i><b>Date cake</b><small>Baked in-house</small></div>
+<div aria-hidden="true" class="post pv-lime"><i class="art a-bars"></i><b>Your table is ready.</b><small>Book for the weekend</small></div>
+<div aria-hidden="true" class="post pv-pale"><i class="art a-half"></i><b>Weekend breakfast</b><small>For the whole table</small></div>
+<div aria-hidden="true" class="post pv-ink"><i class="art a-dot"></i><b>Slow mornings.</b><small>Come early</small></div>
+<div aria-hidden="true" class="post pv-lime"><i class="art a-dia"></i><b>Saffron cookies</b><small>With your coffee</small></div>
+<div aria-hidden="true" class="post pv-dark"><i class="art a-ring"></i><b>Arabic coffee</b><small>Made the old way</small></div>
+
+    </div>
+    <p class="wrap strip-note">Example posts for a café, made for this page.</p>
+  </section>
+
+  <section class="sec wrap" id="kit">
+    <div class="sec-head">
+      <h2>Start with The Social Kit.</h2>
+      <p>Your brand book, first posts and a 30-day plan, made for your business, your customers and the style you like.</p>
+    </div>
+    <div class="nums">
+      <div class="num"><b>10</b><span>Social designs</span><small>with captions</small></div>
+      <div class="num"><b>5</b><span>Stories</span><small>made for your platform</small></div>
+      <div class="num"><b>30</b><span>Day plan</span><small>plus website and SEO priorities</small></div>
+      <div class="num"><b>11</b><span>Brand mockups</span><small>all the relevant ones, up to 11</small></div>
+    </div>
+    <div class="kit-price">
+      <span class="p"><s>$30</s>$15</span>
+      <span class="t">One time · one business · no subscription</span>
+      <a class="btn" href="/pricing/">Get my Social Kit</a>
+    </div>
+  </section>
+
+  <section class="okband">
+    <div class="wrap sec">
+      <h2>Nothing goes out until you say OK.</h2>
+      <ul class="oklist">
+        <li><b>You see it first.</b>You see every post first. Say OK, or ask for changes on anything you want different.</li>
+        <li><b>You post it.</b>You post on your own account. Nothing is published for you.</li>
+        <li><b>You see the price.</b>You see the amount due before you pay.</li>
+        <li><b>Seven days.</b>Not happy? Email us within 7 days and we will agree a fix or a refund. <a href="/refund/">Refund policy</a></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec wrap" id="how">
+    <div class="sec-head">
+      <h2>Five steps, one client page.</h2>
+      <p>Everything happens in your own client page, where you see and OK every post.</p>
+    </div>
+    <ol class="steps">
+      <li><span class="when">Today</span><h3>Sign up</h3><p>Create an account and type your business name and website.</p></li>
+      <li><span class="when">Today</span><h3>About you</h3><p>Answer a few questions: what you sell, who your customers are, your channels and languages.</p></li>
+      <li><span class="when">12 hours later</span><h3>First posts</h3><p>Your first posts show up in Overview, Calendar and Library.</p></li>
+      <li><span class="when">When you're ready</span><h3>Check</h3><p>Ask for a change, then OK the post.</p></li>
+      <li><span class="when">Then</span><h3>Post</h3><p>Copy the caption, download the file and post it on your own Instagram.</p></li>
+    </ol>
+    <div class="steps-cta">
+      <a class="btn" href="https://portal.crierstudio.com/#/signup">Get started</a>
+      <a class="link" href="/samples/">See samples</a>
+    </div>
+  </section>
+
+  <section class="sec wrap" id="pricing" style="padding-top:0">
+    <div class="sec-head">
+      <h2>Pay once, or every month.</h2>
+      <p>Launch prices in US dollars, paid securely on Stripe. Both monthly plans include The Social Kit in your first month.</p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th scope="col">What you get</th>
+            <th scope="col"><span class="plan-name">The Social Kit</span><span class="plan-tag">Your foundation</span></th>
+            <th scope="col" class="hot"><span class="plan-name">Stay Visible</span><span class="plan-tag">Your monthly rhythm</span></th>
+            <th scope="col"><span class="plan-name">Keep Growing</span><span class="plan-tag">Your monthly momentum</span></th></tr>
+        </thead>
+        <tbody>
+          <tr class="price-row"><td>Price</td><td><span class="price"><s>$30</s>$15</span><br><small>one time</small></td><td class="hot"><span class="price"><s>$30</s>$15</span><br><small>per month</small></td><td><span class="price"><s>$30</s>$15</span><br><small>per month</small></td></tr>
+          <tr><td>Social designs + captions</td><td>10</td><td class="hot">10 a month</td><td>20 a month</td></tr>
+          <tr><td>Stories</td><td>5</td><td class="hot">10 a month</td><td>20 a month</td></tr>
+          <tr><td>Brand mockups</td><td>Up to 11 standard</td><td class="hot">2 seasonal a month</td><td>4 seasonal a month</td></tr>
+          <tr><td>Brand book PDF</td><td>Included</td><td class="hot">With the kit in month one</td><td>With the kit in month one</td></tr>
+          <tr><td>Campaign + ad copy</td><td>1 concept, 3 ad-copy variations</td><td class="hot no">Not included</td><td>1 concept, 6 ad-copy variations</td></tr>
+          <tr><td>Plan</td><td>30-day plan</td><td class="hot">Monthly content calendar</td><td>Monthly content calendar</td></tr>
+          <tr><td>Revisions</td><td>1 correction round</td><td class="hot">1 round per batch</td><td>2 rounds per batch</td></tr>
+          <tr><td>Extra platforms</td><td class="no">One platform</td><td class="hot">Adapted, no extra charge</td><td>Adapted, no extra charge</td></tr>
+          <tr><td>Also</td><td>Business review, 3 competitor profiles</td><td class="hot">Monthly delivery recap</td><td>Competitor update, SEO brief</td></tr>
+          <tr class="buy-row"><td></td><td><a class="btn ghost" href="/pricing/">Get my Social Kit</a></td><td class="hot"><a class="btn" href="/pricing/">Choose Stay Visible</a></td><td><a class="btn ghost" href="/pricing/">Choose Keep Growing</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="fine">Monthly plans renew each month. Cancel any time before renewal and keep your plan until the paid month ends. Full contents on the <a class="link" href="/pricing/">pricing page</a>.</p>
+  </section>
+
+  <section class="cream" id="in-store">
+    <div class="wrap sec">
+      <div class="sec-head">
+        <h2>In-store</h2>
+        <p>We design and make the branded pieces for your shop, all in your identity and made in our workshop.</p>
+      </div>
+      <p class="pieces"><span>Aprons</span> <i>/</i> <span>Menu boards</span> <i>/</i> <span>Door mats</span> <i>/</i> <span>Cups</span> <i>/</i> <span>QR stands</span> <i>/</i> <span>Stamp cards</span></p>
+      <div class="two">
+        <div class="box">
+          <span class="tag soon">Coming soon</span>
+          <h3>The Store Kit</h3>
+          <p>The pieces your store uses every day, together as one kit. There is no launch date yet. Join the waitlist and we will email you when it opens. Joining is not an order.</p>
+          <a class="btn out" href="/in-store/">Join the waitlist</a>
+        </div>
+        <div class="box">
+          <span class="tag open">Open now</span>
+          <h3>Custom pieces</h3>
+          <p>A shop sign, a uniform, packaging or something only your business needs. Tell us what it is and where you are, and we send you a quote. Nothing is made or charged until you agree.</p>
+          <a class="btn" href="https://portal.crierstudio.com/#/signup?intent=quote&amp;lang=en">Ask about a custom piece</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="close wrap">
+    <h2>Ready to see your first posts?</h2>
+    <div class="cta">
+      <a class="btn" href="https://portal.crierstudio.com/#/signup">Create your account</a>
+      <a class="link" href="#pricing">See pricing</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="fgrid">
+      <div><p>Social media posts for local businesses, made from what you tell us about yours.</p><p style="margin-top:12px"><a class="link" href="mailto:team@crierstudio.com">team@crierstudio.com</a></p></div>
+      <div><h4>Explore</h4><ul><li><a href="/social/">Social</a></li><li><a href="/in-store/">In-store</a></li><li><a href="/samples/">Samples</a></li><li><a href="/pricing/">Pricing</a></li><li><a href="/faq/">FAQ</a></li><li><a href="/about/">About</a></li><li><a href="/brand-deck/">Brand Deck</a></li></ul></div>
+      <div><h4>Legal</h4><ul><li><a href="/terms/">Terms of service</a></li><li><a href="/privacy/">Privacy policy</a></li><li><a href="/refund/">Refund policy</a></li></ul></div>
+    </div>
+    <div class="bigmark" aria-hidden="true"><svg class="wm" viewBox="37.55 15.66 364.21 87.63" role="img" aria-label="Crier Studio" xmlns="http://www.w3.org/2000/svg"><g transform="translate(30 -6) scale(1.15)"><path d="M45.75 57.62A18.5 18.5 0 1 0 45.75 82.38" fill="none" stroke="currentColor" stroke-width="13"/>
+<path d="M70 95V70A18.5 18.5 0 0 1 88.5 51.5" fill="none" stroke="currentColor" stroke-width="13"/>
+<rect x="101.5" y="45" width="13" height="50" fill="currentColor"/>
+<path d="M121.5 70H158.5A18.5 18.5 0 1 0 154.58 81.39" fill="none" stroke="currentColor" stroke-width="13"/>
+<path d="M182 95V70A18.5 18.5 0 0 1 200.5 51.5" fill="none" stroke="currentColor" stroke-width="13"/></g><g transform="translate(30 -6) scale(1.15)"><rect x="101" y="22" width="14" height="14" fill="var(--dia)" transform="rotate(45 108 29)"/></g><path d="M306.43 103.36q-1.83 0-3.1-.59q-1.27-.59-1.93-1.62q-.66-1.03-.66-2.35h2.64q0 .56.31 1.08q.3.52.97.84q.67.32 1.77.32q1 0 1.66-.28q.66-.28.99-.75q.32-.47.32-1.06q0-.73-.62-1.17q-.63-.45-1.95-.57l-1.22-.1q-1.99-.17-3.18-1.24q-1.19-1.08-1.19-2.84q0-1.33.63-2.28q.63-.96 1.76-1.49q1.13-.53 2.65-.53q1.58 0 2.72.55q1.15.55 1.77 1.55q.62 1 .62 2.35h-2.64q0-.56-.27-1.05q-.27-.48-.82-.78q-.54-.3-1.38-.3q-.8 0-1.33.27q-.53.27-.8.72q-.26.45-.26.99q0 .64.47 1.13q.48.48 1.5.57l1.22.1q1.49.12 2.61.64q1.11.51 1.73 1.38q.63.87.63 2.1q0 1.31-.69 2.31q-.69 1-1.95 1.55q-1.26.55-2.98.55zm15.82-.36v-11.88h2.7v11.88zm-4.01-11.5v-2.37h10.72v2.37zm23.58 11.86q-1.94 0-3.27-.74q-1.33-.73-2.02-2.07q-.69-1.34-.69-3.15v-8.27h2.7v8.43q0 .98.38 1.73q.38.75 1.11 1.15q.73.41 1.79.41q1.05 0 1.78-.4q.72-.4 1.1-1.15q.37-.74.37-1.74v-8.43h2.7v8.27q0 1.81-.68 3.15q-.68 1.34-2 2.07q-1.33.74-3.27.74zm16.42-.28v-2.51h2.87q1.08 0 1.92-.33q.85-.34 1.44-.94q.59-.6.91-1.43q.31-.84.31-1.83q0-1.05-.31-1.88q-.32-.82-.91-1.41q-.59-.59-1.44-.9q-.84-.31-1.92-.31h-2.87v-2.51h2.7q1.88 0 3.28.56q1.41.56 2.34 1.52q.94.96 1.4 2.18q.47 1.22.47 2.54v.42q0 1.24-.47 2.46q-.46 1.22-1.4 2.2q-.93.99-2.34 1.58q-1.4.59-3.28.59zm-2.31 0v-14.05h2.69v14.05zm19.95-.08v-13.87h2.7v13.87zm17.66.36q-1.88 0-3.26-.66q-1.37-.66-2.28-1.74q-.9-1.08-1.34-2.32q-.44-1.25-.44-2.4v-.42q0-1.27.45-2.53q.46-1.26 1.38-2.29q.92-1.03 2.29-1.65q1.37-.62 3.2-.62q1.83 0 3.19.62q1.37.62 2.29 1.65q.93 1.03 1.39 2.29q.46 1.26.46 2.53v.42q0 1.15-.45 2.4q-.45 1.24-1.35 2.32q-.9 1.08-2.28 1.74q-1.38.66-3.25.66zm0-2.51q1.07 0 1.92-.38q.85-.38 1.45-1.05q.59-.67.91-1.53q.31-.87.31-1.84q0-1.04-.32-1.91q-.32-.88-.91-1.53q-.6-.65-1.45-1.01q-.85-.36-1.91-.36q-1.06 0-1.91.36q-.85.36-1.45 1.01q-.6.65-.91 1.53q-.32.87-.32 1.91q0 .97.32 1.84q.31.86.91 1.53q.6.67 1.45 1.05q.85.38 1.91.38z" fill="currentColor"/></svg></div>
+    <div class="copy"><span>© 2026 Crier Studio</span><span>Saudi Arabia · UAE · Egypt</span></div>
+  </div>
+</footer>
+</body>
+</html>

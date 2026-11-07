@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Crier Studio · Landing page versions</title>
+<style>
+@font-face{font-family:"Archivo";font-weight:100 900;font-display:swap;src:url(../../fonts/archivo-latin-wght-normal.woff2) format("woff2")}
+@font-face{font-family:"Instrument Sans";font-weight:400;font-display:swap;src:url(../../fonts/instrument-sans-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Instrument Sans";font-weight:600;font-display:swap;src:url(../../fonts/instrument-sans-latin-600-normal.woff2) format("woff2")}
+:root{--bg:#0E0F0C;--surface:#171913;--ink:#F6F8EF;--muted:#B7BCA9;--line:#2D3027;--accent:#C6FF00}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font:400 17px/1.55 "Instrument Sans",system-ui,sans-serif;padding:clamp(24px,6vw,80px) clamp(16px,5vw,64px)}
+h1{font:800 clamp(36px,5vw,64px)/1 "Archivo",sans-serif;letter-spacing:-.03em;margin-bottom:14px}
+p.lede{color:var(--muted);max-width:62ch;margin-bottom:40px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;max-width:1200px}
+a.card{display:flex;flex-direction:column;gap:10px;text-decoration:none;color:inherit;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:26px;transition:border-color .2s}
+a.card:hover{border-color:var(--accent)}
+.card b{font:800 30px/1 "Archivo",sans-serif;letter-spacing:-.02em}
+.card span{color:var(--accent);font-weight:600;font-size:14px}
+.card p{color:var(--muted);font-size:15px}
+.card em{font-style:normal;margin-top:auto;padding-top:12px;font-weight:600}
+code{font-size:14px;color:var(--muted)}
+</style>
+</head>
+<body>
+  <h1>Three landing pages</h1>
+  <p class="lede">Design versions of the crierstudio.com home page. They use the live site's palette, fonts, copy and prices. This folder is excluded from GitHub Pages (<code>_config.yml</code>), so nothing here is public.</p>
+  <div class="grid">
+    <a class="card" href="a/"><span>Version A · dark</span><b>Billboard</b><p>Poster-scale type, a lime highlight on the headline, a moving strip of example posts, a full-bleed lime band for the OK rule, and pricing as one comparison table.</p><em>Open A →</em></a>
+    <a class="card" href="b/"><span>Version B · light</span><b>Client page</b><p>Product-led, on the site's light tokens. An example Instagram profile with an approval card in the hero, and a clickable client page (Overview, Calendar, Review queue) you can approve a post in.</p><em>Open B →</em></a>
+    <a class="card" href="c/"><span>Version C · dark</span><b>Spec sheet</b><p>Split screen: the pitch and CTA stay fixed on the left with a live section index; the right side scrolls through ruled panels covering the kit, the steps, pricing rows and In-store.</p><em>Open C →</em></a>
+  </div>
+</body>
+</html>

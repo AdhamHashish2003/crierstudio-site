@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Crier Studio · Landing C: Spec sheet</title>
+<link rel="icon" href="../../../favicon.svg" type="image/svg+xml">
+<style>
+@font-face{font-family:"Archivo";font-style:normal;font-weight:100 900;font-display:swap;src:url(../../../fonts/archivo-latin-wght-normal.woff2) format("woff2")}
+@font-face{font-family:"Instrument Sans";font-weight:400;font-display:swap;src:url(../../../fonts/instrument-sans-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Instrument Sans";font-weight:500;font-display:swap;src:url(../../../fonts/instrument-sans-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Instrument Sans";font-weight:600;font-display:swap;src:url(../../../fonts/instrument-sans-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Instrument Sans";font-weight:700;font-display:swap;src:url(../../../fonts/instrument-sans-latin-700-normal.woff2) format("woff2")}
+
+:root{--bg:#0E0F0C;--surface:#171913;--paper:#1A1C16;--ink:#F6F8EF;--muted:#B7BCA9;--line:#2D3027;--accent:#C6FF00;--accent-ink:#0E0F0C;--dia:#C6FF00;
+--cream-bg:#f3f1ea;--cream-ink:#1b1b17;--cream-panel:#fbfaf6;--cream-line:#e3e0d5;--cream-muted:#4a4942;--terra-text:#b4492a;
+--display:"Archivo",system-ui,sans-serif;--body:"Instrument Sans",system-ui,sans-serif;--gut:clamp(16px,3.4vw,56px);color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.55 var(--body);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.wm{height:28px;width:auto;display:block}
+h1,h2,h3{font-family:var(--display);letter-spacing:-.03em;line-height:1;font-weight:750;text-wrap:balance}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;font:600 16px/1 var(--body);text-decoration:none;padding:16px 20px;border-radius:2px;background:var(--accent);color:var(--accent-ink);border:1.5px solid var(--accent)}
+.btn:hover{background:#b6ec00}
+.btn.out{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.out:hover{border-color:var(--ink)}
+.btn svg{width:16px;height:16px}
+
+/* Split layout */
+.split{display:grid;grid-template-columns:minmax(380px,5fr) 7fr;min-height:100vh}
+.left{position:sticky;top:0;height:100vh;overflow-y:auto;gap:28px;display:flex;flex-direction:column;padding:32px var(--gut);border-right:1px solid var(--line)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.top nav{display:flex;gap:18px;font-size:14px;font-weight:500;color:var(--muted)}
+.top nav a{text-decoration:none}
+.top nav a:hover{color:var(--ink)}
+.intro{margin:auto 0}
+.where{font-size:14px;color:var(--muted);margin-bottom:20px;display:flex;gap:8px;flex-wrap:wrap}
+.where span{border:1px solid var(--line);padding:4px 10px;border-radius:2px}
+.left h1{font-size:clamp(40px,3.9vw,62px);margin-bottom:20px}
+.left h1 span{color:var(--accent)}
+.left p.lede{color:var(--muted);font-size:17px;max-width:44ch;margin-bottom:28px}
+.cta{display:flex;flex-wrap:wrap;gap:10px}
+.index{list-style:none;padding:0;border-top:1px solid var(--line);font-size:15px}
+.index a{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--muted);transition:color .2s}
+.index a::before{content:"";width:8px;height:8px;border:1.5px solid var(--line);transform:rotate(45deg);transition:all .2s}
+.index a span{margin-left:auto;font-size:13px}
+.index a:hover{color:var(--ink)}
+.index a.on{color:var(--ink)}
+.index a.on::before{background:var(--accent);border-color:var(--accent)}
+
+.right{min-width:0}
+.panel{border-bottom:1px solid var(--line);padding:clamp(40px,5vw,72px) var(--gut)}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:20px;margin-bottom:36px}
+.ph h2{font-size:clamp(30px,3vw,44px)}
+.ph small{color:var(--muted);font-size:14px;text-align:right}
+
+/* Mosaic */
+.mosaic{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.mosaic .big{grid-column:span 2;grid-row:span 2}
+.mosaic .big .post{aspect-ratio:auto;height:100%}
+.mosaic .story-col{grid-row:span 2}
+.mosaic .story-col .post{aspect-ratio:auto;height:100%}
+.note{margin-top:16px;font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+/* Spec list */
+.spec{display:grid;grid-template-columns:1fr;border-top:1px solid var(--line)}
+.spec div{display:grid;grid-template-columns:200px 1fr auto;gap:20px;padding:16px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.spec dt{color:var(--muted);font-size:14px}
+.spec dd{font-size:17px}
+.spec dd.q{font:800 28px/1 var(--display);color:var(--accent);text-align:right;letter-spacing:-.02em}
+.pricebar{display:flex;flex-wrap:wrap;align-items:center;gap:14px 28px;margin-top:28px}
+.pricebar b{font:800 48px/1 var(--display);letter-spacing:-.04em}
+.pricebar s{color:var(--muted);font-size:20px;margin-right:6px}
+.pricebar span{color:var(--muted)}
+
+/* Steps */
+.rows{border-top:1px solid var(--line)}
+.step{display:grid;grid-template-columns:150px 1fr 1.1fr;gap:24px;padding:22px 0;border-bottom:1px solid var(--line);align-items:start}
+.step .t{font-size:13px;font-weight:600;color:var(--accent)}
+.step h3{font-size:26px}
+.step p{color:var(--muted)}
+.step .scr{display:block;margin-top:6px;font-size:13px;color:#6B7060}
+
+/* OK rule */
+.okhead{font-size:clamp(40px,5vw,76px);margin-bottom:36px;max-width:14ch}
+.okhead em{font-style:normal;background:var(--accent);color:var(--accent-ink);padding:0 .12em}
+.okgrid{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line);border-left:1px solid var(--line)}
+.okgrid div{padding:22px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.okgrid b{display:block;font:700 19px/1.2 var(--display);margin-bottom:8px}
+.okgrid p{color:var(--muted);font-size:15px}
+
+/* Plans as rows */
+.plans{border-top:1px solid var(--line)}
+.plan{display:grid;grid-template-columns:1.1fr 1.4fr auto;gap:24px;padding:26px 0;border-bottom:1px solid var(--line);align-items:center}
+.plan h3{font-size:30px}
+.plan .k{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+.plan ul{padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.plan li{font-size:14px;border:1px solid var(--line);padding:5px 10px;border-radius:2px;color:var(--muted)}
+.plan li b{color:var(--ink)}
+.plan .pr{text-align:right;display:grid;gap:10px;justify-items:end}
+.plan .pr b{font:800 38px/1 var(--display);letter-spacing:-.03em}
+.plan .pr s{font-size:16px;color:var(--muted);margin-right:4px}
+.plan .pr small{font:500 14px var(--body);color:var(--muted);letter-spacing:0}
+.plan.feat{background:linear-gradient(90deg,rgba(198,255,0,.07),transparent 70%);box-shadow:inset 3px 0 0 var(--accent);padding-left:20px;margin-left:-20px}
+.fine{margin-top:20px;color:var(--muted);font-size:14px}
+
+/* In-store */
+.panel.cream{background:var(--cream-bg);color:var(--cream-ink);border-bottom-color:var(--cream-line)}
+.cream .ph small{color:var(--cream-muted)}
+.cream .lede2{font-size:19px;max-width:52ch;margin-bottom:32px;color:var(--cream-muted)}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--cream-line);border-left:1px solid var(--cream-line)}
+.cgrid>div{padding:26px;border-right:1px solid var(--cream-line);border-bottom:1px solid var(--cream-line);display:flex;flex-direction:column;gap:12px;background:var(--cream-panel)}
+.cgrid h3{font-size:28px}
+.cgrid p{color:var(--cream-muted);font-size:15px}
+.cgrid .btn{align-self:flex-start;margin-top:auto;background:var(--cream-ink);border-color:var(--cream-ink);color:var(--cream-bg)}
+.cgrid .btn.ghost{background:transparent;color:var(--cream-ink)}
+.st{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;align-self:flex-start}
+.st.soon{color:var(--terra-text)}
+.st.open{background:var(--accent);padding:3px 8px}
+.plist{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.plist span{font-size:14px;font-weight:600;border:1px solid var(--cream-line);background:var(--cream-panel);padding:7px 12px}
+
+/* FAQ */
+details{border-bottom:1px solid var(--line)}
+details:first-of-type{border-top:1px solid var(--line)}
+summary{cursor:pointer;list-style:none;display:grid;grid-template-columns:1fr auto;gap:20px;padding:18px 0;font-weight:600;font-size:17px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"";width:9px;height:9px;margin:7px 4px 0 0;border:1.5px solid var(--accent);transform:rotate(45deg);transition:background .2s}
+details[open] summary::after{background:var(--accent)}
+details p{padding-bottom:18px;color:var(--muted);max-width:62ch}
+
+footer{padding:40px var(--gut);display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:28px;font-size:14px;color:var(--muted)}
+footer h4{font:600 13px var(--body);color:var(--ink);margin-bottom:10px}
+footer ul{list-style:none;padding:0;display:grid;gap:6px}
+footer a{text-decoration:none}
+footer a:hover{color:var(--ink)}
+
+/* Example post tiles (shared by all three versions). Sizes are relative to the tile, so one tile works at any width. */
+.post{container-type:inline-size;position:relative;aspect-ratio:4/5;overflow:hidden;border-radius:var(--post-r,6px);padding:0;display:flex;flex-direction:column;justify-content:flex-end;background:var(--pb);color:var(--pi)}
+.post.story{aspect-ratio:9/16}
+.post.sq{aspect-ratio:1}
+.post b{margin:0 8cqw;font-family:"Archivo",sans-serif;font-weight:800;font-size:12.5cqw;line-height:.95;letter-spacing:-.02em;position:relative}
+.post small{margin:2.5cqw 8cqw 8cqw;font-size:5.6cqw;font-weight:500;opacity:.78;position:relative}
+.post .art{position:absolute;display:block}
+.pv-lime{--pb:#C6FF00;--pi:#0E0F0C;--pa:#0E0F0C}
+.pv-ink{--pb:#0E0F0C;--pi:#F6F8EF;--pa:#C6FF00;box-shadow:inset 0 0 0 1px #2D3027}
+.pv-dark{--pb:#1A1C16;--pi:#F6F8EF;--pa:#C6FF00}
+.pv-pale{--pb:#E9EEDA;--pi:#0E0F0C;--pa:#0E0F0C}
+.pv-paper{--pb:#F6F8EF;--pi:#0E0F0C;--pa:#0E0F0C}
+.a-ring{width:56cqw;aspect-ratio:1;border-radius:50%;border:9cqw solid var(--pa);top:-8cqw;right:-8cqw}
+.a-dot{width:42cqw;aspect-ratio:1;border-radius:50%;background:var(--pa);top:11cqw;left:9cqw}
+.a-half{width:72cqw;height:36cqw;border-radius:72cqw 72cqw 0 0;background:var(--pa);top:16cqw;left:14cqw}
+.a-dia{width:28cqw;aspect-ratio:1;background:var(--pa);transform:rotate(45deg);top:16cqw;right:18cqw}
+.a-bars{top:9cqw;left:8cqw;right:8cqw;height:30cqw;background:repeating-linear-gradient(90deg,var(--pa) 0 5cqw,transparent 5cqw 10cqw)}
+.a-cup{width:40cqw;height:34cqw;border:7cqw solid var(--pa);border-top:0;border-radius:0 0 22cqw 22cqw;top:14cqw;left:16cqw}
+.a-cup::after{content:"";position:absolute;width:14cqw;height:16cqw;border:5cqw solid var(--pa);border-left:0;border-radius:0 12cqw 12cqw 0;right:-21cqw;top:2cqw}
+.post.sq .art{scale:.72;transform-origin:50% 0}
+.post.sq b{font-size:11cqw}
+
+
+@media (min-width:1081px) and (max-height:780px){.index{display:none}}
+@media (max-width:1080px){
+  .split{grid-template-columns:1fr}
+  .left{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding-bottom:48px;gap:48px}
+  .index{display:none}
+  .intro{margin:0}
+}
+@media (max-width:700px){
+  .top nav a:not(.keep){display:none}
+  .mosaic{grid-template-columns:1fr 1fr}
+  .mosaic .story-col{display:none}
+  .mosaic .big{grid-row:auto}
+  .mosaic .big .post{aspect-ratio:1;height:auto}
+  .spec div{grid-template-columns:1fr auto;gap:4px 16px}
+  .spec dt{grid-column:1/-1}
+  .step{grid-template-columns:1fr;gap:8px}
+  .okgrid,.cgrid{grid-template-columns:1fr}
+  .plan{grid-template-columns:1fr;gap:14px}
+  .plan .pr{text-align:left;justify-items:start;grid-auto-flow:column;align-items:center;justify-content:space-between}
+  .plan.feat{margin-left:calc(-1 * var(--gut));padding-left:var(--gut);padding-right:var(--gut);margin-right:calc(-1 * var(--gut))}
+  .ph{flex-direction:column;gap:6px}
+  .ph small{text-align:left}
+  footer{grid-template-columns:1fr 1fr}
+  footer>div:first-child{grid-column:1/-1}
+  .cta .btn{flex:1 1 100%}
+}
+</style>
+</head>
+<body>
+<div class="split">
+  <aside class="left">
+    <div class="top">
+      <a href="/" aria-label="Crier Studio home"><svg class="wm" viewBox="37.55 15.66 364.21 87.63" role="img" aria-label="Crier Studio" xmlns="http://www.w3.org/2000/svg"><g transform="translate(30 -6) scale(1.15)"><path d="M45.75 57.62A18.5 18.5 0 1 0 45.75 82.38" fill="none" stroke="currentColor" stroke-width="13"/>
+<path d="M70 95V70A18.5 18.5 0 0 1 88.5 51.5" fill="none" stroke="currentColor" stroke-width="13"/>
+<rect x="101.5" y="45" width="13" height="50" fill="currentColor"/>
+<path d="M121.5 70H158.5A18.5 18.5 0 1 0 154.58 81.39" fill="none" stroke="currentColor" stroke-width="13"/>
+<path d="M182 95V70A18.5 18.5 0 0 1 200.5 51.5" fill="none" stroke="currentColor" stroke-width="13"/></g><g transform="translate(30 -6) scale(1.15)"><rect x="101" y="22" width="14" height="14" fill="var(--dia)" transform="rotate(45 108 29)"/></g><path d="M306.43 103.36q-1.83 0-3.1-.59q-1.27-.59-1.93-1.62q-.66-1.03-.66-2.35h2.64q0 .56.31 1.08q.3.52.97.84q.67.32 1.77.32q1 0 1.66-.28q.66-.28.99-.75q.32-.47.32-1.06q0-.73-.62-1.17q-.63-.45-1.95-.57l-1.22-.1q-1.99-.17-3.18-1.24q-1.19-1.08-1.19-2.84q0-1.33.63-2.28q.63-.96 1.76-1.49q1.13-.53 2.65-.53q1.58 0 2.72.55q1.15.55 1.77 1.55q.62 1 .62 2.35h-2.64q0-.56-.27-1.05q-.27-.48-.82-.78q-.54-.3-1.38-.3q-.8 0-1.33.27q-.53.27-.8.72q-.26.45-.26.99q0 .64.47 1.13q.48.48 1.5.57l1.22.1q1.49.12 2.61.64q1.11.51 1.73 1.38q.63.87.63 2.1q0 1.31-.69 2.31q-.69 1-1.95 1.55q-1.26.55-2.98.55zm15.82-.36v-11.88h2.7v11.88zm-4.01-11.5v-2.37h10.72v2.37zm23.58 11.86q-1.94 0-3.27-.74q-1.33-.73-2.02-2.07q-.69-1.34-.69-3.15v-8.27h2.7v8.43q0 .98.38 1.73q.38.75 1.11 1.15q.73.41 1.79.41q1.05 0 1.78-.4q.72-.4 1.1-1.15q.37-.74.37-1.74v-8.43h2.7v8.27q0 1.81-.68 3.15q-.68 1.34-2 2.07q-1.33.74-3.27.74zm16.42-.28v-2.51h2.87q1.08 0 1.92-.33q.85-.34 1.44-.94q.59-.6.91-1.43q.31-.84.31-1.83q0-1.05-.31-1.88q-.32-.82-.91-1.41q-.59-.59-1.44-.9q-.84-.31-1.92-.31h-2.87v-2.51h2.7q1.88 0 3.28.56q1.41.56 2.34 1.52q.94.96 1.4 2.18q.47 1.22.47 2.54v.42q0 1.24-.47 2.46q-.46 1.22-1.4 2.2q-.93.99-2.34 1.58q-1.4.59-3.28.59zm-2.31 0v-14.05h2.69v14.05zm19.95-.08v-13.87h2.7v13.87zm17.66.36q-1.88 0-3.26-.66q-1.37-.66-2.28-1.74q-.9-1.08-1.34-2.32q-.44-1.25-.44-2.4v-.42q0-1.27.45-2.53q.46-1.26 1.38-2.29q.92-1.03 2.29-1.65q1.37-.62 3.2-.62q1.83 0 3.19.62q1.37.62 2.29 1.65q.93 1.03 1.39 2.29q.46 1.26.46 2.53v.42q0 1.15-.45 2.4q-.45 1.24-1.35 2.32q-.9 1.08-2.28 1.74q-1.38.66-3.25.66zm0-2.51q1.07 0 1.92-.38q.85-.38 1.45-1.05q.59-.67.91-1.53q.31-.87.31-1.84q0-1.04-.32-1.91q-.32-.88-.91-1.53q-.6-.65-1.45-1.01q-.85-.36-1.91-.36q-1.06 0-1.91.36q-.85.36-1.45 1.01q-.6.65-.91 1.53q-.32.87-.32 1.91q0 .97.32 1.84q.31.86.91 1.53q.6.67 1.45 1.05q.85.38 1.91.38z" fill="currentColor"/></svg></a>
+      <nav aria-label="Main"><a href="/in-store/">In-store</a><a href="/samples/">Samples</a><a class="keep" href="https://portal.crierstudio.com/">Client portal</a><a class="keep" href="/ar/?lang=ar" lang="ar">AR</a></nav>
+    </div>
+    <div class="intro">
+      <p class="where"><span>Saudi Arabia</span><span>UAE</span><span>Egypt</span></p>
+      <h1>Tell us about your business. <span>We make your social media posts.</span></h1>
+      <p class="lede">Posts, stories, captions and a 30-day plan for Instagram and Facebook, in Arabic, English or both. You see and OK every post before you share it.</p>
+      <div class="cta">
+        <a class="btn" href="https://portal.crierstudio.com/#/signup">Create your account <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a>
+        <a class="btn out" href="#pricing">See pricing</a>
+      </div>
+    </div>
+    <ul class="index" aria-label="On this page">
+      <li><a href="#work">Example posts</a></li>
+      <li><a href="#kit">What's in The Social Kit<span>$15</span></a></li>
+      <li><a href="#how">How it works<span>5 steps</span></a></li>
+      <li><a href="#ok">The OK rule</a></li>
+      <li><a href="#pricing">Packages and prices<span>3 plans</span></a></li>
+      <li><a href="#in-store">In-store</a></li>
+      <li><a href="#faq">Straight answers</a></li>
+    </ul>
+  </aside>
+
+  <main class="right">
+    <section class="panel" id="work">
+      <div class="ph"><h2>Made for your business</h2><small>Example posts for a café,<br>made for this page.</small></div>
+      <div class="mosaic">
+        <div class="big"><div class="post pv-lime"><i class="art a-cup"></i><b>Cardamom latte</b><small>New this week</small></div></div>
+        <div><div class="post pv-ink"><i class="art a-half"></i><b>Fresh every morning.</b><small>Open early</small></div></div>
+        <div class="story-col"><div class="post story pv-pale"><i class="art a-half"></i><b>Weekend breakfast</b><small>Book a table</small></div></div>
+        <div><div class="post pv-dark"><i class="art a-dia"></i><b>Date cake</b><small>Baked in-house</small></div></div>
+        <div><div class="post pv-pale"><i class="art a-dot"></i><b>Iced Spanish latte</b><small>Cold and creamy</small></div></div>
+        <div><div class="post pv-lime"><i class="art a-bars"></i><b>Your table is ready.</b><small>Book for the weekend</small></div></div>
+        <div><div class="post pv-ink"><i class="art a-dot"></i><b>Slow mornings.</b><small>Come early</small></div></div>
+        <div><div class="post pv-dark"><i class="art a-ring"></i><b>Arabic coffee</b><small>Made the old way</small></div></div>
+      </div>
+      <p class="note"><span>Posts, reels, carousels and stories</span><span>Arabic, English or both</span></p>
+    </section>
+
+    <section class="panel" id="kit">
+      <div class="ph"><h2>What's in The Social Kit</h2><small>Your foundation.<br>One business, one time.</small></div>
+      <dl class="spec">
+        <div><dt>Brand book</dt><dd>Complete marketing and brand-book PDF: logo use, colours, type and voice</dd><dd class="q">1</dd></div>
+        <div><dt>Research</dt><dd>Business review and competitor profiles</dd><dd class="q">3</dd></div>
+        <div><dt>Positioning</dt><dd>Audience hypotheses and key messages</dd><dd class="q">✓</dd></div>
+        <div><dt>Social designs</dt><dd>Designs with captions</dd><dd class="q">10</dd></div>
+        <div><dt>Stories</dt><dd>Made for your platform</dd><dd class="q">5</dd></div>
+        <div><dt>Campaign</dt><dd>One concept with ad-copy variations</dd><dd class="q">3</dd></div>
+        <div><dt>Brand mockups</dt><dd>All the relevant standard ones</dd><dd class="q">≤11</dd></div>
+        <div><dt>Plan</dt><dd>Website and SEO priorities, plus a 30-day plan</dd><dd class="q">30</dd></div>
+        <div><dt>Corrections</dt><dd>Individual creative files and one correction round</dd><dd class="q">1</dd></div>
+      </dl>
+      <div class="pricebar"><b><s>$30</s>$15</b><span>One time · no subscription · launch price</span><a class="btn" href="/pricing/">Get my Social Kit</a></div>
+    </section>
+
+    <section class="panel" id="how">
+      <div class="ph"><h2>How it works</h2><small>All in your own client page.</small></div>
+      <div class="rows">
+        <div class="step"><span class="t">Today</span><h3>Sign up</h3><p>Create an account with your business name and website.<span class="scr">Screen: Create your workspace</span></p></div>
+        <div class="step"><span class="t">Today</span><h3>About you</h3><p>Industry, audience, channels and language, such as bakery and café, families nearby, Instagram + Facebook, Arabic and English.<span class="scr">Screen: Tell us about your business</span></p></div>
+        <div class="step"><span class="t">12 hours later</span><h3>First posts</h3><p>Your posts show up in Overview, Calendar and Library.<span class="scr">Screen: Overview</span></p></div>
+        <div class="step"><span class="t">Your call</span><h3>Check</h3><p>Ask for a clearer headline, then OK the updated post.<span class="scr">Screen: Say OK or ask for changes</span></p></div>
+        <div class="step"><span class="t">Then</span><h3>Ready to post</h3><p>The post is marked Approved and Ready. You put it up on your own Instagram.<span class="scr">Screen: Approved · Ready</span></p></div>
+      </div>
+    </section>
+
+    <section class="panel" id="ok">
+      <h2 class="okhead">Nothing goes out until you <em>say OK.</em></h2>
+      <div class="okgrid">
+        <div><b>You see every post first.</b><p>Say OK, or ask for changes on anything you want different.</p></div>
+        <div><b>You post on your own account.</b><p>Nothing is published for you.</p></div>
+        <div><b>You see the amount due before you pay.</b><p>Paid securely on Stripe, in US dollars.</p></div>
+        <div><b>Not happy? Email us within 7 days.</b><p>We will agree a fix or a refund. <a href="/refund/">7-day refund policy</a></p></div>
+      </div>
+    </section>
+
+    <section class="panel" id="pricing">
+      <div class="ph"><h2>Packages and prices</h2><small>Launch prices, US dollars.<br>Paid securely on Stripe.</small></div>
+      <div class="plans">
+        <div class="plan">
+          <div><span class="k">Your foundation</span><h3>The Social Kit</h3></div>
+          <ul><li><b>10</b> designs</li><li><b>5</b> stories</li><li>Brand book</li><li>30-day plan</li></ul>
+          <div class="pr"><b><s>$30</s>$15 <small>once</small></b><a class="btn out" href="/pricing/">Get my Social Kit</a></div>
+        </div>
+        <div class="plan feat">
+          <div><span class="k">Your monthly rhythm</span><h3>Stay Visible</h3></div>
+          <ul><li><b>10</b> designs / mo</li><li><b>10</b> stories / mo</li><li><b>2</b> seasonal mockups</li><li>Content calendar</li><li>Kit in month one</li></ul>
+          <div class="pr"><b><s>$30</s>$15 <small>/ month</small></b><a class="btn" href="/pricing/">Choose Stay Visible</a></div>
+        </div>
+        <div class="plan">
+          <div><span class="k">Your monthly momentum</span><h3>Keep Growing</h3></div>
+          <ul><li><b>20</b> designs / mo</li><li><b>20</b> stories / mo</li><li><b>4</b> seasonal mockups</li><li>Campaign + <b>6</b> ad copies</li><li>Competitor update</li><li>Kit in month one</li></ul>
+          <div class="pr"><b><s>$30</s>$15 <small>/ month</small></b><a class="btn out" href="/pricing/">Choose Keep Growing</a></div>
+        </div>
+      </div>
+      <p class="fine">Monthly plans renew each month. Cancel any time before renewal and keep your plan until the paid month ends. Extra platforms are fully adapted at no extra charge.</p>
+    </section>
+
+    <section class="panel cream" id="in-store">
+      <div class="ph"><h2>In-store</h2><small>Designed, branded,<br>made in our workshop.</small></div>
+      <p class="lede2">The branded pieces for your shop, all in your own identity.</p>
+      <div class="cgrid">
+        <div><span class="st soon">Coming soon</span><h3>The Store Kit</h3><p>The pieces your store uses every day, as one kit. No launch date yet. Join the waitlist to hear first; joining is not an order.</p><a class="btn ghost" href="/in-store/">Join the waitlist</a></div>
+        <div><span class="st open">Open</span><h3>Custom pieces</h3><p>A shop sign, a uniform, packaging or something only your business needs. We send you a quote. Nothing is made or charged until you agree.</p><a class="btn" href="https://portal.crierstudio.com/#/signup?intent=quote&amp;lang=en">Ask about a custom piece</a></div>
+      </div>
+      <div class="plist"><span>Apron</span><span>Menu board</span><span>Door mat</span><span>Cup</span><span>QR stand</span><span>Stamp card</span></div>
+    </section>
+
+    <section class="panel" id="faq">
+      <div class="ph"><h2>Straight answers</h2><small><a href="/faq/">All questions</a></small></div>
+      <details><summary>How does billing work?</summary><p>You pay securely on Stripe from your client portal. Monthly plans are billed each month; the one-time package is paid once. Checkout is in US dollars.</p></details>
+      <details><summary>Do the monthly plans include the starter package?</summary><p>Yes. Both monthly plans include The Social Kit in your first month. Its 10 social designs count toward your first month's designs.</p></details>
+      <details><summary>Can I cancel?</summary><p>Yes. Cancel any time before your next renewal by emailing team@crierstudio.com. You keep your plan until the end of the month you have paid for.</p></details>
+      <details><summary>Who publishes the posts?</summary><p>You do. The designs, captions and plans are files ready for you or your team to publish. Nothing is published for you.</p></details>
+      <details><summary>What is the client portal?</summary><p>Your own private page at portal.crierstudio.com. We put your work there, and you look at every post, ask for changes and say OK.</p></details>
+      <details><summary>Can you promise more customers?</summary><p>No. Nobody can honestly promise that. Results depend on your business, your market and what you do with the posts.</p></details>
+    </section>
+
+    <footer>
+      <div><p>Social media posts for local businesses, made from what you tell us about yours.</p><p style="margin-top:10px"><a href="mailto:team@crierstudio.com">team@crierstudio.com</a></p><p style="margin-top:20px">© 2026 Crier Studio</p></div>
+      <div><h4>Explore</h4><ul><li><a href="/social/">Social</a></li><li><a href="/in-store/">In-store</a></li><li><a href="/samples/">Samples</a></li><li><a href="/pricing/">Pricing</a></li><li><a href="/about/">About</a></li><li><a href="/brand-deck/">Brand Deck</a></li></ul></div>
+      <div><h4>Legal</h4><ul><li><a href="/terms/">Terms of service</a></li><li><a href="/privacy/">Privacy policy</a></li><li><a href="/refund/">Refund policy</a></li></ul></div>
+    </footer>
+  </main>
+</div>
+<script>
+(function(){
+  // Highlight the section in view in the left-hand index
+  var links={};[].forEach.call(document.querySelectorAll('.index a'),function(a){links[a.getAttribute('href').slice(1)]=a});
+  if(!('IntersectionObserver' in window))return;
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){for(var k in links)links[k].classList.toggle('on',k===e.target.id)}})},{rootMargin:'-45% 0px -50% 0px'});
+  Object.keys(links).forEach(function(id){var s=document.getElementById(id);if(s)io.observe(s)});
+})();
+</script>
+</body>
+</html>

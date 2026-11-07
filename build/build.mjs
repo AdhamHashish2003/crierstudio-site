@@ -308,14 +308,52 @@ function planCard(lang, p, hot) {
   const vatLine = '';
   return `<article class="plan${hot ? ' hot' : ''}" data-plan="${p}"><span class="badge">${h(lang, `pkg.${p}.eye`)}</span><h3>${esc(pname(lang, p))}</h3><p class="pt">${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(lang, p)}<span class="per">${h(lang, per)}</span></div>${vatLine}<p class="billnote">${h(lang, bill)}</p>${platPick(lang, p)}${ticks(lang, `pkg.${p}`)}<p class="pnote">${h(lang, `pkg.${p}.note`)}</p><div class="buyrow">${buyBtn(lang, p, !hot)}</div></article>`;
 }
-// home "Good to know": four lines, the last one links the refund policy
-function homeTrust(lang) {
-  const li = ['home.trust.approve', 'home.trust.own', 'home.trust.f2'].map((k) => `<li>${h(lang, k)}</li>`).join('');
-  return `<ul class="ticks">${li}<li>${h(lang, 'home.trust.f5')} <a href="${pathFor(lang, 'refund')}">${h(lang, 'home.trust.refund')}</a></li></ul>`;
+// ---- home: Landing A "Billboard" (Adham, 2026-11-06) ----
+// Hero headline + the Instagram-ready phone (SAHM, @sahmmena: the owner's own project, with its real posts), The Social Kit in
+// numbers, the client-portal walkthrough (kept, Adham 2026-11-07), the OK rule, the package table, the cream In-store teaser and
+// a closing call. No FAQ on the home page.
+// the headline's second sentence carries the lime highlight: split after the first sentence ("." in English, "…" in Arabic)
+function heroH1(lang) {
+  const m = t(lang, 'home.h1').match(/^(.+?[.…])\s*(\S.*)$/);
+  if (!m) throw new Error(`home.h1 (${lang}): no sentence break to split the hero headline`);
+  return `${esc(m[1])} <span class="hl">${esc(m[2])}</span>`;
 }
-// home FAQ ("Straight answers", bottom of the page): the FAQ page's entries without the Brand Deck block
-const FAQ_HOME = [19, 20, 21, 22, 23, 24, 25, 26, 1, 7, 2, 4, 5, 17, 9];
-const FAQ_HOME_SWAP = { 'faq.1a2': 'home.faq.1a2' };
+// SAHM's real reel covers and logo: the crops of its Instagram profile in assets/demo/ (build/demo-images.py, 240 x 320,
+// grid order), the same files the walkthrough uses. The Story card shows reel 3 (the emotions gauge).
+const HERO_POSTS = 6, HERO_STORY = 3;
+const sahmPosts = () => Array.from({ length: HERO_POSTS }, (_, i) => `<img src="/assets/demo/post-${i + 1}.webp" alt="" width="240" height="320" decoding="async">`).join('');
+const sahmStory = () => `<img src="/assets/demo/post-${HERO_STORY}.webp" alt="" width="240" height="320" decoding="async">`;
+const sahmLogo = '<img class="sahm-logo" src="/assets/demo/logo.webp" alt="" width="128" height="128" decoding="async">';
+// The Social Kit in numbers: every number is a count from data/pricing.json
+const KIT_NUMS = [['posts', 'la.n.posts', 'la.n.postsx'], ['stories', 'la.n.stories', 'la.n.storiesx'], ['competitor_profiles', 'la.n.comp', 'la.n.compx'], ['mockups', 'la.n.mock', 'la.n.mockx']];
+const kitNums = (lang) => KIT_NUMS.map(([item, k, x]) => `<div class="la-num"><b dir="ltr">${PKG.kit.items[item]}</b><span>${h(lang, k)}</span><small>${h(lang, x)}</small></div>`).join('');
+// the OK rule: four promises, the last one links the refund policy
+function homeTrust(lang) {
+  const li = [['la.ok.1', 'home.trust.approve'], ['la.ok.2', 'home.trust.own'], ['la.ok.3', 'home.trust.f2']].map(([b, k]) => `<li><b>${h(lang, b)}</b>${h(lang, k)}</li>`).join('');
+  return `<ul class="la-oklist">${li}<li><b>${h(lang, 'la.ok.4')}</b>${h(lang, 'home.trust.f5')} <a href="${pathFor(lang, 'refund')}">${h(lang, 'home.trust.refund')}</a></li></ul>`;
+}
+// the package table: one column per Social package; cells are i18n keys (counts as {n:<id>.<item>}), a cell key may be shared
+const TABLE_PKGS = ['kit', 'visible', 'growing'];
+const TABLE_ROWS = [
+  ['la.t.posts', ['la.t.posts.kit', 'la.t.posts.visible', 'la.t.posts.growing']],
+  ['la.t.stories', ['la.t.stories.kit', 'la.t.stories.visible', 'la.t.stories.growing']],
+  ['la.t.mock', ['la.t.mock.kit', 'la.t.mock.visible', 'la.t.mock.growing']],
+  ['la.t.bb', ['la.t.bb.kit', 'pkg.visible.f1', 'pkg.growing.f1']],
+  ['la.t.camp', ['pkg.kit.f7', 'la.t.no', 'pkg.growing.f6']],
+  ['la.t.plan', ['la.t.plan.kit', 'pkg.visible.f6', 'pkg.growing.f9']],
+  ['la.t.rev', ['la.t.rev.kit', 'la.t.rev.visible', 'la.t.rev.growing']],
+  ['la.t.plat', ['la.t.plat.kit', 'plan.extraNote', 'plan.extraNote']],
+  ['la.t.also', ['pkg.kit.f2', 'pkg.visible.f8', 'pkg.growing.f7']],
+];
+function priceTable(lang) {
+  const hot = (p) => (p === 'visible' ? ' class="hot"' : '');
+  const head = `<thead><tr><th scope="col">${h(lang, 'la.t.what')}</th>${TABLE_PKGS.map((p) => `<th scope="col"${hot(p)}><span class="la-pname">${esc(pname(lang, p))}</span><span class="la-ptag">${h(lang, `pkg.${p}.eye`)}</span></th>`).join('')}</tr></thead>`;
+  const price = `<tr class="la-prow"><th scope="row">${h(lang, 'la.t.price')}</th>${TABLE_PKGS.map((p) => `<td${hot(p)}>${money(lang, p)}<span class="per">${h(lang, MONTHLY.has(p) ? 'plan.per' : 'one.per')}</span></td>`).join('')}</tr>`;
+  const cls = (p, k) => { const c = [p === 'visible' && 'hot', k === 'la.t.no' && 'la-no'].filter(Boolean); return c.length ? ` class="${c.join(' ')}"` : ''; };
+  const rows = TABLE_ROWS.map(([label, cells]) => `<tr><th scope="row">${h(lang, label)}</th>${cells.map((k, i) => `<td${cls(TABLE_PKGS[i], k)}>${h(lang, k)}</td>`).join('')}</tr>`).join('');
+  const buy = `<tr class="la-buy"><td></td>${TABLE_PKGS.map((p) => `<td${hot(p)}><a class="btn${p === 'visible' ? '' : ' la-line'}" href="${esc(buyHref(lang, p))}">${h(lang, `pkg.${p}.btn`)}</a></td>`).join('')}</tr>`;
+  return `<table class="la-table">${head}<tbody>${price}${rows}${buy}</tbody></table>`;
+}
 
 // ---- home "See what working with Crier looks like": the client portal walkthrough (approved mockup v2, 2026-10-18) ----
 // An HTML/CSS recreation of the client portal, driven by assets/dash.js (45 s story loop). Portal labels
@@ -420,6 +458,16 @@ function walkthrough(lang) {
   // "Get started": the client portal's own sign-up, in the page language
   return { dash: dash(lang), wtSteps, wtDetails, wtTotal: two(WT_STEPS), signupHref: esc(signupUrl(lang)) };
 }
+const STORE_PIECES = ['apron', 'menu', 'mat', 'cup', 'qr', 'card'];
+const storePieces = (lang) => STORE_PIECES.map((k) => `<span>${h(lang, `is.pc.${k}`)}</span>`).join(' <i aria-hidden="true">/</i> ');
+function homeVars(lang) {
+  return {
+    heroH1: heroH1(lang), sahmPosts: sahmPosts(), sahmStory: sahmStory(), sahmLogo, ...heroStart(lang),
+    kitNums: kitNums(lang), kitPrice: money(lang, 'kit'), kitBtn: `<a class="btn lime" href="${esc(buyHref(lang, 'kit'))}">${h(lang, 'pkg.kit.btn')}</a>`,
+    trust: homeTrust(lang), ...walkthrough(lang), curPick: curPick(lang), priceTable: priceTable(lang),
+    storePieces: storePieces(lang), quoteHref: esc(portalAuth('signup', lang)),
+  };
+}
 // P1: a monthly package picks its platforms on the card; the live line ("Keep Growing · Instagram + Facebook · $90/mo") is computed in
 // the browser from the numbers below (data/pricing.json: price + (platforms - included) × extra_platform_price), never typed.
 // The first platform is ticked; the server-side line is the one-platform price so the page reads right without JavaScript.
@@ -444,9 +492,9 @@ function pageVars(lang, page) {
     buyDeck: buyBtn(lang, 'deck', false), conv: lang === 'en' ? '' : `<p class="conv">${h(lang, 'leg.conv')}</p>`,
     waFoot: waLink(lang), waAbout: WA ? `<p>${waLink(lang)}</p>` : '',
   };
-  // Home v2 (2026-10-18): hero, the client portal walkthrough, Good to know, FAQ. Audit fixes (2026-10-19): no prices or
-  // package names on the home page (the three package cards are gone; pricing lives on /pricing/ only).
-  if (page === 'index') Object.assign(v, { trust: homeTrust(lang), faqHome: faqItems(lang, FAQ_HOME, false, FAQ_HOME_SWAP), ...walkthrough(lang), ...heroStart(lang) });
+  // Home: Landing A (2026-11-06, Adham): the package table is back on the home page (overrides the 2026-10-19 audit rule);
+  // the walkthrough and the home FAQ are gone (the FAQ page stays).
+  if (page === 'index') Object.assign(v, homeVars(lang));
   if (page === 'social') Object.assign(v, { kitList: ticks(lang, 'pkg.kit', 'cols'), flow: flow(lang, 3, 'how') });
   if (page === 'in-store') Object.assign(v, storeVars(lang));
   if (page === 'sculptures') Object.assign(v, sculptVars(lang));
@@ -706,7 +754,7 @@ function purgeCss(css, html) {
 const trimIndent = (html) => html.split(/(<(script|style|pre|textarea)\b[\s\S]*?<\/\2>)/).map((part, i) => i % 3 === 0 ? part.replace(/\n[ \t]+/g, '\n') : i % 3 === 1 ? part : '').join('');
 // the English In-store page loads the Arabic faces too: its menu board and QR stand carry Arabic item names (the unicode-range
 // means the files download only for those glyphs)
-const cssFor = (lang, page) => minCss([CSS.fonts, lang === 'ar' || page === 'in-store' ? CSS.fontsAr : '', WIDE.has(page) ? CSS.home : CSS.legal + (page === 'faq' ? '\n' + faqCss : ''), CSS.common, CSS.consent, CSS.chrome, page === 'sculptures' ? CSS.sculpt : ''].join('\n'));
+const cssFor = (lang, page) => minCss([CSS.fonts, lang === 'ar' || page === 'in-store' || page === 'index' ? CSS.fontsAr : '', WIDE.has(page) ? CSS.home : CSS.legal + (page === 'faq' ? '\n' + faqCss : ''), CSS.common, CSS.consent, CSS.chrome, page === 'sculptures' ? CSS.sculpt : ''].join('\n'));
 
 // ---------- content-hashed asset copies (long browser cache) ----------
 // GitHub Pages sends every file with max-age=600. The pages therefore reference copies of the fonts, the hero images and
