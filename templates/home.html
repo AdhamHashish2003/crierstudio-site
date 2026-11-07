@@ -1,36 +1,68 @@
 <main id="main-content">
     {{>hero}}
 
-    <section id="walkthrough" class="wt" aria-labelledby="wt-title">
-      <div class="wt-head">
-        <span class="eyebrow">{{t:wt.eye}}</span>
-        <h2 id="wt-title">{{t:wt.h2}}</h2>
+    <section id="kit" class="la-kit" aria-labelledby="kit-title">
+      <div class="la-head">
+        <h2 id="kit-title">{{t:la.kit.h2}}</h2>
+        <p class="lead">{{t:pkg.kit.note}}</p>
+      </div>
+      <div class="la-nums">{{=kitNums}}</div>
+      <div class="la-kitprice">
+        {{=kitPrice}}
+        <span class="la-once">{{t:one.per}} · {{t:pkg.kit.bill}}</span>
+        {{=kitBtn}}
+      </div>
+    </section>
+
+    <section id="trust" class="la-ok" aria-labelledby="trust-title">
+      <h2 id="trust-title">{{t:wt.big}}</h2>
+      {{=trust}}
+    </section>
+
+    <section id="how" class="la-how" aria-labelledby="how-title">
+      <div class="la-head">
+        <h2 id="how-title">{{t:la.how.h2}}</h2>
         <p class="lead">{{t:wt.sub}}</p>
       </div>
-      <div class="wt-grid">
-        <div class="wt-stage">
-          {{=dash}}
-        </div>
-        <div class="wt-side">
-          <div class="wt-progress" aria-hidden="true"><span class="wt-count"><bdi dir="ltr"><b>{{=wtTotal}}</b> / {{=wtTotal}}</bdi></span><span class="wt-track"><i></i></span></div>
-          <ol class="wt-steps" aria-label="{{a:wt.steps}}">{{=wtSteps}}</ol>
-          <div class="wt-detail">{{=wtDetails}}</div>
-          <div class="wt-cta"><a class="btn" href="{{=signupHref}}">{{t:wt.cta}}</a><a class="wt-from" href="{{=pricingHref}}">{{t:wt.from}}</a></div>
-        </div>
-      </div>
-      <p class="wt-big">{{t:wt.big}}</p>
+      <ol class="la-steps">{{=steps}}</ol>
+      <div class="la-cta"><a class="btn" href="{{=signupHref}}">{{t:wt.cta}}</a><a class="la-link" href="{{=samplesHref}}">{{t:la.how.samples}}</a></div>
     </section>
 
-    <section id="trust" aria-labelledby="trust-title">
-      <div class="sec-head"><h2 id="trust-title">{{t:home.trust.title}}</h2></div>
-      <div class="closing">
-        {{=trust}}
-        <p>{{t:home.contact}}</p>{{=waAbout}}
+    <section id="pricing" class="la-price" aria-labelledby="price-title">
+      <div class="la-head">
+        <h2 id="price-title">{{t:la.pr.h2}}</h2>
+        <p class="lead">{{t:la.pr.sub}}</p>
+      </div>
+      {{=curPick}}
+      <div class="la-tablewrap">{{=priceTable}}</div>
+      <p class="fine la-fine">{{t:bill.3}} <a href="{{=pricingHref}}">{{t:la.pr.all}}</a></p>
+    </section>
+
+    <section id="in-store" class="la-store cream" aria-labelledby="store-title">
+      <div class="la-head">
+        <h2 id="store-title">{{t:nav.instore}}</h2>
+        <p class="lead">{{t:is.a.h1}}</p>
+      </div>
+      <p class="la-pieces">{{=storePieces}}</p>
+      <div class="la-two">
+        <div class="la-box">
+          <span class="la-tag soon">{{t:availability.soon}}</span>
+          <h3>{{t:name.store}}</h3>
+          <p>{{t:is.a.na}} {{t:is.a.wl}}</p>
+          <a class="btn la-line" href="{{=storeWaitHref}}">{{t:is.cta1}}</a>
+        </div>
+        <div class="la-box">
+          <span class="la-tag open">{{t:is.a.open}}</span>
+          <h3>{{t:is.c.name}}</h3>
+          <p>{{t:is.a.clead}} {{t:is.a.cfact}}</p>
+          <a class="btn" href="{{=quoteHref}}">{{t:is.q.btn}}</a>
+        </div>
       </div>
     </section>
 
-    <section id="faq" class="home-faq" aria-labelledby="faq-title">
-      <div class="sec-head"><h2 id="faq-title">{{t:faq.title}}</h2></div>
-      <div class="faq">{{=faqHome}}</div>
+    <section id="start" class="la-close" aria-labelledby="close-title">
+      <h2 id="close-title">{{t:la.close.h2}}</h2>
+      <div class="la-cta"><a class="btn" href="{{=signupHref}}">{{t:hero.start.btn}}</a><a class="la-link" href="#pricing">{{t:hero.start.pricing}}</a></div>
+      <p class="la-contact">{{t:home.contact}}</p>{{=waAbout}}
     </section>
   </main>

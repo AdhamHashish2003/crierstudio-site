@@ -79,20 +79,28 @@ for (const l of LANGS) for (const p of PAGES) {
   }
   if (p === 'pricing/') ok((h.match(/data-product="/g) || []).length === 3 && h.includes('disabled data-unavailable="deck"'), `3 buy buttons and unavailable Brand Deck on ${file}`);
   // The Store Kit: a card on pricing with no price, no VAT line and no buy button; its only action is the waitlist
-  // (Home v2, 2026-10-18: the home page shows the three Social packages only, no Store Kit card and no In-store teaser)
+  // Home: Landing A (Adham, 2026-11-06): hero (SAHM's real Instagram posts), The Social Kit in numbers, the OK rule, five
+  // steps, the package table, the cream In-store teaser, a closing call. No walkthrough and no FAQ on the home page.
   if (p === '') {
-    ok(!/store-card|is-teaser|id="businesses"|id="seasons"|id="plans"/.test(h), `no package cards, Store Kit card, In-store teaser, industries or seasons section on ${file}`);
-    for (const id of ['id="walkthrough"', 'id="dash"', 'id="dash-s"', 'id="trust"', 'id="faq"']) ok(h.includes(id), `${id} on ${file}`);
-    ok(h.includes(`href="${SIGNUP(l)}"`), `walkthrough Get started -> portal sign-up (${l}) on ${file}`);
-    ok(/<script src="\/assets\/h\/dash\.[0-9a-f]{10}\.js" defer><\/script>/.test(h), `dashboard script (hashed, from 'self') on ${file}`);
-    ok(h.indexOf('id="walkthrough"') < h.indexOf('id="trust"') && h.indexOf('id="trust"') < h.indexOf('id="faq"'), `home section order on ${file}`);
-    // Home hero (audit fixes, 2026-10-19): a "Start in your portal" card (no price, no package name, no geo price data) whose
-    // button opens the portal sign-up; the example posts labelled as examples, and no place name, clock or count in the phone
-    const hero = (h.match(/<section class="hc" id="hero"[\s\S]*?<\/section>/) || [''])[0];
-    ok(!/data-usd|data-vat|data-product|id="cur-data"/.test(h) && hero.includes('href="#walkthrough"') && hero.includes(d[l]['hero.start.t']), `hero "Start in your portal" card, no price data, walkthrough link on ${file}`);
-    ok((hero.match(/<div class="hc-card[^"]*">[\s\S]*?<a class="btn" href="([^"]*)"/) || [])[1] === SIGNUP(l), `hero button -> ${SIGNUP(l)} on ${file}`);
-    ok(hero.includes(d[l]['hero.exnote']) && !/Riyadh|الرياض|\d:\d\d|<img\b/.test(hero), `hero example labelled, no city, clock or image on ${file}`);
-    ok(hero.includes(d[l]['hero.ig.bio']) && !/built on your logo|مبنية على شعارك/i.test(hero), `hero phone bio on ${file}`);
+    ok(!/store-card|is-teaser|id="businesses"|id="seasons"|id="plans"/.test(h), `no package cards, Store Kit card, industries or seasons section on ${file}`);
+    const HOME_IDS = ['hero', 'kit', 'trust', 'how', 'pricing', 'in-store', 'start'];
+    const at = HOME_IDS.map((id) => h.indexOf(`id="${id}"`));
+    ok(at.every((x, i) => x > -1 && (i === 0 || x > at[i - 1])), `home sections ${HOME_IDS.join(', ')} in order on ${file}`);
+    ok(!/id="walkthrough"|id="dash"|id="faq"|\/assets\/h\/dash\./.test(h), `no walkthrough, dashboard script or FAQ on ${file}`);
+    const hero = (h.match(/<section class="hc la-hero" id="hero"[\s\S]*?<\/section>/) || [''])[0];
+    ok((hero.match(/<div class="la-cta">\s*<a class="btn" href="([^"]*)"/) || [])[1] === SIGNUP(l), `hero button -> ${SIGNUP(l)} on ${file}`);
+    ok(hero.includes('href="#how"') && hero.includes('href="#pricing"'), `hero links to #how and #pricing on ${file}`);
+    ok(hero.includes(d[l]['hero.exnote']) && hero.includes('sahmmena') && !/data-usd|data-product/.test(hero), `hero labelled as SAHM's real posts, no price in it, on ${file}`);
+    const imgs = [...hero.matchAll(/<img src="(\/assets\/h\/sahm-(?:p\d|story)\.[0-9a-f]{10}\.webp)" alt="" width="\d+" height="\d+"/g)].map((m) => m[1]);
+    ok(imgs.length === 10 && imgs.every((u) => fs.existsSync(path.join(ROOT, u.slice(1)))), `hero: 9 SAHM posts + 1 story, hashed and sized, on ${file}`);
+    // the package table: every Social package at its list and sale price from data/pricing.json, with its sign-up button
+    for (const pk of PRICING.packages.filter((x) => ['kit', 'visible', 'growing'].includes(x.id))) {
+      ok(new RegExp(`class="price-list amt" dir="(ltr|rtl)" data-usd="${pk.list_price}" data-sar="${pk.list_prices.SAR}"`).test(h) && new RegExp(`class="price amt" dir="(ltr|rtl)" data-usd="${pk.price}" data-sar="${pk.prices.SAR}"`).test(h), `table price ${pk.list_price} -> ${pk.price} USD (${pk.id}) on ${file}`);
+    }
+    // TEMPORARY (2026-11-07): the SAHM images are placeholders until Adham sends the real post files; fail until they are replaced
+    const TEMP_SAHM = new Set(['1c56434fc4e4ea73','b58a88d52d62c17f','880f3c9ca78ed024','cc7ad8ebdabbf200','880b985d637a8904','2984d2d273f424b4','7ff452af5bc01583','1248c95c8428baf8','f15c0017db17fd71','7313c6c8501d8d99']);
+    for (const u of imgs) ok(!TEMP_SAHM.has(crypto.createHash('sha256').update(fs.readFileSync(path.join(ROOT, u.slice(1)))).digest('hex').slice(0, 16)), `placeholder SAHM image ${u} on ${file} (replace assets/sahm-*.webp with the real posts)`);
+    ok((h.match(/<table class="la-table">/g) || []).length === 1 && /id="cur-data"/.test(h), `one package table with its currency data on ${file}`);
   }
   if (p === 'pricing/') {
     const card = (h.match(/<(article|div) class="(plan|ind) cream store-card"[\s\S]*?<\/\1>/) || [''])[0];
@@ -134,7 +142,8 @@ for (const l of LANGS) for (const p of PAGES) {
   // prices and package names appear only on /pricing/ and the legal pages (terms, privacy, refund). In-store keeps its own
   // Store Kit waitlist name. Checked in the visible text, the meta tags and the JSON-LD.
   ok(!/id="snap-|id="form-msgs"|id="request"|f-consent|__snapPayload/.test(h), `the public order form (#snap-form) is gone from ${file}`);
-  if (!['pricing/', 'terms/', 'privacy/', 'refund/'].includes(p)) {
+  // (Landing A, 2026-11-06: the home page shows the package table again, so it is allowed prices and package names too)
+  if (!['', 'pricing/', 'terms/', 'privacy/', 'refund/'].includes(p)) {
     const ld = (h.match(/<script type="application\/ld\+json">[\s\S]*?<\/script>/) || [''])[0], meta = (h.match(/<meta[^>]+>|<title>[^<]*<\/title>/g) || []).join(' ');
     const syms = ['SAR', 'AED', 'EGP'].map((c) => d[l]['cur.sym' + c].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
     const priceRe = new RegExp(`data-usd|class="(price )?amt"|"offers"|"price":|\\$\\s?\\d|(${syms.join('|')})\\s?\\d|\\d\\s?(${syms.join('|')})`);

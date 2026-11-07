@@ -112,7 +112,7 @@ for (const k of PRODUCTS) {
 }
 const dicts = Object.fromEntries(LANGS.map(([c]) => [c, JSON.parse(rd(`i18n/${c}.json`))]));
 const partials = {
-  hero: rd('templates/hero.html'), logo: rd('templates/logo.svg.html'), footer: rd('templates/footer.html'), header: rd('templates/header.html'),
+  hero: rd('templates/hero.html'), logo: rd('templates/logo.svg.html'), sahmLogo: rd('templates/sahm-logo.svg.html'), footer: rd('templates/footer.html'), header: rd('templates/header.html'),
   consent: rd('templates/consent.html'), panels: rd('templates/instore-panels.html'),
 };
 const CSS = {
@@ -308,114 +308,60 @@ function planCard(lang, p, hot) {
   const vatLine = '';
   return `<article class="plan${hot ? ' hot' : ''}" data-plan="${p}"><span class="badge">${h(lang, `pkg.${p}.eye`)}</span><h3>${esc(pname(lang, p))}</h3><p class="pt">${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(lang, p)}<span class="per">${h(lang, per)}</span></div>${vatLine}<p class="billnote">${h(lang, bill)}</p>${platPick(lang, p)}${ticks(lang, `pkg.${p}`)}<p class="pnote">${h(lang, `pkg.${p}.note`)}</p><div class="buyrow">${buyBtn(lang, p, !hot)}</div></article>`;
 }
-// home "Good to know": four lines, the last one links the refund policy
+// ---- home: Landing A "Billboard" (Adham, 2026-11-06) ----
+// Hero headline + the Instagram-ready phone (SAHM, @sahmmena: the owner's own project, with its real posts), The Social Kit in
+// numbers, the OK rule, five steps, the package table, the cream In-store teaser and a closing call. No FAQ on the home page.
+// the headline's second sentence carries the lime highlight: split after the first sentence ("." in English, "…" in Arabic)
+function heroH1(lang) {
+  const m = t(lang, 'home.h1').match(/^(.+?[.…])\s*(\S.*)$/);
+  if (!m) throw new Error(`home.h1 (${lang}): no sentence break to split the hero headline`);
+  return `${esc(m[1])} <span class="hl">${esc(m[2])}</span>`;
+}
+// SAHM's own post covers, cropped from its Instagram grid (assets/sahm-p<n>.webp, 3:4, newest first) and one story
+const SAHM_POSTS = 9;
+const sahmPosts = () => Array.from({ length: SAHM_POSTS }, (_, i) => `<img src="/assets/sahm-p${i + 1}.webp" alt="" width="300" height="400" decoding="async">`).join('');
+const sahmStory = () => '<img src="/assets/sahm-story.webp" alt="" width="270" height="480" decoding="async">';
+// The Social Kit in numbers: every number is a count from data/pricing.json
+const KIT_NUMS = [['posts', 'la.n.posts', 'la.n.postsx'], ['stories', 'la.n.stories', 'la.n.storiesx'], ['competitor_profiles', 'la.n.comp', 'la.n.compx'], ['mockups', 'la.n.mock', 'la.n.mockx']];
+const kitNums = (lang) => KIT_NUMS.map(([item, k, x]) => `<div class="la-num"><b dir="ltr">${PKG.kit.items[item]}</b><span>${h(lang, k)}</span><small>${h(lang, x)}</small></div>`).join('');
+// the OK rule: four promises, the last one links the refund policy
 function homeTrust(lang) {
-  const li = ['home.trust.approve', 'home.trust.own', 'home.trust.f2'].map((k) => `<li>${h(lang, k)}</li>`).join('');
-  return `<ul class="ticks">${li}<li>${h(lang, 'home.trust.f5')} <a href="${pathFor(lang, 'refund')}">${h(lang, 'home.trust.refund')}</a></li></ul>`;
+  const li = [['la.ok.1', 'home.trust.approve'], ['la.ok.2', 'home.trust.own'], ['la.ok.3', 'home.trust.f2']].map(([b, k]) => `<li><b>${h(lang, b)}</b>${h(lang, k)}</li>`).join('');
+  return `<ul class="la-oklist">${li}<li><b>${h(lang, 'la.ok.4')}</b>${h(lang, 'home.trust.f5')} <a href="${pathFor(lang, 'refund')}">${h(lang, 'home.trust.refund')}</a></li></ul>`;
 }
-// home FAQ ("Straight answers", bottom of the page): the FAQ page's entries without the Brand Deck block
-const FAQ_HOME = [19, 20, 21, 22, 23, 24, 25, 26, 1, 7, 2, 4, 5, 17, 9];
-const FAQ_HOME_SWAP = { 'faq.1a2': 'home.faq.1a2' };
-
-// ---- home "See what working with Crier looks like": the client portal walkthrough (approved mockup v2, 2026-10-18) ----
-// An HTML/CSS recreation of the client portal, driven by assets/dash.js (45 s story loop). Portal labels
-// are the portal's own (dash.* keys); posts, names and the caption are example content. Steps: wt.<n>l / t / x / screen.
-const WT_STEPS = 5;
-const DASH_EMAIL = 'team@crierstudio.com';
-// icon paths copied from the portal's own set (portal/public/app.js)
-const PI = {
-  overview: 'M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z', layers: 'M12 3l9 5-9 5-9-5zM3 13l9 5 9-5', review: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8 12l3 3 5-6',
-  folder: 'M3 6h6l2 2h10v11H3z', calendar: 'M4 5h16v15H4zM8 3v4M16 3v4M4 10h16', card: 'M3 6h18v12H3zM3 10h18M7 15h3', chat: 'M4 5h16v11H9l-5 4z', menu: 'M4 7h16M4 12h16M4 17h16', chev: 'M9 6l6 6-6 6', check: 'M4 12l5 5L20 6',
-  settings: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7 7 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z',
-  spark: 'M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18', work: 'M12 3v12M7 10l5 5 5-5M4 20h16', comment: 'M4 5h16v11H9l-5 4z',
-};
-const ic = (k, lang) => { const d = k === 'chev' && lang === 'ar' ? 'M15 6l-6 6 6 6' : PI[k]; return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`; };
-const digits = (lang, n) => (lang === 'ar' ? String(n).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]) : String(n)); // Arabic-Indic on /ar/, as the portal does
-
-function dash(lang) {
-  const T = (k) => t(lang, 'dash.' + k), D = (k) => esc(T(k)), ar = lang === 'ar';
-  const posts = [
-    { file: 'post-1.svg', day: 21, kind: 'typePost' },
-    { file: 'post-2.svg', day: 22, kind: 'typeReel' },
-    { file: 'post-3.svg', day: 23, kind: 'typeReel' },
-    { file: 'post-4.svg', day: 24, kind: 'typeReel' },
-    { file: 'post-5.svg', day: 25, kind: 'typeCarousel' },
-    { file: 'post-6.svg', day: 26, kind: 'typeReel' },
-    { file: 'post-7.svg', day: 27, kind: 'typeReel' },
-    { file: 'post-8.svg', day: 28, kind: 'typeReel' },
-  ].map((p) => ({ ...p, label: T(p.kind) }));
-  const date = (day) => ar ? digits(lang, day) + ' ' + T('monthShort') : T('monthShort') + ' ' + digits(lang, day);
-  // the demo business is fictional (Lulu Bakery); its posts and logo are drawn shapes with no text, the same in both languages
-  const image = (file, cls) => '<img class="' + cls + '" src="/assets/demo/' + file + '" alt="" loading="lazy" decoding="async">';
-  const logo = (cls) => image('logo.svg', cls);
-  const postCard = (p) => '<span class="d-post-card"><span class="d-post-visual">' + image(p.file, 'd-post-img') + '<span class="d-post-kind">' + esc(p.label) + '</span></span><span class="d-post-copy"><strong>' + esc(p.label) + '</strong><small>' + esc(date(p.day)) + '</small></span></span>';
-  const postGrid = (arr, cls) => '<span class="d-post-grid ' + cls + '">' + arr.map(postCard).join('') + '</span>';
-  const calendarCell = (p) => '<span class="d-calendar-cell"><span class="d-calendar-day">' + digits(lang, p.day) + '</span><span class="d-calendar-thumb">' + image(p.file, 'd-calendar-img') + '</span><span class="d-calendar-type">' + esc(p.label) + '</span></span>';
-  const nav = (icon, key, screen, active) => '<span class="d-link' + (active ? ' on' : '') + '" data-nav="' + screen + '">' + ic(icon, lang) + '<span class="d-nl">' + D(key) + '</span></span>';
-  const tab = (key, screen, active) => '<span class="d-tab' + (active ? ' on' : '') + '" data-nav="' + screen + '">' + D(key) + '</span>';
-  const view = (screen, title, body, active) => '<span class="d-view' + (active ? ' is-on' : '') + '" data-screen="' + screen + '"><span class="d-view-head"><strong>' + D(title) + '</strong></span>' + body + '</span>';
-  const row = (key, label) => '<span class="d-brief-row" data-brief="' + key + '"><span class="d-brief-label">' + D('brief' + key.charAt(0).toUpperCase() + key.slice(1)) + '</span><strong>' + D(label) + '</strong><span class="d-brief-check">' + ic('check', lang) + '</span></span>';
-  const summary = (delivered, awaiting, approved, fourth, fourthCount) => '<span class="d-summary-grid">' +
-    '<span class="d-summary-tile dark"><small>' + D('delivered') + '</small><strong data-k="delivered">' + digits(lang, delivered) + '</strong></span>' +
-    '<span class="d-summary-tile"><small>' + D('awaiting') + '</small><strong data-k="await">' + digits(lang, awaiting) + '</strong></span>' +
-    '<span class="d-summary-tile"><small>' + D('approved') + '</small><strong data-k="approved">' + digits(lang, approved) + '</strong></span>' +
-    '<span class="d-summary-tile"><small>' + D(fourth) + '</small><strong data-k="' + (fourth === 'channels' ? 'channels' : 'readyCount') + '">' + digits(lang, fourthCount) + '</strong></span>' +
-    '</span>';
-  const emptyBody = summary(0, 0, 0, 'ready', 0) + '<span class="d-empty-state"><strong>' + D('emptyTitle') + '</strong><span class="d-empty-prompt"><span class="d-empty-spark">' + ic('spark', lang) + '</span><span><b>' + D('tellBusiness') + '</b><small>' + D('emptyHint') + '</small></span><span class="d-btn lime" data-b="answer">' + D('answerQuestions') + '</span></span></span>';
-  const overviewBody = summary(8, 8, 0, 'channels', 2) + postGrid(posts.slice(0, 4), 'd-overview-grid');
-  const briefBody = '<span class="d-brief-list">' + row('industry', 'industryValue') + row('audience', 'audienceValue') + row('channels', 'channelsValue') + row('language', 'languageValue') + '</span><span class="d-brief-footer"><span class="d-brief-submitted" data-k="briefSubmitted">' + D('briefSubmitted') + '</span><span class="d-btn lime" data-b="submit-brief">' + D('submitBrief') + '</span></span>';
-  const deliverablesBody = '<span class="d-view-note"><b data-k="delivered">' + digits(lang, 8) + '</b> ' + D('postsDelivered') + '</span>' + postGrid(posts, 'd-many-grid');
-  const calendarBody = '<span class="d-calendar-title">' + D('calendarMonth') + '</span><span class="d-calendar-grid">' + posts.map(calendarCell).join('') + '</span>';
-  const libraryBody = '<span class="d-view-note">' + D('libraryNote') + '</span>' + postGrid(posts, 'd-many-grid d-library-grid');
-  const waitingBody = '<span class="d-wait-card"><span class="d-clock" aria-hidden="true"><i class="d-clock-hand d-hour"></i><i class="d-clock-hand d-minute"></i><b></b></span><span class="d-wait-copy"><small>' + D('waitSub') + '</small><span class="d-clock-label">' + D('clockLabel') + '</span><span class="d-clock-jump"><span>' + D('now') + '</span><i aria-hidden="true">→</i><b>' + D('timeLater') + '</b></span></span></span>';
-  const reviewPost = posts[4];
-  const reviewBody = '<span class="d-review-card"><span class="d-review-image">' + image(reviewPost.file, 'd-review-img') + '</span><span class="d-review-copy"><small>' + esc(reviewPost.label + ' · ' + date(reviewPost.day)) + '</small><strong>' + D('reviewPostTitle') + '</strong><span class="d-review-note">' + D('reviewNote') + '</span><span class="d-review-status" data-k="reviewStatus">' + D('pendingStatus') + '</span><span class="d-review-actions"><span class="d-btn sec" data-b="changes">' + D('changes') + '</span><span class="d-btn lime" data-b="approve">' + D('approve') + '</span></span><span class="d-change-box"><span class="d-change-text"><span data-k="changeTyped"></span><i class="d-caret"></i></span><span class="d-btn sec d-send" data-b="sendChange">' + D('sendRequest') + '</span></span><span class="d-change-sent" data-k="changeSent">' + D('changeSent') + '</span></span></span>';
-  const readyBody = '<span class="d-ready-card"><span class="d-ready-image">' + image(reviewPost.file, 'd-ready-img') + '</span><span class="d-ready-copy"><span class="d-ready-chips"><span class="d-chip">' + D('approvedStatus') + '</span><span class="d-chip">' + D('ready') + '</span></span><strong>' + D('readyTitle') + '</strong><small>' + D('caption') + '</small><span class="d-ready-actions"><span class="d-btn lime" data-b="copy"><span data-k="copyLabel">' + D('copyCap') + '</span></span><span class="d-btn sec" data-b="dl">' + D('download') + '</span><span class="d-btn sec" data-b="mark">' + D('markPosted') + '</span></span></span></span>';
-  const instagramBody = '<span class="d-instagram-card"><span class="d-ig-head"><span class="d-ig-avatar">' + logo('d-ig-logo') + '</span><strong>' + D('instagramHandle') + '</strong><span class="d-ig-network">' + D('instagram') + '</span></span><span class="d-ig-image">' + image(reviewPost.file, 'd-ig-post') + '<span class="d-ig-posted">' + D('posted') + '</span></span><span class="d-ig-footer"><span class="d-ig-icons" aria-hidden="true">♡　○　↗</span><small>' + D('caption') + '</small></span></span>';
-  const briefView = view('brief', 'briefTitle', briefBody, false);
-  const emptyView = view('empty', 'glance', emptyBody, false);
-  const overviewView = view('overview', 'glance', overviewBody, false);
-  const waitingView = view('waiting', 'waitTitle', waitingBody, false);
-  const deliverablesView = view('deliverables', 'deliverables', deliverablesBody, false);
-  const calendarView = view('calendar', 'calendar', calendarBody, false);
-  const libraryView = view('library', 'library', libraryBody, false);
-  const reviewView = view('review', 'reviewTitle', reviewBody, false);
-  const readyView = view('ready', 'readyTitle', readyBody, true);
-  const instagramView = view('instagram', 'instagram', instagramBody, false);
-  const js = Object.fromEntries(['brand', 'site', 'briefSubmitted', 'pendingStatus', 'approvedStatus', 'approve', 'copied', 'copyCap', 'changeSent'].map((k) => [k, T(k)]));
-  js.changeText = T('changeText');
-  js.changeStatus = T('changeStatus');
-  js.posts = 8;
-  const navLinks = nav('overview', 'overview', 'overview', true) + nav('layers', 'deliverables', 'deliverables', false) + nav('card', 'calendar', 'calendar', false) + nav('folder', 'library', 'library', false) + nav('review', 'review', 'review', false);
-  const bottomLinks = [['overview', 'overview'], ['layers', 'deliverables'], ['card', 'calendar'], ['folder', 'library'], ['review', 'review']].map(([icon, key]) => '<span class="d-bn" data-nav="' + key + '">' + ic(icon, lang) + '<span>' + D(key) + '</span></span>').join('');
-  return '<div class="dash" id="dash" role="img" aria-label="' + D('aria') + '">' +
-    '<span class="d-cam" aria-hidden="true"></span><span class="ex-badge" aria-hidden="true">' + D('ex') + '</span>' +
-    '<span class="d-vp" aria-hidden="true"><span class="d-cv">' +
-      '<span class="d-side"><span class="d-logo">' + logo('d-brand-logo') + '</span>' +
-        '<span class="d-client"><span class="d-mark">' + logo('d-brand-avatar') + '</span><span class="d-ct"><strong>' + D('brand') + '</strong><small>' + D('ws') + '</small></span></span>' +
-        '<span class="d-nav">' + navLinks + '</span><span class="d-group">' + D('group') + '</span>' +
-        '<span class="d-foot"><span class="d-user"><span class="d-av">' + logo('d-user-avatar') + '</span><span class="d-ct"><strong>' + D('user') + '</strong><small>' + D('client') + '</small></span></span></span></span>' +
-      '<span class="d-mtop"><span class="d-mmenu">' + ic('menu', lang) + '</span><span class="d-mbrand">' + logo('d-brand-avatar') + '<strong>' + D('brand') + '</strong></span><span class="d-pill lime d-mpill">' + D('ready') + '</span></span>' +
-      '<span class="d-main"><span class="d-head"><span class="d-h1">' + D('greet') + '</span><span class="d-pill lime d-hpill">' + D('ready') + '</span></span>' +
-        '<span class="d-tabs">' + tab('overview', 'overview', true) + tab('deliverables', 'deliverables', false) + tab('calendar', 'calendar', false) + tab('library', 'library', false) + '</span>' +
-        '<span class="d-stage">' + briefView + emptyView + overviewView + waitingView + deliverablesView + calendarView + libraryView + reviewView + readyView + instagramView + '</span>' +
-      '</span><span class="d-bnav">' + bottomLinks + '</span>' +
-      '<span class="d-time-later" data-k="timeLater">' + D('timeLater') + '</span>' +
-      '<span class="d-modal" data-k="modal"><span class="d-mbox"><span class="d-mbrand modal-brand">' + logo('d-brand-avatar') + '<strong>' + D('brand') + '</strong></span><strong class="d-mt">' + D('signup') + '</strong>' +
-        '<span class="d-f"><span class="d-fl">' + D('company') + '</span><span class="d-fi" data-c="company"><span data-k="type">' + D('brand') + '</span><i class="d-caret"></i></span></span>' +
-        '<span class="d-f"><span class="d-fl">' + D('website') + '</span><span class="d-fi" data-c="site" dir="ltr"><span data-k="typedSite">' + D('site') + '</span><i class="d-caret"></i></span></span>' +
-        '<span class="d-btn lime d-wide" data-b="create">' + D('signup') + '</span></span></span>' +
-      '<span class="d-cursor"><svg viewBox="0 0 24 24"><path d="M5 3l14 8.2-6.1 1.3 3.6 6.9-2.7 1.4-3.6-7L5 18.2z" fill="#0E0F0C" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></span>' +
-    '</span></span><script type="application/json" id="dash-s">' + jsonScript(js) + '</script></div>';
+// five steps: when (la.s<n>w), the step name (wt.<n>l, the portal's own words) and what happens (la.s<n>x)
+const homeSteps = (lang) => [1, 2, 3, 4, 5].map((i) => `<li><span class="la-when">${h(lang, `la.s${i}w`)}</span><h3>${h(lang, `wt.${i}l`)}</h3><p>${h(lang, `la.s${i}x`)}</p></li>`).join('');
+// the package table: one column per Social package; cells are i18n keys (counts as {n:<id>.<item>}), a cell key may be shared
+const TABLE_PKGS = ['kit', 'visible', 'growing'];
+const TABLE_ROWS = [
+  ['la.t.posts', ['la.t.posts.kit', 'la.t.posts.visible', 'la.t.posts.growing']],
+  ['la.t.stories', ['la.t.stories.kit', 'la.t.stories.visible', 'la.t.stories.growing']],
+  ['la.t.mock', ['la.t.mock.kit', 'la.t.mock.visible', 'la.t.mock.growing']],
+  ['la.t.bb', ['la.t.bb.kit', 'pkg.visible.f1', 'pkg.growing.f1']],
+  ['la.t.camp', ['pkg.kit.f7', 'la.t.no', 'pkg.growing.f6']],
+  ['la.t.plan', ['la.t.plan.kit', 'pkg.visible.f6', 'pkg.growing.f9']],
+  ['la.t.rev', ['la.t.rev.kit', 'la.t.rev.visible', 'la.t.rev.growing']],
+  ['la.t.plat', ['la.t.plat.kit', 'plan.extraNote', 'plan.extraNote']],
+  ['la.t.also', ['pkg.kit.f2', 'pkg.visible.f8', 'pkg.growing.f7']],
+];
+function priceTable(lang) {
+  const hot = (p) => (p === 'visible' ? ' class="hot"' : '');
+  const head = `<thead><tr><th scope="col">${h(lang, 'la.t.what')}</th>${TABLE_PKGS.map((p) => `<th scope="col"${hot(p)}><span class="la-pname">${esc(pname(lang, p))}</span><span class="la-ptag">${h(lang, `pkg.${p}.eye`)}</span></th>`).join('')}</tr></thead>`;
+  const price = `<tr class="la-prow"><th scope="row">${h(lang, 'la.t.price')}</th>${TABLE_PKGS.map((p) => `<td${hot(p)}>${money(lang, p)}<span class="per">${h(lang, MONTHLY.has(p) ? 'plan.per' : 'one.per')}</span></td>`).join('')}</tr>`;
+  const cls = (p, k) => { const c = [p === 'visible' && 'hot', k === 'la.t.no' && 'la-no'].filter(Boolean); return c.length ? ` class="${c.join(' ')}"` : ''; };
+  const rows = TABLE_ROWS.map(([label, cells]) => `<tr><th scope="row">${h(lang, label)}</th>${cells.map((k, i) => `<td${cls(TABLE_PKGS[i], k)}>${h(lang, k)}</td>`).join('')}</tr>`).join('');
+  const buy = `<tr class="la-buy"><td></td>${TABLE_PKGS.map((p) => `<td${hot(p)}><a class="btn${p === 'visible' ? '' : ' la-line'}" href="${esc(buyHref(lang, p))}">${h(lang, `pkg.${p}.btn`)}</a></td>`).join('')}</tr>`;
+  return `<table class="la-table">${head}<tbody>${price}${rows}${buy}</tbody></table>`;
 }
-function walkthrough(lang) {
-  const n = Array.from({ length: WT_STEPS }, (_, i) => i + 1), two = (i) => String(i).padStart(2, '0');
-  // the finished state: the last step active, the ones before it done (dash.js resets this when it runs)
-  const wtSteps = n.map((i) => `<li class="wt-step ${i < WT_STEPS ? 'is-done' : 'is-active'}" data-step="${i}"><button type="button" class="wt-btn" aria-controls="dash" aria-current="${i < WT_STEPS ? 'false' : 'step'}"><span class="wt-num" aria-hidden="true">${two(i)}</span><span class="wt-text"><span class="wt-label">${h(lang, `wt.${i}l`)}</span><span class="wt-title">${h(lang, `wt.${i}t`)}</span></span></button><span class="wt-bar" aria-hidden="true"><i></i></span></li>`).join('');
-  // the active step's detail sits in one fixed-height box (all five stacked in one grid cell) so the page never shifts
-  const wtDetails = n.map((i) => `<div class="wt-d${i < WT_STEPS ? '' : ' is-on'}" data-step="${i}"><p class="wt-sub">${h(lang, `wt.${i}x`)}</p><p class="wt-screen"><span>${h(lang, 'wt.screen')}:</span> ${h(lang, `wt.${i}screen`)}</p></div>`).join('');
-  // "Get started": the client portal's own sign-up, in the page language
-  return { dash: dash(lang), wtSteps, wtDetails, wtTotal: two(WT_STEPS), signupHref: esc(signupUrl(lang)) };
+const STORE_PIECES = ['apron', 'menu', 'mat', 'cup', 'qr', 'card'];
+const storePieces = (lang) => STORE_PIECES.map((k) => `<span>${h(lang, `is.pc.${k}`)}</span>`).join(' <i aria-hidden="true">/</i> ');
+function homeVars(lang) {
+  return {
+    heroH1: heroH1(lang), sahmPosts: sahmPosts(), sahmStory: sahmStory(), ...heroStart(lang),
+    kitNums: kitNums(lang), kitPrice: money(lang, 'kit'), kitBtn: `<a class="btn lime" href="${esc(buyHref(lang, 'kit'))}">${h(lang, 'pkg.kit.btn')}</a>`,
+    trust: homeTrust(lang), steps: homeSteps(lang), curPick: curPick(lang), priceTable: priceTable(lang),
+    storePieces: storePieces(lang), quoteHref: esc(portalAuth('signup', lang)),
+  };
 }
 // pricing: The Store Kit card (label, name, one line, "Coming soon" where the price sits, the waitlist as a secondary button)
 function storePlanCard(lang) {
@@ -445,9 +391,9 @@ function pageVars(lang, page) {
     buyDeck: buyBtn(lang, 'deck', false), conv: lang === 'en' ? '' : `<p class="conv">${h(lang, 'leg.conv')}</p>`,
     waFoot: waLink(lang), waAbout: WA ? `<p>${waLink(lang)}</p>` : '',
   };
-  // Home v2 (2026-10-18): hero, the client portal walkthrough, Good to know, FAQ. Audit fixes (2026-10-19): no prices or
-  // package names on the home page (the three package cards are gone; pricing lives on /pricing/ only).
-  if (page === 'index') Object.assign(v, { trust: homeTrust(lang), faqHome: faqItems(lang, FAQ_HOME, false, FAQ_HOME_SWAP), ...walkthrough(lang), ...heroStart(lang) });
+  // Home: Landing A (2026-11-06, Adham): the package table is back on the home page (overrides the 2026-10-19 audit rule);
+  // the walkthrough and the home FAQ are gone (the FAQ page stays).
+  if (page === 'index') Object.assign(v, homeVars(lang));
   if (page === 'social') Object.assign(v, { kitList: ticks(lang, 'pkg.kit', 'cols'), flow: flow(lang, 3, 'how') });
   if (page === 'in-store') Object.assign(v, storeVars(lang));
   if (page === 'sculptures') Object.assign(v, sculptVars(lang));
@@ -708,7 +654,7 @@ function purgeCss(css, html) {
 const trimIndent = (html) => html.split(/(<(script|style|pre|textarea)\b[\s\S]*?<\/\2>)/).map((part, i) => i % 3 === 0 ? part.replace(/\n[ \t]+/g, '\n') : i % 3 === 1 ? part : '').join('');
 // the English In-store page loads the Arabic faces too: its menu board and QR stand carry Arabic item names (the unicode-range
 // means the files download only for those glyphs)
-const cssFor = (lang, page) => minCss([CSS.fonts, lang === 'ar' || page === 'in-store' ? CSS.fontsAr : '', WIDE.has(page) ? CSS.home : CSS.legal + (page === 'faq' ? '\n' + faqCss : ''), CSS.common, CSS.consent, CSS.chrome, page === 'sculptures' ? CSS.sculpt : ''].join('\n'));
+const cssFor = (lang, page) => minCss([CSS.fonts, lang === 'ar' || page === 'in-store' || page === 'index' ? CSS.fontsAr : '', WIDE.has(page) ? CSS.home : CSS.legal + (page === 'faq' ? '\n' + faqCss : ''), CSS.common, CSS.consent, CSS.chrome, page === 'sculptures' ? CSS.sculpt : ''].join('\n'));
 
 // ---------- content-hashed asset copies (long browser cache) ----------
 // GitHub Pages sends every file with max-age=600. The pages therefore reference copies of the fonts, the hero images and
@@ -744,7 +690,7 @@ for (const [lang] of LANGS) {
     htmlCc = LEGAL.includes(page) || page === 'pricing' ? null : DEFAULT_CC; // the legal pages keep the US-dollar price list
     const ctx = { lang, v: pageVars(lang, page) };
     const body = render(rd(`templates/${page === 'index' ? 'home' : page}.html`), ctx);
-    const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${!LEGAL.includes(page) && page !== 'pricing' && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${page === 'index' ? '<script src="/assets/dash.js" defer></script>\n' : ''}${page === 'sculptures' ? '<script src="/assets/sculptures.js" defer></script>\n' : ''}</body>\n</html>\n`;
+    const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${!LEGAL.includes(page) && page !== 'pricing' && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${page === 'sculptures' ? '<script src="/assets/sculptures.js" defer></script>\n' : ''}</body>\n</html>\n`;
     const html = `${head(lang, page, purgeCss(cssFor(lang, page), bodyHtml))}\n${trimIndent(bodyHtml)}`;
     write(dirFor(lang, page) + 'index.html', hashUrls(html));
     built.push([lang, page]);
