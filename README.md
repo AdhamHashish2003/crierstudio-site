@@ -86,6 +86,18 @@ Cloudflare rule (owner, one time; Cloudflare dashboard > crierstudio.com > Cachi
 - Deploy
 
 
+## Local prices (2026-11-07): $15 once, $25 and $40 a month, in SAR / AED / EGP
+
+The home table ("Pay once, or every month.") and the pricing page show The Social Kit at $15 once, Stay Visible at $25 a month and Keep Growing at $40 a month, each struck through from a list price that is exactly twice the sale price (50% off). `data/pricing.json` is republished from the UMA repo's `portal/lib/pricing.json` (`node portal/scripts/publish-pricing.cjs --site <this dir>`); never edit it by hand. `build/check.mjs` pins the table below and fails on any other number.
+
+| Package | USD | SAR (Saudi Arabia) | AED (UAE) | EGP (Egypt) |
+| --- | --- | --- | --- | --- |
+| The Social Kit, once | $30 → **$15** | 118 → **59** | 118 → **59** | 1,620 → **810** |
+| Stay Visible, a month | $50 → **$25** | 198 → **99** | 198 → **99** | 2,700 → **1,350** |
+| Keep Growing, a month | $80 → **$40** | 298 → **149** | 298 → **149** | 4,320 → **2,160** |
+
+Local prices are NET before VAT (15% / 5% / 14% added at checkout, see below). They were derived from the ExchangeRate-API open feed `https://open.er-api.com/v6/latest/USD`, snapshot 2026-11-07T00:02:31Z: USD 1 = SAR 3.75, AED 3.6725, EGP 53.901088. Straight conversions: kit SAR 56.25 / AED 55.09 / EGP 808.52; Stay Visible SAR 93.75 / AED 91.81 / EGP 1,347.53; Keep Growing SAR 150.00 / AED 146.90 / EGP 2,156.04. Rounding: SAR and AED to the 9-ending price point nearest the conversion without going materially under it (59 / 99 / 149, within −0.7% and +7.8%); EGP up to the next multiple of 10 (810 / 1,350 / 2,160, within +0.2%). An extra platform costs nothing (`extra_platform_price` 0). The Brand Deck (coming soon, never payable) keeps its placeholder price. The Stripe charge is computed by the Launchpad from its own copy of the same file: it must be republished whenever this table changes.
+
 ## Local currency and VAT (Adham's launch decision, 2026-10-15)
 
 Buyers in Saudi Arabia, the UAE and Egypt are quoted and charged in SAR, AED or EGP with VAT ADDED (15%, 5%, 14%); every other country pays the US-dollar price with no VAT. `data/pricing.json`: `local.countries.<CC>` (currency, vat_pct, vat_registration), `packages[].prices.<CUR>` and `extra_platform_prices.<CUR>` are NET prices before VAT. VAT = net x pct / 100 on the whole order (base + extra platforms), in integer cents, half-up: `vat_minor = floor((net_minor * pct + 50) / 100)`. Pages show "price + VAT = total", e.g. "SAR 109 + VAT 15% SAR 16.35 = SAR 125.35".

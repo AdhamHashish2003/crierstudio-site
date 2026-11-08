@@ -22,8 +22,21 @@ const d = Object.fromEntries(LANGS.map((l) => [l, JSON.parse(rd(`i18n/${l}.json`
 // portal/scripts/publish-pricing.cjs from portal/lib/pricing.json). The texts carry placeholders, never a price.
 const PRICING = JSON.parse(rd('data/pricing.json'));
 ok(/^portal\/lib\/pricing\.json sha256 [0-9a-f]{64}$/.test(PRICING.generated_from || ''), 'data/pricing.json was not written by publish-pricing.cjs');
-for (const p of PRICING.packages.filter((p) => !p.coming_soon)) {
-  ok(p.list_price === 30 && p.price === 15 && p.price === p.list_price / 2, `$30 list / 50% off = $15 (${p.id})`);
+// Launch prices (Adham, 2026-10-28; local prices re-derived 2026-11-07, README "Local prices"): The Social Kit $15 once, Stay
+// Visible $25 a month, Keep Growing $40 a month, each in SAR / AED / EGP as below (NET before VAT), every one shown at 50% off a
+// list price that is exactly twice the sale price, in US dollars and in every local currency. These numbers are pinned here so a
+// republish of data/pricing.json that drifts from the decision fails the build.
+const LAUNCH = { kit: { USD: 15, SAR: 59, AED: 59, EGP: 810 }, visible: { USD: 25, SAR: 99, AED: 99, EGP: 1350 }, growing: { USD: 40, SAR: 149, AED: 149, EGP: 2160 } };
+const LOCAL_CURS = Object.values(PRICING.local.countries).map((c) => c.currency);
+ok(JSON.stringify(LOCAL_CURS) === JSON.stringify(['SAR', 'AED', 'EGP']) && PRICING.local.fallback.currency === 'USD', 'local currencies are SAR, AED, EGP with a US-dollar fallback');
+for (const [id, want] of Object.entries(LAUNCH)) {
+  const p = PRICING.packages.find((x) => x.id === id);
+  ok(p && !p.coming_soon && p.price === want.USD && p.list_price === 2 * want.USD, `$${2 * want.USD} list / 50% off = $${want.USD} (${id})`);
+  for (const c of LOCAL_CURS) ok(p && p.prices[c] === want[c] && p.list_prices[c] === 2 * want[c], `${c} ${2 * want[c]} list / 50% off = ${c} ${want[c]} (${id})`);
+}
+for (const p of PRICING.packages) {
+  ok(Number.isInteger(p.price) && p.price > 0 && p.list_price === 2 * p.price, `list price is twice the sale price in US dollars (${p.id})`);
+  for (const c of LOCAL_CURS) ok(Number.isInteger(p.prices[c]) && p.prices[c] > 0 && p.list_prices[c] === 2 * p.prices[c], `${c} list price is twice the sale price (${p.id})`);
 }
 const PRICE_NUMS = [...new Set(PRICING.packages.flatMap((p) => [p.price, p.extra_platform_price].filter(Boolean)))];
 const PRICE_RE = new RegExp('\\$\\s?(' + PRICE_NUMS.join('|') + ')(?!\\d)|(?<![\\d.,])(' + PRICE_NUMS.join('|') + ')\\s?\\$');
@@ -72,9 +85,12 @@ for (const l of LANGS) for (const p of PAGES) {
   ok(!/Your shop, heard/i.test(h), `tagline in ${file}`);
   // the HTML is written in the default country's currency (Saudi Arabia, SAR before VAT); every price carries its US-dollar
   // and local prices in data-* for site.js
+  // every price span carries the US-dollar price and each local NET price (data-usd, data-sar, data-aed, data-egp), the exact
+  // numbers data/pricing.json has, so site.js shows the buyer's currency without converting anything
+  const dataAttrs = (usd, loc) => `data-usd="${usd}"` + LOCAL_CURS.map((c) => ` data-${c.toLowerCase()}="${loc[c]}"`).join('');
   if (p === 'pricing/') for (const pk of PRICING.packages) {
-    ok(h.includes(`data-usd="${pk.price}" data-sar="${pk.prices.SAR}"`), `price ${pk.price} USD / ${pk.prices.SAR} SAR (${pk.id}, data/pricing.json) on ${file}`);
-    if (!pk.coming_soon) ok(h.includes(`class="price-list amt" dir="ltr" data-usd="${pk.list_price}"`) && h.includes(`class="price amt" dir="ltr" data-usd="${pk.price}"`), `list and sale price (${pk.list_price} -> ${pk.price} USD) on ${file}`);
+    ok(h.includes(dataAttrs(pk.price, pk.prices)), `price ${pk.price} USD / ${LOCAL_CURS.map((c) => pk.prices[c] + ' ' + c).join(' / ')} (${pk.id}, data/pricing.json) on ${file}`);
+    if (!pk.coming_soon) ok(h.includes(`class="price-list amt" dir="ltr" ${dataAttrs(pk.list_price, pk.list_prices)}`) && h.includes(`class="price amt" dir="ltr" ${dataAttrs(pk.price, pk.prices)}`), `list and sale price (${pk.list_price} -> ${pk.price} USD) on ${file}`);
     if (pk.extra_platform_price) ok(h.includes(`data-extra="${pk.extra_platform_price}"`), `extra platform ${pk.extra_platform_price} USD (${pk.id}) on ${file}`);
   }
   if (p === 'pricing/') ok((h.match(/data-product="/g) || []).length === 3 && h.includes('disabled data-unavailable="deck"'), `3 buy buttons and unavailable Brand Deck on ${file}`);
@@ -96,7 +112,9 @@ for (const l of LANGS) for (const p of PAGES) {
     ok(imgs.length === 8 && imgs.every((u) => fs.existsSync(path.join(ROOT, u.slice(1)))) && !/\/assets\/(?:h\/)?sahm-(?:p\d|story)/.test(hero), `hero: SAHM logo, 6 reels + 1 story, real files, on ${file}`);
     // the package table: every Social package at its list and sale price from data/pricing.json, with its sign-up button
     for (const pk of PRICING.packages.filter((x) => ['kit', 'visible', 'growing'].includes(x.id))) {
-      ok(new RegExp(`class="price-list amt" dir="(ltr|rtl)" data-usd="${pk.list_price}" data-sar="${pk.list_prices.SAR}"`).test(h) && new RegExp(`class="price amt" dir="(ltr|rtl)" data-usd="${pk.price}" data-sar="${pk.prices.SAR}"`).test(h), `table price ${pk.list_price} -> ${pk.price} USD (${pk.id}) on ${file}`);
+      ok(new RegExp(`class="price-list amt" dir="(ltr|rtl)" ${dataAttrs(pk.list_price, pk.list_prices)}`).test(h) && new RegExp(`class="price amt" dir="(ltr|rtl)" ${dataAttrs(pk.price, pk.prices)}`).test(h), `table price ${pk.list_price} -> ${pk.price} USD (${pk.id}) on ${file}`);
+      // the default country's text (Saudi Arabia, SAR before VAT) is the SAR number itself: nothing converted, nothing rounded
+      ok(h.includes(`${dataAttrs(pk.price, pk.prices)}>${d[l]['cur.fmt'].replace('{cur}', d[l]['cur.symSAR']).replace('{n}', pk.prices.SAR.toLocaleString('en-US'))}<`), `table shows SAR ${pk.prices.SAR} for ${pk.id} on ${file}`);
     }
     ok((h.match(/<table class="la-table">/g) || []).length === 1 && /id="cur-data"/.test(h), `one package table with its currency data on ${file}`);
   }
@@ -200,7 +218,8 @@ ok(!sm.includes('/branddeck/'), 'standalone Brand Deck physical pages omitted fr
 ok(rd('brand-deck/index.html').includes('"@type":"Service"') && !rd('brand-deck/index.html').includes('"@type":"Offer"'), 'Brand Deck Service is informational, without an active offer');
 ok(rd('social/index.html').includes('"@type":"Service"') && !rd('social/index.html').includes('"offers"'), 'Social Service JSON-LD is informational, without offers');
 ok(rd('in-store/index.html').includes('"@type":"Service"') && !rd('in-store/index.html').includes('"offers"'), 'In-store Services are informational, without offers');
-for (const pr of ['\"price\":\"15\"', '\"unitCode\":\"MON\"']) ok(rd('pricing/index.html').includes(pr), 'pricing JSON-LD ' + pr);
+// the pricing page's structured data carries each available package's US-dollar sale price (the international price)
+for (const pr of [...Object.values(LAUNCH).map((w) => `"price":"${w.USD}"`), '"unitCode":"MON"']) ok(rd('pricing/index.html').includes(pr), 'pricing JSON-LD ' + pr);
 // renamed pages: every old URL is a noindex redirect stub to the new page in the same language
 for (const l of LANGS) for (const [from, to] of Object.entries(MOVED)) {
   const pre = PREFIX(l), f = pre + from + 'index.html';
