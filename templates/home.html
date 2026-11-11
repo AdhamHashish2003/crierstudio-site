@@ -1,17 +1,15 @@
 <main id="main-content">
     {{>hero}}
 
-    <section id="kit" class="la-kit" aria-labelledby="kit-title">
-      <div class="la-head">
-        <h2 id="kit-title">{{t:la.kit.h2}}</h2>
-        <p class="lead">{{t:pkg.kit.note}}</p>
+    <section id="examples" class="st-light st-wallsec" aria-labelledby="ex-title">
+      <div class="st-head">
+        <div>
+          <h2 id="ex-title">{{t:st.wall.h2}}</h2>
+          <p class="lead">{{t:st.wall.cap}}</p>
+        </div>
+        {{=wallBar}}
       </div>
-      <div class="la-nums">{{=kitNums}}</div>
-      <div class="la-kitprice">
-        {{=kitPrice}}
-        <span class="la-once">{{t:one.per}} · {{t:pkg.kit.bill}}</span>
-        {{=kitBtn}}
-      </div>
+      {{=wall}}
     </section>
 
     <section id="walkthrough" class="wt" aria-labelledby="wt-title">
@@ -33,25 +31,40 @@
       </div>
     </section>
 
-    <section id="trust" class="la-ok" aria-labelledby="trust-title">
-      <h2 id="trust-title">{{t:wt.big}}</h2>
-      {{=trust}}
-    </section>
-
-
-    <section id="pricing" class="la-price" aria-labelledby="price-title">
-      <div class="la-head">
-        <h2 id="price-title">{{t:la.pr.h2}}</h2>
-        <p class="lead">{{t:la.pr.sub}}</p>
+    <section id="kit" class="st-light st-kit" aria-labelledby="kit-title">
+      <div class="st-kit-intro">
+        <h2 id="kit-title">{{t:la.kit.h2}}</h2>
+        <p class="lead">{{t:pkg.kit.note}}</p>
+        <div class="st-kitprice">{{=kitPrice}}<span class="st-once">{{t:one.per}} · {{t:pkg.kit.bill}}</span></div>
+        {{=kitArt}}
+        <div class="st-cta">{{=kitBtn}}<a class="st-link" href="{{=socialHref}}#inside">{{t:st.kit.all}}</a></div>
       </div>
-      {{=curPick}}
-      <div class="la-tablewrap">{{=priceTable}}</div>
-      <p class="fine la-fine">{{t:bill.3}} <a href="{{=pricingHref}}">{{t:la.pr.all}}</a></p>
+      <ul class="st-kitlist">{{=kitRows}}</ul>
     </section>
 
-    <section id="start" class="la-close" aria-labelledby="close-title">
+    <section id="trust" class="st-light st-ok" aria-labelledby="trust-title">
+      <div class="st-ok-copy">
+        <h2 id="trust-title">{{t:wt.big}}</h2>
+        <p class="lead">{{t:st.ok.x}}</p>
+      </div>
+      {{=okPost}}
+    </section>
+
+    <section id="pricing" class="st-light st-price" aria-labelledby="price-title">
+      <div class="st-head">
+        <div>
+          <h2 id="price-title">{{t:la.pr.h2}}</h2>
+          <p class="lead">{{t:la.pr.sub}}</p>
+        </div>
+        {{=curPick}}
+      </div>
+      <div class="st-tablewrap" tabindex="0" role="region" aria-labelledby="price-title">{{=priceTable}}</div>
+      <p class="st-fine">{{t:bill.3}} <a href="{{=pricingHref}}">{{t:la.pr.all}}</a></p>
+    </section>
+
+    <section id="start" class="st-close" aria-labelledby="close-title">
       <h2 id="close-title">{{t:la.close.h2}}</h2>
-      <div class="la-cta"><a class="btn" href="{{=signupHref}}">{{t:hero.start.btn}}</a><a class="la-link" href="#pricing">{{t:hero.start.pricing}}</a></div>
-      <p class="la-contact">{{t:home.contact}}</p>{{=waAbout}}
+      <div class="st-cta"><a class="btn" href="{{=signupHref}}">{{t:hero.start.btn}}</a><a class="st-link" href="#pricing">{{t:hero.start.pricing}}</a></div>
+      <p class="st-contact">{{t:home.contact}}</p>{{=waAbout}}
     </section>
   </main>
