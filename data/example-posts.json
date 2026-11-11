@@ -52,7 +52,7 @@
       { "layout": "question", "day": 8, "text": { "en": { "title": "Hot or iced", "h": "Hot or iced today?", "s": "Tell us in the comments." }, "ar": { "title": "ساخن أم بارد", "h": "ساخن أم بارد اليوم؟", "s": "أخبرنا في التعليقات." } } },
       { "layout": "tip", "day": 10, "text": { "en": { "title": "Oat milk", "tag": "Tip", "h": "Ask for oat milk in any drink.", "s": "Just say it when you order." }, "ar": { "title": "حليب الشوفان", "tag": "نصيحة", "h": "اطلب حليب الشوفان في أي مشروب.", "s": "قلها فقط عند الطلب." } } },
       { "layout": "spot", "shapeKind": "circle", "day": 12, "text": { "en": { "title": "Date cake", "h": "Date cake", "s": "Baked here every morning." }, "ar": { "title": "كيكة التمر", "h": "كيكة التمر", "s": "نخبزها هنا كل صباح." } } },
-      { "layout": "list", "day": 15, "text": { "en": { "title": "Weekend table", "h": "Weekend table", "items": ["Breakfast plates", "Fresh juice", "Something sweet"] }, "ar": { "title": "مائدة الويكند", "h": "مائدة نهاية الأسبوع", "items": ["أطباق الفطور", "عصير طازج", "شيء حلو"] } } }
+      { "layout": "list", "day": 15, "text": { "en": { "title": "Weekend table", "h": "Weekend table", "items": ["Breakfast plates", "Fresh juice", "Something sweet"] }, "ar": { "title": "مائدة نهاية الأسبوع", "h": "مائدة نهاية الأسبوع", "items": ["أطباق الفطور", "عصير طازج", "شيء حلو"] } } }
     ]
   }
 }
