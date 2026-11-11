@@ -32,3 +32,20 @@ All Arabic strings in `i18n/ar.json` were rewritten in light, friendly Modern St
 | `faq.18q` / `faq.18a1` | هل Crier Studio شركة مسجّلة؟ / ليس بعد… | Is Crier Studio a registered company? / Not yet… | Kept, because the task only removed the standalone footer/About line. Remove both languages if the FAQ entry should go too. |
 | `leg.conv` | هذه الترجمة للتسهيل فقط، والنسخة الإنجليزية هي المعتمدة. | This translation is for convenience only; the English version governs. | Legal wording. Please confirm. |
 | `privacy.law.p` | المرسوم بقانون اتحادي رقم 45 لسنة 2021 بشأن حماية البيانات الشخصية | UAE Federal Decree-Law No. 45 of 2021 on the Protection of Personal Data | The official law titles should be checked against the official Arabic names. |
+
+## Landing C "Step-through" (2026-11-11): new and changed lines
+
+Written in plain Modern Standard Arabic (the owner asked for MSA for the Gulf and Egypt). Most older lines on the same pages are Egyptian colloquial (احكيلنا، بنشتغل إزاي، تمام), so the page now mixes the two registers: a native speaker should decide whether to align them.
+
+| Key | Arabic | English gloss | Why I'm unsure |
+|---|---|---|---|
+| `wt.1t` / `wt.1x` | أنشئ حسابك. / اكتب اسم مشروعك وموقعك أو حسابك على إنستجرام. | Create your account. / Type your business name and your website or Instagram. | MSA next to the Egyptian step titles around it. |
+| `wt.5t` / `wt.5x` | المنشور جاهز. وأنت تنشره على إنستجرام. / … تنسخ النص وتحمّل المنشور وتنشره على حسابك في إنستجرام. | The post is ready. You share it on Instagram. | Must not suggest that the studio posts. Check "وأنت تنشره". |
+| `wt.5screen` | تمام · جاهز · نشرته على إنستجرام | Approved · Ready · Shared on your Instagram | Mixes the portal's own status words with a sentence. |
+| `dash.greet`, `dash.brand` | مساء الخير / مثال | Good afternoon / Example | "مثال" as the example client's name. |
+| `st.type.*`, `st.f.*` | محل أو مكان يزوره الناس / منتجات على الإنترنت / خدمة أو تطبيق أو موقع | Shop or place people visit / Online products / Service, app or website | Should match the portal's own wording for the business type question. |
+| `st.wall.h2`, `st.wall.cap` | ابحث عن نوع مشروعك / منشورات على سبيل المثال. كل مشروع يحصل على منشورات بهويته الخاصة. | Find your kind of business / Example posts. Each business gets posts in its own brand. | "بهويته" for "in its own brand". |
+| `st.ok.x` | كل منشور ينتظر في صفحتك حتى توافق عليه، ثم تنشره أنت بنفسك على حسابك. | Every post waits in your client page until you say OK. Then you share it yourself. | Tone. |
+| `st.kit.bb` | دليل الهوية | Brand book | The table still says "دليل البراند" (`la.t.bb`). Pick one. |
+| `ex.k.*` | مقهى، مخبز، عيادة أسنان، صالون تجميل، نادٍ رياضي … | Business types under the example posts | "نادٍ رياضي" (gym) vs "جيم"; "دروس خصوصية" (tutoring). |
+| Arabic tiles in `data/example-posts.json` | قبل موعدك، خبز اليوم، تشكيلة الخريف، غسيل وتلميع، احجز في ثلاث خطوات، لظهر أكثر راحة، روتين المساء، ركن القراءة، الرياضيات صعبة؟ | The Arabic example posts (both language pages show them in Arabic) | Written as short social-media posts. |

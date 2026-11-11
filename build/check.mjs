@@ -94,29 +94,47 @@ for (const l of LANGS) for (const p of PAGES) {
     if (pk.extra_platform_price) ok(h.includes(`data-extra="${pk.extra_platform_price}"`), `extra platform ${pk.extra_platform_price} USD (${pk.id}) on ${file}`);
   }
   if (p === 'pricing/') ok((h.match(/data-product="/g) || []).length === 3 && h.includes('disabled data-unavailable="deck"'), `3 buy buttons and unavailable Brand Deck on ${file}`);
-  // Home: Landing A (Adham, 2026-11-06; walkthrough kept 2026-11-07; In-store section removed 2026-11-06): hero (SAHM's real
-  // Instagram posts), The Social Kit in numbers, the client-portal walkthrough, the OK rule, the package table, a closing call. No FAQ.
+  // Home and Social: Landing C "Step-through" (Adham, 2026-11-11). No SAHM (@sahmmena, sahmmena.com) anywhere on either page, in
+  // either language: not in the text, the attributes, the images or the walkthrough's data. The example posts are drawn tiles
+  // (data/example-posts.json), each labelled with a business type only; the walls carry no price.
+  const EXD = JSON.parse(rd('data/example-posts.json'));
+  if (p === '' || p === 'social/') {
+    ok(!/sahm|سهم/i.test(h), `SAHM (sahm, @sahmmena, sahmmena.com, سهم) on ${file}`);
+    ok(!/\/assets\/demo\//.test(h), `SAHM demo images (assets/demo/) on ${file}`);
+    const wall = (h.match(/<ul class="xp-wall[^"]*" id="xp-wall">[\s\S]*?<\/ul>/) || [''])[0];
+    const want = p === '' ? EXD.home : EXD.social;
+    ok((wall.match(/<li class="xp-cell /g) || []).length === want.length && !/data-usd|class="(price )?amt"/.test(wall), `example wall: ${want.length} tiles, no price, on ${file}`);
+    ok((wall.match(/role="img" aria-label="[^"]{12,}"/g) || []).length === want.length, `every example tile described (role=img + aria-label) on ${file}`);
+    const langs = want.map((id) => EXD.tiles.find((x) => x.id === id).lang);
+    ok(langs.filter((x) => x === 'ar').length >= 3 && langs.filter((x) => x === 'en').length >= 3, `example wall mixes Arabic and English posts on ${file}`);
+    const cards = (h.match(/<ol class="st-cards"[\s\S]*?<\/ol>/) || [''])[0];
+    ok((cards.match(/<li class="st-card /g) || []).length === 3 && !/<(input|select|textarea|form|button)\b/.test(cards) && (cards.match(/aria-hidden="true"/g) || []).length >= 3, `hero: three illustrated step cards, no form controls, on ${file}`);
+    // never say or imply that Crier posts or schedules for the client, or connects to their accounts
+    ok(!/goes up on Instagram|we post|we schedule|schedule your posts|post for you|connect your (instagram|facebook|account)|TikTok|تيك توك/i.test(vis), `posting / scheduling / connecting / TikTok wording on ${file}`);
+    // products no longer offered (owner 2026-11-11): brand mockups, monthly recap, performance review, website/SEO briefs
+    ok(!/mockup|recap|performance|SEO|صور عرض|ملخص كل شهر|أرقام الأداء|ظهورك في جوجل/i.test(vis), `a product no longer offered on ${file}`);
+  }
   if (p === '') {
-    ok(!/store-card|is-teaser|id="businesses"|id="seasons"|id="plans"|id="in-store"|la-store/.test(h), `no package cards, Store Kit card, In-store section, industries or seasons section on ${file}`);
-    const HOME_IDS = ['hero', 'kit', 'walkthrough', 'trust', 'pricing', 'start'];
+    ok(!/store-card|is-teaser|id="businesses"|id="seasons"|id="plans"|id="in-store"|la-store|la-hero|class="la-/.test(h), `no package cards, Store Kit card, In-store section, industries, seasons or Landing A block on ${file}`);
+    const HOME_IDS = ['hero', 'examples', 'walkthrough', 'kit', 'trust', 'pricing', 'start'];
     const at = HOME_IDS.map((id) => h.indexOf(`id="${id}"`));
     ok(at.every((x, i) => x > -1 && (i === 0 || x > at[i - 1])), `home sections ${HOME_IDS.join(', ')} in order on ${file}`);
     ok(!/id="faq"/.test(h) && h.includes('id="dash"') && h.includes('id="dash-s"'), `walkthrough and dashboard data, no FAQ, on ${file}`);
     ok(/<script src="\/assets\/h\/dash\.[0-9a-f]{10}\.js" defer><\/script>/.test(h), `dashboard script (hashed, from 'self') on ${file}`);
-    const hero = (h.match(/<section class="hc la-hero" id="hero"[\s\S]*?<\/section>/) || [''])[0];
-    ok((hero.match(/<div class="la-cta">\s*<a class="btn" href="([^"]*)"/) || [])[1] === SIGNUP(l), `hero button -> ${SIGNUP(l)} on ${file}`);
-    ok(hero.includes('href="#walkthrough"') && hero.includes('href="#pricing"'), `hero links to #walkthrough and #pricing on ${file}`);
-    ok(hero.includes(d[l]['hero.exnote']) && hero.includes('sahmmena') && !/data-usd|data-product/.test(hero), `hero labelled as SAHM's real posts, no price in it, on ${file}`);
-    // the phone: SAHM's real logo and its six real reel covers (assets/demo/, crops of its Instagram profile, build/demo-images.py)
-    const imgs = [...hero.matchAll(/<img [^>]*src="(\/assets\/demo\/(?:post-\d|logo)\.webp)" alt="" width="\d+" height="\d+"/g)].map((m) => m[1]);
-    ok(imgs.length === 8 && imgs.every((u) => fs.existsSync(path.join(ROOT, u.slice(1)))) && !/\/assets\/(?:h\/)?sahm-(?:p\d|story)/.test(hero), `hero: SAHM logo, 6 reels + 1 story, real files, on ${file}`);
+    ok((h.match(/<li class="wt-step /g) || []).length === 5 && h.includes(d[l]['wt.5t']) && h.includes(d[l]['dash.ex']), `walkthrough: five steps, the EXAMPLE tag and "you share it" last step on ${file}`);
+    const hero = (h.match(/<section class="st-hero" id="hero"[\s\S]*?<\/section>/) || [''])[0];
+    ok((hero.match(/<div class="st-cta">\s*<a class="btn" href="([^"]*)"/) || [])[1] === SIGNUP(l), `hero button -> ${SIGNUP(l)} on ${file}`);
+    ok(hero.includes('href="#walkthrough"') && hero.includes('href="#pricing"') && !/data-usd|data-product|<img\b/.test(hero), `hero links to #walkthrough and #pricing, no price or image, on ${file}`);
+    // the wall filter: real buttons with aria-pressed, hidden until site.js runs (every tile shows without JavaScript)
+    const bar = (h.match(/<div class="st-filters"[^>]*>[\s\S]*?<\/div>/) || [''])[0];
+    ok(/ hidden>/.test(bar) && (bar.match(/<button type="button" class="st-filter" data-filter="(all|place|online|service)" aria-pressed="(true|false)">/g) || []).length === 4, `wall filter: 4 real buttons with aria-pressed, hidden without JS, on ${file}`);
     // the package table: every Social package at its list and sale price from data/pricing.json, with its sign-up button
     for (const pk of PRICING.packages.filter((x) => ['kit', 'visible', 'growing'].includes(x.id))) {
       ok(new RegExp(`class="price-list amt" dir="(ltr|rtl)" ${dataAttrs(pk.list_price, pk.list_prices)}`).test(h) && new RegExp(`class="price amt" dir="(ltr|rtl)" ${dataAttrs(pk.price, pk.prices)}`).test(h), `table price ${pk.list_price} -> ${pk.price} USD (${pk.id}) on ${file}`);
       // the default country's text (Saudi Arabia, SAR before VAT) is the SAR number itself: nothing converted, nothing rounded
       ok(h.includes(`${dataAttrs(pk.price, pk.prices)}>${d[l]['cur.fmt'].replace('{cur}', d[l]['cur.symSAR']).replace('{n}', pk.prices.SAR.toLocaleString('en-US'))}<`), `table shows SAR ${pk.prices.SAR} for ${pk.id} on ${file}`);
     }
-    ok((h.match(/<table class="la-table">/g) || []).length === 1 && /id="cur-data"/.test(h), `one package table with its currency data on ${file}`);
+    ok((h.match(/<table class="st-table">/g) || []).length === 1 && /id="cur-data"/.test(h), `one package table with its currency data on ${file}`);
   }
   if (p === 'pricing/') {
     // The Store Kit card was removed from pricing (owner request, 2026-11-06); the waitlist stays on /in-store/

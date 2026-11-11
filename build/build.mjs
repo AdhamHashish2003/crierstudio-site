@@ -308,69 +308,100 @@ function planCard(lang, p, hot) {
   const vatLine = '';
   return `<article class="plan${hot ? ' hot' : ''}" data-plan="${p}"><span class="badge">${h(lang, `pkg.${p}.eye`)}</span><h3>${esc(pname(lang, p))}</h3><p class="pt">${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(lang, p)}<span class="per">${h(lang, per)}</span></div>${vatLine}<p class="billnote">${h(lang, bill)}</p>${platPick(lang, p)}${ticks(lang, `pkg.${p}`)}<p class="pnote">${h(lang, `pkg.${p}.note`)}</p><div class="buyrow">${buyBtn(lang, p, !hot)}</div></article>`;
 }
-// ---- home: Landing A "Billboard" (Adham, 2026-11-06) ----
-// Hero headline + the Instagram-ready phone (SAHM, @sahmmena: the owner's own project, with its real posts), The Social Kit in
-// numbers, the client-portal walkthrough (kept, Adham 2026-11-07), the OK rule, the package table, the cream In-store teaser and
-// a closing call. No FAQ on the home page.
-// the headline's second sentence carries the lime highlight: split after the first sentence ("." in English, "…" in Arabic)
-function heroH1(lang) {
-  const m = t(lang, 'home.h1').match(/^(.+?[.…])\s*(\S.*)$/);
-  if (!m) throw new Error(`home.h1 (${lang}): no sentence break to split the hero headline`);
-  return `${esc(m[1])} <span class="hl">${esc(m[2])}</span>`;
+// ---- home: Landing C "Step-through" (Adham, 2026-11-11; supersedes Landing A "Billboard", 2026-11-06) ----
+// Calm and product-like: a near-black hero (one headline, the sign-up button, links to #walkthrough and #pricing, then the three
+// steps as product-style cards), the example-posts wall (data/example-posts.json), the client-portal walkthrough (kept, now with a
+// generic "Example" café), The Social Kit, the OK rule with one example post, the package table and a closing call. No SAHM.
+const heroH1 = (lang) => esc(t(lang, 'home.h1'));
+// ---- example posts (data/example-posts.json): every tile is drawn in HTML/CSS with its own palette; no business names ----
+const EX = JSON.parse(rd('data/example-posts.json'));
+const EX_BY = Object.fromEntries(EX.tiles.map((x) => [x.id, x]));
+const EX_GROUPS = ['place', 'online', 'service'];
+const EX_LAYOUTS = ['word', 'spot', 'question', 'list', 'steps', 'tip', 'split', 'hours'];
+for (const x of EX.tiles) {
+  if (!EX_GROUPS.includes(x.group) || !EX_LAYOUTS.includes(x.layout) || !['post', 'story'].includes(x.shape) || !['en', 'ar'].includes(x.lang) || x.pal?.length !== 3) throw new Error('data/example-posts.json: bad tile ' + x.id);
+  if (!x.text?.en?.h || !x.text?.ar?.h) throw new Error('data/example-posts.json: tile ' + x.id + ' needs text in en and ar');
 }
-// SAHM's real reel covers and logo: the crops of its Instagram profile in assets/demo/ (build/demo-images.py, 240 x 320,
-// grid order), the same files the walkthrough uses. The Story card shows reel 3 (the emotions gauge).
-const HERO_POSTS = 6, HERO_STORY = 3;
-const sahmPosts = () => Array.from({ length: HERO_POSTS }, (_, i) => `<img src="/assets/demo/post-${i + 1}.webp" alt="" width="240" height="320" decoding="async">`).join('');
-const sahmStory = () => `<img src="/assets/demo/post-${HERO_STORY}.webp" alt="" width="240" height="320" decoding="async">`;
-const sahmLogo = '<img class="sahm-logo" src="/assets/demo/logo.webp" alt="" width="128" height="128" decoding="async">';
-// The Social Kit in numbers: every number is a count from data/pricing.json
-const KIT_NUMS = [['posts', 'la.n.posts', 'la.n.postsx'], ['stories', 'la.n.stories', 'la.n.storiesx'], ['competitor_profiles', 'la.n.comp', 'la.n.compx'], ['mockups', 'la.n.mock', 'la.n.mockx']];
-const kitNums = (lang) => KIT_NUMS.map(([item, k, x]) => `<div class="la-num"><b dir="ltr">${PKG.kit.items[item]}</b><span>${h(lang, k)}</span><small>${h(lang, x)}</small></div>`).join('');
-// the OK rule: four promises, the last one links the refund policy
-function homeTrust(lang) {
-  const li = [['la.ok.1', 'home.trust.approve'], ['la.ok.2', 'home.trust.own'], ['la.ok.3', 'home.trust.f2']].map(([b, k]) => `<li><b>${h(lang, b)}</b>${h(lang, k)}</li>`).join('');
-  return `<ul class="la-oklist">${li}<li><b>${h(lang, 'la.ok.4')}</b>${h(lang, 'home.trust.f5')} <a href="${pathFor(lang, 'refund')}">${h(lang, 'home.trust.refund')}</a></li></ul>`;
+for (const id of [...EX.home, ...EX.social, ...EX.hero, EX.review]) if (!EX_BY[id]) throw new Error('data/example-posts.json: unknown tile ' + id);
+if (EX.client.posts.length !== 6) throw new Error('data/example-posts.json: the walkthrough needs 6 client posts');
+// a tile's inner drawing; tx = the text in the tile's own language, tl = that language (Arabic-Indic digits in Arabic tiles)
+function exInner(layout, tx, tl, shapeKind) {
+  const e = (s) => esc(s), n = (i) => digits(tl, i);
+  const mark = '<i class="xp-mark"></i>';
+  if (layout === 'word') return `${mark}<b class="xp-big">${e(tx.h)}</b><span class="xp-s">${e(tx.s)}</span>`;
+  if (layout === 'spot') return `${mark}<i class="xp-shape xp-sh-${shapeKind || 'circle'}"></i><b class="xp-h">${e(tx.h)}</b><span class="xp-s">${e(tx.s)}</span>`;
+  if (layout === 'question') return `${mark}<i class="xp-q">${tl === 'ar' ? '؟' : '?'}</i><b class="xp-h">${e(tx.h)}</b><span class="xp-s">${e(tx.s)}</span>`;
+  if (layout === 'list') return `${mark}<b class="xp-h">${e(tx.h)}</b><span class="xp-list">${tx.items.map((it) => `<span>${e(it)}</span>`).join('')}</span>`;
+  if (layout === 'steps') return `${mark}<b class="xp-h">${e(tx.h)}</b><span class="xp-steps">${tx.items.map((it, i) => `<span><i>${n(i + 1)}</i>${e(it)}</span>`).join('')}</span>`;
+  if (layout === 'tip') return `${mark}<span class="xp-tag">${e(tx.tag)}</span><b class="xp-h">${e(tx.h)}</b><span class="xp-s">${e(tx.s)}</span>`;
+  if (layout === 'split') return `<span class="xp-half xp-before"><em>${e(tx.before)}</em><i></i></span><span class="xp-half xp-after"><em>${e(tx.after)}</em><i></i></span><b class="xp-h xp-band">${e(tx.h)}</b>`;
+  return `${mark}<b class="xp-h">${e(tx.h)}</b><span class="xp-rows">${tx.rows.map(([a, b]) => `<span><b>${e(a)}</b><span>${e(b)}</span></span>`).join('')}</span>`; // hours
 }
+const palStyle = (pal) => `--xb:${pal[0]};--xi:${pal[1]};--xa:${pal[2]}`;
+// one example post: a drawing (role="img" with a short description), and, on a wall, its business-type label
+function exTile(lang, id, { label = true, cls = '' } = {}) {
+  const x = EX_BY[id], tx = x.text[x.lang], kind = t(lang, 'ex.k.' + x.kind);
+  const aria = t(lang, 'st.wall.aria').replace('{kind}', () => kind) + (x.shape === 'story' ? ' (' + t(lang, 'st.wall.story') + ')' : '') + ': ' + [tx.h, tx.s, ...(tx.items || []), ...(tx.rows || []).map((r) => r.join(' '))].filter(Boolean).join(' · ');
+  const art = `<div class="xp xp-${x.shape} xp-l-${x.layout}${cls ? ' ' + cls : ''}" style="${palStyle(x.pal)}" lang="${x.lang}" dir="${RTL.has(x.lang) ? 'rtl' : 'ltr'}" role="img" aria-label="${esc(aria)}">${exInner(x.layout, tx, x.lang, x.shapeKind)}</div>`;
+  return label ? `<li class="xp-cell xp-cell-${x.shape}" data-group="${x.group}">${art}<span class="xp-kind">${esc(kind)}</span></li>` : art;
+}
+// the wall: filter buttons (site.js; every tile shows without JavaScript), the tiles, the caption
+function exWall(lang, ids, filters) {
+  const btn = (g, key, on) => `<button type="button" class="st-filter" data-filter="${g}" aria-pressed="${on ? 'true' : 'false'}">${h(lang, key)}</button>`;
+  const bar = filters ? `<div class="st-filters" role="group" aria-label="${esc(t(lang, 'st.wall.filter'))}" hidden>${btn('all', 'st.f.all', true)}${EX_GROUPS.map((g) => btn(g, 'st.f.' + g, false)).join('')}</div>` : '';
+  return { wallBar: bar, wall: `<ul class="xp-wall${filters ? '' : ' xp-wall-small'}" id="xp-wall">${ids.map((id) => exTile(lang, id)).join('')}</ul>` };
+}
+// a decorative tick box / radio for the hero's first card (spans, not inputs: the card is an illustration)
+const fakeTick = (on, round) => `<i class="st-tick${round ? ' st-radio' : ''}${on ? ' on' : ''}"></i>`;
+function heroCards(lang) {
+  const c1 = `<div class="st-card-ui" aria-hidden="true"><span class="st-ui-head"><i class="st-dot"></i>${h(lang, 'st.c1.head')}</span>`
+    + `<span class="st-ui-q">${h(lang, 'st.c1.type')}</span>`
+    + ['place', 'online', 'service'].map((g, i) => `<span class="st-ui-opt${i === 0 ? ' on' : ''}">${fakeTick(i === 0, true)}${h(lang, 'st.type.' + g)}</span>`).join('')
+    + `<span class="st-ui-q">${h(lang, 'st.c1.plat')}</span><span class="st-ui-plats"><span class="st-ui-opt on">${fakeTick(true)}${h(lang, 'plat.instagram')}</span><span class="st-ui-opt">${fakeTick(false)}${h(lang, 'plat.facebook')}</span></span>`
+    + `<span class="st-ui-field"><small>${h(lang, 'st.c1.user')}</small><b dir="ltr">${h(lang, 'st.c1.handle')}</b></span>`
+    + `<span class="st-ui-logo"><i class="st-ui-logo-box"></i><span>${h(lang, 'st.c1.logo')}</span><span class="st-ui-up">${h(lang, 'st.c1.upload')}</span></span></div>`;
+  const c2 = `<div class="st-card-ui" aria-hidden="true"><span class="st-ui-head"><i class="st-dot"></i>${h(lang, 'st.c2.head')}</span><span class="st-ui-grid">${EX.hero.map((id) => `<span class="st-ui-cell">${exTile(lang, id, { label: false, cls: 'xp-fill' }).replace(' role="img"', '').replace(/ aria-label="[^"]*"/, '')}</span>`).join('')}</span><span class="st-ui-note">${h(lang, 'st.c2.note')}</span></div>`;
+  const c3 = `<div class="st-card-ui" aria-hidden="true"><span class="st-ui-head"><i class="st-dot"></i>${h(lang, 'st.c3.head')}</span><span class="st-ui-review">${exTile(lang, EX.review, { label: false }).replace(' role="img"', '').replace(/ aria-label="[^"]*"/, '')}</span><span class="st-ui-acts"><span class="st-ui-btn">${h(lang, 'dash.changes')}</span><span class="st-ui-btn on">${h(lang, 'dash.approve')}</span></span></div>`;
+  const card = (n, ui) => `<li class="st-card st-card-${n}"><h2 class="st-card-t">${h(lang, `how.${n}t`)}</h2>${ui}</li>`;
+  return `<ol class="st-cards" aria-label="${esc(t(lang, 'st.cards'))}">${card(1, c1)}${card(2, c2)}${card(3, c3)}</ol>`;
+}
+// The Social Kit: what is in it, every count from data/pricing.json (brand mockups, the SEO priorities and the monthly
+// recaps/reviews are no longer offered, owner 2026-11-11)
+const KIT_ROWS = [['posts', 'la.n.posts', 'la.n.postsx'], ['stories', 'la.n.stories', 'la.n.storiesx'], ['competitor_profiles', 'la.n.comp', 'la.n.compx'],
+  ['brand_book', 'st.kit.bb', 'st.kit.bbx'], ['campaign_concepts', 'st.kit.camp', 'st.kit.campx'], ['plan_30d', 'st.kit.plan', 'st.kit.planx']];
+const kitRows = (lang) => KIT_ROWS.map(([item, k, x]) => {
+  const n = PKG.kit.items[item]; if (typeof n !== 'number') throw new Error('data/pricing.json: no kit count ' + item);
+  return `<li><b dir="ltr">${n}</b><span><strong>${h(lang, k)}</strong><small>${h(lang, x)}</small></span></li>`;
+}).join('');
 // the package table: one column per Social package; cells are i18n keys (counts as {n:<id>.<item>}), a cell key may be shared
 const TABLE_PKGS = ['kit', 'visible', 'growing'];
 const TABLE_ROWS = [
   ['la.t.posts', ['la.t.posts.kit', 'la.t.posts.visible', 'la.t.posts.growing']],
   ['la.t.stories', ['la.t.stories.kit', 'la.t.stories.visible', 'la.t.stories.growing']],
-  ['la.t.mock', ['la.t.mock.kit', 'la.t.mock.visible', 'la.t.mock.growing']],
   ['la.t.bb', ['la.t.bb.kit', 'pkg.visible.f1', 'pkg.growing.f1']],
-  ['la.t.camp', ['pkg.kit.f7', 'la.t.no', 'pkg.growing.f6']],
-  ['la.t.plan', ['la.t.plan.kit', 'pkg.visible.f6', 'pkg.growing.f9']],
+  ['la.t.camp', ['pkg.kit.f7', 'la.t.no', 'pkg.growing.f5']],
+  ['la.t.plan', ['la.t.plan.kit', 'pkg.visible.f5', 'pkg.growing.f7']],
   ['la.t.rev', ['la.t.rev.kit', 'la.t.rev.visible', 'la.t.rev.growing']],
   ['la.t.plat', ['la.t.plat.kit', 'plan.extraNote', 'plan.extraNote']],
-  ['la.t.also', ['pkg.kit.f2', 'pkg.visible.f8', 'pkg.growing.f7']],
+  ['la.t.also', ['pkg.kit.f2', 'pkg.visible.f7', 'pkg.growing.f6']],
 ];
 function priceTable(lang) {
   const hot = (p) => (p === 'visible' ? ' class="hot"' : '');
-  const head = `<thead><tr><th scope="col">${h(lang, 'la.t.what')}</th>${TABLE_PKGS.map((p) => `<th scope="col"${hot(p)}><span class="la-pname">${esc(pname(lang, p))}</span><span class="la-ptag">${h(lang, `pkg.${p}.eye`)}</span></th>`).join('')}</tr></thead>`;
-  const price = `<tr class="la-prow"><th scope="row">${h(lang, 'la.t.price')}</th>${TABLE_PKGS.map((p) => `<td${hot(p)}>${money(lang, p)}<span class="per">${h(lang, MONTHLY.has(p) ? 'plan.per' : 'one.per')}</span></td>`).join('')}</tr>`;
-  const cls = (p, k) => { const c = [p === 'visible' && 'hot', k === 'la.t.no' && 'la-no'].filter(Boolean); return c.length ? ` class="${c.join(' ')}"` : ''; };
+  const head = `<thead><tr><th scope="col">${h(lang, 'la.t.what')}</th>${TABLE_PKGS.map((p) => `<th scope="col"${hot(p)}><span class="st-pname">${esc(pname(lang, p))}</span><span class="st-ptag">${h(lang, `pkg.${p}.eye`)}</span></th>`).join('')}</tr></thead>`;
+  const price = `<tr class="st-prow"><th scope="row">${h(lang, 'la.t.price')}</th>${TABLE_PKGS.map((p) => `<td${hot(p)}>${money(lang, p)}<span class="per">${h(lang, MONTHLY.has(p) ? 'plan.per' : 'one.per')}</span></td>`).join('')}</tr>`;
+  const cls = (p, k) => { const c = [p === 'visible' && 'hot', k === 'la.t.no' && 'st-no'].filter(Boolean); return c.length ? ` class="${c.join(' ')}"` : ''; };
   const rows = TABLE_ROWS.map(([label, cells]) => `<tr><th scope="row">${h(lang, label)}</th>${cells.map((k, i) => `<td${cls(TABLE_PKGS[i], k)}>${h(lang, k)}</td>`).join('')}</tr>`).join('');
-  const buy = `<tr class="la-buy"><td></td>${TABLE_PKGS.map((p) => `<td${hot(p)}><a class="btn${p === 'visible' ? '' : ' la-line'}" href="${esc(buyHref(lang, p))}">${h(lang, `pkg.${p}.btn`)}</a></td>`).join('')}</tr>`;
-  return `<table class="la-table">${head}<tbody>${price}${rows}${buy}</tbody></table>`;
+  const buy = `<tr class="st-buy"><td></td>${TABLE_PKGS.map((p) => `<td${hot(p)}><a class="btn${p === 'visible' ? '' : ' st-line'}" href="${esc(buyHref(lang, p))}">${h(lang, `pkg.${p}.btn`)}</a></td>`).join('')}</tr>`;
+  return `<table class="st-table">${head}<tbody>${price}${rows}${buy}</tbody></table>`;
 }
+// the OK rule: one example post with the two actions
+const okPost = (lang) => `<div class="st-okpost" aria-hidden="true">${exTile(lang, 'cafe', { label: false }).replace(' role="img"', '').replace(/ aria-label="[^"]*"/, '')}<span class="st-ui-acts"><span class="st-ui-btn">${h(lang, 'dash.changes')}</span><span class="st-ui-btn on">${h(lang, 'dash.approve')}</span></span></div>`;
 
 // ---- home "See what working with Crier looks like": the client portal walkthrough (approved mockup v2, 2026-10-18) ----
 // An HTML/CSS recreation of the client portal, driven by assets/dash.js (45 s story loop). Portal labels
 // are the portal's own (dash.* keys); posts, names and the caption are example content. Steps: wt.<n>l / t / x / screen.
 const WT_STEPS = 5;
 const DASH_EMAIL = 'team@crierstudio.com';
-// Sahm Mena's six reels (instagram.com/sahmmena, 2026-11-05/06), titles verbatim, in profile-grid order = assets/demo/post-<n>.webp
-const SAHM_POSTS = [
-  'أساسيات ٦ · السهم · يعني إيه سهم أصلاً؟',
-  'أساسيات ٧ · الطرح العام · يعني إيه الطرح العام؟',
-  'قاعدة ٥ · المشاعر · المشاعر أغلى غلطة',
-  'أساسيات ٥ · التنويع · التنويع يعني إيه؟',
-  'قاعدة ٤ · نصايح الجروبات · نصيحة جروب واتساب مش دراسة',
-  'أساسيات ٤ · الترند · الترند يعني إيه؟',
-];
-// the day in November 2026 each reel went up on instagram.com/sahmmena (same order as SAHM_POSTS)
-const SAHM_DAYS = [6, 6, 6, 6, 5, 5];
 // icon paths copied from the portal's own set (portal/public/app.js)
 const PI = {
   overview: 'M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z', layers: 'M12 3l9 5-9 5-9-5zM3 13l9 5 9-5', review: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8 12l3 3 5-6',
@@ -383,17 +414,16 @@ const digits = (lang, n) => (lang === 'ar' ? String(n).replace(/\d/g, (d) => '٠
 
 function dash(lang) {
   const T = (k) => t(lang, 'dash.' + k), D = (k) => esc(T(k)), ar = lang === 'ar';
-  // the example business is Sahm Mena (instagram.com/sahmmena, a free Arab stock-market app): the six reels on its profile,
-  // titles verbatim (Arabic in both languages), thumbnails and the round SAHM logo cut from screenshots of the profile
-  // (build/demo-images.py). Dates are the reels' real post dates (SAHM_DAYS, November 2026).
-  const posts = SAHM_POSTS.map((title, i) => ({ file: 'post-' + (i + 1) + '.webp', day: SAHM_DAYS[i], title, label: T('typeReel') }));
+  // the example business is a café called "Example" (no real business): its six posts are example tiles in one palette
+  // (data/example-posts.json, client), in the page language; the avatars are a plain neutral circle (no letters, no logo)
+  const posts = EX.client.posts.map((p) => ({ ...p, title: p.text[lang].title, label: T('typePost') }));
   const date = (day) => ar ? digits(lang, day) + ' ' + T('monthShort') : T('monthShort') + ' ' + digits(lang, day);
-  const image = (file, cls) => '<img class="' + cls + '" src="/assets/demo/' + file + '" alt="" loading="lazy" decoding="async">';
-  const logo = (cls) => image('logo.webp', cls);
-  const title = (p) => '<strong dir="rtl" lang="ar">' + esc(p.title) + '</strong>';
-  const postCard = (p) => '<span class="d-post-card"><span class="d-post-visual">' + image(p.file, 'd-post-img') + '<span class="d-post-kind">' + esc(p.label) + '</span></span><span class="d-post-copy">' + title(p) + '<small>' + esc(date(p.day)) + '</small></span></span>';
+  const image = (p, cls) => '<span class="' + cls + ' xp xp-fill xp-l-' + p.layout + '" style="' + palStyle(EX.client.pal) + '">' + exInner(p.layout, p.text[lang], lang, p.shapeKind) + '</span>';
+  const logo = (cls) => '<span class="' + cls + ' d-neutral"></span>';
+  const title = (p) => '<strong>' + esc(p.title) + '</strong>';
+  const postCard = (p) => '<span class="d-post-card"><span class="d-post-visual">' + image(p, 'd-post-img') + '<span class="d-post-kind">' + esc(p.label) + '</span></span><span class="d-post-copy">' + title(p) + '<small>' + esc(date(p.day)) + '</small></span></span>';
   const postGrid = (arr, cls) => '<span class="d-post-grid ' + cls + '">' + arr.map(postCard).join('') + '</span>';
-  const calendarCell = (p) => '<span class="d-calendar-cell"><span class="d-calendar-day">' + digits(lang, p.day) + '</span><span class="d-calendar-thumb">' + image(p.file, 'd-calendar-img') + '</span><span class="d-calendar-type">' + esc(p.label) + '</span></span>';
+  const calendarCell = (p) => '<span class="d-calendar-cell"><span class="d-calendar-day">' + digits(lang, p.day) + '</span><span class="d-calendar-thumb">' + image(p, 'd-calendar-img') + '</span><span class="d-calendar-type">' + esc(p.label) + '</span></span>';
   const nav = (icon, key, screen, active) => '<span class="d-link' + (active ? ' on' : '') + '" data-nav="' + screen + '">' + ic(icon, lang) + '<span class="d-nl">' + D(key) + '</span></span>';
   const tab = (key, screen, active) => '<span class="d-tab' + (active ? ' on' : '') + '" data-nav="' + screen + '">' + D(key) + '</span>';
   const view = (screen, title, body, active) => '<span class="d-view' + (active ? ' is-on' : '') + '" data-screen="' + screen + '"><span class="d-view-head"><strong>' + D(title) + '</strong></span>' + body + '</span>';
@@ -412,9 +442,9 @@ function dash(lang) {
   const libraryBody = '<span class="d-view-note">' + D('libraryNote') + '</span>' + postGrid(posts, 'd-many-grid d-library-grid');
   const waitingBody = '<span class="d-wait-card"><span class="d-clock" aria-hidden="true"><i class="d-clock-hand d-hour"></i><i class="d-clock-hand d-minute"></i><b></b></span><span class="d-wait-copy"><small>' + D('waitSub') + '</small><span class="d-clock-label">' + D('clockLabel') + '</span><span class="d-clock-jump"><span>' + D('now') + '</span><i aria-hidden="true">→</i><b>' + D('timeLater') + '</b></span></span></span>';
   const reviewPost = posts[4];
-  const reviewBody = '<span class="d-review-card"><span class="d-review-image">' + image(reviewPost.file, 'd-review-img') + '</span><span class="d-review-copy"><small>' + esc(reviewPost.label + ' · ' + date(reviewPost.day)) + '</small>' + title(reviewPost) + '<span class="d-review-status" data-k="reviewStatus">' + D('pendingStatus') + '</span><span class="d-review-actions"><span class="d-btn sec" data-b="changes">' + D('changes') + '</span><span class="d-btn lime" data-b="approve">' + D('approve') + '</span></span></span></span>';
-  const readyBody = '<span class="d-ready-card"><span class="d-ready-image">' + image(reviewPost.file, 'd-ready-img') + '</span><span class="d-ready-copy"><span class="d-ready-chips"><span class="d-chip">' + D('approvedStatus') + '</span><span class="d-chip">' + D('ready') + '</span></span><strong>' + D('readyTitle') + '</strong><small dir="rtl" lang="ar">' + esc(reviewPost.title) + '</small><span class="d-ready-actions"><span class="d-btn lime" data-b="copy"><span data-k="copyLabel">' + D('copyCap') + '</span></span><span class="d-btn sec" data-b="dl">' + D('download') + '</span><span class="d-btn sec" data-b="mark">' + D('markPosted') + '</span></span></span></span>';
-  const instagramBody = '<span class="d-instagram-card"><span class="d-ig-head"><span class="d-ig-avatar">' + logo('d-ig-logo') + '</span><strong>' + D('instagramHandle') + '</strong><span class="d-ig-network">' + D('instagram') + '</span></span><span class="d-ig-image">' + image(reviewPost.file, 'd-ig-post') + '<span class="d-ig-posted">' + D('posted') + '</span></span><span class="d-ig-footer"><span class="d-ig-icons" aria-hidden="true">♡　○　↗</span><small dir="rtl" lang="ar">' + esc(reviewPost.title) + '</small></span></span>';
+  const reviewBody = '<span class="d-review-card"><span class="d-review-image">' + image(reviewPost, 'd-review-img') + '</span><span class="d-review-copy"><small>' + esc(reviewPost.label + ' · ' + date(reviewPost.day)) + '</small>' + title(reviewPost) + '<span class="d-review-status" data-k="reviewStatus">' + D('pendingStatus') + '</span><span class="d-review-actions"><span class="d-btn sec" data-b="changes">' + D('changes') + '</span><span class="d-btn lime" data-b="approve">' + D('approve') + '</span></span></span></span>';
+  const readyBody = '<span class="d-ready-card"><span class="d-ready-image">' + image(reviewPost, 'd-ready-img') + '</span><span class="d-ready-copy"><span class="d-ready-chips"><span class="d-chip">' + D('approvedStatus') + '</span><span class="d-chip">' + D('ready') + '</span></span><strong>' + D('readyTitle') + '</strong><small>' + esc(reviewPost.title) + '</small><span class="d-ready-actions"><span class="d-btn lime" data-b="copy"><span data-k="copyLabel">' + D('copyCap') + '</span></span><span class="d-btn sec" data-b="dl">' + D('download') + '</span><span class="d-btn sec" data-b="mark">' + D('markPosted') + '</span></span></span></span>';
+  const instagramBody = '<span class="d-instagram-card"><span class="d-ig-head"><span class="d-ig-avatar">' + logo('d-ig-logo') + '</span><strong>' + D('instagramHandle') + '</strong><span class="d-ig-network">' + D('instagram') + '</span></span><span class="d-ig-image">' + image(reviewPost, 'd-ig-post') + '<span class="d-ig-posted">' + D('posted') + '</span></span><span class="d-ig-footer"><span class="d-ig-icons" aria-hidden="true">♡　○　↗</span><small>' + esc(reviewPost.title) + '</small></span></span>';
   const briefView = view('brief', 'briefTitle', briefBody, false);
   const emptyView = view('empty', 'glance', emptyBody, false);
   const overviewView = view('overview', 'glance', overviewBody, false);
@@ -460,9 +490,10 @@ function walkthrough(lang) {
 }
 function homeVars(lang) {
   return {
-    heroH1: heroH1(lang), sahmPosts: sahmPosts(), sahmStory: sahmStory(), sahmLogo, ...heroStart(lang),
-    kitNums: kitNums(lang), kitPrice: money(lang, 'kit'), kitBtn: `<a class="btn lime" href="${esc(buyHref(lang, 'kit'))}">${h(lang, 'pkg.kit.btn')}</a>`,
-    trust: homeTrust(lang), ...walkthrough(lang), curPick: curPick(lang), priceTable: priceTable(lang),
+    heroH1: heroH1(lang), ...heroStart(lang), heroCards: heroCards(lang), ...exWall(lang, EX.home, true), kitRows: kitRows(lang),
+    kitPrice: money(lang, 'kit'), kitBtn: `<a class="btn st-dark" href="${esc(buyHref(lang, 'kit'))}">${h(lang, 'pkg.kit.btn')}</a>`,
+    kitArt: `<div class="st-kit-art" aria-hidden="true">${['bakery', 'salon', 'gym'].map((id) => exTile(lang, id, { label: false }).replace(' role="img"', '').replace(/ aria-label="[^"]*"/, '')).join('')}</div>`,
+    okPost: okPost(lang), ...walkthrough(lang), curPick: curPick(lang), priceTable: priceTable(lang),
   };
 }
 // P1: a monthly package picks its platforms on the card; the live line ("Keep Growing · Instagram + Facebook · $90/mo") is computed in
@@ -489,10 +520,12 @@ function pageVars(lang, page) {
     buyDeck: buyBtn(lang, 'deck', false), conv: lang === 'en' ? '' : `<p class="conv">${h(lang, 'leg.conv')}</p>`,
     waFoot: waLink(lang), waAbout: WA ? `<p>${waLink(lang)}</p>` : '',
   };
-  // Home: Landing A (2026-11-06, Adham): the package table is back on the home page (overrides the 2026-10-19 audit rule);
-  // the walkthrough and the home FAQ are gone (the FAQ page stays).
+  // Home: Landing C "Step-through" (2026-11-11, Adham): the package table stays on the home page (Landing A, 2026-11-06, overrode
+  // the 2026-10-19 audit rule); no home FAQ (the FAQ page stays).
   if (page === 'index') Object.assign(v, homeVars(lang));
-  if (page === 'social') Object.assign(v, { kitList: ticks(lang, 'pkg.kit', 'cols'), flow: flow(lang, 3, 'how') });
+  // Social (Landing C, 2026-11-11): the hero step cards, the kit list, three calm steps and a smaller example wall (no filters)
+  if (page === 'social') Object.assign(v, { kitList: ticks(lang, 'pkg.kit', 'cols'), heroCards: heroCards(lang), ...exWall(lang, EX.social, false),
+    steps: [1, 2, 3].map((i) => `<li><h3>${h(lang, `how.${i}t`)}</h3><p>${h(lang, `how.${i}x`)}</p></li>`).join('') });
   if (page === 'in-store') Object.assign(v, storeVars(lang));
   if (page === 'sculptures') Object.assign(v, sculptVars(lang));
   if (page === 'pricing') Object.assign(v, { planCards: planCards(lang), deckCards: deckCards(lang), billItems: billItems(lang), curPick: curPick(lang) });
@@ -749,9 +782,9 @@ function purgeCss(css, html) {
 // Template indentation is dropped from the page body (a line break renders the same as the spaces that followed it);
 // <script>, <style>, <pre> and <textarea> contents are left exactly as they are (inline scripts are allowed by hash).
 const trimIndent = (html) => html.split(/(<(script|style|pre|textarea)\b[\s\S]*?<\/\2>)/).map((part, i) => i % 3 === 0 ? part.replace(/\n[ \t]+/g, '\n') : i % 3 === 1 ? part : '').join('');
-// the English In-store page loads the Arabic faces too: its menu board and QR stand carry Arabic item names (the unicode-range
-// means the files download only for those glyphs)
-const cssFor = (lang, page) => minCss([CSS.fonts, lang === 'ar' || page === 'in-store' || page === 'index' ? CSS.fontsAr : '', WIDE.has(page) ? CSS.home : CSS.legal + (page === 'faq' ? '\n' + faqCss : ''), CSS.common, CSS.consent, CSS.chrome, page === 'sculptures' ? CSS.sculpt : ''].join('\n'));
+// the English In-store page loads the Arabic faces too: its menu board and QR stand carry Arabic item names; so do the English
+// home and Social pages (half of the example posts are in Arabic). The unicode-range means the files download only for those glyphs.
+const cssFor = (lang, page) => minCss([CSS.fonts, lang === 'ar' || page === 'in-store' || page === 'index' || page === 'social' ? CSS.fontsAr : '', WIDE.has(page) ? CSS.home : CSS.legal + (page === 'faq' ? '\n' + faqCss : ''), CSS.common, CSS.consent, CSS.chrome, page === 'sculptures' ? CSS.sculpt : ''].join('\n'));
 
 // ---------- content-hashed asset copies (long browser cache) ----------
 // GitHub Pages sends every file with max-age=600. The pages therefore reference copies of the fonts, the hero images and
@@ -787,7 +820,7 @@ for (const [lang] of LANGS) {
     htmlCc = LEGAL.includes(page) || page === 'pricing' ? null : DEFAULT_CC; // the legal pages keep the US-dollar price list
     const ctx = { lang, v: pageVars(lang, page) };
     const body = render(rd(`templates/${page === 'index' ? 'home' : page}.html`), ctx);
-    const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${!LEGAL.includes(page) && page !== 'pricing' && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${page === 'index' ? '<script src="/assets/dash.js" defer></script>\n' : ''}${page === 'sculptures' ? '<script src="/assets/sculptures.js" defer></script>\n' : ''}</body>\n</html>\n`;
+    const bodyHtml = `<body data-page="${page}" class="studio-inner${page === 'index' || page === 'social' ? ' st-page' : ''}">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${!LEGAL.includes(page) && page !== 'pricing' && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${page === 'index' ? '<script src="/assets/dash.js" defer></script>\n' : ''}${page === 'sculptures' ? '<script src="/assets/sculptures.js" defer></script>\n' : ''}</body>\n</html>\n`;
     const html = `${head(lang, page, purgeCss(cssFor(lang, page), bodyHtml))}\n${trimIndent(bodyHtml)}`;
     write(dirFor(lang, page) + 'index.html', hashUrls(html));
     built.push([lang, page]);

@@ -252,3 +252,18 @@
     matchMedia('(min-width:801px)').addEventListener('change',close);
   }
 })();
+
+/* Landing C (2026-11-11): the example-posts wall filter on the home page. Every tile is visible without JavaScript; the buttons
+   (hidden until this runs) show one kind of business at a time: data-filter = all, place, online or service (each tile's data-group). */
+(function () {
+  "use strict";
+  var wall = document.getElementById("xp-wall"), bar = document.querySelector(".st-filters");
+  if (!wall || !bar) return;
+  var btns = bar.querySelectorAll("button[data-filter]"), cells = wall.querySelectorAll(".xp-cell");
+  function show(g) {
+    for (var i = 0; i < btns.length; i++) btns[i].setAttribute("aria-pressed", btns[i].getAttribute("data-filter") === g ? "true" : "false");
+    for (var j = 0; j < cells.length; j++) cells[j].hidden = g !== "all" && cells[j].getAttribute("data-group") !== g;
+  }
+  for (var k = 0; k < btns.length; k++) btns[k].addEventListener("click", function () { show(this.getAttribute("data-filter")); });
+  bar.hidden = false;
+})();

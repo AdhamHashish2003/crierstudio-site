@@ -1,30 +1,35 @@
 <main id="main-content">
-    {{=crumbs}}
-    <section class="phead" aria-labelledby="kit-title">
-      <span class="eyebrow">{{t:kit.eyebrow}}</span>
-      <h1 id="kit-title">{{t:kit.title}}</h1>
-      <p class="lead">{{t:kit.lead}}</p>
-      <div class="cta-row"><a class="btn" href="{{=signupHref}}">{{t:hero.start.btn}}</a><a class="btn ghost" href="{{=pricingHref}}">{{t:hero.start.pricing}}</a></div>
-      <p class="fine">{{t:kit.portal}}</p>
-    </section>
-
-    <section id="inside" aria-labelledby="all-title">
-      <div class="sec-head"><h2 id="all-title">{{t:kit.all.title}}</h2></div>
-      {{=kitList}}
-      <p class="fine" style="margin-top:16px">{{t:pkg.kit.note}}</p>
-      <p class="more"><a href="{{=pricingHref}}">{{t:offer.plans}}</a></p>
-    </section>
-
-    <section id="how" aria-labelledby="how-title">
-      <div class="sec-head"><h2 id="how-title">{{t:how.title}}</h2></div>
-      <div class="flow" id="flow">{{=flow}}</div>
-    </section>
-
-    <section id="start" aria-labelledby="start-title">
-      <div class="closing">
-        <h2 id="start-title">{{t:hero.start.t}}</h2>
-        <p class="lead">{{t:hero.start.x}}</p>
-        <a class="btn" href="{{=signupHref}}">{{t:hero.start.btn}}</a>
+    <section class="st-hero st-hero-social" aria-labelledby="kit-title">
+      {{=crumbs}}
+      <div class="st-hero-copy">
+        <span class="eyebrow">{{t:kit.eyebrow}}</span>
+        <h1 id="kit-title">{{t:kit.title}}</h1>
+        <p class="lead">{{t:kit.lead}}</p>
+        <div class="st-cta"><a class="btn" href="{{=signupHref}}">{{t:hero.start.btn}}</a><a class="st-link" href="{{=pricingHref}}">{{t:hero.start.pricing}}</a></div>
+        <p class="st-note">{{t:kit.portal}}</p>
       </div>
+      {{=heroCards}}
+    </section>
+
+    <section id="inside" class="st-light" aria-labelledby="all-title">
+      <div class="st-head"><div><h2 id="all-title">{{t:kit.all.title}}</h2><p class="lead">{{t:pkg.kit.note}}</p></div></div>
+      {{=kitList}}
+      <p class="st-fine"><a href="{{=pricingHref}}">{{t:offer.plans}}</a></p>
+    </section>
+
+    <section id="how" class="st-light st-how" aria-labelledby="how-title">
+      <div class="st-head"><div><h2 id="how-title">{{t:how.title}}</h2></div></div>
+      <ol class="st-steps">{{=steps}}</ol>
+    </section>
+
+    <section id="examples" class="st-light st-wallsec" aria-labelledby="ex-title">
+      <div class="st-head"><div><h2 id="ex-title">{{t:st.social.examples}}</h2><p class="lead">{{t:st.wall.cap}}</p></div></div>
+      {{=wall}}
+    </section>
+
+    <section id="start" class="st-close" aria-labelledby="start-title">
+      <h2 id="start-title">{{t:hero.start.t}}</h2>
+      <p class="lead">{{t:hero.start.x}}</p>
+      <div class="st-cta"><a class="btn" href="{{=signupHref}}">{{t:hero.start.btn}}</a></div>
     </section>
   </main>
