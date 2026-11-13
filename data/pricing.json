@@ -1,5 +1,5 @@
 {
- "generated_from": "portal/lib/pricing.json sha256 c78de243b78ca373ba89078188f8664c93833bfeb6f16cb3db503ffc282d01e9",
+ "generated_from": "portal/lib/pricing.json sha256 be625f85be88ad2c371e7349212bcd6870303f6099787f3882ed32bf15ce2132",
  "currency": "USD",
  "local": {
   "about": "Launch pricing (Adham, 2026-10-15): a buyer in Saudi Arabia, the UAE or Egypt is quoted and charged in their own currency, with VAT ADDED on top of the package's local price: total = net + VAT, shown as \"price + VAT = total\". packages[].prices.<CUR> and extra_platform_prices.<CUR> are the NET prices before VAT. VAT = net x vat_pct / 100, rounded half-up to 0.01 on the whole order (base + extra platforms). The country comes from the client (SA / AE / EG only, never typed free text); any other country pays the USD price above with no VAT. Read by mena-batch/app/core/local-price.mjs (engine, portal), the Launchpad's pricing.py (checkout, a byte-for-byte copy of this file) and the site's data/pricing.json (republished from this file). vat_registration: PLACEHOLDER, Adham supplies each country's VAT / tax registration number before it is printed or sent to Stripe; null = not registered yet, nothing is printed.",
@@ -42,7 +42,6 @@
     "competitor_profiles": 3,
     "posts": 10,
     "stories": 5,
-    "mockups": 11,
     "campaign_concepts": 1,
     "ad_copies": 3,
     "seo_priorities": 1,
@@ -76,9 +75,8 @@
    "items": {
     "posts": 10,
     "stories": 10,
-    "mockups": 2,
+    "described_reels": 1,
     "calendar": 1,
-    "recap": 1,
     "revision_rounds": 1
    },
    "list_price": 50,
@@ -108,14 +106,11 @@
    "items": {
     "posts": 20,
     "stories": 20,
-    "mockups": 4,
+    "described_reels": 2,
     "campaign_concepts": 1,
     "ad_copies": 6,
     "competitor_update": 1,
-    "seo_brief": 1,
-    "performance_review": 1,
     "calendar": 1,
-    "recap": 1,
     "revision_rounds": 2
    },
    "list_price": 80,
