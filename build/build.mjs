@@ -74,7 +74,7 @@ const PRICES = Object.fromEntries(PRICING.packages.map((p) => [p.id, p.price]));
 // pays the USD price with no VAT. Every price carries its local net prices; site.js shows the buyer's currency (by country,
 // never by page language) with "price + VAT = total" on every page but the legal ones.
 const COUNTRIES = PRICING.local.countries;
-const CURS = ['USD', ...new Set(Object.values(COUNTRIES).map((c) => c.currency))];
+const CURS = [...new Set(['USD', ...Object.values(COUNTRIES).map((c) => c.currency)])]; // the USA (2026-11-13) is a country in USD: listed once
 // MENA landing (2026-10-16): a visitor whose country is unknown is quoted as Saudi Arabia (SAR + VAT), on every language page.
 // The HTML is written in this country's prices (no flash of US dollars); site.js then follows the visitor's pick, Cloudflare or
 // the time zone. The legal pages keep the US-dollar price list.
@@ -98,7 +98,7 @@ const PKGDATA = Object.fromEntries(PRICING.packages.filter((p) => !p.coming_soon
 const CONTACT = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'contact.json'), 'utf8'));
 const WA = String(CONTACT.whatsapp || '').replace(/[\s+()-]/g, '');
 if (WA && !/^[1-9]\d{7,14}$/.test(WA)) throw new Error('data/contact.json: whatsapp must be the number in international format, digits only');
-const MONTHLY = new Set(PRICING.packages.filter((p) => p.billing === 'monthly').map((p) => p.id)); // billed monthly; kit and deck are one-time
+const MONTHLY = new Set(PRICING.packages.filter((p) => p.billing === 'monthly').map((p) => p.id)); // billed monthly (Bronze, Silver, Gold); the deck is one-time
 // product names are i18n keys (name.<id>) so every language shows its own name
 const PRODUCTS = Object.keys(PRICES);
 const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
@@ -157,10 +157,10 @@ const htmlCur = () => (htmlCc ? COUNTRIES[htmlCc].currency : 'USD');
 // a card's big price is followed by its VAT line instead)
 function priceSpan(lang, vals, cls = 'amt') {
   const [usd, ...loc] = String(vals).split('|'), cur = htmlCur();
-  const text = cur === 'USD' ? '$' + usd : fmtMoney(lang, cur, +loc[CURS.indexOf(cur) - 1]) + (/(^|\s)(?:price|price-list)(\s|$)/.test(cls) ? '' : ' ' + t(lang, 'cur.plusVat'));
+  const text = cur === 'USD' ? '$' + fmtNum(+usd) : fmtMoney(lang, cur, +loc[CURS.indexOf(cur) - 1]) + (/(^|\s)(?:price|price-list)(\s|$)/.test(cls) ? '' : ' ' + t(lang, 'cur.plusVat'));
   return `<span class="${cls}" dir="${cur !== 'USD' && RTL.has(lang) ? 'rtl' : 'ltr'}" data-usd="${usd}"${CURS.slice(1).map((c, i) => ` data-${c.toLowerCase()}="${loc[i]}"`).join('')}>${esc(text)}</span>`;
 }
-const t = (lang, key) => raw(lang, key).replace(PRICE_MARK, (m, vals) => '$' + vals.split('|')[0]).replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m).replace(/<\/?(?:b|a)>/g, '');
+const t = (lang, key) => raw(lang, key).replace(PRICE_MARK, (m, vals) => '$' + fmtNum(+vals.split('|')[0])).replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m).replace(/<\/?(?:b|a)>/g, '');
 function h(lang, key, href) {
   let s = raw(lang, key).replace(/\{(\w+)\}/g, (m, k) => (k === 'email' ? '\u0001E\u0001' : vars[k] ?? m));
   s = esc(s).replace(/&lt;(\/?)b&gt;/g, '<$1b>')
@@ -194,7 +194,7 @@ const syms = [
 ];
 const INDCOLORS = [['sun', 'coral'], ['coral', 'accent'], ['accent', 'ink'], ['ink', 'sun'], ['sun', 'accent']];
 // FAQ ids (keys faq.<id>q, faq.<id>a1, faq.<id>a2)
-const FAQ_ALL = [19, 20, 21, 22, 23, 24, 25, 26, 11, 12, 13, 14, 15, 16, 1, 7, 2, 4, 5, 17, 9];
+const FAQ_ALL = [19, 20, 22, 23, 24, 25, 26, 11, 12, 13, 14, 15, 16, 1, 7, 2, 4, 5, 17, 9];
 const FAQ_DECK = [11, 12, 13, 14, 15, 16];
 
 function faqAnswers(lang, i) {
@@ -251,7 +251,8 @@ function sheet(lang, n) {
 }
 const fig = (lang, n) => `<figure class="sheetfig">${sheet(lang, n)}<figcaption>${h(lang, `sample.c${n}`)}</figcaption></figure>`;
 
-const money = (lang, p) => `<span class="price-pair"><s class="price-was">${priceSpan(lang, [PKG[p].list_price, ...CURS.slice(1).map((c) => PKG[p].list_prices[c])].join('|'), 'price-list amt')}</s>${priceSpan(lang, [PRICES[p], ...CURS.slice(1).map((c) => PKG[p].prices[c])].join('|'), 'price amt')}</span>`;
+// 2026-11-13: one price per package and country, no list price (nothing is struck through)
+const money = (lang, p) => `<span class="price-pair">${priceSpan(lang, [PRICES[p], ...CURS.slice(1).map((c) => PKG[p].prices[c])].join('|'), 'price amt')}</span>`;
 // "Your country" dropdown: Saudi Arabia / UAE / Egypt first, "Another country (US dollars)" last (never free text). Used above
 // the prices (home, pricing and kit pages) and in the order form; site.js keeps every one of them on the same country and sends
 // that country to the checkout. Selected in the HTML: the default country (Saudi Arabia).
@@ -324,26 +325,26 @@ const HERO_POSTS = 6, HERO_STORY = 3;
 const sahmPosts = () => Array.from({ length: HERO_POSTS }, (_, i) => `<img src="/assets/demo/post-${i + 1}.webp" alt="" width="240" height="320" decoding="async">`).join('');
 const sahmStory = () => `<img src="/assets/demo/post-${HERO_STORY}.webp" alt="" width="240" height="320" decoding="async">`;
 const sahmLogo = '<img class="sahm-logo" src="/assets/demo/logo.webp" alt="" width="128" height="128" decoding="async">';
-// The Social Kit in numbers: every number is a count from data/pricing.json
-const KIT_NUMS = [['posts', 'la.n.posts', 'la.n.postsx'], ['stories', 'la.n.stories', 'la.n.storiesx'], ['competitor_profiles', 'la.n.comp', 'la.n.compx']];
-const kitNums = (lang) => KIT_NUMS.map(([item, k, x]) => `<div class="la-num"><b dir="ltr">${PKG.kit.items[item]}</b><span>${h(lang, k)}</span><small>${h(lang, x)}</small></div>`).join('');
+// Bronze in numbers (the Social Kit is retired, 2026-11-13): every number is a count from data/pricing.json
+const KIT_PKG = 'seen';
+const KIT_NUMS = [['posts', 'la.n.posts', 'la.n.postsx'], ['stories', 'la.n.stories', 'la.n.storiesx'], ['described_reels', 'la.n.reels', 'la.n.reelsx']];
+const kitNums = (lang) => KIT_NUMS.map(([item, k, x]) => `<div class="la-num"><b dir="ltr">${PKG[KIT_PKG].items[item]}</b><span>${h(lang, k)}</span><small>${h(lang, x)}</small></div>`).join('');
 // the OK rule: four promises, the last one links the refund policy
 function homeTrust(lang) {
   const li = [['la.ok.1', 'home.trust.approve'], ['la.ok.2', 'home.trust.own'], ['la.ok.3', 'home.trust.f2']].map(([b, k]) => `<li><b>${h(lang, b)}</b>${h(lang, k)}</li>`).join('');
   return `<ul class="la-oklist">${li}<li><b>${h(lang, 'la.ok.4')}</b>${h(lang, 'home.trust.f5')} <a href="${pathFor(lang, 'refund')}">${h(lang, 'home.trust.refund')}</a></li></ul>`;
 }
 // the package table: one column per Social package; cells are i18n keys (counts as {n:<id>.<item>}), a cell key may be shared
-const TABLE_PKGS = ['kit', 'visible', 'growing'];
+const TABLE_PKGS = ['seen', 'visible', 'growing'];
 const TABLE_ROWS = [
-  ['la.t.posts', ['la.t.posts.kit', 'la.t.posts.visible', 'la.t.posts.growing']],
-  ['la.t.stories', ['la.t.stories.kit', 'la.t.stories.visible', 'la.t.stories.growing']],
-  ['la.t.reel', ['la.t.reel.kit', 'la.t.reel.visible', 'la.t.reel.growing']],
-  ['la.t.bb', ['la.t.bb.kit', 'pkg.visible.f1', 'pkg.growing.f1']],
-  ['la.t.camp', ['pkg.kit.f7', 'la.t.no', 'pkg.growing.f6']],
-  ['la.t.plan', ['la.t.plan.kit', 'pkg.visible.f6', 'pkg.growing.f9']],
-  ['la.t.rev', ['la.t.rev.kit', 'la.t.rev.visible', 'la.t.rev.growing']],
-  ['la.t.plat', ['la.t.plat.kit', 'plan.extraNote', 'plan.extraNote']],
-  ['la.t.also', ['pkg.kit.f2', 'pkg.visible.f8', 'pkg.growing.f7']],
+  ['la.t.posts', ['la.t.posts.seen', 'la.t.posts.visible', 'la.t.posts.growing']],
+  ['la.t.stories', ['la.t.stories.seen', 'la.t.stories.visible', 'la.t.stories.growing']],
+  ['la.t.reel', ['la.t.reel.seen', 'la.t.reel.visible', 'la.t.reel.growing']],
+  ['la.t.camp', ['la.t.no', 'la.t.no', 'pkg.growing.f5']],
+  ['la.t.plan', ['pkg.seen.f5', 'pkg.visible.f5', 'pkg.growing.f7']],
+  ['la.t.rev', ['la.t.rev.seen', 'la.t.rev.visible', 'la.t.rev.growing']],
+  ['la.t.plat', ['la.t.plat.seen', 'la.t.plat.visible', 'la.t.plat.growing']],
+  ['la.t.also', ['pkg.seen.f7', 'pkg.visible.f7', 'pkg.growing.f6']],
 ];
 function priceTable(lang) {
   const hot = (p) => (p === 'visible' ? ' class="hot"' : '');
@@ -461,7 +462,7 @@ function walkthrough(lang) {
 function homeVars(lang) {
   return {
     heroH1: heroH1(lang), sahmPosts: sahmPosts(), sahmStory: sahmStory(), sahmLogo, ...heroStart(lang),
-    kitNums: kitNums(lang), kitPrice: money(lang, 'kit'), kitBtn: `<a class="btn lime" href="${esc(buyHref(lang, 'kit'))}">${h(lang, 'pkg.kit.btn')}</a>`,
+    kitNums: kitNums(lang), kitPrice: money(lang, KIT_PKG), kitBtn: `<a class="btn lime" href="${esc(buyHref(lang, KIT_PKG))}">${h(lang, `pkg.${KIT_PKG}.btn`)}</a>`,
     trust: homeTrust(lang), ...walkthrough(lang), curPick: curPick(lang), priceTable: priceTable(lang),
   };
 }
@@ -478,7 +479,7 @@ function platPick(lang, p) {
   const local = Object.fromEntries(CURS.slice(1).map((c) => [c, [k.prices[c], k.extra_platform_prices[c]]]));
   return `<fieldset class="platpick" data-pkg="${p}" data-price="${k.price}" data-extra="${k.extra_platform_price}" data-local="${esc(JSON.stringify(local))}" data-included="${k.platforms_included || 1}" data-name="${esc(pname(lang, p))}" data-tpl="${esc(t(lang, 'plan.live'))}" data-per="${esc(t(lang, 'plan.perShort'))}"><legend>${h(lang, 'plan.pickPlatforms')}</legend><div class="opts">${boxes}</div><p class="liveprice" aria-live="polite" dir="auto">${esc(line)}</p><p class="fine">${h(lang, 'plan.extraNote')}</p></fieldset>`;
 }
-const planCards = (lang) => ['kit', 'visible', 'growing'].map((p) => planCard(lang, p, p === 'kit')).join('');
+const planCards = (lang) => ['seen', 'visible', 'growing'].map((p) => planCard(lang, p, p === 'seen')).join('');
 const deckCards = (lang) => planCard(lang, 'deck', false);
 const billItems = (lang) => { const out = []; for (let i = 1; dicts[lang][`bill.${i}`] != null; i++) out.push(`<li>${h(lang, `bill.${i}`)}</li>`); return out.join(''); };
 
@@ -492,7 +493,7 @@ function pageVars(lang, page) {
   // Home: Landing A (2026-11-06, Adham): the package table is back on the home page (overrides the 2026-10-19 audit rule);
   // the walkthrough and the home FAQ are gone (the FAQ page stays).
   if (page === 'index') Object.assign(v, homeVars(lang));
-  if (page === 'social') Object.assign(v, { kitList: ticks(lang, 'pkg.kit', 'cols'), flow: flow(lang, 3, 'how') });
+  if (page === 'social') Object.assign(v, { kitList: ticks(lang, 'kit.inc', 'cols'), flow: flow(lang, 3, 'how') });
   if (page === 'in-store') Object.assign(v, storeVars(lang));
   if (page === 'sculptures') Object.assign(v, sculptVars(lang));
   if (page === 'pricing') Object.assign(v, { planCards: planCards(lang), deckCards: deckCards(lang), billItems: billItems(lang), curPick: curPick(lang) });
@@ -784,10 +785,10 @@ function write(rel, content) {
 const built = [];
 for (const [lang] of LANGS) {
   for (const page of PAGES) {
-    htmlCc = LEGAL.includes(page) || page === 'pricing' ? null : DEFAULT_CC; // the legal pages keep the US-dollar price list
+    htmlCc = LEGAL.includes(page) ? null : DEFAULT_CC; // the legal pages keep the US-dollar price list; pricing follows the country (2026-11-13)
     const ctx = { lang, v: pageVars(lang, page) };
     const body = render(rd(`templates/${page === 'index' ? 'home' : page}.html`), ctx);
-    const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${!LEGAL.includes(page) && page !== 'pricing' && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${page === 'index' ? '<script src="/assets/dash.js" defer></script>\n' : ''}${page === 'sculptures' ? '<script src="/assets/sculptures.js" defer></script>\n' : ''}</body>\n</html>\n`;
+    const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${!LEGAL.includes(page) && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${page === 'index' ? '<script src="/assets/dash.js" defer></script>\n' : ''}${page === 'sculptures' ? '<script src="/assets/sculptures.js" defer></script>\n' : ''}</body>\n</html>\n`;
     const html = `${head(lang, page, purgeCss(cssFor(lang, page), bodyHtml))}\n${trimIndent(bodyHtml)}`;
     write(dirFor(lang, page) + 'index.html', hashUrls(html));
     built.push([lang, page]);

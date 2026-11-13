@@ -81,7 +81,7 @@
     el.hidden = !q; el.textContent = q ? display(q) + (per || "") : "";
   }
   function setCountry(c) {
-    cc = c || null; cur = page === "pricing" ? "USD" : curOf(cc); if (!CD) return;
+    cc = c || null; cur = curOf(cc); if (!CD) return;
     var ps = document.querySelectorAll(".amt[data-usd]");
     for (var i = 0; i < ps.length; i++) {
       var v = ps[i].getAttribute(cur === "USD" ? "data-usd" : "data-" + cur.toLowerCase()); if (v == null) continue;

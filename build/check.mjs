@@ -12,7 +12,7 @@ const PAGES = ['', 'pricing/', 'brand-deck/', 'social/', 'in-store/', 'sculpture
 const MOVED = { 'kit/': 'social/', 'physical/': 'in-store/#custom', 'snapshot/': 'social/', 'crier-deck/': 'brand-deck/' };
 // standalone hand-maintained pages (not generated): /fiberglass/, /branddeck/ and /ar/branddeck/ (dirs are matched by name)
 const SKIP_DIRS = ['fiberglass', 'branddeck', '.git', 'node_modules', 'templates', 'build', 'tests', 'i18n', 'fonts', 'assets', 'design'];
-const PRODUCTS = ['kit', 'visible', 'growing', 'deck'];
+const PRODUCTS = ['seen', 'visible', 'growing', 'deck'];
 // Audit fixes (2026-10-19): every buy / plan / start button opens the client portal's sign-up (AR pages with ?lang=ar)
 const SIGNUP = (l) => `https://portal.crierstudio.com/#/signup${l === 'en' ? '' : '?lang=' + l}`;
 let fail = 0; const ok = (c, m) => { if (!c) { fail++; console.log('FAIL', m); } };
@@ -22,21 +22,25 @@ const d = Object.fromEntries(LANGS.map((l) => [l, JSON.parse(rd(`i18n/${l}.json`
 // portal/scripts/publish-pricing.cjs from portal/lib/pricing.json). The texts carry placeholders, never a price.
 const PRICING = JSON.parse(rd('data/pricing.json'));
 ok(/^portal\/lib\/pricing\.json sha256 [0-9a-f]{64}$/.test(PRICING.generated_from || ''), 'data/pricing.json was not written by publish-pricing.cjs');
-// Launch prices (Adham, 2026-10-28; local prices re-derived 2026-11-07, README "Local prices"): The Social Kit $15 once, Stay
-// Visible $25 a month, Keep Growing $40 a month, each in SAR / AED / EGP as below (NET before VAT), every one shown at 50% off a
-// list price that is exactly twice the sale price, in US dollars and in every local currency. These numbers are pinned here so a
+// Country prices (owner 2026-11-13): Bronze / Silver / Gold (ids seen / visible / growing), all monthly, NET before VAT, one
+// price per country and package (EGP = Egypt, SAR = Saudi Arabia, AED = the UAE, USD = the USA and every other country). No
+// list price, nothing struck through. The Social Kit is retired and is not in the file. These numbers are pinned here so a
 // republish of data/pricing.json that drifts from the decision fails the build.
-const LAUNCH = { kit: { USD: 15, SAR: 59, AED: 59, EGP: 810 }, visible: { USD: 25, SAR: 99, AED: 99, EGP: 1350 }, growing: { USD: 40, SAR: 149, AED: 149, EGP: 2160 } };
-const LOCAL_CURS = Object.values(PRICING.local.countries).map((c) => c.currency);
-ok(JSON.stringify(LOCAL_CURS) === JSON.stringify(['SAR', 'AED', 'EGP']) && PRICING.local.fallback.currency === 'USD', 'local currencies are SAR, AED, EGP with a US-dollar fallback');
+const LAUNCH = { seen: { USD: 750, SAR: 350, AED: 340, EGP: 2500 }, visible: { USD: 1100, SAR: 695, AED: 680, EGP: 5000 }, growing: { USD: 1500, SAR: 1045, AED: 1020, EGP: 7500 } };
+const NAMES = { seen: ['Bronze', 'البرونزية'], visible: ['Silver', 'الفضية'], growing: ['Gold', 'الذهبية'] };
+// the currencies shown besides US dollars (data-sar, data-aed, data-egp); the USA is a country in USD, so USD is not repeated
+const LOCAL_CURS = [...new Set(Object.values(PRICING.local.countries).map((c) => c.currency))].filter((c) => c !== 'USD');
+ok(JSON.stringify(LOCAL_CURS) === JSON.stringify(['SAR', 'AED', 'EGP']) && PRICING.local.fallback.currency === 'USD' && PRICING.local.countries.US?.currency === 'USD' && PRICING.local.countries.US.vat_pct === 0, 'local currencies are SAR, AED, EGP; the USA and the fallback are US dollars with no VAT');
+ok(JSON.stringify(PRICING.packages.map((p) => p.id)) === JSON.stringify(['seen', 'visible', 'growing', 'deck']), 'packages are seen, visible, growing and the coming-soon deck (no Social Kit)');
 for (const [id, want] of Object.entries(LAUNCH)) {
   const p = PRICING.packages.find((x) => x.id === id);
-  ok(p && !p.coming_soon && p.price === want.USD && p.list_price === 2 * want.USD, `$${2 * want.USD} list / 50% off = $${want.USD} (${id})`);
-  for (const c of LOCAL_CURS) ok(p && p.prices[c] === want[c] && p.list_prices[c] === 2 * want[c], `${c} ${2 * want[c]} list / 50% off = ${c} ${want[c]} (${id})`);
+  ok(p && !p.coming_soon && p.billing === 'monthly' && p.price === want.USD && p.prices.USD === want.USD && !('list_price' in p) && !('list_prices' in p), `$${want.USD} a month, no list price (${id})`);
+  for (const c of LOCAL_CURS) ok(p && p.prices[c] === want[c], `${c} ${want[c]} a month (${id})`);
+  ok(d.en['name.' + id] === NAMES[id][0] && d.ar['name.' + id] === NAMES[id][1], `name of ${id} is ${NAMES[id].join(' / ')}`);
 }
 for (const p of PRICING.packages) {
-  ok(Number.isInteger(p.price) && p.price > 0 && p.list_price === 2 * p.price, `list price is twice the sale price in US dollars (${p.id})`);
-  for (const c of LOCAL_CURS) ok(Number.isInteger(p.prices[c]) && p.prices[c] > 0 && p.list_prices[c] === 2 * p.prices[c], `${c} list price is twice the sale price (${p.id})`);
+  ok(Number.isInteger(p.price) && p.price > 0, `US-dollar price (${p.id})`);
+  for (const c of LOCAL_CURS) ok(Number.isInteger(p.prices[c]) && p.prices[c] > 0, `${c} price (${p.id})`);
 }
 const PRICE_NUMS = [...new Set(PRICING.packages.flatMap((p) => [p.price, p.extra_platform_price].filter(Boolean)))];
 const PRICE_RE = new RegExp('\\$\\s?(' + PRICE_NUMS.join('|') + ')(?!\\d)|(?<![\\d.,])(' + PRICE_NUMS.join('|') + ')\\s?\\$');
@@ -90,10 +94,12 @@ for (const l of LANGS) for (const p of PAGES) {
   const dataAttrs = (usd, loc) => `data-usd="${usd}"` + LOCAL_CURS.map((c) => ` data-${c.toLowerCase()}="${loc[c]}"`).join('');
   if (p === 'pricing/') for (const pk of PRICING.packages) {
     ok(h.includes(dataAttrs(pk.price, pk.prices)), `price ${pk.price} USD / ${LOCAL_CURS.map((c) => pk.prices[c] + ' ' + c).join(' / ')} (${pk.id}, data/pricing.json) on ${file}`);
-    if (!pk.coming_soon) ok(h.includes(`class="price-list amt" dir="ltr" ${dataAttrs(pk.list_price, pk.list_prices)}`) && h.includes(`class="price amt" dir="ltr" ${dataAttrs(pk.price, pk.prices)}`), `list and sale price (${pk.list_price} -> ${pk.price} USD) on ${file}`);
+    if (!pk.coming_soon) ok(new RegExp(`class="price amt" dir="(ltr|rtl)" ${dataAttrs(pk.price, pk.prices)}`).test(h) && !h.includes('class="price-list'), `price ${pk.price} USD, nothing struck through (${pk.id}) on ${file}`);
     if (pk.extra_platform_price) ok(h.includes(`data-extra="${pk.extra_platform_price}"`), `extra platform ${pk.extra_platform_price} USD (${pk.id}) on ${file}`);
   }
   if (p === 'pricing/') ok((h.match(/data-product="/g) || []).length === 3 && h.includes('disabled data-unavailable="deck"'), `3 buy buttons and unavailable Brand Deck on ${file}`);
+  // the pricing page follows the visitor's country like the home page (2026-11-13: the US-dollar price is the USA's own price)
+  if (p === 'pricing/') ok(h.includes('id="cur-select"') && /id="cur-data"/.test(h) && h.includes('<option value="US"'), `country picker (with the USA) and currency data on ${file}`);
   // Home: Landing A (Adham, 2026-11-06; walkthrough kept 2026-11-07; In-store section removed 2026-11-06): hero (SAHM's real
   // Instagram posts), The Social Kit in numbers, the client-portal walkthrough, the OK rule, the package table, a closing call. No FAQ.
   if (p === '') {
@@ -111,8 +117,8 @@ for (const l of LANGS) for (const p of PAGES) {
     const imgs = [...hero.matchAll(/<img [^>]*src="(\/assets\/demo\/(?:post-\d|logo)\.webp)" alt="" width="\d+" height="\d+"/g)].map((m) => m[1]);
     ok(imgs.length === 8 && imgs.every((u) => fs.existsSync(path.join(ROOT, u.slice(1)))) && !/\/assets\/(?:h\/)?sahm-(?:p\d|story)/.test(hero), `hero: SAHM logo, 6 reels + 1 story, real files, on ${file}`);
     // the package table: every Social package at its list and sale price from data/pricing.json, with its sign-up button
-    for (const pk of PRICING.packages.filter((x) => ['kit', 'visible', 'growing'].includes(x.id))) {
-      ok(new RegExp(`class="price-list amt" dir="(ltr|rtl)" ${dataAttrs(pk.list_price, pk.list_prices)}`).test(h) && new RegExp(`class="price amt" dir="(ltr|rtl)" ${dataAttrs(pk.price, pk.prices)}`).test(h), `table price ${pk.list_price} -> ${pk.price} USD (${pk.id}) on ${file}`);
+    for (const pk of PRICING.packages.filter((x) => ['seen', 'visible', 'growing'].includes(x.id))) {
+      ok(new RegExp(`class="price amt" dir="(ltr|rtl)" ${dataAttrs(pk.price, pk.prices)}`).test(h) && !h.includes('class="price-list'), `table price ${pk.price} USD (${pk.id}) on ${file}`);
       // the default country's text (Saudi Arabia, SAR before VAT) is the SAR number itself: nothing converted, nothing rounded
       ok(h.includes(`${dataAttrs(pk.price, pk.prices)}>${d[l]['cur.fmt'].replace('{cur}', d[l]['cur.symSAR']).replace('{n}', pk.prices.SAR.toLocaleString('en-US'))}<`), `table shows SAR ${pk.prices.SAR} for ${pk.id} on ${file}`);
     }
@@ -166,7 +172,7 @@ for (const l of LANGS) for (const p of PAGES) {
     const priceRe = new RegExp(`data-usd|class="(price )?amt"|"offers"|"price":|\\$\\s?\\d|(${syms.join('|')})\\s?\\d|\\d\\s?(${syms.join('|')})`);
     ok(!priceRe.test(vis + ' ' + ld + ' ' + meta) && !/data-usd|id="cur-data"/.test(h), `a price on ${file} (prices are on /pricing/ only)`);
     const store = p === 'in-store/' ? [] : ['name.store'];
-    const names = ['name.kit', 'name.visible', 'name.growing', ...store].flatMap((k) => [d.en[k], d[l][k]]).concat('Social Kit', store.length ? ['Store Kit'] : []);
+    const names = ['name.seen', 'name.visible', 'name.growing', ...store].flatMap((k) => [d.en[k], d[l][k]]).concat('Social Kit', store.length ? ['Store Kit'] : []);
     for (const n of new Set(names)) ok(!(vis + ' ' + ld + ' ' + meta).includes(n), `package name "${n}" on ${file} (package names are on /pricing/ only)`);
   }
   // no [bracket] placeholders in the visible text of the home, pricing and FAQ pages either
@@ -177,7 +183,8 @@ for (const l of LANGS) for (const p of PAGES) {
   // /api/public/snapshot-request endpoint are not visible text and may keep the word
   ok(!/snapshot|سنابشوت|سناب شوت/i.test(vis + ' ' + (h.match(/<script type="application\/ld\+json">[\s\S]*?<\/script>/) || [''])[0].replace(/"(url|@id)":"[^"]*"/g, '') + ' ' + (h.match(/<meta (name|property)="[^"]+" content="[^"]*">/g) || []).filter((m) => !/content="https?:/.test(m)).join(' ')), `"snapshot" wording in ${file}`);
   // retired packages and prices must not come back (Snapshot, Starter/Growth/Pro, Crier Deck + Print Kit, old discounts)
-  for (const bad of [/\$(99|199|399|149|249|39)\b/, /Snapshot/, /Starter/, /Growth/, /\bPro\b/, /Print Kit/, /Crier Deck/]) ok(!bad.test(vis + ' ' + (h.match(/<script type="application\/ld\+json">[\s\S]*?<\/script>/) || [''])[0] + ' ' + (h.match(/<meta[^>]+>/g) || []).join(' ')), `retired wording ${bad} in ${file}`);
+  // since 2026-11-13 also The Social Kit, Stay Visible, Keep Growing and the launch discount
+  for (const bad of [/\$(99|199|399|149|249|39)\b/, /Snapshot/, /Starter/, /Growth/, /\bPro\b/, /Print Kit/, /Crier Deck/, /Social Kit|حزمة السوشيال/, /Stay Visible|Keep Growing|حضور دائم|نمو مستمر/, /launch discount|خصم الافتتاح/i]) ok(!bad.test(vis + ' ' + (h.match(/<script type="application\/ld\+json">[\s\S]*?<\/script>/) || [''])[0] + ' ' + (h.match(/<meta[^>]+>/g) || []).join(' ')), `retired wording ${bad} in ${file}`);
   ok(/<meta name="robots" content="noindex">/.test(h) === (/const NOINDEX = true/.test(rd('build/build.mjs')) || (p === 'sculptures/' && !SHOW_SC)), `noindex consistency ${file}`);
   // every internal href resolves to a built page or a file
   for (const m of h.matchAll(/href="(\/[^"#?]*)/g)) { const t = m[1]; const f = t.endsWith('/') ? t + 'index.html' : t; ok(fs.existsSync(path.join(ROOT, f)), `dead link ${t} in ${file}`); }
