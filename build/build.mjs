@@ -325,7 +325,7 @@ const sahmPosts = () => Array.from({ length: HERO_POSTS }, (_, i) => `<img src="
 const sahmStory = () => `<img src="/assets/demo/post-${HERO_STORY}.webp" alt="" width="240" height="320" decoding="async">`;
 const sahmLogo = '<img class="sahm-logo" src="/assets/demo/logo.webp" alt="" width="128" height="128" decoding="async">';
 // The Social Kit in numbers: every number is a count from data/pricing.json
-const KIT_NUMS = [['posts', 'la.n.posts', 'la.n.postsx'], ['stories', 'la.n.stories', 'la.n.storiesx'], ['competitor_profiles', 'la.n.comp', 'la.n.compx'], ['mockups', 'la.n.mock', 'la.n.mockx']];
+const KIT_NUMS = [['posts', 'la.n.posts', 'la.n.postsx'], ['stories', 'la.n.stories', 'la.n.storiesx'], ['competitor_profiles', 'la.n.comp', 'la.n.compx']];
 const kitNums = (lang) => KIT_NUMS.map(([item, k, x]) => `<div class="la-num"><b dir="ltr">${PKG.kit.items[item]}</b><span>${h(lang, k)}</span><small>${h(lang, x)}</small></div>`).join('');
 // the OK rule: four promises, the last one links the refund policy
 function homeTrust(lang) {
@@ -337,7 +337,7 @@ const TABLE_PKGS = ['kit', 'visible', 'growing'];
 const TABLE_ROWS = [
   ['la.t.posts', ['la.t.posts.kit', 'la.t.posts.visible', 'la.t.posts.growing']],
   ['la.t.stories', ['la.t.stories.kit', 'la.t.stories.visible', 'la.t.stories.growing']],
-  ['la.t.mock', ['la.t.mock.kit', 'la.t.mock.visible', 'la.t.mock.growing']],
+  ['la.t.reel', ['la.t.reel.kit', 'la.t.reel.visible', 'la.t.reel.growing']],
   ['la.t.bb', ['la.t.bb.kit', 'pkg.visible.f1', 'pkg.growing.f1']],
   ['la.t.camp', ['pkg.kit.f7', 'la.t.no', 'pkg.growing.f6']],
   ['la.t.plan', ['la.t.plan.kit', 'pkg.visible.f6', 'pkg.growing.f9']],
