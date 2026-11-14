@@ -129,7 +129,7 @@
     [.25, '[data-c=company]'], [1.4, '[data-c=site]'], [2.75, '[data-b=create]'],
     [4.3, '[data-b=answer]'], [8.4, '[data-brief=industry]'], [9.2, '[data-brief=audience]'],
     [10, '[data-brief=channels]'], [10.55, '[data-brief=language]'], [11.15, '[data-b=submit-brief]'],
-    [13, '.d-clock'], [16.35, '[data-nav=overview]'], [20.2, '[data-nav=calendar]'],
+    [13, '.d-wait-card'], [16.35, '[data-nav=overview]'], [20.2, '[data-nav=calendar]'],
     [24.2, '[data-nav=library]'], [29.5, '.d-review-card strong'],
     [33.15, '[data-b=approve]'], [38.25, '[data-b=copy]'], [41.2, 'rest']
   ];
@@ -144,7 +144,7 @@
     if (!el) return [20, 20];
     var x = 0, y = 0, node = el;
     while (node && node !== cv) { x += node.offsetLeft; y += node.offsetTop; node = node.offsetParent; }
-    var post = /d-post|d-clock/.test(selector);
+    var post = /d-post|d-wait/.test(selector);
     return positions[selector] = selector === 'rest'
       ? [x + el.offsetWidth * .7, y + el.offsetHeight * .6]
       : [x + el.offsetWidth * (post ? .5 : .56), y + el.offsetHeight * (post ? .45 : .6)];

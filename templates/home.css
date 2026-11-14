@@ -900,7 +900,7 @@ html[lang=ar] .home-faq summary{letter-spacing:0;line-height:1.6}
 .dash.is-static .d-clock-hand{animation:none}
 
 /* ================= Home: Landing A "Billboard" (Adham, 2026-11-06; design/landing/a/) =================
-   The hero keeps the Instagram-ready phone (now SAHM, @sahmmena, with its real posts) beside a bigger headline whose second
+   The hero keeps the Instagram-ready phone (a made-up example café, its posts drawn in CSS) beside a bigger headline whose second
    sentence sits on a lime band. Then: The Social Kit in numbers, the OK rule on a full-bleed lime band, five steps, the package
    table and a closing call (the cream In-store teaser was removed 2026-11-06). Full-bleed bands paint past body>.wrap with a spread
    box-shadow clipped to the band's own height, so nothing widens the page. */
@@ -919,22 +919,22 @@ html[lang=ar] .la-hero h1{font-weight:700;line-height:1.45;letter-spacing:0;max-
 html[lang=ar] .la-hero h1 .hl{padding:0 .15em}
 .la-hero .lead{max-width:46ch}
 .la-hero .hc-exnote{margin-top:0}
-.sahm-av{padding:3px;background:conic-gradient(from 210deg,#FEDA75,#FA7E1E,#D62976,#962FBF,#4F5BD5,#FEDA75);box-shadow:none}
-.sahm-av .sahm-logo{display:block;width:100%;height:100%;border-radius:50%;border:2.5px solid #fff;background:#FBFAF6}
+.ex-av{padding:3px;background:conic-gradient(from 210deg,#FEDA75,#FA7E1E,#D62976,#962FBF,#4F5BD5,#FEDA75);box-shadow:none}
+.ex-av .ex-logo{display:block;width:100%;height:100%;border-radius:50%;border:2.5px solid #fff;background:#1F3A33}
 .ig-url{display:inline-flex;align-items:center;gap:4px;color:#00376B;font-weight:600}
 .ig-url svg{width:12px;height:12px;flex:none}
 .ig-bio bdi{unicode-bidi:isolate}
 .ig-btns2{grid-template-columns:1fr 1fr}
 .ig-btns2 span.on{background:#0095F6}
-.sahm-grid img{display:block;width:100%;height:auto;aspect-ratio:3/4;object-fit:cover;background:#F3EFE3}
-.sahm-bb .hc-sw i:nth-child(1){background:#0F2D33}
-.sahm-bb .hc-sw i:nth-child(2){background:#D49B0C}
-.sahm-bb .hc-sw i:nth-child(3){background:#F3EFE3;box-shadow:inset 0 0 0 1px #E2DCC8}
-.sahm-bb .hc-aa b{font-family:"Noto Sans Arabic",var(--display);font-weight:700;letter-spacing:0;line-height:1.2}
-.sahm-story{background:#0F2D33}
-.sahm-story img{inset:0;width:100%;height:100%;object-fit:cover}
-.sahm-pl .hc-cal i.cp{background:#0F2D33}
-.sahm-pl .hc-cal i.cs{background:#D49B0C}
+.ex-grid .ex-cell{display:block;aspect-ratio:3/4;overflow:hidden;background:#F4EEE2}
+.ex-bb .hc-sw i:nth-child(1){background:#1F3A33}
+.ex-bb .hc-sw i:nth-child(2){background:#E8B04B}
+.ex-bb .hc-sw i:nth-child(3){background:#F4EEE2;box-shadow:inset 0 0 0 1px #E2DCC8}
+html[lang=ar] .ex-bb .hc-aa b{font-family:"Noto Sans Arabic",var(--display);font-weight:700;letter-spacing:0;line-height:1.2}
+.ex-story{background:#1F3A33}
+.ex-story>.xp{inset:0}
+.ex-pl .hc-cal i.cp{background:#1F3A33}
+.ex-pl .hc-cal i.cs{background:#E8B04B}
 
 /* shared section head: title on one side, the lead on the other */
 .la-head{display:grid;grid-template-columns:1fr 1fr;gap:20px 48px;align-items:end;margin-bottom:clamp(36px,4.5vw,64px)}
@@ -999,7 +999,7 @@ html[lang=ar] .la-pname{font-weight:700;letter-spacing:0;line-height:1.3}
 .la-price .per{display:block;margin-top:6px;color:var(--muted);font-size:14px}
 .la-table .hot{box-shadow:inset 3px 0 0 var(--accent)}
 [dir=rtl] .la-table .hot{box-shadow:inset -3px 0 0 var(--accent)}
-.la-table .la-no{color:#5D6252}
+.la-table .la-no{color:var(--muted)}
 .la-buy td{padding:20px}
 .la-buy .btn{width:100%}
 .la-fine{margin-top:18px;color:var(--muted);font-size:15px;max-width:80ch}
@@ -1039,3 +1039,53 @@ html[lang=ar] .la-pname{font-weight:700;letter-spacing:0;line-height:1.3}
 @media(max-width:800px){.la-hero .hc-stage{height:520px}}
 /* the screen ends under SAHM's two rows of reels (six real posts), not on an empty band */
 .la-hero .hc-scr{height:auto}
+
+/* example posts: drawn tiles, each in its own palette (--xb background, --xi text, --xa accent); text sizes follow the tile width
+   (cqw = 1% of the tile's content box; the tile's own padding is in % because cqw on the container itself would use the viewport) */
+.xp{container-type:inline-size;position:relative;display:flex;flex-direction:column;justify-content:flex-end;gap:3cqw;aspect-ratio:4/5;padding:10% 8%;overflow:hidden;
+  background:var(--xb);color:var(--xi);border-radius:6px;font-family:"Archivo","Archivo Fallback",Arial,sans-serif;line-height:1.12;text-align:start;letter-spacing:-.01em}
+.xp[lang=ar],.xp[lang=ar] *{font-family:"Noto Sans Arabic",Tahoma,sans-serif;letter-spacing:0}
+.xp[lang=ar]{line-height:1.45}
+.xp-story{aspect-ratio:9/16}
+.xp.xp-fill{aspect-ratio:auto;width:100%;height:100%;border-radius:0}
+.xp b,.xp span,.xp i,.xp em{display:block;font-style:normal;min-width:0;overflow-wrap:anywhere}
+.xp-mark{position:absolute;top:8cqw;inset-inline-start:8cqw;width:9cqw;height:9cqw;border-radius:50%;background:var(--xa)}
+.xp-big{position:relative;font-size:22cqw;font-weight:800;line-height:.95;letter-spacing:-.045em}
+.xp[lang=ar] .xp-big{font-size:19cqw;font-weight:700;line-height:1.3}
+.xp-h{position:relative;font-size:10cqw;font-weight:700;letter-spacing:-.02em}
+.xp-s{position:relative;font-family:"Instrument Sans","Instrument Fallback",Arial,sans-serif;font-size:6cqw;font-weight:500;line-height:1.35}
+.xp-story .xp-big{font-size:26cqw}.xp-story .xp-h{font-size:12cqw}.xp-story .xp-s,.xp-story .xp-list span,.xp-story .xp-steps span{font-size:6.6cqw}
+.xp-l-word .xp-big::after{content:"";display:block;width:20cqw;height:2.4cqw;margin-top:4cqw;background:var(--xa)}
+.xp-shape{position:absolute;top:16cqw;inset-inline-end:9cqw;width:44cqw;height:44cqw;background:var(--xa)}
+.xp-sh-circle{border-radius:50%}
+.xp-sh-arch{height:52cqw;border-radius:22cqw 22cqw 2cqw 2cqw}
+.xp-sh-stack{width:40cqw;height:12cqw;border-radius:2cqw;box-shadow:0 16cqw 0 var(--xi),0 32cqw 0 var(--xa)}
+.xp-story .xp-shape{top:24cqw;width:60cqw;height:60cqw}.xp-story .xp-sh-arch{height:76cqw}
+.xp-q{position:absolute;top:2cqw;inset-inline-end:7cqw;font-size:52cqw;font-weight:800;line-height:1;color:var(--xa)}
+.xp-list,.xp-steps,.xp-rows{display:grid;gap:2.6cqw;margin-top:2cqw}
+.xp-list span,.xp-steps span{display:flex;align-items:center;gap:3cqw;font-family:"Instrument Sans","Instrument Fallback",Arial,sans-serif;font-size:5.8cqw;font-weight:600}
+.xp-list span::before{content:"";flex:none;width:3cqw;height:3cqw;background:var(--xa)}
+.xp-steps i{flex:none;display:grid;place-items:center;width:8cqw;height:8cqw;border-radius:50%;background:var(--xa);color:var(--xb);font-size:4.6cqw;font-weight:700;line-height:1}
+.xp-l-tip{justify-content:center}
+.xp-tag{align-self:flex-start;padding:1.6cqw 3.4cqw;border-radius:2cqw;background:var(--xa);color:var(--xb);font-size:5cqw;font-weight:700;margin-bottom:2cqw}
+.xp-l-split{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr) auto;gap:0;padding:0}
+.xp-half{position:relative;display:grid;place-items:center;padding:6cqw 4cqw}
+.xp-half em{position:absolute;top:5cqw;inset-inline-start:5cqw;font-size:5.4cqw;font-weight:700}
+.xp-half i{width:30cqw;height:18cqw;border-radius:8cqw 8cqw 3cqw 3cqw}
+.xp-before{background:#3A4250}
+.xp-before i{background:#7C838E radial-gradient(circle at 30% 40%,#5B6270 0 2.2cqw,transparent 2.4cqw) ,radial-gradient(circle at 70% 65%,#5B6270 0 1.8cqw,transparent 2cqw)}
+.xp-after i{background:var(--xa);box-shadow:inset 6cqw -3cqw 0 rgba(255,255,255,.35)}
+.xp-band{grid-column:1/-1;padding:6cqw 8cqw;background:var(--xa);color:var(--xb)}
+.xp-rows>span{display:flex;justify-content:space-between;gap:3cqw;padding-top:2.6cqw;border-top:1px solid color-mix(in srgb,var(--xi) 35%,transparent);font-size:5.6cqw}
+.xp-rows b{font-weight:700}
+.xp-rows span span{font-family:"Instrument Sans","Instrument Fallback",Arial,sans-serif}
+.xp[lang=ar] .xp-rows span span{font-family:"Noto Sans Arabic",Tahoma,sans-serif}
+.xp.xp-story{aspect-ratio:auto}
+/* the dashboard's neutral avatars and the "being made" card (no clock, no hours: review fix 2026-11-14) */
+.d-neutral{display:block;border-radius:50%;background:#1F3A33}
+.d-wait-dots{display:flex;gap:8px;justify-content:center}
+.d-wait-dots i{width:16px;height:16px;border-radius:50%;background:#C6FF00;border:1px solid #0E0F0C}
+.d-wait-dots i:nth-child(2){opacity:.6}.d-wait-dots i:nth-child(3){opacity:.3}
+
+/* pricing: the month-1 kit line (2026-11-14) */
+.lead.kitline{margin:6px 0 24px;font-size:17px;max-width:none}

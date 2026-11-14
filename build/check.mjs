@@ -7,16 +7,19 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LANGS = ['en', 'ar'];
 const REMOVED = ['es', 'fr']; // removed languages redirect to the English default
 const PREFIX = (l) => l === 'en' ? '' : l + '/'; // English (the default) at the root, Arabic under /ar/
-const PAGES = ['', 'pricing/', 'brand-deck/', 'social/', 'in-store/', 'sculptures/', 'samples/', 'faq/', 'about/', 'terms/', 'privacy/', 'refund/'];
-// old URLs: redirect stubs, not in the sitemap (a target may carry a #hash)
-const MOVED = { 'kit/': 'social/', 'physical/': 'in-store/#custom', 'snapshot/': 'social/', 'crier-deck/': 'brand-deck/' };
-// standalone hand-maintained pages (not generated): /fiberglass/, /branddeck/ and /ar/branddeck/ (dirs are matched by name)
-const SKIP_DIRS = ['fiberglass', 'branddeck', '.git', 'node_modules', 'templates', 'build', 'tests', 'i18n', 'fonts', 'assets', 'design'];
+const PAGES = ['', 'pricing/', 'brand-deck/', 'social/', 'in-store/', 'samples/', 'faq/', 'about/', 'terms/', 'privacy/', 'refund/'];
+// old URLs: redirect stubs, not in the sitemap (a target may carry a #hash; '' is the home page). Since 2026-11-14 the parked
+// pages (sculptures, fiberglass, branddeck: outside the offer, kept in _parked/) are stubs too.
+const MOVED = { 'kit/': 'social/', 'physical/': 'in-store/#custom', 'snapshot/': 'social/', 'crier-deck/': 'brand-deck/', 'sculptures/': '', 'fiberglass/': '', 'branddeck/': 'pricing/' };
+const SKIP_DIRS = ['.git', 'node_modules', 'templates', 'build', 'tests', 'i18n', 'fonts', 'assets', 'design', '_parked'];
 const PRODUCTS = ['seen', 'visible', 'growing', 'deck'];
 // Audit fixes (2026-10-19): every buy / plan / start button opens the client portal's sign-up (AR pages with ?lang=ar)
-const SIGNUP = (l) => `https://portal.crierstudio.com/#/signup${l === 'en' ? '' : '?lang=' + l}`;
+// (2026-11-14: the portal reads ?lang=en|ar and nothing about a package, so every language passes its own lang)
+const SIGNUP = (l) => `https://portal.crierstudio.com/#/signup?lang=${l}`;
+const PORTAL_HOME = (l) => `https://portal.crierstudio.com/?lang=${l}`;
 let fail = 0; const ok = (c, m) => { if (!c) { fail++; console.log('FAIL', m); } };
 const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
+const esc = (x) => String(x).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const d = Object.fromEntries(LANGS.map((l) => [l, JSON.parse(rd(`i18n/${l}.json`))]));
 // One price list (U1, 2026-10-05): prices and counts come from data/pricing.json (written by the UMA repo's
 // portal/scripts/publish-pricing.cjs from portal/lib/pricing.json). The texts carry placeholders, never a price.
@@ -49,12 +52,11 @@ for (const f of fs.readdirSync(path.join(ROOT, 'templates'))) ok(!PRICE_RE.test(
 const en = Object.keys(d.en).sort();
 for (const l of LANGS.slice(1)) { const k = Object.keys(d[l]).sort(); ok(JSON.stringify(k) === JSON.stringify(en), `i18n key set differs in ${l}: ${k.filter((x) => !en.includes(x)).concat(en.filter((x) => !k.includes(x))).join(',')}`); }
 for (const l of LANGS) for (const [k, v] of Object.entries(d[l])) ok(typeof v === 'string' && v.trim() !== '', `empty ${l}:${k}`);
-const SHOW_SC = /const SHOW_SCULPTURES = true/.test(rd('build/build.mjs'));
-const SC_NAV = SHOW_SC ? ['sculptures/'] : [];
+const SC_NAV = [];
 const urls = [], hiddenUrls = [];
 for (const l of LANGS) for (const p of PAGES) {
   const rel = PREFIX(l) + p, file = rel + 'index.html', u = 'https://crierstudio.com/' + rel;
-  (p === 'sculptures/' && !SHOW_SC ? hiddenUrls : urls).push(u);
+  urls.push(u);
   ok(fs.existsSync(path.join(ROOT, file)), 'missing ' + file); if (!fs.existsSync(path.join(ROOT, file))) continue;
   const h = rd(file);
   ok(h.includes(`<link rel="canonical" href="${u}">`), `canonical ${file}`);
@@ -67,12 +69,11 @@ for (const l of LANGS) for (const p of PAGES) {
   const HEAD_NAV = ['social/', ...SC_NAV, 'pricing/'];
   for (const nav of HEAD_NAV) ok(headerNav.includes(`href="/${PREFIX(l) + nav}"`), `nav link ${nav} in ${file}`);
   ok(!headerNav.includes(`href="/${PREFIX(l)}in-store/"`), `no In-store header tab in ${file}`);
-  { const order = HEAD_NAV.map((n) => headerNav.indexOf(`href="/${PREFIX(l) + n}"`)); ok(order.every((x, i) => i === 0 || x > order[i - 1]) && order[order.length - 1] < headerNav.indexOf('href="https://portal.crierstudio.com/"'), `header nav order ${HEAD_NAV.join(', ')}, Client portal in ${file}`); }
-  ok((headerNav.match(/aria-current="page"/g) || []).length === (HEAD_NAV.includes(p) ? 1 : 0) && (p !== 'sculptures/' || !SHOW_SC || headerNav.includes(`href="/${PREFIX(l)}sculptures/" aria-current="page"`)), `header nav active state in ${file}`);
-  if (!SHOW_SC && p !== 'sculptures/') ok(!/href="\/(?:ar\/)?sculptures\//.test(h), `link to the hidden Sculptures page in ${file}`);
-  ok(/<meta name="robots" content="noindex">/.test(h) || !(p === 'sculptures/' && !SHOW_SC), `hidden Sculptures page without noindex: ${file}`);
+  { const order = HEAD_NAV.map((n) => headerNav.indexOf(`href="/${PREFIX(l) + n}"`)); ok(order.every((x, i) => i === 0 || x > order[i - 1]) && order[order.length - 1] < headerNav.indexOf(`href="${PORTAL_HOME(l)}"`), `header nav order ${HEAD_NAV.join(', ')}, Client portal in ${file}`); }
+  ok((headerNav.match(/aria-current="page"/g) || []).length === (HEAD_NAV.includes(p) ? 1 : 0), `header nav active state in ${file}`);
+  ok(!/href="\/(?:ar\/)?(?:sculptures|fiberglass|branddeck)\//.test(h), `link to a parked page in ${file}`);
   for (const nav of ['samples/', 'faq/', 'about/']) ok(!headerNav.includes(`href="/${PREFIX(l) + nav}"`), `no header nav link ${nav} in ${file}`);
-  ok(headerNav.includes('href="https://portal.crierstudio.com/"'), `portal link ${file}`);
+  ok(headerNav.includes(`href="${PORTAL_HOME(l)}"`), `portal link with ?lang=${l} in ${file}`);
   // the footer keeps every destination (About and Brand Deck moved there from the header)
   const footNav = (h.match(/<footer>[\s\S]*?<\/footer>/) || [''])[0];
   for (const nav of ['social/', 'in-store/', ...SC_NAV, 'samples/', 'pricing/', 'faq/', 'about/', 'brand-deck/']) ok(footNav.includes(`href="/${PREFIX(l) + nav}"`), `footer link ${nav} in ${file}`);
@@ -112,10 +113,15 @@ for (const l of LANGS) for (const p of PAGES) {
     const hero = (h.match(/<section class="hc la-hero" id="hero"[\s\S]*?<\/section>/) || [''])[0];
     ok((hero.match(/<div class="la-cta">\s*<a class="btn" href="([^"]*)"/) || [])[1] === SIGNUP(l), `hero button -> ${SIGNUP(l)} on ${file}`);
     ok(hero.includes('href="#walkthrough"') && hero.includes('href="#pricing"'), `hero links to #walkthrough and #pricing on ${file}`);
-    ok(hero.includes(d[l]['hero.exnote']) && hero.includes('sahmmena') && !/data-usd|data-product/.test(hero), `hero labelled as SAHM's real posts, no price in it, on ${file}`);
-    // the phone: SAHM's real logo and its six real reel covers (assets/demo/, crops of its Instagram profile, build/demo-images.py)
-    const imgs = [...hero.matchAll(/<img [^>]*src="(\/assets\/demo\/(?:post-\d|logo)\.webp)" alt="" width="\d+" height="\d+"/g)].map((m) => m[1]);
-    ok(imgs.length === 8 && imgs.every((u) => fs.existsSync(path.join(ROOT, u.slice(1)))) && !/\/assets\/(?:h\/)?sahm-(?:p\d|story)/.test(hero), `hero: SAHM logo, 6 reels + 1 story, real files, on ${file}`);
+    // review fix 2026-11-14: the phone shows a made-up example café, labelled as an example; no real brand, handle, logo or post
+    ok(hero.includes(esc(d[l]['hero.exnote'])) && !/data-usd|data-product/.test(hero), `hero labelled as an example, no price in it, on ${file}`);
+    ok(!/<img\b/.test(hero) && (hero.match(/class="ex-cell"/g) || []).length === 6 && hero.includes('xp-story'), `hero: six drawn example posts and a story, no images, on ${file}`);
+    // the walkthrough: no delivery time, no clock, no reel count above the smallest package
+    const wt = (h.match(/<section id="walkthrough"[\s\S]*?<\/section>/) || [''])[0], wtVis = wt.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ');
+    ok(!/\b\d+\s*(?:-\s*)?hours?\b|\d+\s*ساعة|\d+\s*ساعات|[١٢٣٤٥٦٧٨٩٠]+\s*ساعة|d-clock(?![\w-])|d-time-later/i.test(wt) && !/<img\b/.test(wt), `walkthrough: no hours, no clock, no photos, on ${file}`);
+    const smallest = Math.min(...PRICING.packages.filter((x) => !x.coming_soon).map((x) => x.items.posts));
+    let dashPosts = Infinity; try { dashPosts = JSON.parse((h.match(/<script type="application\/json" id="dash-s">([\s\S]*?)<\/script>/) || [])[1]).posts; } catch { }
+    ok(dashPosts <= smallest && !/\breels?\b|ريلز|ريل\b/i.test(wtVis), `walkthrough: ${dashPosts} posts (no more than the smallest package's ${smallest}), no reels, on ${file}`);
     // the package table: every Social package at its list and sale price from data/pricing.json, with its sign-up button
     for (const pk of PRICING.packages.filter((x) => ['seen', 'visible', 'growing'].includes(x.id))) {
       ok(new RegExp(`class="price amt" dir="(ltr|rtl)" ${dataAttrs(pk.price, pk.prices)}`).test(h) && !h.includes('class="price-list'), `table price ${pk.price} USD (${pk.id}) on ${file}`);
@@ -199,29 +205,11 @@ const sm = rd('sitemap.xml');
 ok((sm.match(/<url>/g) || []).length === urls.length, 'sitemap url count');
 for (const u of urls) ok(sm.includes(`<loc>${u}</loc>`), 'sitemap missing ' + u);
 for (const u of hiddenUrls) ok(!sm.includes(u), 'hidden page in sitemap ' + u);
-ok(!sm.includes('<loc>https://crierstudio.com/fiberglass/</loc>'), 'standalone Fiberglass page omitted from sitemap');
-{
-  const h = rd('fiberglass/index.html');
-  ok(h.includes('<meta name="robots" content="noindex,nofollow">'), 'standalone Fiberglass page remains noindex,nofollow');
-  ok(!/(?:Egypt|manufacturer|factory|\bAI\b|Cortex|\bUMA\b|\$\s?\d)/i.test(h), 'standalone Fiberglass page has no prohibited content or prices');
-  ok((h.match(/Download 4K/g) || []).length === 6, 'standalone Fiberglass page keeps all six 4K catalog links');
-}
-// /branddeck/ (EN) and /ar/branddeck/ (AR): standalone physical-branding pages, kept like /fiberglass/ (build/branddeck-pages.mjs)
-ok(!sm.includes('/branddeck/'), 'standalone Brand Deck physical pages omitted from sitemap');
-{
-  const BAD = /(?:\bAI\b|Cortex|\bUMA\b|SAHM|WhatsApp|\bfree\b|clinic|portal|approve|brief|\$\s?\d)/i;
-  const BAD_AR = /مجان|ببلاش/; // Arabic for "free"
-  const en = rd('branddeck/index.html'), ar = rd('ar/branddeck/index.html');
-  for (const [f, h] of [['branddeck/index.html', en], ['ar/branddeck/index.html', ar]]) {
-    ok(h.includes('<meta name="robots" content="noindex,nofollow">'), `standalone ${f} remains noindex,nofollow`);
-    ok(!BAD.test(h), `standalone ${f} has no prohibited content or prices`);
-  }
-  ok(ar.includes('<html lang="ar" dir="rtl">') && ar.includes('noto-sans-arabic'), 'standalone ar/branddeck is RTL Arabic with the Arabic font');
-  ok(!BAD_AR.test(ar), 'standalone ar/branddeck has no Arabic "free"');
-  ok(!ar.includes('??'), 'standalone ar/branddeck has no "??" (broken Arabic text)');
-  ok(en.includes('href="/ar/branddeck/"') && ar.includes('href="/branddeck/"'), 'the two branddeck pages link to each other');
-  ok(!/href="\/(?:en\/|ar\/)?branddeck\//.test(rd('fiberglass/index.html')), 'no page links to the standalone branddeck pages in fiberglass/index.html');
-}
+// parked pages (2026-11-14): the source stays in _parked/ (never published); the public URLs are redirect stubs (MOVED below)
+for (const f of ['_parked/fiberglass/index.html', '_parked/branddeck/index.html', '_parked/ar/branddeck/index.html', '_parked/sculptures/index.html', '_parked/ar/sculptures/index.html', '_parked/studio-deck/index.html', '_parked/social-preview.html'])
+  ok(fs.existsSync(path.join(ROOT, f)), `parked source kept: ${f}`);
+for (const f of ['assets/studio-deck/index.html', 'assets/social-preview.html']) { const h = rd(f); ok(h.includes('data-page="redirect"') && h.includes('data-target="index"') && h.includes('content="noindex"'), `${f} is a redirect stub to the home page`); }
+for (const m of ['fiberglass', 'branddeck', 'sculptures', 'studio-deck', 'social-preview']) ok(!sm.includes(m), `parked page ${m} in the sitemap`);
 ok(rd('brand-deck/index.html').includes('"@type":"Service"') && !rd('brand-deck/index.html').includes('"@type":"Offer"'), 'Brand Deck Service is informational, without an active offer');
 ok(rd('social/index.html').includes('"@type":"Service"') && !rd('social/index.html').includes('"offers"'), 'Social Service JSON-LD is informational, without offers');
 ok(rd('in-store/index.html').includes('"@type":"Service"') && !rd('in-store/index.html').includes('"offers"'), 'In-store Services are informational, without offers');
@@ -232,7 +220,7 @@ for (const l of LANGS) for (const [from, to] of Object.entries(MOVED)) {
   const pre = PREFIX(l), f = pre + from + 'index.html';
   ok(fs.existsSync(path.join(ROOT, f)), 'missing stub ' + f); if (!fs.existsSync(path.join(ROOT, f))) continue;
   const s = rd(f), [tp, th] = to.split('#');
-  ok(s.includes('data-page="redirect"') && s.includes(`data-target="${tp.slice(0, -1)}"`) && s.includes(`data-lang="${l}"`) && s.includes('content="noindex"') && s.includes(`url=/${pre}${to}"`)
+  ok(s.includes('data-page="redirect"') && s.includes(`data-target="${tp ? tp.slice(0, -1) : 'index'}"`) && s.includes(`data-lang="${l}"`) && s.includes('content="noindex"') && s.includes(`url=/${pre}${to}"`)
     && s.includes(`<link rel="canonical" href="https://crierstudio.com/${pre}${tp}">`) && (th ? s.includes(`data-hash="${th}"`) : !s.includes('data-hash=')), 'stub ' + f);
   ok(!sm.includes(`/${pre}${from}<`), 'stub in sitemap ' + f);
 }
@@ -265,13 +253,12 @@ ok(rd('index.html').includes('"alternateName":"Crier"') && rd('index.html').incl
     return e.name.endsWith('.html') ? [rel] : [];
   });
   const files = walk('');
-  ok(files.length === urls.length + hiddenUrls.length + 1 + 3 + PAGES.length + LANGS.length * Object.keys(MOVED).length + Object.keys(MOVED).length + REMOVED.length * (PAGES.length + Object.keys(MOVED).length), `GA: expected every built HTML file, found ${files.length}`);
+  ok(files.length === urls.length + 1 + 3 + PAGES.length + LANGS.length * Object.keys(MOVED).length + Object.keys(MOVED).length + REMOVED.length * (PAGES.length + Object.keys(MOVED).length), `GA: expected every built HTML file, found ${files.length}`);
   for (const f of files) {
     const h = rd(f), headEnd = h.indexOf('</head>');
     const nav = (h.match(/<nav class="main-nav"[\s\S]*?<\/nav>/) || [''])[0];
     ok(!nav.includes('href="/in-store/"') && !nav.includes('href="/en/in-store/"'), `no In-store tab in the main header of ${f}`);
-    ok(!/href="\/(?:en\/|ar\/)?fiberglass\//.test(h), `no page links to the standalone Fiberglass page in ${f}`);
-    ok(!/href="\/(?:en\/|ar\/)?branddeck\//.test(h), `no page links to the standalone branddeck pages in ${f}`);
+    if (!h.includes('data-page="redirect"')) ok(!/href="\/(?:en\/|ar\/)?(?:fiberglass|branddeck|sculptures)\//.test(h), `no page links to a parked page in ${f}`);
     // delayed load (2026-10-11): no blocking/parsed gtag.js <script src> anywhere; the inline head script injects it on the first
     // interaction or 6 s after window load, or at once on a consent-bar / Cookie settings click
     ok(!/<script[^>]*\ssrc="[^"]*googletagmanager\.com/.test(h), `GA: no gtag.js <script src> in the HTML of ${f} (it is injected after load)`);
@@ -330,6 +317,98 @@ ok(rd('index.html').includes('"alternateName":"Crier"') && rd('index.html').incl
     for (const ch of new Set(text)) { const c = ch.codePointAt(0); if (c < 0x20) continue; for (const [rs, set, name] of fonts) if (inR(rs, c) && !set.has(ch)) missing.set(`${name} U+${c.toString(16).toUpperCase().padStart(4, '0')} (${ch})`, f); }
   }
   for (const [k, f] of missing) ok(false, `font subset lacks ${k}, used in ${f}: run python3 build/subset-fonts.py`);
+}
+// ================= Review fixes (2026-11-14): rules that keep the reviewed problems from coming back =================
+// The published set, as GitHub Pages (Jekyll) builds it: every file except paths with a part starting with "_" or ".", and the
+// _config.yml exclude list (an exact path, a folder, or a glob where * matches anything, as Jekyll's File.fnmatch does).
+const EXCLUDE = (rd('_config.yml').match(/^exclude:\n((?:\s+-.*\n?|\s*#.*\n?)+)/m) || ['', ''])[1].split('\n').map((x) => x.trim()).filter((x) => x.startsWith('-')).map((x) => x.slice(1).trim().replace(/^["']|["']$/g, ''));
+const globRe = (g) => new RegExp('^' + g.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*').replace(/\?/g, '.') + '$');
+const excluded = (rel) => EXCLUDE.some((e) => rel === e || rel.startsWith(e + '/') || (/[*?]/.test(e) && globRe(e).test(rel)));
+const PUBLISHED = [];
+(function walkAll(dir) {
+  for (const e of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) {
+    const rel = dir ? dir + '/' + e.name : e.name;
+    if (/^[_.]/.test(e.name) || e.name === 'node_modules' || excluded(rel)) continue;
+    if (e.isDirectory()) walkAll(rel); else PUBLISHED.push(rel);
+  }
+})('');
+ok(PUBLISHED.includes('index.html') && PUBLISHED.includes('CNAME') && PUBLISHED.includes('og.png'), 'published set has the site (index.html, CNAME, og.png)');
+const INTERNAL = /\.(?:md|py|mjs|cjs|ya?ml)$|^(?:build|templates|i18n|data|tests|design|_parked)\/|^(?:checkout\.json|payment-links\.json|fonts\/subset-coverage\.json)$/i;
+for (const f of PUBLISHED) ok(!INTERNAL.test(f), `internal file would be published: ${f} (add it to the exclude list in _config.yml)`);
+for (const f of ['ARABIC-REVIEW.md', 'README.md', 'REVIEW-instore.md', 'TRANSLATIONS.md', 'data/pricing.json', 'i18n/en.json', 'build/check.mjs', 'fonts/subset-coverage.json', 'checkout.json', 'payment-links.json']) ok(!PUBLISHED.includes(f), `${f} would be published`);
+const pubText = PUBLISHED.filter((f) => /\.(?:html|js|css|json|xml|txt|webmanifest|svg)$/.test(f));
+const htmlVis = (h) => h.replace(/<(style|script)\b[\s\S]*?<\/\1>/g, ' ').replace(/<[^>]+>/g, ' ');
+// no payment provider is named until data/pricing.json says which one (payment_provider)
+const PROVIDER = String(PRICING.payment_provider || '');
+for (const f of pubText) { const t = rd(f); ok(!/stripe/i.test(PROVIDER ? t.split(PROVIDER).join('') : t), `"Stripe" named in published ${f} (data/pricing.json names no payment_provider)`); }
+// no VAT statement while the price data charges VAT nowhere
+const VAT_ON = Object.values(PRICING.local.countries).some((c) => Number(c.vat_pct) > 0 && c.vat_charged !== false);
+if (!VAT_ON) {
+  const VAT_RE = /\bVAT\b|value[- ]added tax|valueAddedTax|ضريبة|القيمة المضافة|tax[- ]free|tax exempt/i;
+  for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) {
+    const h = rd(f), ld = (h.match(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g) || []).join(' '), meta = (h.match(/<meta[^>]+>|<title>[^<]*<\/title>/g) || []).join(' ');
+    ok(!VAT_RE.test(htmlVis(h) + ' ' + ld + ' ' + meta), `VAT statement in ${f} while data/pricing.json charges no VAT`);
+  }
+  for (const l of LANGS) for (const [k, v] of Object.entries(d[l])) if (!['cur.vatLine', 'cur.plusVat', 'cur.vatAdded'].includes(k)) ok(!VAT_RE.test(v), `VAT statement in i18n ${l}:${k} (VAT wording lives only in cur.vatLine, cur.plusVat and cur.vatAdded, shown when the data charges VAT)`);
+}
+// every published page is in the sitemap, except redirect stubs and the 404 page
+for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) {
+  const h = rd(f); if (h.includes('data-page="redirect"') || f === '404.html') continue;
+  const u = 'https://crierstudio.com/' + f.replace(/(^|\/)index\.html$/, '$1');
+  ok(sm.includes(`<loc>${u}</loc>`), `published page outside the sitemap: ${f} (add it to the sitemap, park it or make it a redirect)`);
+}
+// no real brand from the owner's own projects on any published page
+for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) ok(!/sahmmena|\bSAHM\b|Sahm Mena|سهم \|/i.test(rd(f)), `the SAHM brand appears in ${f}`);
+// every package card has the "files ready to publish" line (Gold lacked it), and the pricing JSON-LD has an offer per country
+for (const l of LANGS) {
+  const h = rd(PREFIX(l) + 'pricing/index.html');
+  for (const pk of ['seen', 'visible', 'growing']) { const card = (h.match(new RegExp(`<article class="plan[^"]*" data-plan="${pk}"[\\s\\S]*?</article>`)) || [''])[0]; ok(card.includes(esc(d[l]['pkg.seen.f7'])), `"${d[l]['pkg.seen.f7']}" on the ${pk} card (${l})`); }
+  const ld = (h.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/) || [])[1] || '';
+  for (const [cc, c] of Object.entries(PRICING.local.countries)) ok(ld.includes(`"priceCurrency":"${c.currency}"`) && ld.includes(`"eligibleRegion":"${cc}"`), `pricing JSON-LD: an offer in ${c.currency} for ${cc} (${l})`);
+  ok(!/"priceCurrency":"[A-Z]{3}"[^}]*"name":"(?:Brand Deck|الملف التعريفي)"|"name":"(?:Brand Deck|الملف التعريفي)","provider":\{[^}]*\},"offers"/.test(ld), `pricing JSON-LD: no Brand Deck offer while it is coming soon (${l})`);
+  ok(rd(PREFIX(l) + 'index.html').includes(`"@type":"Country","name":"${d.en['cc.SA']}","identifier":"SA"`), `Organization areaServed uses country names and ISO codes (${l})`);
+}
+// the language: the URL wins; the memory is written only by an explicit ?lang= (the EN / AR links)
+{ const inl = (rd('index.html').match(/<script>(\(function\(\)\{try\{var k='crier\.lang'[\s\S]*?)<\/script>/) || [])[1] || '';
+  ok(inl && (inl.match(/localStorage\.setItem/g) || []).length === 1 && /if\(q\)\{v=q;try\{localStorage\.setItem\(k,q\)/.test(inl), 'language script: only ?lang= writes the remembered language'); }
+// every i18n key is read by the build (the record build/build.mjs writes), and that record matches the current i18n files
+{
+  let rec = null; try { rec = JSON.parse(rd('build/used-keys.json')); } catch { }
+  const sum = crypto.createHash('sha256').update(LANGS.map((l) => rd(`i18n/${l}.json`)).join('\n')).digest('hex');
+  ok(rec && rec.i18n_sha256 === sum, 'build/used-keys.json is missing or older than the i18n files: run node build/build.mjs first');
+  if (rec) for (const k of Object.keys(d.en)) ok(rec.used.includes(k), `unused i18n key ${k} (no page reads it: delete it in every language)`);
+}
+// legal pages: their "last updated" date may not be older than their text. build/legal-stamp.json holds, per legal page and
+// language, a fingerprint of the page's text (the date line left out) and the date it carries. Changed text with an unchanged
+// stamp fails; after a change, set the date to the day of the change and run: node build/check.mjs --restamp
+{
+  const MONTHS = { en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'], ar: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'] };
+  const dateOf = (l, txt) => { const m = String(txt).match(/(\d{1,2}) (\S+) (\d{4})/); const mo = m ? MONTHS[l].indexOf(m[2]) : -1; return mo < 0 ? null : `${m[3]}-${String(mo + 1).padStart(2, '0')}-${m[1].padStart(2, '0')}`; };
+  const LEGAL_DATE = { 'terms/': 'leg.updated', 'refund/': 'leg.updated', 'privacy/': 'privacy.updated' };
+  const now = {};
+  for (const [pg, key] of Object.entries(LEGAL_DATE)) {
+    now[pg] = { date: dateOf('en', d.en[key]) };
+    ok(now[pg].date && LANGS.every((l) => dateOf(l, d[l][key]) === now[pg].date), `legal date ${key} reads the same day in every language`);
+    for (const l of LANGS) {
+      const main = (rd(PREFIX(l) + pg + 'index.html').match(/<main[\s\S]*?<\/main>/) || [''])[0];
+      const txt = htmlVis(main).split(esc(d[l][key])).join(' ').replace(/\s+/g, ' ').trim();
+      now[pg][l] = crypto.createHash('sha256').update(txt).digest('hex');
+    }
+  }
+  const STAMP = 'build/legal-stamp.json';
+  if (process.argv.includes('--restamp')) {
+    const today = new Date().toISOString().slice(0, 10);
+    for (const [pg, v] of Object.entries(now)) ok(v.date === today, `--restamp: ${pg} still says ${v.date}; set its "last updated" line to today (${today}) first`);
+    if (!fail) { fs.writeFileSync(path.join(ROOT, STAMP), JSON.stringify(now, null, 1) + '\n'); console.log('wrote ' + STAMP); }
+  } else {
+    let st = null; try { st = JSON.parse(rd(STAMP)); } catch { }
+    ok(st, `${STAMP} is missing: run node build/check.mjs --restamp`);
+    if (st) for (const [pg, v] of Object.entries(now)) {
+      const old = st[pg] || {};
+      ok(LANGS.every((l) => old[l] === v[l]) || v.date > (old.date || ''), `the text of /${pg} changed after its "last updated" date (${v.date}): set the date to the day of the change, then run node build/check.mjs --restamp`);
+      ok(old.date === v.date && LANGS.every((l) => old[l] === v[l]), `/${pg}: ${STAMP} is out of date (run node build/check.mjs --restamp after updating the date)`);
+    }
+  }
 }
 console.log(fail ? `${fail} FAILED` : `all checks passed (${urls.length} pages, ${LANGS.length} languages)`);
 process.exit(fail ? 1 : 0);

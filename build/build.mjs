@@ -13,9 +13,14 @@ import { fileURLToPath } from 'node:url';
 // false = the tag is left out. Flip it only when the launch trigger in the SEO plan (section 2.4) is met, then rebuild.
 const NOINDEX = false;
 // ============================================================================================
-// SCULPTURES SWITCH (2026-10-19, owner: hidden for now). false = /sculptures/ and /ar/sculptures/ are still built but carry
-// noindex, are left out of the header nav, footer and sitemap, and nothing links to them. true = shown everywhere again.
-const SHOW_SCULPTURES = false;
+// PARKED PAGES (review fix 2026-11-14): pages outside the current offer. They are still built from their source so nothing is
+// lost, but into _parked/ (never published: Jekyll skips "_" folders and _config.yml excludes it), and their public URLs are
+// redirect stubs to the closest current page (PARKED_TO). /sculptures/ was the "hidden for now" catalogue (2026-10-19). The
+// hand-made standalone pages (/fiberglass/, /branddeck/, /ar/branddeck/) live in _parked/ too, and /assets/studio-deck/ and
+// /assets/social-preview.html are built into _parked/ with redirect stubs at their old addresses.
+const PARKED = new Set(['sculptures']);
+const PARKED_DIR = '_parked';
+const PARKED_TO = { sculptures: 'index', fiberglass: 'index', branddeck: 'pricing' };
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SITE = 'https://crierstudio.com';
@@ -30,24 +35,21 @@ const RTL = new Set(['ar']);
 // every page exists in both languages: / (en), /ar/ and the sub-paths below
 // Two product lines (2026-10-18): Social (/social/: The Social Kit + the monthly plans) and In-store (/in-store/: The Store
 // Kit waitlist + Custom pieces, whose quotes are asked in the client portal after a free sign-up).
-// Sculptures (2026-10-18): /sculptures/, the fiberglass catalog (data/sculptures.json) and custom pieces, quoted in the portal.
-// /fiberglass/ is a standalone Concept A catalog page maintained in place and intentionally excluded from generated pages.
-// /branddeck/ and /ar/branddeck/ are standalone physical-branding pages (build/branddeck-pages.mjs, images from
-// build/branddeck_mockups.py), maintained in place and intentionally excluded from generated pages: this build never writes or deletes them.
+// Sculptures (2026-10-18): the fiberglass catalog (data/sculptures.json), parked since 2026-11-14 (see PARKED above).
+// The standalone /fiberglass/ and /branddeck/ pages are parked in _parked/ (2026-11-14); their URLs are redirect stubs.
 const PAGES = ['index', 'pricing', 'brand-deck', 'social', 'in-store', 'sculptures', 'samples', 'faq', 'about', 'terms', 'privacy', 'refund'];
 // renamed pages: the old URLs stay as redirect stubs in every language (full query kept; the visitor's #hash wins over the
 // target's), not in the sitemap. A target may carry a #hash: /physical/ -> /in-store/#custom.
-const MOVED = { kit: 'social', physical: 'in-store#custom', snapshot: 'social', 'crier-deck': 'brand-deck' };
+const MOVED = { kit: 'social', physical: 'in-store#custom', snapshot: 'social', 'crier-deck': 'brand-deck', ...PARKED_TO };
 const WIDE = new Set(['index', 'pricing', 'brand-deck', 'social', 'in-store', 'sculptures', 'samples', 'about']); // wide layout; the rest use the narrow reading layout
 const LEGAL = ['terms', 'privacy', 'refund'];
 // Home v2 (2026-10-18): the header shows Social · Sculptures · Pricing · Client portal; Samples and FAQ moved to the footer only
-// (In-store remains on the page and in the footer; Sculptures appears only while SHOW_SCULPTURES is true)
-const SC_NAV = SHOW_SCULPTURES ? [['sculptures', 'nav.sculptures']] : [];
-const NAV = [['social', 'nav.social'], ...SC_NAV, ['pricing', 'nav.pricing'], [PORTAL, 'nav.portal']];
+// (In-store remains on the page and in the footer; Sculptures is parked)
+const NAV = [['social', 'nav.social'], ['pricing', 'nav.pricing'], [PORTAL, 'nav.portal']];
 // the footer keeps every destination: the header nav plus Samples, FAQ, About and Brand Deck
-const NAV_FOOT = [['social', 'nav.social'], ['in-store', 'nav.instore'], ...SC_NAV, ['samples', 'nav.samples'], ['pricing', 'nav.pricing'], ['faq', 'nav.faq'], ['about', 'nav.about'], ['brand-deck', 'nav.deck'], [PORTAL, 'nav.portal']];
+const NAV_FOOT = [['social', 'nav.social'], ['in-store', 'nav.instore'], ['samples', 'nav.samples'], ['pricing', 'nav.pricing'], ['faq', 'nav.faq'], ['about', 'nav.about'], ['brand-deck', 'nav.deck'], [PORTAL, 'nav.portal']];
 // pages built but kept out of search and the sitemap
-const HIDDEN = new Set(SHOW_SCULPTURES ? [] : ['sculptures']);
+const HIDDEN = PARKED;
 const CRUMB_KEY = { pricing: 'nav.pricing', 'brand-deck': 'nav.deck', social: 'nav.social', 'in-store': 'nav.instore', sculptures: 'nav.sculptures', samples: 'nav.samples', faq: 'nav.faq', about: 'nav.about', terms: 'foot.terms', privacy: 'foot.privacy', refund: 'foot.refund' };
 // In-store waitlist "business type": the value is the matching INDUSTRY_VALUES string (the CRM's industry field)
 const STORE_TYPES = [['Cafés and dessert shops', 'is.zone.cafe'], ['Restaurants', 'is.zone.restaurant'], ['Salons', 'is.zone.salon'], ['Abayas and fashion', 'is.zone.abaya'], ['Other local business', 'ind.other']];
@@ -74,6 +76,10 @@ const PRICES = Object.fromEntries(PRICING.packages.map((p) => [p.id, p.price]));
 // pays the USD price with no VAT. Every price carries its local net prices; site.js shows the buyer's currency (by country,
 // never by page language) with "price + VAT = total" on every page but the legal ones.
 const COUNTRIES = PRICING.local.countries;
+// VAT (review fix 2026-11-14, owner: not VAT-registered anywhere): a VAT line or "+ VAT" is shown only for a country whose price
+// data marks VAT as charged (vat_pct above 0, and vat_charged not false). Otherwise the price shown is the amount due.
+const vatOn = (cc) => !!cc && !!COUNTRIES[cc] && Number(COUNTRIES[cc].vat_pct) > 0 && COUNTRIES[cc].vat_charged !== false;
+const vatPct = (cc) => (vatOn(cc) ? Number(COUNTRIES[cc].vat_pct) : 0);
 const CURS = [...new Set(['USD', ...Object.values(COUNTRIES).map((c) => c.currency)])]; // the USA (2026-11-13) is a country in USD: listed once
 // MENA landing (2026-10-16): a visitor whose country is unknown is quoted as Saudi Arabia (SAR + VAT), on every language page.
 // The HTML is written in this country's prices (no flash of US dollars); site.js then follows the visitor's pick, Cloudflare or
@@ -86,8 +92,8 @@ function localQuote(id, cc, extra = 0) {
   const k = PKG[id], L = COUNTRIES[cc];
   const base = k.prices?.[L.currency], each = extra ? k.extra_platform_prices?.[L.currency] : 0;
   if (typeof base !== 'number' || (extra && typeof each !== 'number')) throw new Error(`data/pricing.json: no ${L.currency} price for ${id}`);
-  const net = Math.round(base * 100) + extra * Math.round((each || 0) * 100), vat = Math.floor((net * L.vat_pct + 50) / 100);
-  return { currency: L.currency, vat_pct: L.vat_pct, net, vat, total: net + vat }; // minor units (cents)
+  const pct = vatPct(cc), net = Math.round(base * 100) + extra * Math.round((each || 0) * 100), vat = Math.floor((net * pct + 50) / 100);
+  return { currency: L.currency, vat_pct: pct, net, vat, total: net + vat }; // minor units (cents)
 }
 const minorStr = (m) => `${Math.floor(m / 100)}.${String(m % 100).padStart(2, '0')}`;
 // the per-package numbers site.js needs for the order form total: { kit: { inc, billing, USD: [price, extra], SAR: [...], ... } }
@@ -149,6 +155,7 @@ function fmtNum(n) {
 }
 const fmtMoney = (lang, cur, n) => (cur === 'USD' ? '$' + fmtNum(n) : t(lang, 'cur.fmt').replace('{n}', () => fmtNum(n)).replace('{cur}', () => t(lang, 'cur.sym' + cur)));
 function display(lang, q) {
+  if (!q.vat_pct) return fmtMoney(lang, q.currency, q.total / 100);
   const r = { net: fmtMoney(lang, q.currency, q.net / 100), pct: String(q.vat_pct), vat: fmtMoney(lang, q.currency, q.vat / 100), total: fmtMoney(lang, q.currency, q.total / 100) };
   return t(lang, 'cur.vatLine').replace(/\{(net|pct|vat|total)\}/g, (m, k) => r[k]);
 }
@@ -157,7 +164,7 @@ const htmlCur = () => (htmlCc ? COUNTRIES[htmlCc].currency : 'USD');
 // a card's big price is followed by its VAT line instead)
 function priceSpan(lang, vals, cls = 'amt') {
   const [usd, ...loc] = String(vals).split('|'), cur = htmlCur();
-  const text = cur === 'USD' ? '$' + fmtNum(+usd) : fmtMoney(lang, cur, +loc[CURS.indexOf(cur) - 1]) + (/(^|\s)(?:price|price-list)(\s|$)/.test(cls) ? '' : ' ' + t(lang, 'cur.plusVat'));
+  const text = cur === 'USD' ? '$' + fmtNum(+usd) : fmtMoney(lang, cur, +loc[CURS.indexOf(cur) - 1]) + (/(^|\s)(?:price|price-list)(\s|$)/.test(cls) || !vatOn(htmlCc) ? '' : ' ' + t(lang, 'cur.plusVat'));
   return `<span class="${cls}" dir="${cur !== 'USD' && RTL.has(lang) ? 'rtl' : 'ltr'}" data-usd="${usd}"${CURS.slice(1).map((c, i) => ` data-${c.toLowerCase()}="${loc[i]}"`).join('')}>${esc(text)}</span>`;
 }
 const t = (lang, key) => raw(lang, key).replace(PRICE_MARK, (m, vals) => '$' + fmtNum(+vals.split('|')[0])).replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m).replace(/<\/?(?:b|a)>/g, '');
@@ -223,7 +230,7 @@ function langpick(lang, page) {
 function navLinks(lang, page, mark, list = NAV) {
   return list.map(([target, key]) => {
     const ext = target.startsWith('http');
-    return `<a href="${ext ? target : pathFor(lang, target)}"${mark && target === page ? ' aria-current="page"' : ''}>${esc(t(lang, key))}</a>`;
+    return `<a href="${ext ? (target === PORTAL ? portalHome(lang) : target) : pathFor(lang, target)}"${mark && target === page ? ' aria-current="page"' : ''}>${esc(t(lang, key))}</a>`;
   }).join('');
 }
 function crumbs(lang, page) {
@@ -261,18 +268,18 @@ const ccOptions = (lang) => CC_OPTS.map((c) => `<option value="${c}"${c === (htm
 // Country picker + VAT note (home, pricing and kit pages) and the currency data site.js reads. The picker is hidden until
 // site.js runs (it needs JavaScript); the prices and the VAT note are already written for the default country.
 function curPick(lang) {
-  const note = htmlCc ? t(lang, 'cur.note' + htmlCur()).replace('{vat}', COUNTRIES[htmlCc].vat_pct) : '';
+  const note = htmlCc ? t(lang, 'cur.note' + htmlCur()) + ' ' + (vatOn(htmlCc) ? t(lang, 'cur.vatAdded').replace('{vat}', vatPct(htmlCc)) : t(lang, 'cur.due')) : '';
   return `<div class="curbox" id="curbox" hidden><label class="curpick"><span>${h(lang, 'cur.label')}</span><select id="cur-select" data-cc>${ccOptions(lang)}</select></label><p class="fine vatnote" id="vat-note" aria-live="polite">${esc(note)}</p></div>`;
 }
 // the line under a price: "SAR 109 + VAT 15% SAR 16.35 = SAR 125.35" (+ "/mo" for a monthly plan); site.js rewrites it for the
 // visitor's country and hides it in US dollars (no VAT)
 function vatNote(lang, p, per = '') {
-  const q = htmlCc ? localQuote(p, htmlCc) : null;
+  const q = htmlCc && vatOn(htmlCc) ? localQuote(p, htmlCc) : null;
   return `<p class="usdnote" data-pkg="${p}"${per ? ` data-per="${esc(per)}"` : ''}${q ? '' : ' hidden'}>${q ? esc(display(lang, q) + per) : ''}</p>`;
 }
 function curData(lang) {
-  const countries = Object.fromEntries(Object.entries(COUNTRIES).map(([cc, c]) => [cc, { currency: c.currency, vat_pct: c.vat_pct }]));
-  const o = { countries, def: DEFAULT_CC, fmt: t(lang, 'cur.fmt'), vatLine: t(lang, 'cur.vatLine'), plusVat: t(lang, 'cur.plusVat'), pk: PKGDATA };
+  const countries = Object.fromEntries(Object.entries(COUNTRIES).map(([cc, c]) => [cc, { currency: c.currency, vat_pct: vatPct(cc) }]));
+  const o = { countries, def: DEFAULT_CC, fmt: t(lang, 'cur.fmt'), vatLine: t(lang, 'cur.vatLine'), plusVat: t(lang, 'cur.plusVat'), vatAdded: t(lang, 'cur.vatAdded'), due: t(lang, 'cur.due'), pk: PKGDATA };
   for (const c of CURS) Object.assign(o, { ['sym' + c]: t(lang, 'cur.sym' + c), ['note' + c]: t(lang, 'cur.note' + c) });
   return `<script type="application/json" id="cur-data">${jsonScript(o)}</script>`;
 }
@@ -282,7 +289,10 @@ const pname = (lang, p) => t(lang, `name.${p}`);
 const isLinked = (p) => LINKS[p] !== '';
 // Audit fixes (2026-10-19): every buy / plan button opens the client portal's sign-up (AR pages with ?lang=ar); the public
 // order form is gone. The portal supports no plan intent, so none is sent.
-const signupUrl = (lang) => `${PORTAL}#/signup${lang === 'en' ? '' : '?lang=' + lang}`;
+// Review fix (2026-11-14): the portal reads only ?lang=en|ar (hash or query, portal/public/app.js boot) and ?intent=quote; it has
+// no plan or package parameter, so the chosen package cannot be passed and only the page language is sent.
+const signupUrl = (lang) => `${PORTAL}#/signup?lang=${lang}`;
+const portalHome = (lang) => `${PORTAL}?lang=${lang}`;
 function buyHref(lang, p) { return isLinked(p) ? LINKS[p] : signupUrl(lang); }
 function buyBtn(lang, p, ghost) {
   if (p === 'deck') return `<button class="btn coming-soon" type="button" disabled data-unavailable="deck">${h(lang, 'pkg.deck.btn')}</button><span class="paynote">${h(lang, 'availability.deck')}</span>`;
@@ -310,7 +320,7 @@ function planCard(lang, p, hot) {
   return `<article class="plan${hot ? ' hot' : ''}" data-plan="${p}"><span class="badge">${h(lang, `pkg.${p}.eye`)}</span><h3>${esc(pname(lang, p))}</h3><p class="pt">${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(lang, p)}<span class="per">${h(lang, per)}</span></div>${vatLine}<p class="billnote">${h(lang, bill)}</p>${platPick(lang, p)}${ticks(lang, `pkg.${p}`)}<p class="pnote">${h(lang, `pkg.${p}.note`)}</p><div class="buyrow">${buyBtn(lang, p, !hot)}</div></article>`;
 }
 // ---- home: Landing A "Billboard" (Adham, 2026-11-06) ----
-// Hero headline + the Instagram-ready phone (SAHM, @sahmmena: the owner's own project, with its real posts), The Social Kit in
+// Hero headline + the Instagram-ready phone (a made-up example café, labelled as an example), the smallest package in
 // numbers, the client-portal walkthrough (kept, Adham 2026-11-07), the OK rule, the package table, the cream In-store teaser and
 // a closing call. No FAQ on the home page.
 // the headline's second sentence carries the lime highlight: split after the first sentence ("." in English, "…" in Arabic)
@@ -319,12 +329,35 @@ function heroH1(lang) {
   if (!m) throw new Error(`home.h1 (${lang}): no sentence break to split the hero headline`);
   return `${esc(m[1])} <span class="hl">${esc(m[2])}</span>`;
 }
-// SAHM's real reel covers and logo: the crops of its Instagram profile in assets/demo/ (build/demo-images.py, 240 x 320,
-// grid order), the same files the walkthrough uses. The Story card shows reel 3 (the emotions gauge).
-const HERO_POSTS = 6, HERO_STORY = 3;
-const sahmPosts = () => Array.from({ length: HERO_POSTS }, (_, i) => `<img src="/assets/demo/post-${i + 1}.webp" alt="" width="240" height="320" decoding="async">`).join('');
-const sahmStory = () => `<img src="/assets/demo/post-${HERO_STORY}.webp" alt="" width="240" height="320" decoding="async">`;
-const sahmLogo = '<img class="sahm-logo" src="/assets/demo/logo.webp" alt="" width="128" height="128" decoding="async">';
+// The example business (review fix 2026-11-14): "Example Café", made up, no real name, handle, logo or post. Its six posts are
+// drawn in HTML/CSS from data/example-posts.json (client), in the page language; the avatar is a plain neutral circle. The count
+// never exceeds the smallest package's posts a month, and every post is labelled a post (not a reel).
+const EX = JSON.parse(rd('data/example-posts.json')).client;
+const EX_LAYOUTS = ['word', 'spot', 'question', 'list', 'steps', 'tip', 'split', 'hours'];
+const SMALLEST = PRICING.packages.filter((p) => !p.coming_soon && p.items?.posts).sort((a, b) => a.items.posts - b.items.posts)[0];
+if (!Array.isArray(EX.posts) || EX.posts.length < 5 || EX.posts.length > SMALLEST.items.posts) throw new Error(`data/example-posts.json: 5 to ${SMALLEST.items.posts} example posts (the smallest package's posts a month)`);
+for (const x of EX.posts) if (!EX_LAYOUTS.includes(x.layout) || !x.text?.en?.title || !x.text?.ar?.title) throw new Error('data/example-posts.json: bad post ' + JSON.stringify(x).slice(0, 60));
+const digitsOf = (lang, n) => (lang === 'ar' ? String(n).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]) : String(n));
+// a post's inner drawing in the page language (Arabic-Indic digits on Arabic pages)
+function exInner(layout, tx, tl, shapeKind) {
+  const e = (s) => esc(s), n = (i) => digitsOf(tl, i);
+  const mark = '<i class="xp-mark"></i>';
+  if (layout === 'word') return `${mark}<b class="xp-big">${e(tx.h)}</b><span class="xp-s">${e(tx.s)}</span>`;
+  if (layout === 'spot') return `${mark}<i class="xp-shape xp-sh-${shapeKind || 'circle'}"></i><b class="xp-h">${e(tx.h)}</b><span class="xp-s">${e(tx.s)}</span>`;
+  if (layout === 'question') return `${mark}<i class="xp-q">${tl === 'ar' ? '؟' : '?'}</i><b class="xp-h">${e(tx.h)}</b><span class="xp-s">${e(tx.s)}</span>`;
+  if (layout === 'list') return `${mark}<b class="xp-h">${e(tx.h)}</b><span class="xp-list">${tx.items.map((it) => `<span>${e(it)}</span>`).join('')}</span>`;
+  if (layout === 'steps') return `${mark}<b class="xp-h">${e(tx.h)}</b><span class="xp-steps">${tx.items.map((it, i) => `<span><i>${n(i + 1)}</i>${e(it)}</span>`).join('')}</span>`;
+  if (layout === 'tip') return `${mark}<span class="xp-tag">${e(tx.tag)}</span><b class="xp-h">${e(tx.h)}</b><span class="xp-s">${e(tx.s)}</span>`;
+  if (layout === 'split') return `<span class="xp-half xp-before"><em>${e(tx.before)}</em><i></i></span><span class="xp-half xp-after"><em>${e(tx.after)}</em><i></i></span><b class="xp-h xp-band">${e(tx.h)}</b>`;
+  return `${mark}<b class="xp-h">${e(tx.h)}</b><span class="xp-rows">${tx.rows.map(([a, b]) => `<span><b>${e(a)}</b><span>${e(b)}</span></span>`).join('')}</span>`; // hours
+}
+const palStyle = (pal) => `--xb:${pal[0]};--xi:${pal[1]};--xa:${pal[2]}`;
+// one example post as a drawing (decorative: the phone and the dashboard carry their own description)
+const exPost = (lang, p, cls = '') => `<span class="xp xp-fill xp-l-${p.layout}${cls ? ' ' + cls : ''}" style="${palStyle(EX.pal)}" lang="${lang}" dir="${RTL.has(lang) ? 'rtl' : 'ltr'}">${exInner(p.layout, p.text[lang], lang, p.shapeKind)}</span>`;
+const HERO_STORY = 0;
+const exPosts = (lang) => EX.posts.slice(0, 6).map((p) => `<span class="ex-cell">${exPost(lang, p)}</span>`).join('');
+const exStory = (lang) => exPost(lang, EX.posts[HERO_STORY], 'xp-story');
+const exLogo = '<span class="ex-logo" aria-hidden="true"></span>';
 // Bronze in numbers (the Social Kit is retired, 2026-11-13): every number is a count from data/pricing.json
 const KIT_PKG = 'seen';
 const KIT_NUMS = [['posts', 'la.n.posts', 'la.n.postsx'], ['stories', 'la.n.stories', 'la.n.storiesx'], ['described_reels', 'la.n.reels', 'la.n.reelsx']];
@@ -361,17 +394,6 @@ function priceTable(lang) {
 // are the portal's own (dash.* keys); posts, names and the caption are example content. Steps: wt.<n>l / t / x / screen.
 const WT_STEPS = 5;
 const DASH_EMAIL = 'team@crierstudio.com';
-// Sahm Mena's six reels (instagram.com/sahmmena, 2026-11-05/06), titles verbatim, in profile-grid order = assets/demo/post-<n>.webp
-const SAHM_POSTS = [
-  'أساسيات ٦ · السهم · يعني إيه سهم أصلاً؟',
-  'أساسيات ٧ · الطرح العام · يعني إيه الطرح العام؟',
-  'قاعدة ٥ · المشاعر · المشاعر أغلى غلطة',
-  'أساسيات ٥ · التنويع · التنويع يعني إيه؟',
-  'قاعدة ٤ · نصايح الجروبات · نصيحة جروب واتساب مش دراسة',
-  'أساسيات ٤ · الترند · الترند يعني إيه؟',
-];
-// the day in November 2026 each reel went up on instagram.com/sahmmena (same order as SAHM_POSTS)
-const SAHM_DAYS = [6, 6, 6, 6, 5, 5];
 // icon paths copied from the portal's own set (portal/public/app.js)
 const PI = {
   overview: 'M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z', layers: 'M12 3l9 5-9 5-9-5zM3 13l9 5 9-5', review: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8 12l3 3 5-6',
@@ -380,21 +402,20 @@ const PI = {
   spark: 'M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18', work: 'M12 3v12M7 10l5 5 5-5M4 20h16', comment: 'M4 5h16v11H9l-5 4z',
 };
 const ic = (k, lang) => { const d = k === 'chev' && lang === 'ar' ? 'M15 6l-6 6 6 6' : PI[k]; return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`; };
-const digits = (lang, n) => (lang === 'ar' ? String(n).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]) : String(n)); // Arabic-Indic on /ar/, as the portal does
+const digits = digitsOf; // Arabic-Indic on /ar/, as the portal does
 
 function dash(lang) {
   const T = (k) => t(lang, 'dash.' + k), D = (k) => esc(T(k)), ar = lang === 'ar';
-  // the example business is Sahm Mena (instagram.com/sahmmena, a free Arab stock-market app): the six reels on its profile,
-  // titles verbatim (Arabic in both languages), thumbnails and the round SAHM logo cut from screenshots of the profile
-  // (build/demo-images.py). Dates are the reels' real post dates (SAHM_DAYS, November 2026).
-  const posts = SAHM_POSTS.map((title, i) => ({ file: 'post-' + (i + 1) + '.webp', day: SAHM_DAYS[i], title, label: T('typeReel') }));
+  // the example business is the made-up "Example Café" (data/example-posts.json): its posts are drawings in one palette, in the
+  // page language, labelled posts; the avatars are a plain neutral circle (no letters, no logo)
+  const posts = EX.posts.map((p) => ({ ...p, title: p.text[lang].title, label: T('typePost') }));
   const date = (day) => ar ? digits(lang, day) + ' ' + T('monthShort') : T('monthShort') + ' ' + digits(lang, day);
-  const image = (file, cls) => '<img class="' + cls + '" src="/assets/demo/' + file + '" alt="" loading="lazy" decoding="async">';
-  const logo = (cls) => image('logo.webp', cls);
-  const title = (p) => '<strong dir="rtl" lang="ar">' + esc(p.title) + '</strong>';
-  const postCard = (p) => '<span class="d-post-card"><span class="d-post-visual">' + image(p.file, 'd-post-img') + '<span class="d-post-kind">' + esc(p.label) + '</span></span><span class="d-post-copy">' + title(p) + '<small>' + esc(date(p.day)) + '</small></span></span>';
+  const image = (p, cls) => exPost(lang, p, cls);
+  const logo = (cls) => '<span class="' + cls + ' d-neutral"></span>';
+  const title = (p) => '<strong>' + esc(p.title) + '</strong>';
+  const postCard = (p) => '<span class="d-post-card"><span class="d-post-visual">' + image(p, 'd-post-img') + '<span class="d-post-kind">' + esc(p.label) + '</span></span><span class="d-post-copy">' + title(p) + '<small>' + esc(date(p.day)) + '</small></span></span>';
   const postGrid = (arr, cls) => '<span class="d-post-grid ' + cls + '">' + arr.map(postCard).join('') + '</span>';
-  const calendarCell = (p) => '<span class="d-calendar-cell"><span class="d-calendar-day">' + digits(lang, p.day) + '</span><span class="d-calendar-thumb">' + image(p.file, 'd-calendar-img') + '</span><span class="d-calendar-type">' + esc(p.label) + '</span></span>';
+  const calendarCell = (p) => '<span class="d-calendar-cell"><span class="d-calendar-day">' + digits(lang, p.day) + '</span><span class="d-calendar-thumb">' + image(p, 'd-calendar-img') + '</span><span class="d-calendar-type">' + esc(p.label) + '</span></span>';
   const nav = (icon, key, screen, active) => '<span class="d-link' + (active ? ' on' : '') + '" data-nav="' + screen + '">' + ic(icon, lang) + '<span class="d-nl">' + D(key) + '</span></span>';
   const tab = (key, screen, active) => '<span class="d-tab' + (active ? ' on' : '') + '" data-nav="' + screen + '">' + D(key) + '</span>';
   const view = (screen, title, body, active) => '<span class="d-view' + (active ? ' is-on' : '') + '" data-screen="' + screen + '"><span class="d-view-head"><strong>' + D(title) + '</strong></span>' + body + '</span>';
@@ -411,11 +432,12 @@ function dash(lang) {
   const deliverablesBody = '<span class="d-view-note"><b data-k="delivered">' + digits(lang, posts.length) + '</b> ' + D('postsDelivered') + '</span>' + postGrid(posts, 'd-many-grid');
   const calendarBody = '<span class="d-calendar-title">' + D('calendarMonth') + '</span><span class="d-calendar-grid">' + posts.slice().sort((a, b) => a.day - b.day).map(calendarCell).join('') + '</span>';
   const libraryBody = '<span class="d-view-note">' + D('libraryNote') + '</span>' + postGrid(posts, 'd-many-grid d-library-grid');
-  const waitingBody = '<span class="d-wait-card"><span class="d-clock" aria-hidden="true"><i class="d-clock-hand d-hour"></i><i class="d-clock-hand d-minute"></i><b></b></span><span class="d-wait-copy"><small>' + D('waitSub') + '</small><span class="d-clock-label">' + D('clockLabel') + '</span><span class="d-clock-jump"><span>' + D('now') + '</span><i aria-hidden="true">→</i><b>' + D('timeLater') + '</b></span></span></span>';
+  // no clock and no hours (review fix 2026-11-14): there is no promised delivery time
+  const waitingBody = '<span class="d-wait-card"><span class="d-wait-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="d-wait-copy"><small>' + D('waitSub') + '</small><span class="d-clock-label">' + D('waitNote') + '</span></span></span>';
   const reviewPost = posts[4];
-  const reviewBody = '<span class="d-review-card"><span class="d-review-image">' + image(reviewPost.file, 'd-review-img') + '</span><span class="d-review-copy"><small>' + esc(reviewPost.label + ' · ' + date(reviewPost.day)) + '</small>' + title(reviewPost) + '<span class="d-review-status" data-k="reviewStatus">' + D('pendingStatus') + '</span><span class="d-review-actions"><span class="d-btn sec" data-b="changes">' + D('changes') + '</span><span class="d-btn lime" data-b="approve">' + D('approve') + '</span></span></span></span>';
-  const readyBody = '<span class="d-ready-card"><span class="d-ready-image">' + image(reviewPost.file, 'd-ready-img') + '</span><span class="d-ready-copy"><span class="d-ready-chips"><span class="d-chip">' + D('approvedStatus') + '</span><span class="d-chip">' + D('ready') + '</span></span><strong>' + D('readyTitle') + '</strong><small dir="rtl" lang="ar">' + esc(reviewPost.title) + '</small><span class="d-ready-actions"><span class="d-btn lime" data-b="copy"><span data-k="copyLabel">' + D('copyCap') + '</span></span><span class="d-btn sec" data-b="dl">' + D('download') + '</span><span class="d-btn sec" data-b="mark">' + D('markPosted') + '</span></span></span></span>';
-  const instagramBody = '<span class="d-instagram-card"><span class="d-ig-head"><span class="d-ig-avatar">' + logo('d-ig-logo') + '</span><strong>' + D('instagramHandle') + '</strong><span class="d-ig-network">' + D('instagram') + '</span></span><span class="d-ig-image">' + image(reviewPost.file, 'd-ig-post') + '<span class="d-ig-posted">' + D('posted') + '</span></span><span class="d-ig-footer"><span class="d-ig-icons" aria-hidden="true">♡　○　↗</span><small dir="rtl" lang="ar">' + esc(reviewPost.title) + '</small></span></span>';
+  const reviewBody = '<span class="d-review-card"><span class="d-review-image">' + image(reviewPost, 'd-review-img') + '</span><span class="d-review-copy"><small>' + esc(reviewPost.label + ' · ' + date(reviewPost.day)) + '</small>' + title(reviewPost) + '<span class="d-review-status" data-k="reviewStatus">' + D('pendingStatus') + '</span><span class="d-review-actions"><span class="d-btn sec" data-b="changes">' + D('changes') + '</span><span class="d-btn lime" data-b="approve">' + D('approve') + '</span></span></span></span>';
+  const readyBody = '<span class="d-ready-card"><span class="d-ready-image">' + image(reviewPost, 'd-ready-img') + '</span><span class="d-ready-copy"><span class="d-ready-chips"><span class="d-chip">' + D('approvedStatus') + '</span><span class="d-chip">' + D('ready') + '</span></span><strong>' + D('readyTitle') + '</strong><small>' + esc(reviewPost.title) + '</small><span class="d-ready-actions"><span class="d-btn lime" data-b="copy"><span data-k="copyLabel">' + D('copyCap') + '</span></span><span class="d-btn sec" data-b="dl">' + D('download') + '</span><span class="d-btn sec" data-b="mark">' + D('markPosted') + '</span></span></span></span>';
+  const instagramBody = '<span class="d-instagram-card"><span class="d-ig-head"><span class="d-ig-avatar">' + logo('d-ig-logo') + '</span><strong>' + D('instagramHandle') + '</strong><span class="d-ig-network">' + D('instagram') + '</span></span><span class="d-ig-image">' + image(reviewPost, 'd-ig-post') + '<span class="d-ig-posted">' + D('posted') + '</span></span><span class="d-ig-footer"><span class="d-ig-icons" aria-hidden="true">♡　○　↗</span><small>' + esc(reviewPost.title) + '</small></span></span>';
   const briefView = view('brief', 'briefTitle', briefBody, false);
   const emptyView = view('empty', 'glance', emptyBody, false);
   const overviewView = view('overview', 'glance', overviewBody, false);
@@ -442,7 +464,6 @@ function dash(lang) {
         '<span class="d-tabs">' + tab('overview', 'overview', true) + tab('deliverables', 'deliverables', false) + tab('calendar', 'calendar', false) + tab('library', 'library', false) + '</span>' +
         '<span class="d-stage">' + briefView + emptyView + overviewView + waitingView + deliverablesView + calendarView + libraryView + reviewView + readyView + instagramView + '</span>' +
       '</span><span class="d-bnav">' + bottomLinks + '</span>' +
-      '<span class="d-time-later" data-k="timeLater">' + D('timeLater') + '</span>' +
       '<span class="d-modal" data-k="modal"><span class="d-mbox"><span class="d-mbrand modal-brand">' + logo('d-brand-avatar') + '<strong>' + D('brand') + '</strong></span><strong class="d-mt">' + D('signup') + '</strong>' +
         '<span class="d-f"><span class="d-fl">' + D('company') + '</span><span class="d-fi" data-c="company"><span data-k="type">' + D('brand') + '</span><i class="d-caret"></i></span></span>' +
         '<span class="d-f"><span class="d-fl">' + D('website') + '</span><span class="d-fi" data-c="site" dir="ltr"><span data-k="typedSite">' + D('site') + '</span><i class="d-caret"></i></span></span>' +
@@ -461,7 +482,7 @@ function walkthrough(lang) {
 }
 function homeVars(lang) {
   return {
-    heroH1: heroH1(lang), sahmPosts: sahmPosts(), sahmStory: sahmStory(), sahmLogo, ...heroStart(lang),
+    heroH1: heroH1(lang), exPosts: exPosts(lang), exStory: exStory(lang), exLogo, ...heroStart(lang),
     kitNums: kitNums(lang), kitPrice: money(lang, KIT_PKG), kitBtn: `<a class="btn lime" href="${esc(buyHref(lang, KIT_PKG))}">${h(lang, `pkg.${KIT_PKG}.btn`)}</a>`,
     trust: homeTrust(lang), ...walkthrough(lang), curPick: curPick(lang), priceTable: priceTable(lang),
   };
@@ -472,7 +493,7 @@ function homeVars(lang) {
 function platPick(lang, p) {
   const k = PKG[p]; if (!MONTHLY.has(p) || !k.extra_platform_price) return '';
   const first = PRICING.platforms[0];
-  const cur = htmlCur(), shown = cur === 'USD' ? '$' + k.price : fmtMoney(lang, cur, k.prices[cur]) + ' ' + t(lang, 'cur.plusVat');
+  const cur = htmlCur(), shown = cur === 'USD' ? '$' + k.price : fmtMoney(lang, cur, k.prices[cur]) + (vatOn(htmlCc) ? ' ' + t(lang, 'cur.plusVat') : '');
   const line = t(lang, 'plan.live').replace('{name}', () => pname(lang, p)).replace('{platforms}', () => t(lang, 'plat.' + first)).replace('{price}', () => shown).replace('{per}', () => t(lang, 'plan.perShort'));
   const boxes = PRICING.platforms.map((id) => `<label class="opt"><input type="checkbox" name="pp-${p}" value="${esc(id)}"${id === first ? ' checked' : ''}><span>${h(lang, 'plat.' + id)}</span></label>`).join('');
   // local NET prices (before VAT) for the live line: { SAR: [price, extra platform], AED: …, EGP: … }
@@ -486,7 +507,7 @@ const billItems = (lang) => { const out = []; for (let i = 1; dicts[lang][`bill.
 function pageVars(lang, page) {
   const v = {
     ...hrefs(lang), langpick: langpick(lang, page), nav: navLinks(lang, page, true), navFoot: navLinks(lang, page, false, NAV_FOOT),
-    crumbs: crumbs(lang, page), portalHref: PORTAL, signupHref: esc(signupUrl(lang)), emailLink: `<a href="mailto:${EMAIL}" dir="ltr">${EMAIL}</a>`,
+    crumbs: crumbs(lang, page), portalHref: portalHome(lang), signupHref: esc(signupUrl(lang)), emailLink: `<a href="mailto:${EMAIL}" dir="ltr">${EMAIL}</a>`,
     buyDeck: buyBtn(lang, 'deck', false), conv: lang === 'en' ? '' : `<p class="conv">${h(lang, 'leg.conv')}</p>`,
     waFoot: waLink(lang), waAbout: WA ? `<p>${waLink(lang)}</p>` : '',
   };
@@ -496,7 +517,8 @@ function pageVars(lang, page) {
   if (page === 'social') Object.assign(v, { kitList: ticks(lang, 'kit.inc', 'cols'), flow: flow(lang, 3, 'how') });
   if (page === 'in-store') Object.assign(v, storeVars(lang));
   if (page === 'sculptures') Object.assign(v, sculptVars(lang));
-  if (page === 'pricing') Object.assign(v, { planCards: planCards(lang), deckCards: deckCards(lang), billItems: billItems(lang), curPick: curPick(lang) });
+  // the month-1 kit (owner, keep): one plain line, only while the price list says the first month includes it
+  if (page === 'pricing') { const kit = `<p class="lead kitline">${h(lang, 'pricing.kit')}</p>`; Object.assign(v, { planCards: planCards(lang), deckCards: deckCards(lang), billItems: billItems(lang), curPick: curPick(lang), kitLine: PRICING.rules?.first_month_includes_kit ? kit : '' }); }
   if (page === 'brand-deck') Object.assign(v, { deckFlow: flow(lang, 4, 'deck.how'), faqItems: faqItems(lang, FAQ_DECK, true), sheets: [1, 2, 4].map((n) => fig(lang, n)).join('') });
   if (page === 'samples') v.sheets = [1, 2, 3, 4].map((n) => fig(lang, n)).join('');
   if (page === 'faq') v.faqItems = faqItems(lang, FAQ_ALL, false);
@@ -579,22 +601,30 @@ function sculptVars(lang) {
 }
 
 // ---------- head ----------
-// Structured data (launch pricing, 2026-10-15): one Offer per market, the same on every language page (the currency follows
-// the buyer's country, not the page language). Saudi Arabia, the UAE and Egypt each get an Offer in their currency, limited to
-// that country (eligibleRegion), priced at the total the buyer pays with VAT added (valueAddedTaxIncluded: true). The last
-// Offer is the US-dollar price for every other country, with no VAT, labelled as the international price.
+// Structured data (review fix 2026-11-14): one Offer per country in that country's own currency (eligibleRegion = its ISO
+// 3166-1 code), priced at the amount due; VAT is named only where the price data marks it as charged. The last Offer is the
+// US-dollar price for every other country. The Brand Deck (coming soon) has no offer.
+const COUNTRY_LD = (cc) => ({ '@type': 'Country', name: dicts.en['cc.' + cc], identifier: cc });
 function offerNode(lang, p) {
   const monthly = MONTHLY.has(p), url = urlFor(lang, 'pricing');
-  const o = { '@type': 'Offer', name: pname(lang, p), description: t(lang, 'ld.intl'), price: String(PRICES[p]), priceCurrency: 'USD', url };
-  if (monthly) o.priceSpecification = { '@type': 'UnitPriceSpecification', price: String(PRICES[p]), priceCurrency: 'USD', unitCode: 'MON' };
-  return [o];
+  const one = (price, currency, extra) => {
+    const o = { '@type': 'Offer', name: pname(lang, p), price: String(price), priceCurrency: currency, url, ...extra };
+    if (monthly) o.priceSpecification = { '@type': 'UnitPriceSpecification', price: String(price), priceCurrency: currency, unitCode: 'MON', ...(extra.priceSpecificationVat || {}) };
+    delete o.priceSpecificationVat;
+    return o;
+  };
+  const local = Object.keys(COUNTRIES).map((cc) => {
+    const q = localQuote(p, cc), vat = q.vat_pct ? { valueAddedTaxIncluded: true } : {};
+    return one(minorStr(q.total).replace(/\.00$/, ''), q.currency, { eligibleRegion: cc, ...vat, priceSpecificationVat: vat });
+  });
+  return [...local, one(PRICES[p], 'USD', { description: t(lang, 'ld.intl') })];
 }
 function jsonLd(lang, page) {
   const orgId = SITE + '/#organization';
   const nodes = [];
   if (page === 'index') {
     nodes.push({ '@type': 'Organization', '@id': orgId, name: BRAND, url: SITE + '/', logo: SITE + '/favicon-512.png', email: EMAIL, description: t(lang, 'foot.blurb'),
-      areaServed: Object.keys(COUNTRIES).map((cc) => ({ '@type': 'Country', name: cc })) });
+      areaServed: Object.keys(COUNTRIES).map(COUNTRY_LD) });
     nodes.push({ '@type': 'WebSite', '@id': SITE + '/#website', name: BRAND, alternateName: 'Crier', url: SITE + '/', inLanguage: lang, publisher: { '@id': orgId } });
   } else {
     nodes.push({ '@type': 'BreadcrumbList', itemListElement: [
@@ -607,7 +637,7 @@ function jsonLd(lang, page) {
     }
     // In-store: The Store Kit (waitlist) and Custom pieces (requests through the client portal), informational, with no offers
     if (page === 'in-store') {
-      nodes.push({ '@type': 'Service', name: t(lang, 'name.store'), description: t(lang, 'is.kit.line'), url: urlFor(lang, page) + '#kit', provider, areaServed: Object.keys(COUNTRIES).map((cc) => ({ '@type': 'Country', name: cc })) });
+      nodes.push({ '@type': 'Service', name: t(lang, 'name.store'), description: t(lang, 'is.kit.line'), url: urlFor(lang, page) + '#kit', provider, areaServed: Object.keys(COUNTRIES).map(COUNTRY_LD) });
       nodes.push({ '@type': 'Service', name: t(lang, 'is.c.name'), description: t(lang, 'is.c.intro'), url: urlFor(lang, page) + '#custom', provider });
     }
     // Sculptures: informational, with no offers (pieces are quoted in the client portal)
@@ -647,7 +677,10 @@ const CONSENT_JS = (partials.consent.match(/<script>([\s\S]*?)<\/script>/) || []
 if (!CONSENT_JS || CONSENT_JS.includes('{{')) throw new Error('templates/consent.html: one inline <script> without template tags expected');
 // the site allows no 'unsafe-inline' scripts: each inline script is allowed by its sha256 hash (recomputed on every build)
 const sha = (js) => `'sha256-${crypto.createHash('sha256').update(js, 'utf8').digest('base64')}'`;
-const LANGUAGE_INLINE = "(function(){try{var k='crier.lang',q=new URLSearchParams(location.search).get('lang'),v=/^(en|ar)$/.test(q||'')?q:localStorage.getItem(k);if(!/^(en|ar)$/.test(v||''))v=null;var m=location.pathname.match(/^\\/(?:en|ar|es|fr)(?=\\/|$)/),tail=m?location.pathname.slice(m[0].length):location.pathname;if(!tail)tail='/';if(tail.charAt(0)!=='/')tail='/'+tail;if(/^\\/(?:terms|privacy|refund)\\.html$/.test(tail))tail=tail.slice(0,-5)+'/';if(!v)v=m&&m[0]==='/ar'?'ar':'en';localStorage.setItem(k,v);var target=(v==='ar'?'/ar':'')+tail;if(target!==location.pathname||q){document.documentElement.style.visibility='hidden';var u=new URL(location.href);u.pathname=target;u.searchParams.delete('lang');location.replace(u.pathname+u.search+u.hash);}}catch(e){}})();";
+// The language (review fix 2026-11-14): the URL's language always wins (/ar/… is Arabic, every other page English). ?lang=xx (the
+// EN / AR links) switches and is remembered in localStorage 'crier.lang'. The memory, then the browser's first en/ar language, is
+// used only on a neutral entry: the bare home page "/" reached from outside the site (no query, no same-site referrer).
+const LANGUAGE_INLINE = "(function(){try{var k='crier.lang',L=/^(en|ar)$/,p=location.pathname,q=new URLSearchParams(location.search).get('lang');if(!L.test(q||''))q=null;var m=p.match(/^\\/(en|ar|es|fr)(?=\\/|$)/),tail=m?p.slice(m[0].length):p;if(!tail)tail='/';if(tail.charAt(0)!=='/')tail='/'+tail;if(/^\\/(?:terms|privacy|refund)\\.html$/.test(tail))tail=tail.slice(0,-5)+'/';var v=m&&m[1]==='ar'?'ar':'en';if(q){v=q;try{localStorage.setItem(k,q);}catch(e){}}else if(p==='/'&&!location.search){var r='';try{r=document.referrer?new URL(document.referrer).origin:'';}catch(e){}if(r!==location.origin){var s=null;try{s=localStorage.getItem(k);}catch(e){}if(!L.test(s||'')){s=null;var ls=navigator.languages||[navigator.language||''];for(var i=0;i<ls.length;i++){var c=String(ls[i]||'').slice(0,2).toLowerCase();if(L.test(c)){s=c;break;}}}if(s)v=s;}}var target=(v==='ar'?'/ar':'')+tail;if(target!==p||q){document.documentElement.style.visibility='hidden';var u=new URL(location.href);u.pathname=target;u.searchParams.delete('lang');location.replace(u.pathname+u.search+u.hash);}}catch(e){}})();";
 const LANGUAGE_HEAD = `<script>${LANGUAGE_INLINE}</script>`;
 const SCRIPT_HASHES = [sha(GA_INLINE), sha(LANGUAGE_INLINE), sha(CONSENT_JS)];
 const CSP = "default-src 'self'; script-src 'self' " + SCRIPT_HASHES.join(' ') + " https://static.cloudflareinsights.com https://*.googletagmanager.com; connect-src 'self' https://crm-production-d789.up.railway.app https://cloudflareinsights.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; img-src 'self' data: https://*.google-analytics.com https://*.googletagmanager.com; style-src 'self' 'unsafe-inline'; font-src 'self'; base-uri 'self'; form-action 'self'";
@@ -790,14 +823,16 @@ for (const [lang] of LANGS) {
     const body = render(rd(`templates/${page === 'index' ? 'home' : page}.html`), ctx);
     const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${!LEGAL.includes(page) && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${page === 'index' ? '<script src="/assets/dash.js" defer></script>\n' : ''}${page === 'sculptures' ? '<script src="/assets/sculptures.js" defer></script>\n' : ''}</body>\n</html>\n`;
     const html = `${head(lang, page, purgeCss(cssFor(lang, page), bodyHtml))}\n${trimIndent(bodyHtml)}`;
+    if (PARKED.has(page)) { write(`${PARKED_DIR}/${dirFor(lang, page)}index.html`, html); continue; } // kept, never published
     write(dirFor(lang, page) + 'index.html', hashUrls(html));
     built.push([lang, page]);
   }
 }
 
-// Editable studio introduction; distinct from the paid Brand Deck product.
-write('assets/studio-deck/index.html', rd('templates/studio-deck.html'));
-write('assets/social-preview.html', rd('templates/social-preview.html'));
+// The old studio introduction and the old share-image page (the retired branding offer): kept in _parked/, never published;
+// their old addresses redirect home (stubs below).
+write(`${PARKED_DIR}/studio-deck/index.html`, rd('templates/studio-deck.html'));
+write(`${PARKED_DIR}/social-preview.html`, rd('templates/social-preview.html'));
 
 // old legal URL stubs redirect to the English default; a saved language is applied before paint
 for (const page of LEGAL) {
@@ -825,9 +860,12 @@ ${LANGUAGE_HEAD}
 // (physical -> in-store#custom). site.js keeps the full query string, and the visitor's own #hash if there is one, else the
 // target's; without JS the meta refresh goes to the new page (with the target's #hash). Not in the sitemap.
 function stub(dir, from, lang, to) {
-  const [pg, hash = ''] = to.split('#'), href = pathFor(lang, pg) + (hash ? '#' + hash : '');
   const folder = (dir ? dir + '/' : '') + (from === 'index' ? '' : from + '/');
-  write(folder + 'index.html', hashUrls(`<!doctype html>
+  write(folder + 'index.html', stubHtml(lang, to));
+}
+function stubHtml(lang, to) {
+  const [pg, hash = ''] = to.split('#'), href = pathFor(lang, pg) + (hash ? '#' + hash : '');
+  return hashUrls(`<!doctype html>
 <html lang="${lang}" dir="${RTL.has(lang) ? 'rtl' : 'ltr'}">
 <head>
 <meta charset="utf-8">
@@ -845,15 +883,19 @@ ${LANGUAGE_HEAD}
 <script src="/site.js"></script>
 </body>
 </html>
-`));
+`);
 }
 // renamed pages: English (the default) at the root, Arabic under /ar/
 for (const [from, to] of Object.entries(MOVED)) { stub('', from, 'en', to); stub('ar', from, 'ar', to); }
+// the retired studio deck and share-image page (2026-11-14): their old addresses go home
+stub('assets', 'studio-deck', 'en', 'index');
+write('assets/social-preview.html', stubHtml('en', 'index'));
 // English lived under /en/ while Arabic was the default (2026-10-28 to 2026-10-30): every old /en/… URL redirects to the same
 // English page at the root
-for (const [from, to] of [...PAGES.map((p) => [p, p]), ...Object.entries(MOVED)]) stub('en', from, 'en', to);
+const LIVE_PAGES = PAGES.filter((p) => !PARKED.has(p)).map((p) => [p, p]); // parked pages are in MOVED
+for (const [from, to] of [...LIVE_PAGES, ...Object.entries(MOVED)]) stub('en', from, 'en', to);
 // removed languages: /es/… and /fr/… redirect to the default English page
-for (const lang of REMOVED) for (const [from, to] of [...PAGES.map((p) => [p, p]), ...Object.entries(MOVED)]) stub(lang, from, 'en', to);
+for (const lang of REMOVED) for (const [from, to] of [...LIVE_PAGES, ...Object.entries(MOVED)]) stub(lang, from, 'en', to);
 
 // 404 (one file, two languages; header and footer in English, one block per language)
 {
@@ -910,7 +952,10 @@ write('sitemap.xml', sm.join('\n'));
 write('site.webmanifest', JSON.stringify({ name: BRAND, short_name: BRAND, start_url: '/', display: 'browser', background_color: '#F6F8EF', theme_color: '#0E0F0C',
   icons: [{ src: '/favicon-32.png', sizes: '32x32', type: 'image/png' }, { src: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }, { src: '/favicon-512.png', sizes: '512x512', type: 'image/png' }] }, null, 2) + '\n');
 
-// keys in the JSON that no page used (the check script fails on these)
+// keys in the JSON that no page used (review fix 2026-11-14: an honest check). The build records every key it read in
+// build/used-keys.json (not published) and fails on an unused one; build/check.mjs fails too if that record is missing or
+// does not match the i18n files.
 const unused = Object.keys(dicts.en).filter((k) => !used.has(k));
-if (unused.length) console.warn('UNUSED i18n keys: ' + unused.join(', '));
-console.log(`built ${built.length} pages + ${LEGAL.length + LANGS.length * Object.keys(MOVED).length + PAGES.length + Object.keys(MOVED).length + REMOVED.length * (PAGES.length + Object.keys(MOVED).length)} stubs + 404 + robots/sitemap/manifest (noindex ${NOINDEX ? 'ON' : 'off'})`);
+fs.writeFileSync(path.join(ROOT, 'build', 'used-keys.json'), JSON.stringify({ i18n_sha256: crypto.createHash('sha256').update(LANGS.map(([c]) => rd(`i18n/${c}.json`)).join('\n')).digest('hex'), used: [...used].sort() }, null, 1) + '\n');
+if (unused.length) { console.error('UNUSED i18n keys (delete them from every language): ' + unused.join(', ')); process.exitCode = 1; }
+console.log(`built ${built.length} pages + ${LEGAL.length + LANGS.length * Object.keys(MOVED).length + LIVE_PAGES.length + Object.keys(MOVED).length + REMOVED.length * (LIVE_PAGES.length + Object.keys(MOVED).length) + 2} stubs + 404 + robots/sitemap/manifest (noindex ${NOINDEX ? 'ON' : 'off'})`);

@@ -1,0 +1,137 @@
+{
+ "_about": "The made-up example business on the home page (review fix 2026-11-14, owner: \"forget sahm… call it example… doesn't mention a specific brand\"): a café called \"Example Café\", with no real name, handle, logo or post. Drawn in HTML/CSS by build/build.mjs (exInner); nothing is a photo or a real client's work. 'pal' is the one palette of all its posts [background, text, accent]; 'text' holds the post in English and Arabic (shown in the page language); 'day' is its day of the month in the walkthrough calendar. Six posts: no more than the smallest package's posts a month (build.mjs checks it). The fifth post is the one reviewed and approved.",
+ "client": {
+  "pal": [
+   "#1F3A33",
+   "#F4EEE2",
+   "#E8B04B"
+  ],
+  "posts": [
+   {
+    "layout": "word",
+    "day": 3,
+    "text": {
+     "en": {
+      "title": "New beans",
+      "h": "Fresh.",
+      "s": "New beans on the bar."
+     },
+     "ar": {
+      "title": "حبوب جديدة",
+      "h": "طازج.",
+      "s": "حبوب قهوة جديدة على البار."
+     }
+    }
+   },
+   {
+    "layout": "hours",
+    "day": 5,
+    "text": {
+     "en": {
+      "title": "Opening hours",
+      "h": "Open every day",
+      "rows": [
+       [
+        "Mornings",
+        "from early"
+       ],
+       [
+        "Evenings",
+        "until late"
+       ]
+      ]
+     },
+     "ar": {
+      "title": "مواعيد العمل",
+      "h": "مفتوحون كل يوم",
+      "rows": [
+       [
+        "الصباح",
+        "من وقت مبكر"
+       ],
+       [
+        "المساء",
+        "حتى وقت متأخر"
+       ]
+      ]
+     }
+    }
+   },
+   {
+    "layout": "question",
+    "day": 8,
+    "text": {
+     "en": {
+      "title": "Hot or iced",
+      "h": "Hot or iced today?",
+      "s": "Tell us in the comments."
+     },
+     "ar": {
+      "title": "ساخن أم بارد",
+      "h": "ساخن أم بارد اليوم؟",
+      "s": "أخبرنا في التعليقات."
+     }
+    }
+   },
+   {
+    "layout": "tip",
+    "day": 10,
+    "text": {
+     "en": {
+      "title": "Oat milk",
+      "tag": "Tip",
+      "h": "Ask for oat milk in any drink.",
+      "s": "Just say it when you order."
+     },
+     "ar": {
+      "title": "حليب الشوفان",
+      "tag": "نصيحة",
+      "h": "اطلب حليب الشوفان في أي مشروب.",
+      "s": "قلها فقط عند الطلب."
+     }
+    }
+   },
+   {
+    "layout": "spot",
+    "shapeKind": "circle",
+    "day": 12,
+    "text": {
+     "en": {
+      "title": "Date cake",
+      "h": "Date cake",
+      "s": "Baked here every morning."
+     },
+     "ar": {
+      "title": "كيكة التمر",
+      "h": "كيكة التمر",
+      "s": "نخبزها هنا كل صباح."
+     }
+    }
+   },
+   {
+    "layout": "list",
+    "day": 15,
+    "text": {
+     "en": {
+      "title": "Weekend table",
+      "h": "Weekend table",
+      "items": [
+       "Breakfast plates",
+       "Fresh juice",
+       "Something sweet"
+      ]
+     },
+     "ar": {
+      "title": "مائدة نهاية الأسبوع",
+      "h": "مائدة نهاية الأسبوع",
+      "items": [
+       "أطباق الفطور",
+       "عصير طازج",
+       "شيء حلو"
+      ]
+     }
+    }
+   }
+  ]
+ }
+}

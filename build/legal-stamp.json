@@ -1,0 +1,17 @@
+{
+ "terms/": {
+  "date": "2026-11-14",
+  "en": "16cb3c617ef8c6bbf683c1f32da466cc15c6f1a73b2b957a921c40d75de885e6",
+  "ar": "7318c87bab23f4a273e3275ff067ec1decd79244bb3ae9813a6c94104895248c"
+ },
+ "refund/": {
+  "date": "2026-11-14",
+  "en": "c4070f7fbb4620bbb6a0ae1536ad03f03a06151b73b09ee3498dee0a5493a223",
+  "ar": "f47f9c9de3061c5b65c2874ad5dbce69eba5e87a82ec6d35428ac2e55c122f63"
+ },
+ "privacy/": {
+  "date": "2026-11-14",
+  "en": "56433601c8baec38190a57d72ef5aa2c766479adac679994b16db16fd459aa5f",
+  "ar": "d3c8760b3a63dc813f35d3a950739e12f986dcd81e82d47a3965a9d38b7044d0"
+ }
+}

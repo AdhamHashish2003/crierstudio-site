@@ -1,0 +1,39 @@
+<!doctype html>
+<!-- Source of /og.png, the share image (1200 x 630). Render: node build/og-image.mjs (Playwright). Not published (build/ is excluded). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Crier Studio share image</title>
+<style>
+@font-face{font-family:Archivo;src:url(../fonts/archivo-latin-wght-normal.woff2) format("woff2");font-weight:100 900}
+@font-face{font-family:Instrument;src:url(../fonts/instrument-sans-latin-500-normal.woff2) format("woff2");font-weight:500}
+@font-face{font-family:Instrument;src:url(../fonts/instrument-sans-latin-700-normal.woff2) format("woff2");font-weight:700}
+*{box-sizing:border-box;margin:0}
+html,body{width:1200px;height:630px;overflow:hidden}
+body{position:relative;background:#0E0F0C;color:#F6F8EF;font-family:Instrument,Arial,sans-serif}
+.logo{position:absolute;left:72px;top:64px;width:250px;height:auto}
+.logo svg{display:block;width:100%;height:auto}
+h1{position:absolute;left:72px;top:176px;width:700px;font:800 66px/1.06 Archivo,Arial,sans-serif;letter-spacing:-.035em}
+h1 .hl{background:#C6FF00;color:#0E0F0C;padding:0 .1em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.foot{position:absolute;left:72px;right:72px;bottom:56px;display:flex;justify-content:space-between;align-items:center;padding-top:22px;border-top:1px solid #2D3027;font-size:22px;font-weight:500;color:#B7BCA9}
+.foot b{color:#F6F8EF;font-weight:700}
+.tiles{position:absolute;right:72px;top:96px;display:grid;grid-template-columns:repeat(2,150px);gap:14px}
+.tiles i{display:block;height:180px;border-radius:8px;position:relative;overflow:hidden}
+.tiles i::after{content:"";position:absolute;left:14px;right:40px;bottom:16px;height:12px;border-radius:3px;background:currentColor;opacity:.85}
+.tiles i::before{content:"";position:absolute;left:14px;top:14px;width:20px;height:20px;border-radius:50%;background:currentColor}
+.t1{background:#C6FF00;color:#0E0F0C}.t2{background:#1A1C16;color:#C6FF00;box-shadow:inset 0 0 0 1px #2D3027}
+.t3{background:#F6F8EF;color:#0E0F0C}.t4{background:#2D3027;color:#F6F8EF}
+.tiles .tall{grid-row:span 2;height:374px}
+</style>
+</head>
+<body>
+<div class="logo" id="logo"></div>
+<h1>Social media posts, stories and reels for your business, <span class="hl">every month.</span></h1>
+<div class="tiles" aria-hidden="true"><i class="t1 tall"></i><i class="t2"></i><i class="t3"></i></div>
+<div class="foot"><span><b>Crier Studio</b></span><span>Instagram · Facebook · TikTok</span><span>crierstudio.com</span></div>
+<script>
+// the site's own logo file (assets/logo-light.svg: the light version for a dark ground)
+fetch('../assets/logo-light.svg').then(function (r) { return r.text(); }).then(function (svg) { document.getElementById('logo').innerHTML = svg; document.body.setAttribute('data-ready', '1'); });
+</script>
+</body>
+</html>

@@ -1,15 +1,28 @@
 # GitHub Pages (Jekyll) publishing settings. Only the built site is public; sources, build scripts, tests,
 # internal notes and build-only config stay in the repository but are not served.
-# Nothing here is fetched by the live pages: site.js reads the prices and the checkout address from the HTML.
+# Nothing here is fetched by the live pages: site.js reads the prices from the HTML, dash.js reads the page's own #dash-s,
+# and data/, i18n/ and fonts/subset-coverage.json are read only by build/build.mjs and build/check.mjs.
+# build/check.mjs fails if a Markdown file, an internal file or a parked page would be served.
 exclude:
+  - "*.md"
   - README.md
+  - ARABIC-REVIEW.md
+  - REVIEW-instore.md
   - TRANSLATIONS.md
   - build
   - tests
   - templates
   - i18n
   - data
+  - design
+  - _parked
   - checkout.json
   - payment-links.json
-  - design
-  - REVIEW-instore.md
+  - fonts/subset-coverage.json
+  # parked material (2026-11-14): the old catalogues and branding pages' images, and the walkthrough's old real-brand crops
+  - assets/demo
+  - assets/fiberglass
+  - assets/fiberglass-a
+  - assets/branddeck
+  - assets/sculptures
+  - assets/sculptures.js

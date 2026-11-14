@@ -24,6 +24,7 @@ html[lang=ar] :is(.eyebrow,.tag,.page .ex2){letter-spacing:0;text-transform:none
 html[lang=ar] body{line-height:1.75}
 h1,h2,h3,p,li,summary,.btn,.field label{overflow-wrap:anywhere}
 .more{margin-top:22px;font-weight:700}
+.more a{display:inline-flex;align-items:center;min-height:24px}
 
 /* shared header, nav, breadcrumb, footer (every page) */
 [hidden]{display:none!important}

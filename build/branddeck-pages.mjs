@@ -234,7 +234,9 @@ ${cards}
 `;
 }
 
-for (const [lang, rel] of [['en', 'branddeck/index.html'], ['ar', 'ar/branddeck/index.html']]) {
+// Parked (review fix 2026-11-14): the physical-branding offer is not sold. The pages are written to _parked/ (never published);
+// /branddeck/ and /ar/branddeck/ are redirect stubs to /pricing/ written by build.mjs.
+for (const [lang, rel] of [['en', '_parked/branddeck/index.html'], ['ar', '_parked/ar/branddeck/index.html']]) {
   const f = path.join(ROOT, rel);
   fs.mkdirSync(path.dirname(f), { recursive: true });
   fs.writeFileSync(f, page(lang), 'utf8');

@@ -17,10 +17,8 @@
     location.replace(pathFor(own || q || saved() || "en", document.body.getAttribute("data-target")) + (own ? location.search : "") + (location.hash || (th ? "#" + th : "")));
     return;
   }
-  if (page === "index" && location.pathname === "/") {
-    var want = q || (location.search ? null : saved());
-    if (want && want !== de.lang) { location.replace(pathFor(want, "index") + location.hash); return; }
-  }
+  // (the page's own language is decided in <head> before paint: the URL wins; the memory only picks the language on a neutral
+  // entry to "/". Nothing here redirects a page by the memory.)
 
   // the language links remember the choice; crawlers have no storage and are never redirected
   var links = document.querySelectorAll(".langpick a");
@@ -34,13 +32,15 @@
   // (15 / 5 / 14 %); every other country pays the US-dollar price with no VAT. The HTML shows US dollars (the international
   // price); every price also carries its local NET price before VAT (data-sar, data-aed, data-egp, from data/pricing.json).
   // The country: the visitor's own pick in a "Your country" dropdown (saved), else Cloudflare's /cdn-cgi/trace, else the time
-  // zone or the browser's language region; unknown = Saudi Arabia (CD.def, the country the HTML is written in; MENA landing,
-  // 2026-10-16). Never taken from the page language: an Arabic page read in Kuwait, Qatar or Bahrain stays in US dollars.
+  // zone or the browser's language region; unknown = "Another country" in US dollars (review fix 2026-11-14; the HTML is still
+  // written in Saudi riyals so the page reads right without JavaScript). Never taken from the page language: an Arabic page read in Kuwait, Qatar or Bahrain stays in US dollars.
   // Picking "Another country" always means US dollars. The legal pages keep the US-dollar price list.
   var CC_KEY = "crier.cc", CD = null, cc = null, ccPicked = null, ccSeen = null, cur = "USD", curHooks = [];
   try { CD = JSON.parse(document.getElementById("cur-data").textContent); } catch (e) {}
   var CC = CD ? CD.countries : {};
   function isLocal(c) { return typeof c === "string" && Object.prototype.hasOwnProperty.call(CC, c); }
+  // VAT is shown only where the price data marks it as charged (vat_pct above 0); otherwise the price shown is the amount due
+  function vatOf(c) { return isLocal(c) ? +CC[c].vat_pct || 0 : 0; }
   function curOf(c) { return isLocal(c) ? CC[c].currency : "USD"; }
   try { ccPicked = localStorage.getItem(CC_KEY); if (!(isLocal(ccPicked) || ccPicked === "other")) ccPicked = null; } catch (e) {}
   function guessCountry() {
@@ -77,7 +77,7 @@
   }
   // the VAT line under a card: "price + VAT = total" in the buyer's currency; hidden in US dollars (no VAT)
   function vatNote(el, pkg, extra, per) {
-    var q = cur === "USD" ? null : localQuote(pkg, cc, extra);
+    var q = vatOf(cc) ? localQuote(pkg, cc, extra) : null;
     el.hidden = !q; el.textContent = q ? display(q) + (per || "") : "";
   }
   function setCountry(c) {
@@ -87,15 +87,15 @@
       var v = ps[i].getAttribute(cur === "USD" ? "data-usd" : "data-" + cur.toLowerCase()); if (v == null) continue;
       // a card's big price is followed by its VAT line; a price inside a sentence says "+ VAT" itself
       var big = /(^|\s)(?:price|price-list)(\s|$)/.test(ps[i].className);
-      ps[i].textContent = money(cur, +v) + (cur !== "USD" && !big ? " " + CD.plusVat : "");
+      ps[i].textContent = money(cur, +v) + (vatOf(cc) && !big ? " " + CD.plusVat : "");
       ps[i].dir = cur !== "USD" && de.dir === "rtl" ? "rtl" : "ltr";
     }
     // home: the "+ VAT" written next to a big price (hero, package cards); US dollars carry no VAT
     var vt = document.querySelectorAll("[data-vat]");
-    for (var vi = 0; vi < vt.length; vi++) vt[vi].hidden = cur === "USD";
+    for (var vi = 0; vi < vt.length; vi++) vt[vi].hidden = !vatOf(cc);
     var us = document.querySelectorAll(".usdnote[data-pkg]");
     for (var j = 0; j < us.length; j++) { var cd = us[j].closest(".plan"); if (!(cd && cd.querySelector(".platpick"))) vatNote(us[j], us[j].getAttribute("data-pkg"), 0, us[j].getAttribute("data-per") || ""); }
-    var note = document.getElementById("vat-note"); if (note) note.textContent = (CD["note" + cur] || "").replace("{vat}", isLocal(cc) ? CC[cc].vat_pct : "");
+    var note = document.getElementById("vat-note"); if (note) note.textContent = (CD["note" + cur] || "") + " " + (vatOf(cc) ? (CD.vatAdded || "").replace("{vat}", vatOf(cc)) : (CD.due || ""));
     var sels = document.querySelectorAll("select[data-cc]");
     for (var s = 0; s < sels.length; s++) sels[s].value = isLocal(cc) ? cc : "other";
     for (var k = 0; k < curHooks.length; k++) curHooks[k]();
@@ -107,7 +107,9 @@
     var ccSels = document.querySelectorAll("select[data-cc]");
     for (var cs = 0; cs < ccSels.length; cs++) ccSels[cs].addEventListener("change", function () { ccPicked = this.value; try { localStorage.setItem(CC_KEY, ccPicked); } catch (e) {} setCountry(fromPick(ccPicked)); });
     ccSeen = guessCountry();
-    setCountry(ccPicked ? fromPick(ccPicked) : (ccSeen || (isLocal(CD.def) ? CD.def : null)));
+    // review fix (2026-11-14): when neither the time zone nor the browser names a country, "Another country" (US dollars) is
+    // shown, never Saudi Arabia; an explicit pick is kept in localStorage and always wins
+    setCountry(ccPicked ? fromPick(ccPicked) : ccSeen);
     // the country from Cloudflare (it serves crierstudio.com) wins over the guess, unless the visitor picked their country
     if (window.fetch) fetch("/cdn-cgi/trace").then(function (r) { return r.ok ? r.text() : ""; }).then(function (tx) {
       var m = /(?:^|\n)loc=([A-Z]{2})(?:\n|$)/.exec(tx || ""); if (!m || m[1] === "XX" || m[1] === "T1") return;
@@ -128,7 +130,7 @@
       var n = names(); if (!n.v.length) { boxes[0].checked = true; n = names(); }
       var extras = Math.max(0, n.v.length - (+fs.dataset.included || 1)), lp = cur !== "USD" && local[cur];
       var price = lp ? lp[0] + extras * lp[1] : +fs.dataset.price + extras * +fs.dataset.extra;
-      var shown = money(lp ? cur : "USD", price) + (lp && CD ? " " + CD.plusVat : "");
+      var shown = money(lp ? cur : "USD", price) + (lp && CD && vatOf(cc) ? " " + CD.plusVat : "");
       out.textContent = fs.dataset.tpl.replace("{name}", function () { return fs.dataset.name; }).replace("{platforms}", function () { return n.o.join(" + "); }).replace("{price}", function () { return shown; }).replace("{per}", function () { return fs.dataset.per; });
       if (vn) vatNote(vn, fs.dataset.pkg, extras, fs.dataset.per);
       if (buy) { try { var u = new URL(buy.getAttribute("href"), location.href); if (u.origin === location.origin) { u.searchParams.set("platforms", n.v.join(",")); buy.setAttribute("href", u.pathname + u.search + u.hash); } } catch (e) {} }
@@ -141,8 +143,12 @@
 })();
 
 /* In-store (2026-10-18): the zone chips (real tab buttons) and the Store Kit waitlist form. It posts to the Launchpad intake
-   (the order form's endpoint) with the fields it requires; it ignores unknown keys today, so country and form are sent ready
-   for a later CRM upgrade. Custom pieces quotes are asked in the client portal (a plain link, no script here). Without
+   (the order form's endpoint). Review fix 2026-11-14: the request is sent as what it is, product "store-waitlist" with the
+   visitor's website or handle (web), email, business type (industry), country code (country: SA, AE, EG, US or other), page
+   language and consent. The intake live on 2026-11-14 accepts only the products "snapshot" and "crier_deck" and requires a
+   business name and a city: when it answers 422 on product, business or city, the form sends once more in that older shape
+   (labelled "[Store Kit waitlist]"), and keeps using it for the rest of the visit, so nothing is lost until the intake is
+   upgraded. Custom pieces quotes are asked in the client portal (a plain link, no script here). Without
    JavaScript the chips stay hidden (every zone is listed) and the submit button stays disabled (a noscript line gives the email). */
 (function () {
   "use strict";
@@ -178,7 +184,7 @@
   var EMAIL = /^[A-Za-z0-9._%+'-]{1,64}@[A-Za-z0-9-]{1,63}(\.[A-Za-z0-9-]{1,63})*\.[A-Za-z]{2,24}$/;
   var SITE = /^(https?:\/\/)?([A-Za-z0-9-]{1,63}\.)+[A-Za-z]{2,24}(:\d{1,5})?(\/[^\s<>"']{0,150})?$/;
   var HANDLE = /^@?[A-Za-z0-9._]{1,30}$/;
-  var CC = { SA: "Saudi Arabia", AE: "UAE", EG: "Egypt", other: "Other country" };
+  var CC = { SA: "Saudi Arabia", AE: "UAE", EG: "Egypt", US: "United States", other: "Other country" };
   var RULES = {
     country: function (v) { return v ? "" : "v.country"; },
     type: function (v) { return v ? "" : "v.type"; },
@@ -212,20 +218,31 @@
       var cb = el("consent"); setErr("consent", cb.checked ? "" : "f.consentErr"); if (!cb.checked && !first) first = cb;
       return first;
     }
-    function payload() {
-      var web = val("web"), country = el("country").value, cn = CC[country] || CC.other;
-      var p = { web: web, email: val("email"), consent: true, company_website: el("company_website").value, product: "snapshot", lang: lang, form: kind, country: country };
-      p.business = cut("[Store Kit waitlist] " + web, 120); p.city = cn; p.industry = el("type").value;
+    function payload(old) {
+      var web = val("web"), country = el("country").value;
+      var p = { product: "store-waitlist", form: kind, web: web, email: val("email"), industry: el("type").value, country: country, lang: lang, consent: true, company_website: el("company_website").value };
+      // the intake of 2026-11-14 (see above): its two required free-text fields, and no product (it files it as its default)
+      if (old) { delete p.product; p.business = cut("[Store Kit waitlist] " + web, 120); p.city = CC[country] || CC.other; }
       return p;
+    }
+    var legacy = false;
+    function send(old) {
+      var ctl = ("AbortController" in window) ? new AbortController() : null, timer = setTimeout(function () { if (ctl) ctl.abort(); }, 20000);
+      return fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload(old)), signal: ctl ? ctl.signal : undefined })
+        .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, body: j }; }); })
+        .then(function (res) {
+          clearTimeout(timer);
+          var f = res.status === 422 && res.body && res.body.field;
+          if (!old && (f === "product" || f === "business" || f === "city")) { legacy = true; return send(true); }
+          return res;
+        }, function (e) { clearTimeout(timer); throw e; });
     }
     btn.disabled = false;
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var bad = check(); if (bad) { status.hidden = true; bad.focus(); return; }
       btn.disabled = true; say("f.sending", false, true);
-      var ctl = ("AbortController" in window) ? new AbortController() : null, timer = setTimeout(function () { if (ctl) ctl.abort(); }, 20000);
-      fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload()), signal: ctl ? ctl.signal : undefined })
-        .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, body: j }; }); })
+      send(legacy)
         .then(function (res) {
           if (res.status === 200 && res.body && res.body.ok === true) { form.reset(); say("is.wl.ok", false); return; }
           if (res.status === 429) { say("f.tooMany", true); return; }
@@ -234,7 +251,7 @@
           say("f.failed", true);
         })
         .catch(function () { say("f.failed", true); })
-        .then(function () { clearTimeout(timer); btn.disabled = false; });
+        .then(function () { btn.disabled = false; });
     });
   })(forms[f]);
 })();
