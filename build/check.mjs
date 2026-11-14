@@ -15,7 +15,7 @@ const SKIP_DIRS = ['.git', 'node_modules', 'templates', 'build', 'tests', 'i18n'
 const PRODUCTS = ['seen', 'visible', 'growing', 'deck'];
 // Audit fixes (2026-10-19): every buy / plan / start button opens the client portal's sign-up (AR pages with ?lang=ar)
 // (2026-11-14: the portal reads ?lang=en|ar and nothing about a package, so every language passes its own lang)
-const SIGNUP = (l) => `https://portal.crierstudio.com/#/signup?lang=${l}`;
+const SIGNUP = (l, plan) => `https://portal.crierstudio.com/#/signup?${plan ? `plan=${plan}&` : ''}lang=${l}`;
 const PORTAL_HOME = (l) => `https://portal.crierstudio.com/?lang=${l}`;
 let fail = 0; const ok = (c, m) => { if (!c) { fail++; console.log('FAIL', m); } };
 const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
@@ -235,7 +235,7 @@ ok(rd('pricing/index.html').includes('"@type":"ItemList"') && rd('pricing/index.
       const hh = rd(PREFIX(l) + 'pricing/index.html');
       const m = hh.match(new RegExp(`<a class="btn[^"]*" href="([^"]*)" data-product="${k}"`));
       if (k === 'deck') { ok(!m && hh.includes('disabled data-unavailable="deck"'), `Brand Deck unavailable (${l})`); continue; }
-      const want = links[k] || SIGNUP(l);
+      const want = links[k] || SIGNUP(l, k);
       ok(m && m[1].replace(/&amp;/g, '&') === want, `buy button ${k} (${l}) href`);
     }
   }
@@ -317,6 +317,15 @@ ok(rd('index.html').includes('"alternateName":"Crier"') && rd('index.html').incl
     for (const ch of new Set(text)) { const c = ch.codePointAt(0); if (c < 0x20) continue; for (const [rs, set, name] of fonts) if (inR(rs, c) && !set.has(ch)) missing.set(`${name} U+${c.toString(16).toUpperCase().padStart(4, '0')} (${ch})`, f); }
   }
   for (const [k, f] of missing) ok(false, `font subset lacks ${k}, used in ${f}: run python3 build/subset-fonts.py`);
+}
+// package buttons (2026-11-14): every "Choose <package>" link on the home page (table + "Start with" block) and the pricing
+// cards opens the sign-up with its own card's package id and the page language; generic sign-up links carry no plan
+for (const l of LANGS) for (const f of [PREFIX(l) + 'index.html', PREFIX(l) + 'pricing/index.html']) {
+  const h = rd(f), btns = [...h.matchAll(/<a class="btn[^"]*" href="([^"]*)" data-product="(\w+)"/g)];
+  ok(btns.length >= 3, `package buttons on ${f}`);
+  for (const [, href, id] of btns) ok(href.replace(/&amp;/g, '&') === (JSON.parse(rd('payment-links.json'))[id] || SIGNUP(l, id)) && PRICING.packages.some((x) => x.id === id && !x.coming_soon), `button for ${id} on ${f} links to its own package (${href})`);
+  for (const m of h.matchAll(/href="(https:\/\/portal\.crierstudio\.com\/#\/signup[^"]*)"(?! data-product)/g)) ok(!/plan=/.test(m[1]), `a generic sign-up link carries a plan on ${f}`);
+  if (f.endsWith('index.html') && !f.includes('pricing')) ok((h.match(/<tr class="la-buy">[\s\S]*?<\/tr>/) || [''])[0].split('data-product=').length === 4 && /class="btn lime" href="[^"]*" data-product="/.test(h), `home table and "Start with" block buttons carry their package on ${f}`);
 }
 // ================= Review fixes (2026-11-14): rules that keep the reviewed problems from coming back =================
 // The published set, as GitHub Pages (Jekyll) builds it: every file except paths with a part starting with "_" or ".", and the

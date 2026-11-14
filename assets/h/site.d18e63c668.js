@@ -192,7 +192,7 @@
     web: function (v) { return !v ? "v.web" : (SITE.test(v) || HANDLE.test(v) ? "" : "v.webBad"); }
   };
   // a 422 from the intake names the intake's field: point it at the input it was made from, with that input's message
-  var FROM = { store_waitlist: { business: "web", city: "country", industry: "type" } };
+  var FROM = { store_waitlist: { website: "web", business: "web", city: "country", industry: "type" } };
   var MSG = { email: "v.emailBad", web: "v.webBad", type: "v.type", consent: "f.consentErr" };
   function clean(v) { return String(v || "").replace(/\s+/g, " ").trim(); }
   function cut(s, n) { return s.length > n ? s.slice(0, n).trim() : s; }
@@ -220,9 +220,9 @@
     }
     function payload(old) {
       var web = val("web"), country = el("country").value;
-      var p = { product: "store-waitlist", form: kind, web: web, email: val("email"), industry: el("type").value, country: country, lang: lang, consent: true, company_website: el("company_website").value };
-      // the intake of 2026-11-14 (see above): its two required free-text fields, and no product (it files it as its default)
-      if (old) { delete p.product; p.business = cut("[Store Kit waitlist] " + web, 120); p.city = CC[country] || CC.other; }
+      var p = { product: "store-waitlist", form: kind, website: web, email: val("email"), industry: el("type").value, country: country, lang: lang, consent: true, company_website: el("company_website").value };
+      // the intake of 2026-11-14 (see above): web, its two required free-text fields, and no product (it files it as its default)
+      if (old) { delete p.product; delete p.website; p.web = web; p.business = cut("[Store Kit waitlist] " + web, 120); p.city = CC[country] || CC.other; }
       return p;
     }
     var legacy = false;
@@ -233,7 +233,7 @@
         .then(function (res) {
           clearTimeout(timer);
           var f = res.status === 422 && res.body && res.body.field;
-          if (!old && (f === "product" || f === "business" || f === "city")) { legacy = true; return send(true); }
+          if (!old && (f === "product" || f === "business" || f === "city" || f === "web")) { legacy = true; return send(true); } // OLD-INTAKE FALLBACK: delete this one line once the Launchpad intake accepts product "store-waitlist"
           return res;
         }, function (e) { clearTimeout(timer); throw e; });
     }

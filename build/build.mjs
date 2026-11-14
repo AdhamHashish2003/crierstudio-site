@@ -201,7 +201,7 @@ const syms = [
 ];
 const INDCOLORS = [['sun', 'coral'], ['coral', 'accent'], ['accent', 'ink'], ['ink', 'sun'], ['sun', 'accent']];
 // FAQ ids (keys faq.<id>q, faq.<id>a1, faq.<id>a2)
-const FAQ_ALL = [19, 20, 22, 23, 24, 25, 26, 11, 12, 13, 14, 15, 16, 1, 7, 2, 4, 5, 17, 9];
+const FAQ_ALL = [19, 20, 22, 23, 24, 25, 11, 12, 13, 14, 15, 16, 1, 7, 2, 4, 5, 17, 9];
 const FAQ_DECK = [11, 12, 13, 14, 15, 16];
 
 function faqAnswers(lang, i) {
@@ -291,9 +291,12 @@ const isLinked = (p) => LINKS[p] !== '';
 // order form is gone. The portal supports no plan intent, so none is sent.
 // Review fix (2026-11-14): the portal reads only ?lang=en|ar (hash or query, portal/public/app.js boot) and ?intent=quote; it has
 // no plan or package parameter, so the chosen package cannot be passed and only the page language is sent.
-const signupUrl = (lang) => `${PORTAL}#/signup?lang=${lang}`;
+// THE one place the portal sign-up link is built (2026-11-14): SIGNUP_PATH is the portal's sign-up route; a package button adds
+// plan=<package id from data/pricing.json> (the portal is gaining ?plan=; an older portal ignores it), every link adds lang.
+const SIGNUP_PATH = '#/signup';
+const signupUrl = (lang, plan) => `${PORTAL}${SIGNUP_PATH}?${plan ? `plan=${encodeURIComponent(plan)}&` : ''}lang=${lang}`;
 const portalHome = (lang) => `${PORTAL}?lang=${lang}`;
-function buyHref(lang, p) { return isLinked(p) ? LINKS[p] : signupUrl(lang); }
+function buyHref(lang, p) { if (!PKG[p] || PKG[p].coming_soon) throw new Error('no buy link for ' + p); return isLinked(p) ? LINKS[p] : signupUrl(lang, p); }
 function buyBtn(lang, p, ghost) {
   if (p === 'deck') return `<button class="btn coming-soon" type="button" disabled data-unavailable="deck">${h(lang, 'pkg.deck.btn')}</button><span class="paynote">${h(lang, 'availability.deck')}</span>`;
   const note = isLinked(p) ? '' : `<span class="paynote">${h(lang, 'pay.note')}</span>`;
@@ -385,7 +388,7 @@ function priceTable(lang) {
   const price = `<tr class="la-prow"><th scope="row">${h(lang, 'la.t.price')}</th>${TABLE_PKGS.map((p) => `<td${hot(p)}>${money(lang, p)}<span class="per">${h(lang, MONTHLY.has(p) ? 'plan.per' : 'one.per')}</span></td>`).join('')}</tr>`;
   const cls = (p, k) => { const c = [p === 'visible' && 'hot', k === 'la.t.no' && 'la-no'].filter(Boolean); return c.length ? ` class="${c.join(' ')}"` : ''; };
   const rows = TABLE_ROWS.map(([label, cells]) => `<tr><th scope="row">${h(lang, label)}</th>${cells.map((k, i) => `<td${cls(TABLE_PKGS[i], k)}>${h(lang, k)}</td>`).join('')}</tr>`).join('');
-  const buy = `<tr class="la-buy"><td></td>${TABLE_PKGS.map((p) => `<td${hot(p)}><a class="btn${p === 'visible' ? '' : ' la-line'}" href="${esc(buyHref(lang, p))}">${h(lang, `pkg.${p}.btn`)}</a></td>`).join('')}</tr>`;
+  const buy = `<tr class="la-buy"><td></td>${TABLE_PKGS.map((p) => `<td${hot(p)}><a class="btn${p === 'visible' ? '' : ' la-line'}" href="${esc(buyHref(lang, p))}" data-product="${p}">${h(lang, `pkg.${p}.btn`)}</a></td>`).join('')}</tr>`;
   return `<table class="la-table">${head}<tbody>${price}${rows}${buy}</tbody></table>`;
 }
 
@@ -483,7 +486,7 @@ function walkthrough(lang) {
 function homeVars(lang) {
   return {
     heroH1: heroH1(lang), exPosts: exPosts(lang), exStory: exStory(lang), exLogo, ...heroStart(lang),
-    kitNums: kitNums(lang), kitPrice: money(lang, KIT_PKG), kitBtn: `<a class="btn lime" href="${esc(buyHref(lang, KIT_PKG))}">${h(lang, `pkg.${KIT_PKG}.btn`)}</a>`,
+    kitNums: kitNums(lang), kitPrice: money(lang, KIT_PKG), kitBtn: `<a class="btn lime" href="${esc(buyHref(lang, KIT_PKG))}" data-product="${KIT_PKG}">${h(lang, `pkg.${KIT_PKG}.btn`)}</a>`,
     trust: homeTrust(lang), ...walkthrough(lang), curPick: curPick(lang), priceTable: priceTable(lang),
   };
 }
