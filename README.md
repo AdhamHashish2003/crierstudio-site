@@ -62,7 +62,7 @@ The homepage is a short landing page for local businesses in Saudi Arabia, the U
 
 Run `node build/build.mjs && node build/check.mjs`, then serve this directory with `python3 -m http.server 8767 --bind 127.0.0.1` and open `http://127.0.0.1:8767/`.
 
-Browser checks use the existing `playwright-core` test setup: `BASE=http://127.0.0.1:8767 node tests/form.mjs`, `node tests/consent.mjs` with the same BASE, and `OUTPUT=/path/to/evidence BASE=http://127.0.0.1:8767 node tests/studio.mjs`. The last check captures responsive screenshots and exports the studio deck with Chromium; it does not make live submissions. `CHROME` can override the browser executable. Export verification also requires checking the resulting PDF pages, not only the HTML source.
+Browser checks use `playwright-core` with Chrome (Google, WhatsApp and the portal are blocked; nothing is posted anywhere): `BASE=http://127.0.0.1:8767 node tests/launch.mjs` (Arabic-first redirects and the saved language, the floating WhatsApp button and the `whatsapp_click` event, every page in ar and en at 375 px and desktop: no sideways scroll, lang/dir, the logo, the favicon; `OUTPUT=<dir>` saves full-page screenshots) and `BASE=… node tests/consent.mjs` (the cookie bar and Consent Mode). `node tests/links.mjs` checks every internal link and asset on every published page and GETs every external URL (`EXTERNAL=0` skips the network). The old `tests/form.mjs` (the retired order form) and `tests/studio.mjs` (the retired 3D studio home) were removed on 2026-11-15.
 
 The public site deploys from `main` through GitHub Pages. Railway hosts the linked Client Portal and CRM; do not upload this static site over either service. Website deployment does not establish completion of the D3 deck engine.
 
