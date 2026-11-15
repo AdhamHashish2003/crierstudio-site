@@ -152,19 +152,29 @@ function raw(lang, key) {
   if (VARIANT && dicts[lang][key + VARIANT] != null) { used.add(key + VARIANT); key = key + VARIANT; }
   const v = dicts[lang][key];
   if (v == null) throw new Error(`missing i18n key ${key} (${lang})`); // strict: no silent fallback to English
-  return fillPricing(v, key);
+  return fillPricing(v, key, lang);
+}
+// Counts (2026-11-15, voice guide): ONE helper, never «{n} تصميمًا». `{c:<id>.<item>:<noun>}` writes the count with its noun in
+// the right form: i18n cnt.<noun> holds the forms by plural category, "one:…|two:…|few:{n} …|many:{n} …|other:{n} …"
+// (Intl.PluralRules: Arabic few = 3–10, many = 11–99; English one / other). Digits stay 0–9.
+function countText(lang, noun, n) {
+  const forms = Object.fromEntries(raw(lang, 'cnt.' + noun).split('|').map((x) => { const i = x.indexOf(':'); return [x.slice(0, i), x.slice(i + 1)]; }));
+  const f = forms[new Intl.PluralRules(lang).select(n)] ?? forms.other;
+  if (f == null) throw new Error(`i18n cnt.${noun} (${lang}): no form for ${n}`);
+  return f.replace('{n}', String(n));
 }
 const vars = { brand: BRAND, email: EMAIL, wa: WA_TEXT }; // wa: the WhatsApp number as people read it (a wa.me link in HTML text)
 // a `.<cc>` variant of a key is read only while that one country is served; it is not an unused key at other times
 const VARIANT_RE = /\.(sa|ae|eg|us)$/;
-function fillPricing(v, key) {
+function fillPricing(v, key, lang) {
   const need = (x, what) => { if (x == null) throw new Error(`i18n ${key}: ${what} is not in data/pricing.json`); return x; };
   // a price becomes a marker \u0002<usd>|<SAR>|<AED>|<EGP>\u0002: t() writes it as $<usd>, h() as a <span> site.js can localise
   const mark = (usd, loc, what) => '\u0002' + [need(usd, what), ...CURS.slice(1).map((c) => need(loc?.[c], what + ' ' + c))].join('|') + '\u0002';
   return v.replace(/\{price:(\w+)\}/g, (m, id) => mark(PKG[id]?.price, PKG[id]?.prices, 'price ' + id))
     .replace(/\{extra:(\w+)\}/g, (m, id) => mark(PKG[id]?.extra_platform_price, PKG[id]?.extra_platform_prices, 'extra platform price ' + id))
     .replace(/\{plat:(\w+)\}/g, (m, id) => String(need(PKG[id]?.platforms_included, 'platforms of ' + id)))
-    .replace(/\{n:(\w+)\.(\w+)\}/g, (m, id, item) => String(need(PKG[id]?.items?.[item], `count ${id}.${item}`)));
+    .replace(/\{n:(\w+)\.(\w+)\}/g, (m, id, item) => String(need(PKG[id]?.items?.[item], `count ${id}.${item}`)))
+    .replace(/\{c:(\w+)\.(\w+):(\w+)\}/g, (m, id, item, noun) => countText(lang, noun, need(PKG[id]?.items?.[item], `count ${id}.${item}`)));
 }
 const PRICE_MARK = /\u0002([\d.|]+)\u0002/g;
 // money and "price + VAT = total" exactly as site.js writes them (fmtNum, money, display there)
@@ -478,7 +488,7 @@ function dash(lang) {
   const waitingBody = '<span class="d-wait-card"><span class="d-wait-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="d-wait-copy"><small>' + D('waitSub') + '</small><span class="d-clock-label">' + D('waitNote') + '</span></span></span>';
   const reviewPost = posts[posts.length - 1];
   const reviewBody = '<span class="d-review-card"><span class="d-review-image">' + image(reviewPost, 'd-review-img') + '</span><span class="d-review-copy"><small>' + esc(reviewPost.label + ' · ' + date(reviewPost.day)) + '</small>' + title(reviewPost) + '<span class="d-review-status" data-k="reviewStatus">' + D('pendingStatus') + '</span><span class="d-review-actions"><span class="d-btn sec" data-b="changes">' + D('changes') + '</span><span class="d-btn lime" data-b="approve">' + D('approve') + '</span></span></span></span>';
-  const readyBody = '<span class="d-ready-card"><span class="d-ready-image">' + image(reviewPost, 'd-ready-img') + '</span><span class="d-ready-copy"><span class="d-ready-chips"><span class="d-chip">' + D('approvedStatus') + '</span><span class="d-chip">' + D('ready') + '</span></span><strong>' + D('readyTitle') + '</strong><small>' + esc(reviewPost.title) + '</small><span class="d-ready-actions"><span class="d-btn lime" data-b="copy"><span data-k="copyLabel">' + D('copyCap') + '</span></span><span class="d-btn sec" data-b="dl">' + D('download') + '</span><span class="d-btn sec" data-b="mark">' + D('markPosted') + '</span></span></span></span>';
+  const readyBody = '<span class="d-ready-card"><span class="d-ready-image">' + image(reviewPost, 'd-ready-img') + '</span><span class="d-ready-copy"><span class="d-ready-chips"><span class="d-chip">' + D('approvedStatus') + '</span><span class="d-chip">' + D('ready') + '</span></span><strong>' + D('readyTitle') + '</strong><small>' + esc(reviewPost.title) + '</small><span class="d-ready-actions"><span class="d-btn lime" data-b="sched"><span data-k="schedLabel">' + D('scheduled') + '</span></span></span></span></span>';
   const instagramBody = '<span class="d-instagram-card"><span class="d-ig-head"><span class="d-ig-avatar">' + logo('d-ig-logo') + '</span><strong>' + D('instagramHandle') + '</strong><span class="d-ig-network">' + D('instagram') + '</span></span><span class="d-ig-image">' + image(reviewPost, 'd-ig-post') + '<span class="d-ig-posted">' + D('posted') + '</span></span><span class="d-ig-footer"><span class="d-ig-icons" aria-hidden="true">♡　○　↗</span><small>' + esc(reviewPost.title) + '</small></span></span>';
   const briefView = view('brief', 'briefTitle', briefBody, false);
   const emptyView = view('empty', 'glance', emptyBody, false);
@@ -490,7 +500,7 @@ function dash(lang) {
   const reviewView = view('review', 'reviewTitle', reviewBody, false);
   const readyView = view('ready', 'readyTitle', readyBody, true);
   const instagramView = view('instagram', 'instagram', instagramBody, false);
-  const js = Object.fromEntries(['brand', 'site', 'briefSubmitted', 'pendingStatus', 'approvedStatus', 'approve', 'copied', 'copyCap'].map((k) => [k, T(k)]));
+  const js = Object.fromEntries(['brand', 'site', 'briefSubmitted', 'pendingStatus', 'approvedStatus', 'approve', 'scheduled', 'postedNow'].map((k) => [k, T(k)]));
   js.posts = posts.length;
   const navLinks = nav('overview', 'overview', 'overview', true) + nav('layers', 'deliverables', 'deliverables', false) + nav('card', 'calendar', 'calendar', false) + nav('folder', 'library', 'library', false) + nav('review', 'review', 'review', false);
   const bottomLinks = [['overview', 'overview'], ['layers', 'deliverables'], ['card', 'calendar'], ['folder', 'library'], ['review', 'review']].map(([icon, key]) => '<span class="d-bn" data-nav="' + key + '">' + ic(icon, lang) + '<span>' + D(key) + '</span></span>').join('');

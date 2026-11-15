@@ -99,6 +99,8 @@ Four monthly packages (owner 2026-11-15), Bronze (`seen`), Silver (`visible`), G
 | Gold | $1,500 | 695 | 680 | 5,000 |
 | Diamond | $1,900 (placeholder) | 905 | 885 | 6,500 |
 
+Arabic counts (2026-11-15, voice guide) go through ONE helper: `{c:<id>.<item>:<noun>}` writes the count with its noun in the right form from `cnt.<noun>` ("one:…|two:…|few:{n} …|many:{n} …|other:{n} …", `Intl.PluralRules`), so «4 تصاميم», «12 تصميمًا», «4 جولات تعديل»; `build/check.mjs` fails on «{n} تصميمًا» templates and on 3–10 with a singular noun. Every page says we publish for the client after the client approves (FAQ, trust lines, walkthrough, terms); the check fails on "you post it" wording.
+
 Every package has the same items, only the counts differ (`pkg.<id>.f1`..`f8`): designed posts 4 / 7 / 12 / 15, a story with every post, reels 2 / 3 / 5 / 8, the monthly content calendar, revision rounds 1 / 1 / 2 / 4 per piece, all three platforms, "We publish on your pages and reply to comments and messages during working hours." and the brand look set up in the first month. `build/check.mjs` flags the prices no package has any more as stale (EGP 7,500, SAR 1,045, AED 1,020: Gold before 2026-11-15).
 
 The price shown is the amount due. VAT (owner, 2026-11-14: not VAT-registered anywhere): a VAT line or "+ VAT" appears only for a country whose `local.countries.<CC>` in the price data marks VAT as charged (`vat_pct` above 0 and `vat_charged` not false); otherwise none, and `build/check.mjs` fails on any VAT statement. Payment: after sign-up and the business questions the studio sends a payment link; the payment provider is not named anywhere on the site (`build/check.mjs` fails on "Stripe" until `data/pricing.json` names a provider in `payment_provider`).

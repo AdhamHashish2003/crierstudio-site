@@ -439,6 +439,18 @@ for (const l of LANGS) {
       ok(JSON.stringify(seen) === JSON.stringify(SOCIAL), `the WhatsApp order button on all four packages on /${PREFIX(l)}${pg} (${seen})`);
     }
   }
+  // Arabic counts (2026-11-15, voice guide): no «{n} تصميمًا» template in i18n, and no rendered "3–10 + singular" on a page
+  for (const [k, v] of Object.entries(d.ar)) ok(!/\{n:[\w.]+\}\s*(تصميمًا|منصة|جولة)/.test(v), `ar:${k} writes a count with a fixed noun form: use {c:<id>.<item>:<noun>}`);
+  for (const f of PUBLISHED.filter((x) => x.startsWith('ar/') && x.endsWith('.html'))) {
+    const vis = rd(f).replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ');
+    ok(!/(^|[^\d,.])([3-9]|10)\s+(تصميمًا|منصة|جولة تعديل)/.test(vis), `${f}: a count of 3–10 with a singular noun (Arabic needs the plural)`);
+  }
+  ok(/(^|\s)4 تصاميم /.test(rd('ar/pricing/index.html').replace(/<[^>]+>/g, ' ')) && /12 تصميمًا/.test(rd('ar/pricing/index.html')) && /4 جولات تعديل/.test(rd('ar/pricing/index.html')), 'ar pricing: «4 تصاميم», «12 تصميمًا», «4 جولات تعديل»');
+  // we publish for the client (2026-11-15): no page says the client posts it, or that nothing is published for them
+  for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) {
+    const h = rd(f);
+    ok(!/Nothing is published for you|then you post it|You post it|post them yourself|Posted by you|لا ننشر شيئًا نيابةً عنك|تنشره أنت|تنشره بنفسك|نشرتَه أنت/.test(h), `${f} says the client posts (we publish since 2026-11-15)`);
+  }
   ok(d.en['pkg.seen.wa'] === 'Order Bronze on WhatsApp' && d.ar['pkg.seen.wa'] === 'اطلب البرونزية عبر واتساب', 'the WhatsApp order button wording');
   ok(/^Pay by InstaPay/.test(d.en['pay.wa.line']) && /إنستاباي/.test(d.ar['pay.wa.line']), 'the InstaPay line wording');
   // stale prices: no built page shows an old price that no package has any more (EGP 7,500 was Gold before 2026-11-15)

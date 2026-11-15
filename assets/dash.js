@@ -118,9 +118,9 @@
     number('readyCount', s.readyCount);
     txt(one('[data-k=reviewStatus]'), s.approvedReview ? S.approvedStatus : S.pendingStatus);
     txt(one('[data-b=approve]'), s.approvedReview ? S.approvedStatus : S.approve);
-    txt(one('[data-k=copyLabel]'), s.copyDone ? S.copied : S.copyCap);
-    cls(one('[data-b=copy]'), 'done', s.copyDone);
-    cls(one('[data-b=dl]'), 'done', s.copyDone);
+    // 2026-11-15: we publish for the client: an approved post is scheduled, then posted by the studio (no copy / download)
+    txt(one('[data-k=schedLabel]'), s.copyDone ? S.postedNow : S.scheduled);
+    cls(one('[data-b=sched]'), 'done', s.copyDone);
     stepper(tt);
     if (!isStatic) pointer(tt);
   }
@@ -131,11 +131,11 @@
     [10, '[data-brief=channels]'], [10.55, '[data-brief=language]'], [11.15, '[data-b=submit-brief]'],
     [13, '.d-wait-card'], [16.35, '[data-nav=overview]'], [20.2, '[data-nav=calendar]'],
     [24.2, '[data-nav=library]'], [29.5, '.d-review-card strong'],
-    [33.15, '[data-b=approve]'], [38.25, '[data-b=copy]'], [41.2, 'rest']
+    [33.15, '[data-b=approve]'], [38.25, '.d-ready-card strong'], [41.2, 'rest']
   ];
   var CLICKS = [
     [2.95, '[data-b=create]'], [7.6, '[data-b=answer]'], [11.45, '[data-b=submit-brief]'],
-    [20.4, '[data-nav=calendar]'], [24.4, '[data-nav=library]'], [33.35, '[data-b=approve]'], [38.5, '[data-b=copy]']
+    [20.4, '[data-nav=calendar]'], [24.4, '[data-nav=library]'], [33.35, '[data-b=approve]']
   ];
   var positions = {};
   function at(selector) {
