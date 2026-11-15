@@ -125,11 +125,18 @@ html[lang=ar] .sheet .lab{letter-spacing:0;text-transform:none}
 .buyrow{display:grid;gap:8px;align-self:end;justify-items:start}
 .plan .buyrow .btn{width:100%}
 .paynote{font-size:.8125rem;color:var(--muted)}
+/* order on WhatsApp (2026-11-15): each Social package's main button, then a small sign-up link */
+.btn.wa-order{background:#25d366;border-color:#128c7e;color:#06281a}
+.btn.wa-order:hover{box-shadow:4px 4px 0 #128c7e}
+.acct-link{display:inline-flex;align-items:center;min-height:44px;font-size:.875rem;font-weight:600;color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.wapay{font-size:.8125rem;color:var(--muted);margin:0}
 .billnote{font-size:var(--step--1);font-weight:700;margin-top:-6px}
 .pnote{font-size:.8125rem;color:var(--muted)}
 .ticks.cols{gap:10px 28px}
 @media (min-width:860px){.ticks.cols{grid-template-columns:repeat(2,minmax(0,1fr))}.plans.single{grid-template-columns:minmax(0,420px)}}
 @media (min-width:860px){.plans{grid-template-columns:repeat(3,1fr)}.plan{padding:28px 24px}}
+@media (min-width:640px){.plans.quad{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1180px){.plans.quad{grid-template-columns:repeat(4,minmax(0,1fr))}.plans.quad .plan{padding:24px 18px}.plans.quad .price{font-size:clamp(2rem,2.6vw,2.6rem)}}
 .plans.one{margin-top:0}
 .billing{display:grid;gap:12px;max-width:760px}
 .billing li{padding-inline-start:22px;position:relative}

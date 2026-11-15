@@ -114,7 +114,9 @@ const WA = String(CONTACT.whatsapp || '').replace(/[\s+()-]/g, '');
 if (WA && !/^[1-9]\d{7,14}$/.test(WA)) throw new Error('data/contact.json: whatsapp must be the number in international format, digits only');
 // the number as people read it (Egypt: +20 114 600 0101), for the contact sentences ({wa})
 const WA_TEXT = WA.startsWith('20') && WA.length === 12 ? `+20 ${WA.slice(2, 5)} ${WA.slice(5, 8)} ${WA.slice(8)}` : '+' + WA;
-const MONTHLY = new Set(PRICING.packages.filter((p) => p.billing === 'monthly').map((p) => p.id)); // billed monthly (Bronze, Silver, Gold); the deck is one-time
+const MONTHLY = new Set(PRICING.packages.filter((p) => p.billing === 'monthly').map((p) => p.id)); // billed monthly (Bronze, Silver, Gold, Diamond); the deck is one-time
+// the Social packages on sale, in tier order (2026-11-15: Bronze, Silver, Gold, Diamond): the cards on /pricing/ and the home table
+const SOCIAL = PRICING.packages.filter((p) => p.billing === 'monthly' && !p.coming_soon && !p.retired).sort((a, b) => (a.tier || 0) - (b.tier || 0)).map((p) => p.id);
 // product names are i18n keys (name.<id>) so every language shows its own name
 const PRODUCTS = Object.keys(PRICES);
 const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
@@ -306,12 +308,15 @@ function curData(lang) {
 }
 // M14: a WhatsApp link only when data/contact.json has a number (the label key is always read, so it is never "unused")
 function waLink(lang) { return WA ? `<a href="https://wa.me/${WA}" dir="ltr" rel="noopener" class="wa-link">${esc(t(lang, 'contact.wa'))}</a>` : ''; }
-// Pay by InstaPay (owner 2026-11-15): under each package on /pricing/ and the home table, a line and a WhatsApp link with the message
-// prefilled with the package name (in the page language). Payment details are given on WhatsApp until the payment gateway exists.
-const waPayHref = (lang, p) => `https://wa.me/${WA}?text=${encodeURIComponent(t(lang, 'pay.wa.msg').replace('{pkg}', () => pname(lang, p)))}`;
+// Order on WhatsApp (owner 2026-11-15): each Social package's MAIN button is a green "Order <package> on WhatsApp" that opens
+// wa.me with the message prefilled with the package name and its monthly price (the page language, the page's country); under it a
+// small "or create your account" link to the portal sign-up (?plan=<id>) and the "Pay by InstaPay" line. Payment details are
+// given on WhatsApp until the payment gateway exists.
+const waPrice = (lang, p) => (htmlCc ? display(lang, localQuote(p, htmlCc)) : '$' + fmtNum(PKG[p].price));
+const waPayHref = (lang, p) => `https://wa.me/${WA}?text=${encodeURIComponent(t(lang, 'pay.wa.msg').replace('{pkg}', () => pname(lang, p)).replace('{price}', () => waPrice(lang, p)))}`;
 function waPay(lang, p) {
   if (!WA || PKG[p]?.coming_soon) return ''; // the Brand Deck is coming soon: never payable
-  return `<p class="wapay fine" data-pkg="${p}">${esc(t(lang, 'pay.wa.line'))} <a href="${esc(waPayHref(lang, p))}" dir="auto" rel="noopener" target="_blank">${esc(t(lang, 'pay.wa.link'))}</a></p>`;
+  return `<p class="wapay fine" data-pkg="${p}">${esc(t(lang, 'pay.wa.line'))}</p>`;
 }
 const pname = (lang, p) => t(lang, `name.${p}`);
 const isLinked = (p) => LINKS[p] !== '';
@@ -328,8 +333,10 @@ function buyHref(lang, p) { if (!PKG[p] || PKG[p].coming_soon) throw new Error('
 function buyBtn(lang, p, ghost, noNote) { // noNote: the card carries the "Pay by InstaPay" WhatsApp line instead (waPay)
   if (p === 'deck') return `<button class="btn coming-soon" type="button" disabled data-unavailable="deck">${h(lang, 'pkg.deck.btn')}</button><span class="paynote">${h(lang, 'availability.deck')}</span>`;
   const payNote = h(lang, 'pay.note'); // read even when not shown: it comes back when data/contact.json has no WhatsApp number
+  const choose = h(lang, `pkg.${p}.btn`), order = h(lang, `pkg.${p}.wa`), acct = h(lang, 'plan.orAccount'); // all read: the plain button comes back without a number
+  if (WA && SOCIAL.includes(p)) return `<a class="btn wa-order" href="${esc(waPayHref(lang, p))}" data-product="${p}" data-wa-order="${p}" rel="noopener" target="_blank">${order}</a><a class="acct-link" href="${esc(buyHref(lang, p))}" data-signup="${p}">${acct}</a>`;
   const note = isLinked(p) || noNote ? '' : `<span class="paynote">${payNote}</span>`;
-  return `<a class="btn${ghost ? ' ghost' : ''}" href="${esc(buyHref(lang, p))}" data-product="${p}">${h(lang, `pkg.${p}.btn`)}</a>${note}`;
+  return `<a class="btn${ghost ? ' ghost' : ''}" href="${esc(buyHref(lang, p))}" data-product="${p}">${choose}</a>${note}`;
 }
 // home hero (audit fixes, 2026-10-19): a "Start in your portal" card whose button opens the portal sign-up (no price, no
 // package name: those are on /pricing/ only)
@@ -367,7 +374,9 @@ function heroH1(lang) {
 const EX = JSON.parse(rd('data/example-posts.json')).client;
 const EX_LAYOUTS = ['word', 'spot', 'question', 'list', 'steps', 'tip', 'split', 'hours'];
 const SMALLEST = PRICING.packages.filter((p) => !p.coming_soon && p.items?.posts).sort((a, b) => a.items.posts - b.items.posts)[0];
-if (!Array.isArray(EX.posts) || EX.posts.length < 5 || EX.posts.length > SMALLEST.items.posts) throw new Error(`data/example-posts.json: 5 to ${SMALLEST.items.posts} example posts (the smallest package's posts a month)`);
+// 2026-11-15 (four packages, Bronze 4 posts a month): the hero phone is an Instagram PROFILE grid (six posts, several weeks of posts);
+// the walkthrough is ONE month in the portal, so it shows no more than the smallest package's posts a month (dashPosts below)
+if (!Array.isArray(EX.posts) || EX.posts.length < 6 || SMALLEST.items.posts < 1) throw new Error('data/example-posts.json: at least 6 example posts (the hero profile grid)');
 for (const x of EX.posts) if (!EX_LAYOUTS.includes(x.layout) || !x.text?.en?.title || !x.text?.ar?.title) throw new Error('data/example-posts.json: bad post ' + JSON.stringify(x).slice(0, 60));
 const digitsOf = (lang, n) => (lang === 'ar' ? String(n).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]) : String(n));
 // a post's inner drawing in the page language (Arabic-Indic digits on Arabic pages)
@@ -400,24 +409,25 @@ function homeTrust(lang) {
   return `<ul class="la-oklist">${li}<li><b>${h(lang, 'la.ok.4')}</b>${h(lang, 'home.trust.f5')} <a href="${pathFor(lang, 'refund')}">${h(lang, 'home.trust.refund')}</a></li></ul>`;
 }
 // the package table: one column per Social package; cells are i18n keys (counts as {n:<id>.<item>}), a cell key may be shared
-const TABLE_PKGS = ['seen', 'visible', 'growing'];
+// 2026-11-15: four packages with the same items (only the counts differ), so every row is the same key per package
+const TABLE_PKGS = SOCIAL;
 const TABLE_ROWS = [
-  ['la.t.posts', ['la.t.posts.seen', 'la.t.posts.visible', 'la.t.posts.growing']],
-  ['la.t.stories', ['la.t.stories.seen', 'la.t.stories.visible', 'la.t.stories.growing']],
-  ['la.t.reel', ['la.t.reel.seen', 'la.t.reel.visible', 'la.t.reel.growing']],
-  ['la.t.camp', ['la.t.no', 'la.t.no', 'pkg.growing.f5']],
-  ['la.t.plan', ['pkg.seen.f5', 'pkg.visible.f5', 'pkg.growing.f7']],
-  ['la.t.rev', ['la.t.rev.seen', 'la.t.rev.visible', 'la.t.rev.growing']],
-  ['la.t.plat', ['la.t.plat.seen', 'la.t.plat.visible', 'la.t.plat.growing']],
-  ['la.t.also', ['pkg.seen.f7', 'pkg.visible.f7', 'pkg.growing.f6']],
+  ['la.t.posts', TABLE_PKGS.map((p) => `la.t.posts.${p}`)],
+  ['la.t.stories', TABLE_PKGS.map(() => 'la.t.stories.all')],
+  ['la.t.reel', TABLE_PKGS.map((p) => `la.t.reel.${p}`)],
+  ['la.t.plan', TABLE_PKGS.map((p) => `pkg.${p}.f5`)],
+  ['la.t.rev', TABLE_PKGS.map((p) => `la.t.rev.${p}`)],
+  ['la.t.plat', TABLE_PKGS.map((p) => `la.t.plat.${p}`)],
+  ['la.t.pub', TABLE_PKGS.map(() => 'la.t.yes')],
+  ['la.t.brand', TABLE_PKGS.map(() => 'la.t.yes')],
 ];
 function priceTable(lang) {
   const hot = (p) => (p === 'visible' ? ' class="hot"' : '');
   const head = `<thead><tr><th scope="col">${h(lang, 'la.t.what')}</th>${TABLE_PKGS.map((p) => `<th scope="col"${hot(p)}><span class="la-pname">${esc(pname(lang, p))}</span><span class="la-ptag">${h(lang, `pkg.${p}.eye`)}</span></th>`).join('')}</tr></thead>`;
   const price = `<tr class="la-prow"><th scope="row">${h(lang, 'la.t.price')}</th>${TABLE_PKGS.map((p) => `<td${hot(p)}>${money(lang, p)}<span class="per">${h(lang, MONTHLY.has(p) ? 'plan.per' : 'one.per')}</span></td>`).join('')}</tr>`;
-  const cls = (p, k) => { const c = [p === 'visible' && 'hot', k === 'la.t.no' && 'la-no'].filter(Boolean); return c.length ? ` class="${c.join(' ')}"` : ''; };
+  const cls = (p, k) => { const c = [p === 'visible' && 'hot'].filter(Boolean); return c.length ? ` class="${c.join(' ')}"` : ''; };
   const rows = TABLE_ROWS.map(([label, cells]) => `<tr><th scope="row">${h(lang, label)}</th>${cells.map((k, i) => `<td${cls(TABLE_PKGS[i], k)}>${h(lang, k)}</td>`).join('')}</tr>`).join('');
-  const buy = `<tr class="la-buy"><td></td>${TABLE_PKGS.map((p) => `<td${hot(p)}><a class="btn${p === 'visible' ? '' : ' la-line'}" href="${esc(buyHref(lang, p))}" data-product="${p}">${h(lang, `pkg.${p}.btn`)}</a>${waPay(lang, p)}</td>`).join('')}</tr>`;
+  const buy = `<tr class="la-buy"><td></td>${TABLE_PKGS.map((p) => `<td${hot(p)}>${WA ? buyBtn(lang, p, false, true) : `<a class="btn${p === 'visible' ? '' : ' la-line'}" href="${esc(buyHref(lang, p))}" data-product="${p}">${h(lang, `pkg.${p}.btn`)}</a>`}${waPay(lang, p)}</td>`).join('')}</tr>`;
   return `<table class="la-table">${head}<tbody>${price}${rows}${buy}</tbody></table>`;
 }
 
@@ -440,7 +450,7 @@ function dash(lang) {
   const T = (k) => t(lang, 'dash.' + k), D = (k) => esc(T(k)), ar = lang === 'ar';
   // the example business is the made-up "Example Café" (data/example-posts.json): its posts are drawings in one palette, in the
   // page language, labelled posts; the avatars are a plain neutral circle (no letters, no logo)
-  const posts = EX.posts.map((p) => ({ ...p, title: p.text[lang].title, label: T('typePost') }));
+  const posts = EX.posts.slice(0, SMALLEST.items.posts).map((p) => ({ ...p, title: p.text[lang].title, label: T('typePost') })); // one month of the smallest package
   const date = (day) => ar ? digits(lang, day) + ' ' + T('monthShort') : T('monthShort') + ' ' + digits(lang, day);
   const image = (p, cls) => exPost(lang, p, cls);
   const logo = (cls) => '<span class="' + cls + ' d-neutral"></span>';
@@ -466,7 +476,7 @@ function dash(lang) {
   const libraryBody = '<span class="d-view-note">' + D('libraryNote') + '</span>' + postGrid(posts, 'd-many-grid d-library-grid');
   // no clock and no hours (review fix 2026-11-14): there is no promised delivery time
   const waitingBody = '<span class="d-wait-card"><span class="d-wait-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="d-wait-copy"><small>' + D('waitSub') + '</small><span class="d-clock-label">' + D('waitNote') + '</span></span></span>';
-  const reviewPost = posts[4];
+  const reviewPost = posts[posts.length - 1];
   const reviewBody = '<span class="d-review-card"><span class="d-review-image">' + image(reviewPost, 'd-review-img') + '</span><span class="d-review-copy"><small>' + esc(reviewPost.label + ' · ' + date(reviewPost.day)) + '</small>' + title(reviewPost) + '<span class="d-review-status" data-k="reviewStatus">' + D('pendingStatus') + '</span><span class="d-review-actions"><span class="d-btn sec" data-b="changes">' + D('changes') + '</span><span class="d-btn lime" data-b="approve">' + D('approve') + '</span></span></span></span>';
   const readyBody = '<span class="d-ready-card"><span class="d-ready-image">' + image(reviewPost, 'd-ready-img') + '</span><span class="d-ready-copy"><span class="d-ready-chips"><span class="d-chip">' + D('approvedStatus') + '</span><span class="d-chip">' + D('ready') + '</span></span><strong>' + D('readyTitle') + '</strong><small>' + esc(reviewPost.title) + '</small><span class="d-ready-actions"><span class="d-btn lime" data-b="copy"><span data-k="copyLabel">' + D('copyCap') + '</span></span><span class="d-btn sec" data-b="dl">' + D('download') + '</span><span class="d-btn sec" data-b="mark">' + D('markPosted') + '</span></span></span></span>';
   const instagramBody = '<span class="d-instagram-card"><span class="d-ig-head"><span class="d-ig-avatar">' + logo('d-ig-logo') + '</span><strong>' + D('instagramHandle') + '</strong><span class="d-ig-network">' + D('instagram') + '</span></span><span class="d-ig-image">' + image(reviewPost, 'd-ig-post') + '<span class="d-ig-posted">' + D('posted') + '</span></span><span class="d-ig-footer"><span class="d-ig-icons" aria-hidden="true">♡　○　↗</span><small>' + esc(reviewPost.title) + '</small></span></span>';
@@ -532,7 +542,7 @@ function platPick(lang, p) {
   const local = Object.fromEntries(CURS.slice(1).map((c) => [c, [k.prices[c], k.extra_platform_prices[c]]]));
   return `<fieldset class="platpick" data-pkg="${p}" data-price="${k.price}" data-extra="${k.extra_platform_price}" data-local="${esc(JSON.stringify(local))}" data-included="${k.platforms_included || 1}" data-name="${esc(pname(lang, p))}" data-tpl="${esc(t(lang, 'plan.live'))}" data-per="${esc(t(lang, 'plan.perShort'))}"><legend>${h(lang, 'plan.pickPlatforms')}</legend><div class="opts">${boxes}</div><p class="liveprice" aria-live="polite" dir="auto">${esc(line)}</p><p class="fine">${h(lang, 'plan.extraNote')}</p></fieldset>`;
 }
-const planCards = (lang) => ['seen', 'visible', 'growing'].map((p) => planCard(lang, p, p === 'seen')).join('');
+const planCards = (lang) => SOCIAL.map((p) => planCard(lang, p, p === 'seen')).join('');
 const deckCards = (lang) => planCard(lang, 'deck', false);
 const billItems = (lang) => { const out = []; for (let i = 1; dicts[lang][`bill.${i}`] != null; i++) out.push(`<li>${h(lang, `bill.${i}`)}</li>`); return out.join(''); };
 

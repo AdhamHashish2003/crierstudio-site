@@ -2,7 +2,7 @@
 
 ## Two lines: Social and In-store (2026-10-18)
 
-One studio, two product lines. **Social** (`/social/`, was `/kit/`): the monthly packages Bronze, Silver and Gold (see "Packages and prices" below); after sign-up the studio sends a payment link. **In-store** (`/in-store/`): The Store Kit (waitlist only: no price, no date, no buy button) and Custom pieces (open now, quoted in the client portal after a free sign-up; the old `/physical/` content). Cream blocks mean physical, dark means digital: the In-store page body and the home-page In-store teaser are cream (tokens `--cream-*` / `--sample-*` in `templates/studio-shared.css`). Header nav: Social · In-store · Samples · Pricing · FAQ · Client portal; About and Brand Deck are in the footer.
+One studio, two product lines. **Social** (`/social/`, was `/kit/`): the monthly packages Bronze, Silver, Gold and Diamond (see "Packages and prices" below); after sign-up the studio sends a payment link. **In-store** (`/in-store/`): The Store Kit (waitlist only: no price, no date, no buy button) and Custom pieces (open now, quoted in the client portal after a free sign-up; the old `/physical/` content). Cream blocks mean physical, dark means digital: the In-store page body and the home-page In-store teaser are cream (tokens `--cream-*` / `--sample-*` in `templates/studio-shared.css`). Header nav: Social · In-store · Samples · Pricing · FAQ · Client portal; About and Brand Deck are in the footer.
 
 - In-store source: `templates/in-store.html`, the illustrations `templates/instore-panels.html` (inline SVG from `design/reference/in-store-hero-B.html`, shared with the home teaser; `{{=sid}}` keeps SVG ids unique per page) and the `is.*` keys. Store Kit quantities are `[bracketed]` placeholders until Adham confirms them.
 - The Store Kit waitlist form posts to the same Launchpad intake as the order form (`site.js`, "In-store" block); field mapping and limits in `REVIEW-instore.md`.
@@ -90,13 +90,16 @@ Cloudflare rule (owner, one time; Cloudflare dashboard > crierstudio.com > Cachi
 
 ## Packages and prices (2026-11-13)
 
-Three monthly packages, Bronze (`seen`), Silver (`visible`) and Gold (`growing`), plus the Brand Deck (`deck`, coming soon, never payable). The Social Kit, Stay Visible and Keep Growing are retired names. Prices and counts come only from `data/pricing.json`, republished from the studio's master price list (`node portal/scripts/publish-pricing.cjs --site <this dir>`); never type a price into i18n or templates (`build/check.mjs` fails). `build/check.mjs` pins this table:
+Four monthly packages (owner 2026-11-15), Bronze (`seen`), Silver (`visible`), Gold (`growing`) and Diamond (`diamond`), plus the Brand Deck (`deck`, coming soon, never payable). The Social Kit, Stay Visible and Keep Growing are retired names. Prices and counts come only from `data/pricing.json`, republished from the studio's master price list (`node portal/scripts/publish-pricing.cjs --site <this dir>`); never type a price into i18n or templates (`build/check.mjs` fails). `build/check.mjs` pins this table:
 
 | Package, a month | USD (USA and other countries) | SAR (Saudi Arabia) | AED (UAE) | EGP (Egypt) |
 | --- | --- | --- | --- | --- |
 | Bronze | $750 | 350 | 340 | 2,500 |
-| Silver | $1,100 | 695 | 680 | 5,000 |
-| Gold | $1,500 | 1,045 | 1,020 | 7,500 |
+| Silver | $1,100 | 485 | 475 | 3,500 |
+| Gold | $1,500 | 695 | 680 | 5,000 |
+| Diamond | $1,900 (placeholder) | 905 | 885 | 6,500 |
+
+Every package has the same items, only the counts differ (`pkg.<id>.f1`..`f8`): designed posts 4 / 7 / 12 / 15, a story with every post, reels 2 / 3 / 5 / 8, the monthly content calendar, revision rounds 1 / 1 / 2 / 4 per piece, all three platforms, "We publish on your pages and reply to comments and messages during working hours." and the brand look set up in the first month. `build/check.mjs` flags the prices no package has any more as stale (EGP 7,500, SAR 1,045, AED 1,020: Gold before 2026-11-15).
 
 The price shown is the amount due. VAT (owner, 2026-11-14: not VAT-registered anywhere): a VAT line or "+ VAT" appears only for a country whose `local.countries.<CC>` in the price data marks VAT as charged (`vat_pct` above 0 and `vat_charged` not false); otherwise none, and `build/check.mjs` fails on any VAT statement. Payment: after sign-up and the business questions the studio sends a payment link; the payment provider is not named anywhere on the site (`build/check.mjs` fails on "Stripe" until `data/pricing.json` names a provider in `payment_provider`).
 
@@ -104,7 +107,7 @@ The country picker (home and pricing): the visitor's pick (saved), else Cloudfla
 
 ## WhatsApp
 
-`data/contact.json` holds the WhatsApp business number (`whatsapp`, digits only, international format): `201146000101` since 2026-11-15, the number the client portal uses. It adds a `https://wa.me/<number>` link to the footer, the homepage and the About page, the number in the contact sentences (`{wa}` in `about.contact.p` and `terms.who.p`), and under each Social package on `/pricing/` and in the home table a "Pay by InstaPay: message us on WhatsApp for payment details" line whose wa.me link is prefilled with the package name in the page language (`pay.wa.*`). Empty = no WhatsApp link anywhere.
+`data/contact.json` holds the WhatsApp business number (`whatsapp`, digits only, international format): `201146000101` since 2026-11-15, the number the client portal uses. It adds a `https://wa.me/<number>` link to the footer, the homepage and the About page, the number in the contact sentences (`{wa}` in `about.contact.p` and `terms.who.p`), and each Social package's MAIN button on `/pricing/` and in the home table: the green "Order <package> on WhatsApp" (`pkg.<id>.wa`, class `wa-order`), its wa.me message prefilled with the package name and its monthly price in the page language (`pay.wa.msg`), then a small "or create your account" link to the portal sign-up `?plan=<id>` (`plan.orAccount`) and a "Pay by InstaPay" line (`pay.wa.line`). Empty = no WhatsApp link anywhere.
 
 ## Egypt only, payment on WhatsApp (temporary, 2026-11-15)
 

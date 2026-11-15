@@ -12,7 +12,8 @@ const PAGES = ['', 'pricing/', 'brand-deck/', 'social/', 'in-store/', 'samples/'
 // pages (sculptures, fiberglass, branddeck: outside the offer, kept in _parked/) are stubs too.
 const MOVED = { 'kit/': 'social/', 'physical/': 'in-store/#custom', 'snapshot/': 'social/', 'crier-deck/': 'brand-deck/', 'sculptures/': '', 'fiberglass/': '', 'branddeck/': 'pricing/' };
 const SKIP_DIRS = ['.git', 'node_modules', 'templates', 'build', 'tests', 'i18n', 'fonts', 'assets', 'design', '_parked'];
-const PRODUCTS = ['seen', 'visible', 'growing', 'deck'];
+const PRODUCTS = ['seen', 'visible', 'growing', 'diamond', 'deck'];
+const SOCIAL = ['seen', 'visible', 'growing', 'diamond']; // the Social packages on sale, tier order (owner 2026-11-15)
 // Audit fixes (2026-10-19): every buy / plan / start button opens the client portal's sign-up (AR pages with ?lang=ar)
 // (2026-11-14: the portal reads ?lang=en|ar and nothing about a package, so every language passes its own lang)
 const SIGNUP = (l, plan) => `https://portal.crierstudio.com/#/signup?${plan ? `plan=${plan}&` : ''}lang=${l}`;
@@ -25,12 +26,17 @@ const d = Object.fromEntries(LANGS.map((l) => [l, JSON.parse(rd(`i18n/${l}.json`
 // portal/scripts/publish-pricing.cjs from portal/lib/pricing.json). The texts carry placeholders, never a price.
 const PRICING = JSON.parse(rd('data/pricing.json'));
 ok(/^portal\/lib\/pricing\.json sha256 [0-9a-f]{64}$/.test(PRICING.generated_from || ''), 'data/pricing.json was not written by publish-pricing.cjs');
-// Country prices (owner 2026-11-13): Bronze / Silver / Gold (ids seen / visible / growing), all monthly, NET before VAT, one
-// price per country and package (EGP = Egypt, SAR = Saudi Arabia, AED = the UAE, USD = the USA and every other country). No
-// list price, nothing struck through. The Social Kit is retired and is not in the file. These numbers are pinned here so a
-// republish of data/pricing.json that drifts from the decision fails the build.
-const LAUNCH = { seen: { USD: 750, SAR: 350, AED: 340, EGP: 2500 }, visible: { USD: 1100, SAR: 695, AED: 680, EGP: 5000 }, growing: { USD: 1500, SAR: 1045, AED: 1020, EGP: 7500 } };
-const NAMES = { seen: ['Bronze', 'البرونزية'], visible: ['Silver', 'الفضية'], growing: ['Gold', 'الذهبية'] };
+// Country prices (owner 2026-11-15): FOUR monthly packages, Bronze / Silver / Gold / Diamond (ids seen / visible / growing /
+// diamond), one price per country and package (EGP = Egypt, SAR = Saudi Arabia, AED = the UAE, USD = the USA and every other
+// country). Egypt EGP 2,500 / 3,500 / 5,000 / 6,500; Saudi Arabia and the UAE are the rule (double Egypt, generated in the UMA repo);
+// USD as before, Diamond's USD 1,900 a placeholder (not shown while Egypt is the one country served). No list price, nothing
+// struck through. These numbers are pinned here so a republish of data/pricing.json that drifts from the decision fails the build.
+const LAUNCH = { seen: { USD: 750, SAR: 350, AED: 340, EGP: 2500 }, visible: { USD: 1100, SAR: 485, AED: 475, EGP: 3500 }, growing: { USD: 1500, SAR: 695, AED: 680, EGP: 5000 }, diamond: { USD: 1900, SAR: 905, AED: 885, EGP: 6500 } };
+const NAMES = { seen: ['Bronze', 'البرونزية'], visible: ['Silver', 'الفضية'], growing: ['Gold', 'الذهبية'], diamond: ['Diamond', 'الماسية'] };
+// the prices before 2026-11-15 that no package has any more: a page or a text that still shows one is stale (EGP 7,500 was Gold)
+const CURRENT = new Set(Object.values(LAUNCH).flatMap((w) => Object.entries(w).map(([c, n]) => c + n)));
+const STALE = { EGP: [5000, 7500], SAR: [695, 1045], AED: [680, 1020] }; // the old Silver and Gold prices
+const STALE_NOW = Object.entries(STALE).flatMap(([c, ns]) => ns.filter((n) => !CURRENT.has(c + n)).map((n) => [c, n]));
 // the currencies shown besides US dollars (data-sar, data-aed, data-egp); the USA is a country in USD, so USD is not repeated
 // One country served (owner 2026-11-15, temporary: data/pricing.json funnel.countries, Egypt only): no picker, the pages written in
 // that country's currency, Offers and areaServed only there. The other countries' prices stay in data/pricing.json (pinned above).
@@ -40,7 +46,11 @@ const OFFER_CC = ONLY ? Object.fromEntries(Object.entries(PRICING.local.countrie
 const DEF_CC = ONLY ? ONLY[0] : 'SA', DEF_CUR = PRICING.local.countries[DEF_CC].currency;
 const LOCAL_CURS = [...new Set(Object.values(PRICING.local.countries).map((c) => c.currency))].filter((c) => c !== 'USD');
 ok(JSON.stringify(LOCAL_CURS) === JSON.stringify(['SAR', 'AED', 'EGP']) && PRICING.local.fallback.currency === 'USD' && PRICING.local.countries.US?.currency === 'USD' && PRICING.local.countries.US.vat_pct === 0, 'local currencies are SAR, AED, EGP; the USA and the fallback are US dollars with no VAT');
-ok(JSON.stringify(PRICING.packages.map((p) => p.id)) === JSON.stringify(['seen', 'visible', 'growing', 'deck']), 'packages are seen, visible, growing and the coming-soon deck (no Social Kit)');
+ok(JSON.stringify(PRICING.packages.map((p) => p.id)) === JSON.stringify([...SOCIAL, 'deck']), 'packages are seen, visible, growing, diamond and the coming-soon deck (no Social Kit)');
+// the four packages have the same items (only the counts differ): posts, a story with every post, reels, the calendar, revision
+// rounds, publishing and branding; every one includes all three platforms (owner 2026-11-15)
+for (const id of SOCIAL) { const p = PRICING.packages.find((x) => x.id === id); ok(p && p.platforms_included === 3 && p.items.stories === p.items.posts && p.items.publishing === 1 && p.items.branding === 1 && p.items.calendar === 1 && !('campaign_concepts' in p.items) && !('ad_copies' in p.items) && !('competitor_update' in p.items), `${id}: all three platforms, a story with every post, publishing and branding, no campaign / ad copy / competitor update`); }
+ok(STALE_NOW.length === 3 && STALE_NOW.some(([c, n]) => c === 'EGP' && n === 7500), 'the old Gold price EGP 7,500 is stale');
 for (const [id, want] of Object.entries(LAUNCH)) {
   const p = PRICING.packages.find((x) => x.id === id);
   ok(p && !p.coming_soon && p.billing === 'monthly' && p.price === want.USD && p.prices.USD === want.USD && !('list_price' in p) && !('list_prices' in p), `$${want.USD} a month, no list price (${id})`);
@@ -104,7 +114,7 @@ for (const l of LANGS) for (const p of PAGES) {
     if (!pk.coming_soon) ok(new RegExp(`class="price amt" dir="(ltr|rtl)" ${dataAttrs(pk.price, pk.prices)}`).test(h) && !h.includes('class="price-list'), `price ${pk.price} USD, nothing struck through (${pk.id}) on ${file}`);
     if (pk.extra_platform_price) ok(h.includes(`data-extra="${pk.extra_platform_price}"`), `extra platform ${pk.extra_platform_price} USD (${pk.id}) on ${file}`);
   }
-  if (p === 'pricing/') ok((h.match(/data-product="/g) || []).length === 3 && h.includes('disabled data-unavailable="deck"'), `3 buy buttons and unavailable Brand Deck on ${file}`);
+  if (p === 'pricing/') ok((h.match(/data-product="/g) || []).length === SOCIAL.length && h.includes('disabled data-unavailable="deck"'), `${SOCIAL.length} buy buttons and unavailable Brand Deck on ${file}`);
   // the pricing page follows the visitor's country like the home page (2026-11-13: the US-dollar price is the USA's own price)
   if (p === 'pricing/' && !ONLY) ok(h.includes('id="cur-select"') && /id="cur-data"/.test(h) && h.includes('<option value="US"'), `country picker (with the USA) and currency data on ${file}`);
   // one country served: no country picker anywhere, the currency data locked to it, no US-dollar or other currency in the text
@@ -192,7 +202,7 @@ for (const l of LANGS) for (const p of PAGES) {
     const priceRe = new RegExp(`data-usd|class="(price )?amt"|"offers"|"price":|\\$\\s?\\d|(${syms.join('|')})\\s?\\d|\\d\\s?(${syms.join('|')})`);
     ok(!priceRe.test(vis + ' ' + ld + ' ' + meta) && !/data-usd|id="cur-data"/.test(h), `a price on ${file} (prices are on /pricing/ only)`);
     const store = p === 'in-store/' ? [] : ['name.store'];
-    const names = ['name.seen', 'name.visible', 'name.growing', ...store].flatMap((k) => [d.en[k], d[l][k]]).concat('Social Kit', store.length ? ['Store Kit'] : []);
+    const names = ['name.seen', 'name.visible', 'name.growing', 'name.diamond', ...store].flatMap((k) => [d.en[k], d[l][k]]).concat('Social Kit', store.length ? ['Store Kit'] : []);
     for (const n of new Set(names)) ok(!(vis + ' ' + ld + ' ' + meta).includes(n), `package name "${n}" on ${file} (package names are on /pricing/ only)`);
   }
   // no [bracket] placeholders in the visible text of the home, pricing and FAQ pages either
@@ -251,7 +261,9 @@ if (ONLY) for (const l of LANGS) { const ld = (rd(PREFIX(l) + 'pricing/index.htm
       const m = hh.match(new RegExp(`<a class="btn[^"]*" href="([^"]*)" data-product="${k}"`));
       if (k === 'deck') { ok(!m && hh.includes('disabled data-unavailable="deck"'), `Brand Deck unavailable (${l})`); continue; }
       const want = links[k] || SIGNUP(l, k);
-      ok(m && m[1].replace(/&amp;/g, '&') === want, `buy button ${k} (${l}) href`);
+      // 2026-11-15: the main button is the WhatsApp order; the sign-up (or the payment link) is the "or create your account" link
+      const acct = hh.match(new RegExp(`<a class="acct-link" href="([^"]*)" data-signup="${k}"`));
+      ok(m && (/wa-order/.test(m[0]) ? acct && acct[1].replace(/&amp;/g, '&') === want : m[1].replace(/&amp;/g, '&') === want), `buy button ${k} (${l}) href`);
     }
   }
 }
@@ -336,11 +348,18 @@ ok(rd('index.html').includes('"alternateName":"Crier"') && rd('index.html').incl
 // package buttons (2026-11-14): every "Choose <package>" link on the home page (table + "Start with" block) and the pricing
 // cards opens the sign-up with its own card's package id and the page language; generic sign-up links carry no plan
 for (const l of LANGS) for (const f of [PREFIX(l) + 'index.html', PREFIX(l) + 'pricing/index.html']) {
-  const h = rd(f), btns = [...h.matchAll(/<a class="btn[^"]*" href="([^"]*)" data-product="(\w+)"/g)];
+  const h = rd(f), btns = [...h.matchAll(/<a class="btn[^"]*" href="([^"]*)" data-product="(\w+)"/g)].map((m) => [m[0], m[1], m[2]]);
   ok(btns.length >= 3, `package buttons on ${f}`);
-  for (const [, href, id] of btns) ok(href.replace(/&amp;/g, '&') === (JSON.parse(rd('payment-links.json'))[id] || SIGNUP(l, id)) && PRICING.packages.some((x) => x.id === id && !x.coming_soon), `button for ${id} on ${f} links to its own package (${href})`);
-  for (const m of h.matchAll(/href="(https:\/\/portal\.crierstudio\.com\/#\/signup[^"]*)"(?! data-product)/g)) ok(!/plan=/.test(m[1]), `a generic sign-up link carries a plan on ${f}`);
-  if (f.endsWith('index.html') && !f.includes('pricing')) ok((h.match(/<tr class="la-buy">[\s\S]*?<\/tr>/) || [''])[0].split('data-product=').length === 4 && /class="btn lime" href="[^"]*" data-product="/.test(h), `home table and "Start with" block buttons carry their package on ${f}`);
+  // 2026-11-15: a Social package's main button is "Order <package> on WhatsApp" (wa.me, prefilled), followed by "or create your
+  // account" (the sign-up with its own package id); the "Start with" block keeps its sign-up button
+  for (const [all, href, id] of btns) {
+    const u = href.replace(/&amp;/g, '&');
+    if (/class="btn wa-order"/.test(all)) ok(u.startsWith('https://wa.me/201146000101?text=') && SOCIAL.includes(id), `button for ${id} on ${f} is its WhatsApp order (${href})`);
+    else ok(u === (JSON.parse(rd('payment-links.json'))[id] || SIGNUP(l, id)) && PRICING.packages.some((x) => x.id === id && !x.coming_soon), `button for ${id} on ${f} links to its own package (${href})`);
+  }
+  for (const m of h.matchAll(/<a class="acct-link" href="([^"]*)" data-signup="(\w+)">/g)) ok(m[1].replace(/&amp;/g, '&') === SIGNUP(l, m[2]), `"or create your account" for ${m[2]} opens the sign-up with plan=${m[2]} on ${f}`);
+  for (const m of h.matchAll(/href="(https:\/\/portal\.crierstudio\.com\/#\/signup[^"]*)"(?! data-product| data-signup)/g)) ok(!/plan=/.test(m[1]), `a generic sign-up link carries a plan on ${f}`);
+  if (f.endsWith('index.html') && !f.includes('pricing')) ok((h.match(/<tr class="la-buy">[\s\S]*?<\/tr>/) || [''])[0].split('data-product=').length === SOCIAL.length + 1 && /class="btn lime" href="[^"]*" data-product="/.test(h), `home table and "Start with" block buttons carry their package on ${f}`);
 }
 // ================= Review fixes (2026-11-14): rules that keep the reviewed problems from coming back =================
 // The published set, as GitHub Pages (Jekyll) builds it: every file except paths with a part starting with "_" or ".", and the
@@ -383,10 +402,11 @@ for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) {
 }
 // no real brand from the owner's own projects on any published page
 for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) ok(!/sahmmena|\bSAHM\b|Sahm Mena|سهم \|/i.test(rd(f)), `the SAHM brand appears in ${f}`);
-// every package card has the "files ready to publish" line (Gold lacked it), and the pricing JSON-LD has an offer per country
+// every package card has the publishing line and the branding line (2026-11-15), and the pricing JSON-LD has an offer per country
 for (const l of LANGS) {
   const h = rd(PREFIX(l) + 'pricing/index.html');
-  for (const pk of ['seen', 'visible', 'growing']) { const card = (h.match(new RegExp(`<article class="plan[^"]*" data-plan="${pk}"[\\s\\S]*?</article>`)) || [''])[0]; ok(card.includes(esc(d[l]['pkg.seen.f7'])), `"${d[l]['pkg.seen.f7']}" on the ${pk} card (${l})`); }
+  for (const pk of SOCIAL) { const card = (h.match(new RegExp(`<article class="plan[^"]*" data-plan="${pk}"[\\s\\S]*?</article>`)) || [''])[0]; for (const k of ['f2', 'f7', 'f8']) ok(card.includes(esc(d[l][`pkg.${pk}.${k}`])), `"${d[l][`pkg.${pk}.${k}`]}" on the ${pk} card (${l})`); }
+  ok(d.en['pkg.seen.f7'] === 'We publish on your pages and reply to comments and messages during working hours.' && d.en['pkg.seen.f8'] === 'Your brand look (colours, fonts, post templates) set up in your first month and used on every post.' && d.en['pkg.seen.f2'] === 'A story with every post', 'the owner\'s wording for stories, publishing and branding');
   const ld = (h.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/) || [])[1] || '';
   for (const [cc, c] of Object.entries(OFFER_CC)) ok(ld.includes(`"priceCurrency":"${c.currency}"`) && ld.includes(`"eligibleRegion":"${cc}"`), `pricing JSON-LD: an offer in ${c.currency} for ${cc} (${l})`);
   ok(!/"priceCurrency":"[A-Z]{3}"[^}]*"name":"(?:Brand Deck|الملف التعريفي)"|"name":"(?:Brand Deck|الملف التعريفي)","provider":\{[^}]*\},"offers"/.test(ld), `pricing JSON-LD: no Brand Deck offer while it is coming soon (${l})`);
@@ -402,20 +422,31 @@ for (const l of LANGS) {
     for (const pg of ['', 'about/', 'pricing/', 'faq/', 'terms/']) ok((rd(PREFIX(l) + pg + 'index.html').match(/<footer>[\s\S]*?<\/footer>/) || [''])[0].includes(`href="https://wa.me/${WA}"`), `WhatsApp link in the footer of /${PREFIX(l)}${pg}`);
     ok((rd(PREFIX(l) + 'about/index.html').match(/<main[\s\S]*?<\/main>/) || [''])[0].includes(`href="https://wa.me/${WA}"`), `WhatsApp link on About (${l})`);
     ok(!/by email only|email only|بالبريد الإلكتروني فقط/i.test(d[l]['about.contact.p'] + d[l]['terms.who.p']), `the contact wording is no longer "email only" (${l})`);
-    for (const [pg, block] of [['pricing/', /<article class="plan[^"]*" data-plan="(seen|visible|growing)"[\s\S]*?<\/article>/g], ['', /<td[^>]*><a class="btn[^"]*" href="[^"]*" data-product="(seen|visible|growing)"[\s\S]*?<\/td>/g]]) {
+    // 2026-11-15: each Social package's MAIN button is the green "Order <package> on WhatsApp" (wa.me, the message prefilled with
+    // the package name and its monthly price in the page language), then "or create your account" and one "Pay by InstaPay" line
+    const PAT = SOCIAL.join('|');
+    for (const [pg, block] of [['pricing/', new RegExp(`<article class="plan[^"]*" data-plan="(${PAT})"[\\s\\S]*?<\\/article>`, 'g')], ['', new RegExp(`<td[^>]*><a class="btn wa-order" href="[^"]*" data-product="(${PAT})"[\\s\\S]*?<\\/td>`, 'g')]]) {
       const h = rd(PREFIX(l) + pg + 'index.html'), seen = [];
       for (const m of h.matchAll(block)) {
-        const wa = (m[0].match(/<p class="wapay fine" data-pkg="(\w+)">([^<]*)<a href="([^"]*)"[^>]*>([^<]*)<\/a><\/p>/) || []);
-        ok(wa[1] === m[1] && wa[2].trim() === esc(d[l]['pay.wa.line']) && wa[4] === esc(d[l]['pay.wa.link']), `"Pay by InstaPay" line on ${m[1]} (/${PREFIX(l)}${pg})`);
-        const href = (wa[3] || '').replace(/&amp;/g, '&'), text = decodeURIComponent((href.split('?text=')[1] || ''));
-        ok(href.startsWith(`https://wa.me/${WA}?text=`) && text.includes(d[l]['name.' + m[1]]), `WhatsApp link prefilled with the ${m[1]} package name (/${PREFIX(l)}${pg})`);
-        ok((m[0].match(/Pay by InstaPay|ادفع عبر إنستاباي/g) || []).length === 1, `one "Pay by InstaPay" line on ${m[1]} (/${PREFIX(l)}${pg})`);
+        const btn = m[0].match(/<a class="btn wa-order" href="([^"]*)" data-product="(\w+)" data-wa-order="\w+"[^>]*>([^<]*)<\/a><a class="acct-link" href="[^"]*" data-signup="(\w+)">([^<]*)<\/a>/) || [];
+        ok(btn[2] === m[1] && btn[4] === m[1] && btn[3] === esc(d[l][`pkg.${m[1]}.wa`]) && btn[5] === esc(d[l]['plan.orAccount']), `"${d[l][`pkg.${m[1]}.wa`]}" then "${d[l]['plan.orAccount']}" on ${m[1]} (/${PREFIX(l)}${pg})`);
+        const href = (btn[1] || '').replace(/&amp;/g, '&'), text = decodeURIComponent((href.split('?text=')[1] || ''));
+        const price = (LAUNCH[m[1]].EGP).toLocaleString('en-US');
+        ok(href.startsWith(`https://wa.me/${WA}?text=`) && text.includes(d[l]['name.' + m[1]]) && (!ONLY || text.includes(price)), `WhatsApp order prefilled with the ${m[1]} package name and its price (/${PREFIX(l)}${pg}): ${text}`);
+        ok((m[0].match(/<p class="wapay fine"/g) || []).length === 1 && m[0].includes(esc(d[l]['pay.wa.line'])), `one "Pay by InstaPay" line on ${m[1]} (/${PREFIX(l)}${pg})`);
         seen.push(m[1]);
       }
-      ok(JSON.stringify(seen) === '["seen","visible","growing"]', `"Pay by InstaPay" under all three packages on /${PREFIX(l)}${pg}`);
+      ok(JSON.stringify(seen) === JSON.stringify(SOCIAL), `the WhatsApp order button on all four packages on /${PREFIX(l)}${pg} (${seen})`);
     }
   }
-  ok(d.en['pay.wa.line'] + ' ' + d.en['pay.wa.link'] === 'Pay by InstaPay: message us on WhatsApp for payment details', 'the InstaPay line wording');
+  ok(d.en['pkg.seen.wa'] === 'Order Bronze on WhatsApp' && d.ar['pkg.seen.wa'] === 'اطلب البرونزية عبر واتساب', 'the WhatsApp order button wording');
+  ok(/^Pay by InstaPay/.test(d.en['pay.wa.line']) && /إنستاباي/.test(d.ar['pay.wa.line']), 'the InstaPay line wording');
+  // stale prices: no built page shows an old price that no package has any more (EGP 7,500 was Gold before 2026-11-15)
+  for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) {
+    const vis = rd(f).replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ');
+    const visN = vis.replace(/[\u0660-\u0669]/g, (x) => String(x.charCodeAt(0) - 0x660));
+    for (const [c, n] of STALE_NOW) ok(!new RegExp(`data-${c.toLowerCase()}="${n}"`).test(rd(f)) && (c !== DEF_CUR || !new RegExp(`(?<![\\d,.])${n.toLocaleString('en-US')}(?![\\d,])`).test(visN)), `stale price ${c} ${n} on ${f}`);
+  }
 }
 {
 }
