@@ -1,0 +1,59 @@
+<main id="main-content">
+    <section class="sp-hero" aria-labelledby="sp-title">
+      <div class="sp-copy">
+        <span class="eyebrow">{{t:sp.eye}}</span>
+        <h1 id="sp-title">{{t:sp.h1}}</h1>
+        <p class="lead">{{t:sp.lead}}</p>
+        <ul class="sp-ticks" role="list">
+          <li>{{t:sp.tick.1}}</li>
+          <li>{{t:sp.tick.2}}</li>
+          <li>{{t:sp.tick.3}}</li>
+        </ul>
+        <div class="la-cta"><a class="btn wa-order" href="{{=spWaHref}}" target="_blank" rel="noopener" data-wa="social_hero">{{t:lp.cta}}</a><a class="la-link" href="#packages">{{t:sp.cta2}}</a></div>
+        <p class="fine sp-from">{{t:sp.from}}</p>
+      </div>
+      <figure class="sp-art">
+        <div class="sp-stack">{{=spStack}}</div>
+        <figcaption class="fine">{{t:lp.ex.note}}</figcaption>
+      </figure>
+    </section>
+
+    <section id="included" class="lp-make" aria-labelledby="inc-title">
+      <div class="la-head"><h2 id="inc-title">{{t:sp.inc.h2}}</h2><p class="lead">{{t:lp.mk.lead}}</p></div>
+      <ul class="lp-items" role="list">{{=makeItems}}</ul>
+    </section>
+
+    <section id="packages" class="lp-packages" aria-labelledby="pk-title">
+      <div class="la-head"><h2 id="pk-title">{{t:lp.pk.h2}}</h2><p class="lead">{{t:lp.pk.lead}}</p></div>
+      {{=curPick}}
+      <div class="plans quad">{{=planCards}}</div>
+      <p class="fine lp-pkfine">{{t:bill.3}}</p>
+    </section>
+
+    <section id="how" class="la-how" aria-labelledby="how-title">
+      <div class="la-head"><h2 id="how-title">{{t:sp.how.h2}}</h2><p class="lead">{{t:sp.how.lead}}</p></div>
+      <ol class="la-steps sp-steps">
+        <li><h3>{{t:sp.how.1t}}</h3><p>{{t:sp.how.1x}}</p></li>
+        <li><h3>{{t:sp.how.2t}}</h3><p>{{t:sp.how.2x}}</p></li>
+        <li><h3>{{t:sp.how.3t}}</h3><p>{{t:sp.how.3x}}</p></li>
+        <li><h3>{{t:sp.how.4t}}</h3><p>{{t:sp.how.4x}}</p></li>
+      </ol>
+    </section>
+
+    <section id="examples" class="lp-ex" aria-labelledby="ex-title">
+      <div class="la-head"><h2 id="ex-title">{{t:lp.ex.h2}}</h2><p class="lead">{{t:lp.ex.lead}}</p></div>
+      <ul class="lp-gallery" role="list">{{=exGallery}}</ul>
+      <p class="fine lp-exnote">{{t:lp.ex.note}}</p>
+    </section>
+
+    <section id="faq" class="lp-faq" aria-labelledby="faq-title">
+      <div class="sec-head"><h2 id="faq-title">{{t:lp.faq.h2}}</h2></div>
+      <div class="faq">{{=spFaq}}</div>
+    </section>
+
+    <section id="start" class="la-close" aria-labelledby="close-title">
+      <h2 id="close-title">{{t:sp.close.h2}}</h2>
+      <p class="lead lp-closelead">{{t:sp.close.lead}}</p>
+      <div class="la-cta"><a class="btn wa-order" href="{{=spWaHref}}" target="_blank" rel="noopener" data-wa="social_close">{{t:lp.cta}}</a><a class="la-link" href="{{=pricingHref}}">{{t:lp.close.pricing}}</a></div>
+    </section>
+  </main>

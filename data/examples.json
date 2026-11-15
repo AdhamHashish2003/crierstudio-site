@@ -1,0 +1,192 @@
+{
+ "_about": "Real-looking example posts for made-up businesses (inputs/example-content, 2026-11-15): AI photos with the text laid out in code, each labelled «مثال / Example». Used by the new home and /social/ landing pages. Images in assets/ex/<id>.webp (540 px wide).",
+ "items": {
+  "abaya-02-detail-ar": {
+   "business": "abaya",
+   "lang": "ar",
+   "type": "feed",
+   "w": 540,
+   "h": 675,
+   "alt": {
+    "ar": "تفاصيل تطريز بيج على كمّ عباءة بنية داكنة، داخل إطار قوس.",
+    "en": "Beige embroidery on the sleeve of a dark brown abaya, in an arch frame."
+   }
+  },
+  "abaya-03-carousel-en": {
+   "business": "abaya",
+   "lang": "en",
+   "type": "feed",
+   "w": 540,
+   "h": 675,
+   "alt": {
+    "ar": "عباءات مطوية بألوان الرملي والبني والزيتوني على كتان، وغلاف سلسلة صور عن الألوان الجديدة.",
+    "en": "Folded abayas in sand, mocha and olive on linen: the cover of a carousel about new colours."
+   }
+  },
+  "abaya-04-offer-ar": {
+   "business": "abaya",
+   "lang": "ar",
+   "type": "feed",
+   "w": 540,
+   "h": 675,
+   "alt": {
+    "ar": "راك ملابس نحاسي عليه عبايات بألوان ترابية في متجر هادئ، وعليه سعر 1,800 ج.م.",
+    "en": "A brass rail of earth-toned abayas in a calm boutique, priced at 1,800 EGP."
+   }
+  },
+  "abaya-05-tips-en": {
+   "business": "abaya",
+   "lang": "en",
+   "type": "feed",
+   "w": 540,
+   "h": 675,
+   "alt": {
+    "ar": "منشور تعليمي بعنوان «حافظي على عباءتك كالجديدة» وثلاث نصائح للعناية، وفي أعلاه صورة تطريز.",
+    "en": "Education post titled 'Keep your abaya like new' with three care tips, under a photo of embroidery."
+   }
+  },
+  "bakery-01-photo-ar": {
+   "business": "bakery",
+   "lang": "ar",
+   "type": "feed",
+   "w": 540,
+   "h": 675,
+   "alt": {
+    "ar": "أرغفة ساوردو وخبز بلدي على لوح خشبي مرشوش بالدقيق، وعليها عنوان «خبز طازج كل صباح».",
+    "en": "Sourdough loaves and baladi bread on a floured board, titled 'Fresh bread every morning'."
+   }
+  },
+  "bakery-03-carousel-en": {
+   "business": "bakery",
+   "lang": "en",
+   "type": "feed",
+   "w": 540,
+   "h": 675,
+   "alt": {
+    "ar": "صينية خارجة من الفرن عليها كرواسون وخبز بالزعتر، وغلاف سلسلة صور عن مخبوزات الصباح.",
+    "en": "A tray fresh from the oven with croissants and zaatar bread: the cover of a carousel about this morning's bakes."
+   }
+  },
+  "bakery-07-story-ar": {
+   "business": "bakery",
+   "lang": "ar",
+   "type": "story",
+   "w": 540,
+   "h": 960,
+   "alt": {
+    "ar": "ستوري لسلة خبز على نافذة مشمسة، مع بطاقة «سلة الإفطار» وزر الطلب عبر واتساب.",
+    "en": "Story: a bread basket on a sunny windowsill, with a 'breakfast basket' card and an order-on-WhatsApp button."
+   }
+  },
+  "cafe-01-offer-ar": {
+   "business": "cafe",
+   "lang": "ar",
+   "type": "feed",
+   "w": 540,
+   "h": 675,
+   "alt": {
+    "ar": "لاتيه مثلّج وفطيرة تمر على صينية نحاسية فوق طاولة رخام، وعليها عرض الصباح بسعر 95 ج.م.",
+    "en": "Iced latte and a date pastry on a brass tray on a marble table, with a 95 EGP morning offer."
+   }
+  },
+  "cafe-02-photo-en": {
+   "business": "cafe",
+   "lang": "en",
+   "type": "feed",
+   "w": 540,
+   "h": 675,
+   "alt": {
+    "ar": "قهوة مصرية في فنجانين مع حبات تمر وهيل على صينية خشبية، وعليها عنوان بالإنجليزية.",
+    "en": "Egyptian-style coffee in two cups with dates and cardamom on a wooden tray."
+   }
+  },
+  "cafe-04-carousel-en": {
+   "business": "cafe",
+   "lang": "en",
+   "type": "feed",
+   "w": 540,
+   "h": 675,
+   "alt": {
+    "ar": "فنجان فلات وايت برسمة ورقة على كاونتر خشبي، وغلاف سلسلة صور عن أنواع القهوة.",
+    "en": "A flat white with leaf latte art on a wooden counter: the cover of a carousel about coffee types."
+   }
+  },
+  "cafe-05-tips-ar": {
+   "business": "cafe",
+   "lang": "ar",
+   "type": "feed",
+   "w": 540,
+   "h": 675,
+   "alt": {
+    "ar": "منشور تعليمي بعنوان «كيف تختار قهوتك؟» وثلاث نصائح، وفي أعلاه صورة حبوب قهوة.",
+    "en": "Education post titled 'How to choose your coffee' with three tips, under a photo of coffee beans."
+   }
+  },
+  "perfume-01-photo-en": {
+   "business": "perfume",
+   "lang": "en",
+   "type": "feed",
+   "w": 540,
+   "h": 675,
+   "alt": {
+    "ar": "زجاجة عطر كهرمانية بغطاء ذهبي على حجر رملي بجانب قطع عود ودخان بخور.",
+    "en": "An amber perfume bottle with a gold cap on sandstone, beside oud wood and incense smoke."
+   }
+  },
+  "perfume-03-bakhoor-ar": {
+   "business": "perfume",
+   "lang": "ar",
+   "type": "feed",
+   "w": 540,
+   "h": 675,
+   "alt": {
+    "ar": "مبخرة نحاسية يتصاعد منها دخان أبيض على خلفية بنية داكنة، وعليها عنوان «بخور البيت».",
+    "en": "A brass incense burner with rising smoke on a dark brown background, titled 'Home bakhoor'."
+   }
+  },
+  "perfume-07-story-en": {
+   "business": "perfume",
+   "lang": "en",
+   "type": "story",
+   "w": 540,
+   "h": 960,
+   "alt": {
+    "ar": "ستوري لمكوّنات العطر على حجر داكن، مع بطاقة «اصنع عطرك» وزر الطلب عبر واتساب.",
+    "en": "Story: perfume ingredients on dark slate, with a 'build your own blend' card and an order-on-WhatsApp button."
+   }
+  },
+  "physio-01-tips-ar": {
+   "business": "physio",
+   "lang": "ar",
+   "type": "feed",
+   "w": 540,
+   "h": 675,
+   "alt": {
+    "ar": "منشور تعليمي يبدأ بسؤال «تجلس ساعات أمام المكتب؟» وثلاث نصائح، وفي أعلاه صورة مكتب مريح.",
+    "en": "Education post opening with 'Do you sit at a desk for hours?' and three tips, under a photo of an ergonomic desk."
+   }
+  },
+  "physio-04-photo-en": {
+   "business": "physio",
+   "lang": "en",
+   "type": "feed",
+   "w": 540,
+   "h": 675,
+   "alt": {
+    "ar": "غرفة علاج طبيعي مشرقة فيها سرير علاج ومنشفة وأشرطة مطاطية على رف خشبي، بلا أشخاص.",
+    "en": "A bright, empty physiotherapy room with a treatment table, towels and bands on an oak shelf."
+   }
+  },
+  "physio-08-poll-en": {
+   "business": "physio",
+   "lang": "en",
+   "type": "story",
+   "w": 540,
+   "h": 960,
+   "alt": {
+    "ar": "ستوري لركن تمرين مشرق مع استطلاع: كم ساعة تجلس يوميًا؟",
+    "en": "Story: a bright exercise corner with a poll: how long do you sit each day?"
+   }
+  }
+ }
+}

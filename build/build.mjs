@@ -20,6 +20,11 @@ const NOINDEX = false;
 // /assets/social-preview.html are built into _parked/ with redirect stubs at their old addresses.
 const PARKED = new Set(['sculptures']);
 const PARKED_DIR = '_parked';
+// THE NEW LANDING PAGES (owner 2026-11-15): the home page and /social/ redesigned as landing pages (templates/home-v2.html and
+// social-v2.html). Held until Adham approves them: while false the live pages keep their current templates and the new ones are built
+// only into _parked/preview/ (never published) for review screenshots. Set true and rebuild to publish them.
+const SHOW_NEW_LANDING = false;
+const V2 = { index: 'home-v2', social: 'social-v2' };
 const PARKED_TO = { sculptures: 'index', fiberglass: 'index', branddeck: 'pricing' };
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -584,6 +589,28 @@ function pageVars(lang, page) {
   if (page === 'faq') v.faqItems = faqItems(lang, FAQ_ALL, false);
   return v;
 }
+// ---- the new landing pages (home v2, /social/ v2) ----
+const EXS = JSON.parse(rd('data/examples.json')).items;
+for (const id of Object.keys(EXS)) if (!fs.existsSync(path.join(ROOT, 'assets', 'ex', id + '.webp'))) throw new Error('missing example image assets/ex/' + id + '.webp');
+// one example post per made-up business, in the page language (each image carries its own «مثال / Example» label)
+const EX_PICKS = { ar: ['cafe-01-offer-ar', 'perfume-03-bakhoor-ar', 'physio-01-tips-ar', 'abaya-02-detail-ar', 'bakery-01-photo-ar', 'cafe-05-tips-ar'],
+  en: ['perfume-01-photo-en', 'cafe-04-carousel-en', 'physio-04-photo-en', 'abaya-03-carousel-en', 'bakery-03-carousel-en', 'abaya-05-tips-en'] };
+const SP_STACK = { ar: ['cafe-01-offer-ar', 'abaya-04-offer-ar', 'bakery-07-story-ar'], en: ['cafe-02-photo-en', 'physio-08-poll-en', 'perfume-07-story-en'] };
+const exImg = (lang, id, extra = ' loading="lazy" decoding="async"', cls = '') => { const x = EXS[id]; return `<img${cls ? ` class="${cls}"` : ''} src="/assets/ex/${id}.webp" width="${x.w}" height="${x.h}"${extra} alt="${esc(x.alt[lang])}">`; };
+const exGallery = (lang) => EX_PICKS[lang].map((id) => `<li><figure>${exImg(lang, id)}<figcaption>${h(lang, 'lp.ind.' + EXS[id].business)}</figcaption></figure></li>`).join('');
+const MK_ICONS = ['M4 4h16v16H4zM4 15l4-4 4 4 3-3 5 5', 'M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM11 18h2', 'M4 5h16v14H4zM10 9l5 3-5 3z', 'M4 5h16v15H4zM8 3v4M16 3v4M4 10h16', 'M4 5h16v11H9l-5 4zM8 10h8', 'M12 3a9 9 0 1 0 0 18c1 0 1.5-.8 1.5-1.6 0-.9-.6-1.4-.6-2.2 0-.9.7-1.6 1.6-1.6H17a4 4 0 0 0 4-4c0-4.7-4-8.6-9-8.6zM7.5 11.5h.01M10 7.5h.01M15 7.5h.01'];
+const makeItems = (lang) => MK_ICONS.map((d, i) => `<li><span class="lp-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg></span><h3>${h(lang, `lp.mk.${i + 1}t`)}</h3><p>${h(lang, `lp.mk.${i + 1}x`)}</p></li>`).join('');
+const qa = (lang, base) => `<details><summary>${h(lang, base + 'q')}</summary><div class="ans"><p>${h(lang, base + 'a', pathFor(lang, 'refund'))}</p></div></details>`;
+const LP_FAQ = ['lp.faq.1', 'lp.faq.2', 'lp.faq.3', 'lp.faq.4', 'lp.faq.5'];
+const SP_FAQ = ['sp.faq.1', 'lp.faq.1', 'lp.faq.3', 'sp.faq.4', 'sp.faq.5', 'sp.faq.6'];
+const waBtn = (lang, key, where, label = 'lp.cta') => `<a class="btn wa-order" href="${esc(waHref(lang, key))}" target="_blank" rel="noopener" data-wa="${where}">${h(lang, label)}</a>`;
+function landingVars(lang, page) {
+  const common = { makeItems: makeItems(lang), exGallery: exGallery(lang), curPick: curPick(lang), planCards: planCards(lang) };
+  if (page === 'index') return { ...homeVars(lang), ...common, heroBtn: waBtn(lang, 'wa.fab.msg', 'home_hero'), lpWaHref: esc(waHref(lang, 'wa.fab.msg')), lpFaq: LP_FAQ.map((k) => qa(lang, k)).join('') };
+  return { ...common, spWaHref: esc(waHref(lang, 'sp.wamsg')), spFaq: SP_FAQ.map((k) => qa(lang, k)).join(''),
+    spStack: SP_STACK[lang].map((id, i) => exImg(lang, id, ' decoding="async"', 's' + (i + 1))).join('') };
+}
+const LANDING_FAQ = { index: LP_FAQ, social: SP_FAQ };
 function flow(lang, n, prefix) {
   return Array.from({ length: n }, (_, i) => i + 1).map((i) => `<div class="stage">${syms[i - 1]}<h3>${h(lang, `${prefix}.${i}t`)}</h3><p>${h(lang, `${prefix}.${i}x`)}</p></div>`).join('');
 }
@@ -681,12 +708,19 @@ function offerNode(lang, p) {
   });
   return RESTRICTED ? local : [...local, one(PRICES[p], 'USD', { description: t(lang, 'ld.intl') })];
 }
-function jsonLd(lang, page) {
+function jsonLd(lang, page, landing = false) {
   const orgId = SITE + '/#organization';
   const nodes = [];
   if (page === 'index') {
     nodes.push({ '@type': 'Organization', '@id': orgId, name: BRAND, url: SITE + '/', logo: { '@type': 'ImageObject', url: LOGO_URL, width: 512, height: 512 }, image: LOGO_URL, email: EMAIL, description: t(lang, 'foot.blurb'),
       areaServed: Object.keys(COUNTRIES).map(COUNTRY_LD) });
+    // Egypt-only (2026-11-15): the studio as a ProfessionalService serving Egypt, with the package offers in EGP (no street address is
+    // published, so no LocalBusiness address)
+    nodes.push({ '@type': 'ProfessionalService', '@id': SITE + '/#service', name: BRAND, url: urlFor(lang, 'index'), image: LOGO_URL, logo: LOGO_URL, email: EMAIL, ...(WA ? { telephone: '+' + WA } : {}),
+      description: t(lang, 'meta.d.index'), areaServed: Object.keys(COUNTRIES).map(COUNTRY_LD), availableLanguage: ['ar', 'en'], parentOrganization: { '@id': orgId },
+      priceRange: [Math.min(...SOCIAL.map((p) => localQuote(p, DEFAULT_CC).total)), Math.max(...SOCIAL.map((p) => localQuote(p, DEFAULT_CC).total))].map((m) => fmtNum(m / 100)).join('–') + ' ' + COUNTRIES[DEFAULT_CC].currency,
+      hasOfferCatalog: { '@type': 'OfferCatalog', name: t(lang, 'pricing.h1'), itemListElement: SOCIAL.flatMap((p) => offerNode(lang, p)) } });
+    if (landing && LANDING_FAQ[page]) nodes.push({ '@type': 'FAQPage', inLanguage: lang, mainEntity: LANDING_FAQ[page].map((k) => ({ '@type': 'Question', name: t(lang, k + 'q'), acceptedAnswer: { '@type': 'Answer', text: t(lang, k + 'a') } })) });
     nodes.push({ '@type': 'WebSite', '@id': SITE + '/#website', name: BRAND, alternateName: 'Crier', url: SITE + '/', inLanguage: lang, publisher: { '@id': orgId } });
   } else {
     nodes.push({ '@type': 'BreadcrumbList', itemListElement: [
@@ -694,6 +728,7 @@ function jsonLd(lang, page) {
       { '@type': 'ListItem', position: 2, name: t(lang, CRUMB_KEY[page]), item: urlFor(lang, page) }] });
     const provider = { '@type': 'Organization', name: BRAND, url: SITE + '/' };
     // informational Services without offers (audit fixes, 2026-10-19: offers and prices are on /pricing/ only)
+    if (landing && LANDING_FAQ[page]) nodes.push({ '@type': 'FAQPage', inLanguage: lang, mainEntity: LANDING_FAQ[page].map((k) => ({ '@type': 'Question', name: t(lang, k + 'q'), acceptedAnswer: { '@type': 'Answer', text: t(lang, k + 'a') } })) });
     if (page === 'brand-deck' || page === 'social') {
       nodes.push({ '@type': 'Service', name: page === 'social' ? t(lang, 'kit.title') : pname(lang, 'deck'), description: t(lang, `meta.d.${page}`), url: urlFor(lang, page), provider, availableLanguage: ['en', 'ar'] });
     }
@@ -759,7 +794,7 @@ const ICON_LINKS = `<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x4
 <link rel="manifest" href="/site.webmanifest">
 <meta name="theme-color" content="#0E0F0C">`;
 const LOGO_URL = SITE + '/crier-logo.png'; // the full logo (blob + wordmark on lime), 512 x 512, for structured data
-function head(lang, page, css) {
+function head(lang, page, css, landing = false) {
   const title = t(lang, `meta.t.${page}`), desc = t(lang, `meta.d.${page}`), url = urlFor(lang, page);
   const alt = LANGS.map(([c]) => `<link rel="alternate" hreflang="${c}" href="${urlFor(c, page)}">`).join('\n') + `\n<link rel="alternate" hreflang="x-default" href="${urlFor(DEFAULT_LANG, page)}">`;
   const ogAlt = LANGS.filter(([c]) => c !== lang).map(([, , loc]) => `<meta property="og:locale:alternate" content="${loc}">`).join('\n');
@@ -804,7 +839,7 @@ ${preload}
 <style>
 ${css}
 </style>
-${jsonLd(lang, page)}
+${jsonLd(lang, page, landing)}
 </head>`;
 }
 // Inline CSS is minified at build time (comments and spare whitespace only; strings and calc() spacing kept). Sources in templates/ stay readable.
@@ -889,13 +924,17 @@ const built = [];
 for (const [lang] of LANGS) {
   for (const page of PAGES) {
     htmlCc = LEGAL.includes(page) && !RESTRICTED ? null : DEFAULT_CC; // the legal pages keep the US-dollar price list, except while one country is served (they are in its currency then)
-    const ctx = { lang, v: pageVars(lang, page) };
-    const body = render(rd(`templates/${page === 'index' ? 'home' : page}.html`), ctx);
-    const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${waFab(ctx)}${!LEGAL.includes(page) && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${page === 'index' ? '<script src="/assets/dash.js" defer></script>\n' : ''}${page === 'sculptures' ? '<script src="/assets/sculptures.js" defer></script>\n' : ''}</body>\n</html>\n`;
-    const html = `${head(lang, page, purgeCss(cssFor(lang, page), bodyHtml))}\n${trimIndent(bodyHtml)}`;
-    if (PARKED.has(page)) { write(`${PARKED_DIR}/${dirFor(lang, page)}index.html`, html); continue; } // kept, never published
-    write(dirFor(lang, page) + 'index.html', hashUrls(html));
-    built.push([lang, page]);
+    for (const landing of V2[page] ? [true, false] : [false]) {
+      if (landing !== SHOW_NEW_LANDING && !(landing && !SHOW_NEW_LANDING)) continue; // live: the chosen version; held v2: preview copy too
+      const ctx = { lang, v: landing ? { ...pageVars(lang, page), ...landingVars(lang, page) } : pageVars(lang, page) };
+      const body = render(rd(`templates/${landing ? V2[page] : page === 'index' ? 'home' : page}.html`), ctx);
+      const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${waFab(ctx)}${!LEGAL.includes(page) && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${page === 'index' ? '<script src="/assets/dash.js" defer></script>\n' : ''}${page === 'sculptures' ? '<script src="/assets/sculptures.js" defer></script>\n' : ''}</body>\n</html>\n`;
+      const html = `${head(lang, page, purgeCss(cssFor(lang, page), bodyHtml), landing)}\n${trimIndent(bodyHtml)}`;
+      if (PARKED.has(page)) { write(`${PARKED_DIR}/${dirFor(lang, page)}index.html`, html); continue; } // kept, never published
+      if (landing && !SHOW_NEW_LANDING) { write(`${PARKED_DIR}/preview/${dirFor(lang, page)}index.html`, hashUrls(html.replace('<meta charset="utf-8">', '<meta charset="utf-8">\n<meta name="robots" content="noindex">'))); continue; } // held: review copy only
+      write(dirFor(lang, page) + 'index.html', hashUrls(html));
+      built.push([lang, page]);
+    }
   }
 }
 

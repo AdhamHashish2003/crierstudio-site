@@ -1123,7 +1123,7 @@ html[lang=ar] .sp-hero .lead{line-height:1.85}
 .sp-stack{position:relative;aspect-ratio:1/1.05}
 .sp-stack img{position:absolute;display:block;height:auto;border-radius:10px;box-shadow:0 18px 50px rgba(0,0,0,.45)}
 .sp-stack .s1{width:46%;inset-inline-start:0;top:10%;transform:rotate(-4deg)}
-.sp-stack .s2{width:46%;inset-inline-end:0;top:0;transform:rotate(3deg)}
+.sp-stack .s2{width:44%;inset-inline-end:3%;top:0;transform:rotate(3deg)}
 .sp-stack .s3{width:40%;inset-inline-start:30%;bottom:0;transform:rotate(-1deg);z-index:2}
 .sp-steps{grid-template-columns:repeat(4,1fr)}
 @media(max-width:1000px){
@@ -1139,5 +1139,7 @@ html[lang=ar] .sp-hero .lead{line-height:1.85}
   .lp-gallery{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:62%;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;overscroll-behavior-x:contain}
   .lp-gallery li{scroll-snap-align:start}
   .lp-items{grid-template-columns:1fr}
-  .lp-items li,.lp-items li:nth-child(even){padding-inline:0;border-inline-start:0}
+  .lp-items li,.lp-items li:nth-child(even){padding:16px 0;border-inline-start:0;display:grid;grid-template-columns:40px 1fr;column-gap:14px;align-items:start}
+  .lp-items .lp-ic{grid-row:span 2;width:40px;height:40px;margin:2px 0 0}
+  .lp-items h3{font-size:19px;margin-bottom:4px}
 }
