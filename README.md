@@ -1,5 +1,15 @@
 # crierstudio.com
 
+## Brand: the glossy blob logo (2026-11-15)
+
+The source logo is `~/Projects/crier/inputs/brand/crier-logo-blob-2026-11-15.webp` (2000 x 2000: a glossy black blob carrying the "crier STUDIO" wordmark, on lime #C6FF00). The reusable kit (favicons, app icons, transparent marks with and without the wordmark, web sizes in webp/avif, the share images and a zoomed favicon preview) is in `~/Projects/crier/inputs/brand/kit/`.
+
+- Favicons (`favicon.ico` 16/32/48, `favicon-16.png`, `favicon-32.png`, `favicon.svg`): the blob alone, flat black on a lime rounded tile, so it reads at 16-32 px on light and dark tabs. `favicon.svg` is a traced outline of the blob.
+- `apple-touch-icon.png` (180, full-bleed lime), `icon-192.png`, `icon-512.png` and `icon-maskable-512.png` (in `site.webmanifest`): the glossy blob without the wordmark. `favicon-512.png` is kept (same as `icon-512.png`) for old links.
+- Header and footer: `templates/logo.svg.html` is the blob mark (`assets/crier-mark-80.webp` / `-120.webp`, transparent, 40 px; 34 px on phones) plus the existing SVG wordmark. The lockup is always left-to-right, on Arabic pages too.
+- Share images: `og.png` (English) and `og-ar.png` (Arabic), rendered by `node build/og-image.mjs` (set `CHROME` to a Chrome binary) from `build/og-image.html` and `build/og-logo.webp`. Each page names the image in its own language (`OG_IMAGE` in `build/build.mjs`; alt text `og.alt`).
+- Structured data: the Organization `logo` is `/crier-logo.png` (the full logo, 512 x 512).
+
 ## Two lines: Social and In-store (2026-10-18)
 
 One studio, two product lines. **Social** (`/social/`, was `/kit/`): the monthly packages Bronze, Silver, Gold and Diamond (see "Packages and prices" below); after sign-up the studio sends a payment link. **In-store** (`/in-store/`): The Store Kit (waitlist only: no price, no date, no buy button) and Custom pieces (open now, quoted in the client portal after a free sign-up; the old `/physical/` content). Cream blocks mean physical, dark means digital: the In-store page body and the home-page In-store teaser are cream (tokens `--cream-*` / `--sample-*` in `templates/studio-shared.css`). Header nav: Social · In-store · Samples · Pricing · FAQ · Client portal; About and Brand Deck are in the footer.

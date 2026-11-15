@@ -1,6 +1,8 @@
 <!doctype html>
-<!-- Source of /og.png, the share image (1200 x 630). Render: node build/og-image.mjs (Playwright). Not published (build/ is excluded). -->
-<html lang="en">
+<!-- Source of the share images (1200 x 630): /og.png (English, ?lang=en) and /og-ar.png (Arabic, ?lang=ar). Render: node build/og-image.mjs
+     (Playwright). Not published (build/ is excluded). The right panel is the brand logo (inputs/brand/crier-logo-blob-2026-11-15.webp,
+     copied to build/og-logo.webp); the wordmark on the left is the site's own logo file. -->
+<html>
 <head>
 <meta charset="utf-8">
 <title>Crier Studio share image</title>
@@ -8,32 +10,40 @@
 @font-face{font-family:Archivo;src:url(../fonts/archivo-latin-wght-normal.woff2) format("woff2");font-weight:100 900}
 @font-face{font-family:Instrument;src:url(../fonts/instrument-sans-latin-500-normal.woff2) format("woff2");font-weight:500}
 @font-face{font-family:Instrument;src:url(../fonts/instrument-sans-latin-700-normal.woff2) format("woff2");font-weight:700}
+@font-face{font-family:NotoAr;src:url(../fonts/noto-sans-arabic-arabic-400-normal.woff2) format("woff2");font-weight:400}
+@font-face{font-family:NotoAr;src:url(../fonts/noto-sans-arabic-arabic-700-normal.woff2) format("woff2");font-weight:700}
 *{box-sizing:border-box;margin:0}
 html,body{width:1200px;height:630px;overflow:hidden}
-body{position:relative;background:#0E0F0C;color:#F6F8EF;font-family:Instrument,Arial,sans-serif}
-.logo{position:absolute;left:72px;top:64px;width:250px;height:auto}
+body{position:relative;background:#0E0F0C;color:#F6F8EF;font-family:Instrument,NotoAr,Arial,sans-serif}
+.art{position:absolute;top:0;width:630px;height:630px;background:#C6FF00 url(og-logo.webp) center/630px 630px no-repeat}
+.copy{position:absolute;top:0;width:570px;height:630px;padding:64px 56px 56px;display:flex;flex-direction:column}
+[dir=ltr] .art{right:0}[dir=ltr] .copy{left:0}
+[dir=rtl] .art{left:0}[dir=rtl] .copy{right:0}
+.logo{width:190px;color:#F6F8EF}
 .logo svg{display:block;width:100%;height:auto}
-h1{position:absolute;left:72px;top:176px;width:700px;font:800 66px/1.06 Archivo,Arial,sans-serif;letter-spacing:-.035em}
-h1 .hl{background:#C6FF00;color:#0E0F0C;padding:0 .1em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
-.foot{position:absolute;left:72px;right:72px;bottom:56px;display:flex;justify-content:space-between;align-items:center;padding-top:22px;border-top:1px solid #2D3027;font-size:22px;font-weight:500;color:#B7BCA9}
+h1{margin-top:auto;font:800 54px/1.08 Archivo,Arial,sans-serif;letter-spacing:-.03em}
+[dir=rtl] h1{font:700 56px/1.4 NotoAr,Arial,sans-serif;letter-spacing:0}
+h1 .hl{background:#C6FF00;color:#0E0F0C;padding:0 .12em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+[dir=rtl] h1 .hl{background:none;color:#C6FF00;padding:0}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid #2D3027;font-size:19px;white-space:nowrap;font-weight:500;color:#B7BCA9;display:flex;justify-content:space-between;gap:16px}
+[dir=rtl] .foot{font-family:NotoAr,Instrument,sans-serif;font-size:21px}
 .foot b{color:#F6F8EF;font-weight:700}
-.tiles{position:absolute;right:72px;top:96px;display:grid;grid-template-columns:repeat(2,150px);gap:14px}
-.tiles i{display:block;height:180px;border-radius:8px;position:relative;overflow:hidden}
-.tiles i::after{content:"";position:absolute;left:14px;right:40px;bottom:16px;height:12px;border-radius:3px;background:currentColor;opacity:.85}
-.tiles i::before{content:"";position:absolute;left:14px;top:14px;width:20px;height:20px;border-radius:50%;background:currentColor}
-.t1{background:#C6FF00;color:#0E0F0C}.t2{background:#1A1C16;color:#C6FF00;box-shadow:inset 0 0 0 1px #2D3027}
-.t3{background:#F6F8EF;color:#0E0F0C}.t4{background:#2D3027;color:#F6F8EF}
-.tiles .tall{grid-row:span 2;height:374px}
 </style>
 </head>
 <body>
-<div class="logo" id="logo"></div>
-<h1>Social media posts, stories and reels for your business, <span class="hl">every month.</span></h1>
-<div class="tiles" aria-hidden="true"><i class="t1 tall"></i><i class="t2"></i><i class="t3"></i></div>
-<div class="foot"><span><b>Crier Studio</b></span><span>Instagram · Facebook · TikTok</span><span>crierstudio.com</span></div>
+<div class="art" aria-hidden="true"></div>
+<div class="copy"><div class="logo" id="logo"></div><h1 id="h1"></h1><div class="foot"><span id="where"></span><span dir="ltr">crierstudio.com</span></div></div>
 <script>
-// the site's own logo file (assets/logo-light.svg: the light version for a dark ground)
-fetch('../assets/logo-light.svg').then(function (r) { return r.text(); }).then(function (svg) { document.getElementById('logo').innerHTML = svg; document.body.setAttribute('data-ready', '1'); });
+var T = {
+  en: { h1: 'Posts, stories and reels for your business, <span class="hl">every month.</span>', where: 'Instagram · Facebook · TikTok' },
+  ar: { h1: 'منشورات وستوري وريلز لمشروعك، <span class="hl">كل شهر.</span>', where: 'Instagram · Facebook · TikTok' }
+};
+var lang = new URLSearchParams(location.search).get('lang') === 'ar' ? 'ar' : 'en';
+document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'; document.body.dir = document.documentElement.dir;
+document.getElementById('h1').innerHTML = T[lang].h1; document.getElementById('where').textContent = T[lang].where;
+var img = new Image(); img.src = 'og-logo.webp';
+// the site's own wordmark (assets/logo-light.svg: the light version for a dark ground)
+Promise.all([fetch('../assets/logo-light.svg').then(function (r) { return r.text(); }), img.decode()]).then(function (r) { document.getElementById('logo').innerHTML = r[0]; document.body.setAttribute('data-ready', '1'); });
 </script>
 </body>
 </html>

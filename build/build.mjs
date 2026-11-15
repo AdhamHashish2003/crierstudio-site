@@ -675,7 +675,7 @@ function jsonLd(lang, page) {
   const orgId = SITE + '/#organization';
   const nodes = [];
   if (page === 'index') {
-    nodes.push({ '@type': 'Organization', '@id': orgId, name: BRAND, url: SITE + '/', logo: SITE + '/favicon-512.png', email: EMAIL, description: t(lang, 'foot.blurb'),
+    nodes.push({ '@type': 'Organization', '@id': orgId, name: BRAND, url: SITE + '/', logo: { '@type': 'ImageObject', url: LOGO_URL, width: 512, height: 512 }, image: LOGO_URL, email: EMAIL, description: t(lang, 'foot.blurb'),
       areaServed: Object.keys(COUNTRIES).map(COUNTRY_LD) });
     nodes.push({ '@type': 'WebSite', '@id': SITE + '/#website', name: BRAND, alternateName: 'Crier', url: SITE + '/', inLanguage: lang, publisher: { '@id': orgId } });
   } else {
@@ -736,6 +736,18 @@ const LANGUAGE_INLINE = "(function(){try{var k='crier.lang',L=/^(en|ar)$/,p=loca
 const LANGUAGE_HEAD = `<script>${LANGUAGE_INLINE}</script>`;
 const SCRIPT_HASHES = [sha(GA_INLINE), sha(LANGUAGE_INLINE), sha(CONSENT_JS)];
 const CSP = "default-src 'self'; script-src 'self' " + SCRIPT_HASHES.join(' ') + " https://static.cloudflareinsights.com https://*.googletagmanager.com; connect-src 'self' https://crm-production-d789.up.railway.app https://cloudflareinsights.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; img-src 'self' data: https://*.google-analytics.com https://*.googletagmanager.com; style-src 'self' 'unsafe-inline'; font-src 'self'; base-uri 'self'; form-action 'self'";
+// Brand (2026-11-15, the glossy blob logo; the kit is in ~/Projects/crier/inputs/brand/kit/): the favicons are the blob alone on a lime
+// tile (no wordmark, so it reads at 16-32 px); the app icons and the apple-touch icon are the glossy blob; the share image is
+// rendered per language from build/og-image.html (node build/og-image.mjs).
+const OG_IMAGE = { en: 'og.png', ar: 'og-ar.png' };
+const ICON_LINKS = `<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/favicon-16.png" sizes="16x16" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#0E0F0C">`;
+const LOGO_URL = SITE + '/crier-logo.png'; // the full logo (blob + wordmark on lime), 512 x 512, for structured data
 function head(lang, page, css) {
   const title = t(lang, `meta.t.${page}`), desc = t(lang, `meta.d.${page}`), url = urlFor(lang, page);
   const alt = LANGS.map(([c]) => `<link rel="alternate" hreflang="${c}" href="${urlFor(c, page)}">`).join('\n') + `\n<link rel="alternate" hreflang="x-default" href="${urlFor('en', page)}">`;
@@ -768,20 +780,15 @@ ${alt}
 <meta property="og:url" content="${url}">
 <meta property="og:locale" content="${loc}">
 ${ogAlt}
-<meta property="og:image" content="${SITE}/og.png">
+<meta property="og:image" content="${SITE}/${OG_IMAGE[lang]}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="${BRAND}">
+<meta property="og:image:alt" content="${esc(t(lang, 'og.alt'))}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(desc)}">
-<meta name="twitter:image" content="${SITE}/og.png">
-<link rel="icon" href="/favicon.ico" sizes="32x32">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="manifest" href="/site.webmanifest">
-<meta name="theme-color" content="#0E0F0C">
+<meta name="twitter:image" content="${SITE}/${OG_IMAGE[lang]}">
+${ICON_LINKS}
 ${preload}
 <style>
 ${css}
@@ -979,9 +986,7 @@ ${NOINDEX ? '<meta name="robots" content="noindex">\n' : ''}<meta http-equiv="Co
 ${LANGUAGE_HEAD}
 ${GA_HEAD}
 <title>404 | ${BRAND}</title>
-<link rel="icon" href="/favicon.ico" sizes="32x32">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<meta name="theme-color" content="#0E0F0C">
+${ICON_LINKS}
 <style>
 ${purgeCss(css404, body404)}
 </style>
@@ -1002,7 +1007,7 @@ for (const page of PAGES.filter((p) => !HIDDEN.has(p))) {
 sm.push('</urlset>', '');
 write('sitemap.xml', sm.join('\n'));
 write('site.webmanifest', JSON.stringify({ name: BRAND, short_name: BRAND, start_url: '/', display: 'browser', background_color: '#F6F8EF', theme_color: '#0E0F0C',
-  icons: [{ src: '/favicon-32.png', sizes: '32x32', type: 'image/png' }, { src: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }, { src: '/favicon-512.png', sizes: '512x512', type: 'image/png' }] }, null, 2) + '\n');
+  icons: [{ src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' }, { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' }, { src: '/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }, { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' }] }, null, 2) + '\n');
 
 // keys in the JSON that no page used (review fix 2026-11-14: an honest check). The build records every key it read in
 // build/used-keys.json (not published) and fails on an unused one; build/check.mjs fails too if that record is missing or
