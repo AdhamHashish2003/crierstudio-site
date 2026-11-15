@@ -16,7 +16,7 @@ One studio, two product lines. **Social** (`/social/`, was `/kit/`): the monthly
 
 - In-store source: `templates/in-store.html`, the illustrations `templates/instore-panels.html` (inline SVG from `design/reference/in-store-hero-B.html`, shared with the home teaser; `{{=sid}}` keeps SVG ids unique per page) and the `is.*` keys. Store Kit quantities are `[bracketed]` placeholders until Adham confirms them.
 - The Store Kit waitlist form posts to the same Launchpad intake as the order form (`site.js`, "In-store" block); field mapping and limits in `REVIEW-instore.md`.
-- Custom pieces has no form on the site (2026-10-18): "Request a quote" links to the portal sign-up `https://portal.crierstudio.com/#/signup?intent=quote&lang=<en|ar>` and "Already a client? Log in" to `#/login?intent=quote&lang=<en|ar>` (`portalAuth` in `build/build.mjs`). The quote form, its storage and the owner's list live in the portal (uma-main `portal/lib/quotes.cjs`). The portal must have `ALLOW_PUBLIC_SIGNUP=1`; without it the sign-up link shows the sign-in page with the studio email.
+- Custom pieces has no form on the site. Since 2026-11-15 (owner: the portal quote sign-up is being removed) "Ask for a quote on WhatsApp" and "Already a client? Message us on WhatsApp" both open `wa.me/<number>` with "I would like a quote for a custom piece" in the page language (`is.q.wamsg`, `quoteHref` in `build/build.mjs`; email if `data/contact.json` has no number).
 - Moved URLs (`MOVED` in `build/build.mjs`): `/kit/` and `/snapshot/` -> `/social/`, `/physical/` -> `/in-store/#custom`, `/crier-deck/` -> `/brand-deck/`, in every language, as noindex stubs that keep the full query string and the visitor's #hash. Real 301s are Cloudflare Redirect Rules (steps in `REVIEW-instore.md`). `?product=kit`, `?product=social-kit` and `?product=snapshot` all select The Social Kit (package id `kit`).
 
 ## Sculptures (2026-10-18)
@@ -119,14 +119,8 @@ The country picker (home and pricing): the visitor's pick (saved), else Cloudfla
 
 ## WhatsApp
 
-`data/contact.json` holds the WhatsApp business number (`whatsapp`, digits only, international format): `201146000101` since 2026-11-15, the number the client portal uses. It adds a `https://wa.me/<number>` link to the footer, the homepage and the About page, the number in the contact sentences (`{wa}` in `about.contact.p` and `terms.who.p`), and each Social package's MAIN button on `/pricing/` and in the home table: the green "Order <package> on WhatsApp" (`pkg.<id>.wa`, class `wa-order`), its wa.me message prefilled with the package name and its monthly price in the page language (`pay.wa.msg`), then a small "or create your account" link to the portal sign-up `?plan=<id>` (`plan.orAccount`) and a "Pay by InstaPay" line (`pay.wa.line`). Empty = no WhatsApp link anywhere.
-
-## Egypt only, payment on WhatsApp (temporary, 2026-11-15)
-
-Until the payment gateway exists the site serves only the countries in `data/pricing.json` `funnel.countries` (today `["EG"]`), republished from the portal's price list (`portal/lib/pricing.json` `funnel`, through `publish-pricing.cjs`). While that list leaves a country out (`RESTRICTED` in `build/build.mjs`):
-
-- no country picker and no "Another country"; every price, the legal pages included, is written in the served country's currency (EGP); `site.js` stays on that country (`cur-data` `lock`) and skips the time-zone / Cloudflare guess;
-- the pricing JSON-LD has Offers only in that country, and `areaServed` only names it;
-- a key with a `.<cc>` variant (`home.eyebrow.eg`, `bill.1.eg`, `faq.19a1.eg`, `terms.bill.p1.eg`, `refund.once.p.eg`, ...) is read in its place: Egypt only, payment details on WhatsApp (InstaPay). The ordinary texts stay in the i18n files.
-
-Every other country's price stays in `data/pricing.json`. **To undo:** in the UMA repo set `portal/lib/pricing.json` `funnel.countries` back to `["SA", "AE", "EG", "US"]`, republish (`node portal/scripts/publish-pricing.cjs --site <this dir>`), then `node build/build.mjs && node build/check.mjs` (the terms and refund pages change back, so set `leg.updated` to that day and run `node build/check.mjs --restamp`). `build/check.mjs` checks both states.
+`data/contact.json` holds the WhatsApp business number (`whatsapp`, digits only, international format; +20 114 600 0101 since 2026-11-15). Empty = no WhatsApp link anywhere. With a number:
+- each package card's main button is "Order <package> on WhatsApp" (prefilled with the package and its monthly price);
+- the footer, the home page and About show the number;
+- **the floating WhatsApp button** (`templates/wa-float.html`, CSS at the end of `templates/studio-shared.css`, script at the end of `site.js`) is on every page, 404 included: round, green, bottom-right in English and bottom-left in Arabic (`inset-inline-end`), with an aria-label and a short greeting in the page language (`wa.fab.aria`, `wa.fab.msg`). It sits above the consent bar while the bar shows (`--cbar`), and on phones it fades out (`wa-fab-off`) while a link, button or field is under it, so it never covers something to tap. `build/check.mjs` checks it on every page;
+- In-store quotes go to WhatsApp (see In-store above).

@@ -1,5 +1,5 @@
 {
- "i18n_sha256": "5b276d72121cdd956003fea9094fb6fc38eb7e581ffea00d77c0a919db211b07",
+ "i18n_sha256": "9a2f759a5d38f8428614052c4f50183c74bb50089a08b7b2ff22376275937692",
  "used": [
   "about.contact.h",
   "about.contact.p",
@@ -283,6 +283,7 @@
   "is.pc.menu",
   "is.pc.qr",
   "is.q.btn",
+  "is.q.wamsg",
   "is.wl.ok",
   "is.zone.abaya",
   "is.zone.cafe",
@@ -642,6 +643,8 @@
   "v.type",
   "v.web",
   "v.webBad",
+  "wa.fab.aria",
+  "wa.fab.msg",
   "wt.1l",
   "wt.1screen",
   "wt.1t",

@@ -131,7 +131,7 @@ for (const k of PRODUCTS) {
 const dicts = Object.fromEntries(LANGS.map(([c]) => [c, JSON.parse(rd(`i18n/${c}.json`))]));
 const partials = {
   hero: rd('templates/hero.html'), logo: rd('templates/logo.svg.html'), footer: rd('templates/footer.html'), header: rd('templates/header.html'),
-  consent: rd('templates/consent.html'), panels: rd('templates/instore-panels.html'),
+  consent: rd('templates/consent.html'), panels: rd('templates/instore-panels.html'), waFloat: rd('templates/wa-float.html'),
 };
 const CSS = {
   fonts: rd('templates/fonts.css'), fontsAr: rd('templates/fonts-ar.css'), common: rd('templates/common.css'),
@@ -317,6 +317,10 @@ function curData(lang) {
   return `<script type="application/json" id="cur-data">${jsonScript(o)}</script>`;
 }
 // M14: a WhatsApp link only when data/contact.json has a number (the label key is always read, so it is never "unused")
+// a wa.me link with a prefilled message (an i18n key, in the page language)
+const waHref = (lang, key) => `https://wa.me/${WA}?text=${encodeURIComponent(t(lang, key))}`;
+// the floating WhatsApp button (2026-11-15): every page and language, a short greeting in the page language
+const waFab = (ctx) => (WA ? render(partials.waFloat, { lang: ctx.lang, v: { ...ctx.v, waFabHref: esc(waHref(ctx.lang, 'wa.fab.msg')) } }) + '\n' : (t(ctx.lang, 'wa.fab.aria'), t(ctx.lang, 'wa.fab.msg'), ''));
 function waLink(lang) { return WA ? `<a href="https://wa.me/${WA}" dir="ltr" rel="noopener" class="wa-link">${esc(t(lang, 'contact.wa'))}</a>` : ''; }
 // Order on WhatsApp (owner 2026-11-15): each Social package's MAIN button is a green "Order <package> on WhatsApp" that opens
 // wa.me with the message prefilled with the package name and its monthly price (the page language, the page's country); under it a
@@ -598,14 +602,16 @@ function seasons(lang) {
 // The Store Kit is a concept: no price, date, quantity, reply time or buy button, and one plain note ("Pieces shown are examples.").
 // Quotes are asked in the client portal (Adham, 2026-10-18): "Request a quote" opens the portal's sign-up with intent=quote and
 // the page language; "Already a client? Log in" its sign-in with the same intent (portal PORTAL-API.md, "Custom pieces quotes").
-const portalAuth = (route, lang) => `${PORTAL}#/${route}?intent=quote&lang=${lang}`;
+// 2026-11-15 (owner): the portal quote sign-up is being removed; "Request a quote" and "Already a client?" open WhatsApp with
+// "I'd like a quote for a custom piece" in the page language (is.q.wamsg). Without a WhatsApp number they fall back to email.
+const quoteHref = (lang) => (WA ? waHref(lang, 'is.q.wamsg') : `mailto:${EMAIL}?subject=${encodeURIComponent(t(lang, 'is.q.wamsg'))}`);
 function storeVars(lang) {
   const choose = `<option value="">${esc(t(lang, 'f.choose'))}</option>`;
   const typeOptions = choose + STORE_TYPES.map(([v, k]) => `<option value="${esc(v)}">${esc(t(lang, k))}</option>`).join('');
   const leadCountryOptions = choose + CC_OPTS.map((c) => `<option value="${c}">${esc(t(lang, c === 'other' ? 'is.cc.other' : 'cc.' + c))}</option>`).join('');
   const msgKeys = ['f.sending', 'f.failed', 'f.tooMany', 'f.consentErr', 'is.wl.ok', 'v.web', 'v.webBad', 'v.email', 'v.emailBad', 'v.type', 'v.country', 'v.tooLong', 'v.angle'];
   return { typeOptions, leadCountryOptions, endpoint: ENDPOINT, leadMsgs: jsonScript(Object.fromEntries(msgKeys.map((k) => [k, t(lang, k)]))),
-    quoteHref: esc(portalAuth('signup', lang)), quoteLoginHref: esc(portalAuth('login', lang)) };
+    quoteHref: esc(quoteHref(lang)), quoteLoginHref: esc(quoteHref(lang)) };
 }
 
 // /sculptures/ (2026-10-18, the approved Sculptures mockup): 24 fiberglass pieces in two collections (data/sculptures.json, EN +
@@ -649,7 +655,7 @@ function sculptVars(lang) {
   }).join('\n');
   // the "send us your website" example: a catalog scene render, shown and labelled as an example concept (not a client project)
   const scConcept = scImg('concept-example', t(lang, 'sc.concept.alt'));
-  return { scCollage, scCards, scConcept, scImgDir: SC_DIR, quoteHref: esc(portalAuth('signup', lang)), quoteLoginHref: esc(portalAuth('login', lang)) };
+  return { scCollage, scCards, scConcept, scImgDir: SC_DIR, quoteHref: esc(quoteHref(lang)), quoteLoginHref: esc(quoteHref(lang)) };
 }
 
 // ---------- head ----------
@@ -880,7 +886,7 @@ for (const [lang] of LANGS) {
     htmlCc = LEGAL.includes(page) && !RESTRICTED ? null : DEFAULT_CC; // the legal pages keep the US-dollar price list, except while one country is served (they are in its currency then)
     const ctx = { lang, v: pageVars(lang, page) };
     const body = render(rd(`templates/${page === 'index' ? 'home' : page}.html`), ctx);
-    const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${!LEGAL.includes(page) && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${page === 'index' ? '<script src="/assets/dash.js" defer></script>\n' : ''}${page === 'sculptures' ? '<script src="/assets/sculptures.js" defer></script>\n' : ''}</body>\n</html>\n`;
+    const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${waFab(ctx)}${!LEGAL.includes(page) && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${page === 'index' ? '<script src="/assets/dash.js" defer></script>\n' : ''}${page === 'sculptures' ? '<script src="/assets/sculptures.js" defer></script>\n' : ''}</body>\n</html>\n`;
     const html = `${head(lang, page, purgeCss(cssFor(lang, page), bodyHtml))}\n${trimIndent(bodyHtml)}`;
     if (PARKED.has(page)) { write(`${PARKED_DIR}/${dirFor(lang, page)}index.html`, html); continue; } // kept, never published
     write(dirFor(lang, page) + 'index.html', hashUrls(html));
@@ -973,7 +979,7 @@ ${render(partials.header, ctx)}
 ${render(rd('templates/404.html'), ctx)}
 ${render(partials.footer, ctx)}
 </div>
-<script src="/site.js" defer></script>
+${waFab(ctx)}<script src="/site.js" defer></script>
 </body>
 </html>
 `;

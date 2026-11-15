@@ -18,6 +18,7 @@ const SOCIAL = ['seen', 'visible', 'growing', 'diamond']; // the Social packages
 // (2026-11-14: the portal reads ?lang=en|ar and nothing about a package, so every language passes its own lang)
 const SIGNUP = (l, plan) => `https://portal.crierstudio.com/#/signup?${plan ? `plan=${plan}&` : ''}lang=${l}`;
 const PORTAL_HOME = (l) => `https://portal.crierstudio.com/?lang=${l}`;
+const WA = String(JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'contact.json'), 'utf8')).whatsapp || '').replace(/[\s+()-]/g, '');
 let fail = 0; const ok = (c, m) => { if (!c) { fail++; console.log('FAIL', m); } };
 const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const esc = (x) => String(x).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -101,6 +102,11 @@ for (const l of LANGS) for (const p of PAGES) {
   ok(!/draft|\(DRAFT\)/i.test(h.replace(/<style>[\s\S]*?<\/style>/, '')), `draft text in ${file}`);
   // no free offers anywhere: the word free (and its ar form) must not appear in visible text
   const vis = h.replace(/<style>[\s\S]*?<\/style>/, '').replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ');
+  // the floating WhatsApp button (2026-11-15): once on every page, a label in the page language, the greeting prefilled
+  if (WA) {
+    const fab = (h.match(/<a class="wa-fab"[^>]*>/g) || []);
+    ok(fab.length === 1 && fab[0].includes(`href="https://wa.me/${WA}?text=${encodeURIComponent(d[l]['wa.fab.msg'].replace('{brand}', 'Crier Studio'))}"`) && fab[0].includes(`aria-label="${esc(d[l]['wa.fab.aria'])}"`), `one floating WhatsApp button with its ${l} label and greeting on ${file}`);
+  }
   // (one exception, Adham 2026-10-18: "Create a free account and tell us what you need" / the FAQ answer: a client portal account, not an offer)
   ok(!/\bfree\b|مجان|بدون مقابل/i.test(vis.replace(/\bfree account\b|حسابًا مجانيًا/gi, '')), `free wording in ${file}`);
   ok(!/Your shop, heard/i.test(h), `tagline in ${file}`);
@@ -164,8 +170,11 @@ for (const l of LANGS) for (const p of PAGES) {
     for (const id of ['id="kit"', 'id="waitlist"', 'id="custom"', 'id="wl-form"', 'data-form="store_waitlist"']) ok(h.includes(id), `${id} on ${file}`);
     // one form (the waitlist); Custom pieces quotes are asked in the client portal: sign-up and sign-in links with the page language
     ok((h.match(/<form\b/g) || []).length === 1 && !h.includes('id="q-form"') && !h.includes('custom_quote'), `only the waitlist form on ${file}`);
-    ok(h.includes(`id="quote-btn" href="https://portal.crierstudio.com/#/signup?intent=quote&amp;lang=${l}"`), `quote button -> portal sign-up (lang=${l}) on ${file}`);
-    ok(h.includes(`id="quote-login" href="https://portal.crierstudio.com/#/login?intent=quote&amp;lang=${l}"`), `quote log-in link -> portal sign-in (lang=${l}) on ${file}`);
+    // 2026-11-15 (owner): the portal quote sign-up is removed; both links open WhatsApp with "I'd like a quote for a custom piece"
+    const quoteWa = `https://wa.me/${WA}?text=${encodeURIComponent(d[l]['is.q.wamsg'].replace('{brand}', 'Crier Studio'))}`;
+    ok(h.includes(`id="quote-btn" href="${quoteWa}"`), `quote button -> WhatsApp with the quote message (${l}) on ${file}`);
+    ok(h.includes(`id="quote-login" href="${quoteWa}"`), `"Already a client?" -> WhatsApp with the quote message (${l}) on ${file}`);
+    ok(!/portal\.crierstudio\.com\/#\/(signup|login)\?intent=quote/.test(h), `no portal quote sign-up link on ${file}`);
     ok((h.match(/id="lead-msgs"/g) || []).length === 1, `waitlist messages on ${file}`);
     ok(!/mailto:/.test(h.replace(/<noscript>[\s\S]*?<\/noscript>/g, '').replace(/<footer>[\s\S]*?<\/footer>/, '')), `no mailto outside noscript/footer on ${file}`);
     // In-store v3, Direction A (Adham, 2026-10-18): twice, the Store Kit status pill and the COMING SOON banner.

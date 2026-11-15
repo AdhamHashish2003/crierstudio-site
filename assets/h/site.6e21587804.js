@@ -273,3 +273,34 @@
     matchMedia('(min-width:801px)').addEventListener('change',close);
   }
 })();
+
+/* Floating WhatsApp button (2026-11-15). It sits above the consent bar while the bar shows (--cbar), and on phones it steps aside
+   (class wa-fab-off) whenever a link, button or field is under it, so it never covers something the visitor needs to tap. */
+(function () {
+  "use strict";
+  var fab = document.getElementById("wa-fab"); if (!fab) return;
+  var de = document.documentElement, bar = document.getElementById("consent-bar"), phone = matchMedia("(max-width:767px)"), queued = 0;
+  var SEL = "a,button,input,select,textarea,summary,label,[role=button]", PTS = [[0.5, 0.5], [0, 0], [0.5, 0], [1, 0], [0, 0.5], [1, 0.5], [0, 1], [0.5, 1], [1, 1]], PAD = 8;
+  function lift() { var h = bar && !bar.hidden ? bar.getBoundingClientRect().height : 0; de.style.setProperty("--cbar", Math.round(h) + "px"); }
+  function covers() {
+    if (!phone.matches || !document.elementsFromPoint) return false;
+    var r = fab.getBoundingClientRect();
+    for (var i = 0; i < PTS.length; i++) {
+      var x = r.left - PAD + (r.width + 2 * PAD) * PTS[i][0], y = r.top - PAD + (r.height + 2 * PAD) * PTS[i][1];
+      var els = document.elementsFromPoint(Math.min(Math.max(x, 0), innerWidth - 1), Math.min(Math.max(y, 0), innerHeight - 1));
+      for (var j = 0; j < els.length; j++) {
+        if (els[j] === fab || fab.contains(els[j])) continue;
+        var hit = els[j].closest && els[j].closest(SEL);
+        if (hit) return true;
+        break; // only the topmost element under the button counts
+      }
+    }
+    return false;
+  }
+  function update() { queued = 0; lift(); fab.classList.toggle("wa-fab-off", covers()); }
+  function soon() { if (!queued) { queued = 1; setTimeout(update, 50); } }
+  addEventListener("scroll", soon, { passive: true }); addEventListener("resize", soon);
+  if (phone.addEventListener) phone.addEventListener("change", soon);
+  if (bar && window.MutationObserver) new MutationObserver(soon).observe(bar, { attributes: true, attributeFilter: ["hidden"] });
+  update();
+})();
