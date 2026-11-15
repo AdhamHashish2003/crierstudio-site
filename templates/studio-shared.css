@@ -6,10 +6,10 @@ body.studio-inner{--bg:#0E0F0C;--surface:#171913;--paper:#1A1C16;--ink:#F6F8EF;-
 .skip-link:focus{top:12px}
 .top{display:flex;align-items:center;justify-content:space-between;gap:24px;min-height:98px;padding-block:20px;border-bottom:1px solid var(--line);position:relative;z-index:30}
 .site-shell>.top{max-width:1430px;margin:auto;padding-inline:60px}
-.top .logo svg{width:145px;height:38px;display:block}
-/* the brand mark (the glossy blob, 2026-11-15) beside the wordmark; the lime rim keeps its edge on dark grounds */
-.logo{gap:10px;direction:ltr}.logo .mark{width:40px;height:40px;flex:none;display:block}
-@media (max-width:520px){.top .logo{gap:8px}.top .logo .mark{width:34px;height:34px}.top .logo svg{width:118px;height:31px}}
+/* the logo (2026-11-15, owner): the glossy blob carrying the "crier STUDIO" wordmark, cut out of its lime square (it reads better on the
+   dark header than on a lime tile: preview in inputs/brand/kit/preview-header-options.png). 80 px, 64 px on phones; 1x/2x/3x webp. */
+.logo .mark{width:80px;height:80px;flex:none;display:block}
+@media (max-width:520px){.top .logo .mark{width:64px;height:64px}}
 .top .main-nav{display:flex;align-items:center;gap:26px;flex-wrap:nowrap;margin:0;order:initial;border:0;padding:0}
 .top .main-nav a{font-size:13px;text-decoration:none;font-weight:500;padding-block:12px;color:var(--ink)}
 .top .main-nav a:hover{color:var(--accent)}

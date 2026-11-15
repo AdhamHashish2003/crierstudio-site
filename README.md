@@ -6,7 +6,7 @@ The source logo is `~/Projects/crier/inputs/brand/crier-logo-blob-2026-11-15.web
 
 - Favicons (`favicon.ico` 16/32/48, `favicon-16.png`, `favicon-32.png`, `favicon.svg`): the blob alone, flat black on a lime rounded tile, so it reads at 16-32 px on light and dark tabs. `favicon.svg` is a traced outline of the blob.
 - `apple-touch-icon.png` (180, full-bleed lime), `icon-192.png`, `icon-512.png` and `icon-maskable-512.png` (in `site.webmanifest`): the glossy blob without the wordmark. `favicon-512.png` is kept (same as `icon-512.png`) for old links.
-- Header and footer: `templates/logo.svg.html` is the blob mark (`assets/crier-mark-80.webp` / `-120.webp`, transparent, 40 px; 34 px on phones) plus the existing SVG wordmark. The lockup is always left-to-right, on Arabic pages too.
+- Header and footer (owner, 2026-11-15: "have the logo, the new one"): `templates/logo.svg.html` is the logo itself, the glossy blob carrying the "crier STUDIO" wordmark, cut out of its lime square (`assets/crier-logo-80.webp`, `-160` and `-240` for 1x/2x/3x), 80 px tall, 64 px on phones. The cut-out read better on the dark header than the logo on a lime tile; both are compared in `~/Projects/crier/inputs/brand/kit/preview-header-options.png`.
 - Share images: `og.png` (English) and `og-ar.png` (Arabic), rendered by `node build/og-image.mjs` (set `CHROME` to a Chrome binary) from `build/og-image.html` and `build/og-logo.webp`. Each page names the image in its own language (`OG_IMAGE` in `build/build.mjs`; alt text `og.alt`).
 - Structured data: the Organization `logo` is `/crier-logo.png` (the full logo, 512 x 512).
 
