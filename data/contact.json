@@ -1,4 +1,4 @@
 {
- "whatsapp": "201201081869",
- "about": "The WhatsApp business number (owner 2026-11-15: +20 120 108 1869, the number the client portal uses, uma portal/lib/brand.cjs), digits only in international format (country code + number, no +, no spaces, no leading 0). Empty = the build shows NO WhatsApp link anywhere. Set: the build adds a https://wa.me/<number> link to the footer, the homepage and the About page, the number in the contact sentences ({wa} in about.contact.p and terms.who.p), and, under each package on /pricing/ and the home table, the 'Pay by InstaPay' line with a WhatsApp link prefilled with the package name."
+ "whatsapp": "201146000101",
+ "about": "The WhatsApp business number (owner 2026-11-15: +20 114 600 0101, the number the client portal uses, uma portal/lib/brand.cjs), digits only in international format (country code + number, no +, no spaces, no leading 0). Empty = the build shows NO WhatsApp link anywhere. Set: the build adds a https://wa.me/<number> link to the footer, the homepage and the About page, the number in the contact sentences ({wa} in about.contact.p and terms.who.p), and, under each package on /pricing/ and the home table, the 'Pay by InstaPay' line with a WhatsApp link prefilled with the package name."
 }

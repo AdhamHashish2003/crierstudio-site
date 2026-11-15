@@ -112,7 +112,7 @@ const PKGDATA = Object.fromEntries(PRICING.packages.filter((p) => !p.coming_soon
 const CONTACT = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'contact.json'), 'utf8'));
 const WA = String(CONTACT.whatsapp || '').replace(/[\s+()-]/g, '');
 if (WA && !/^[1-9]\d{7,14}$/.test(WA)) throw new Error('data/contact.json: whatsapp must be the number in international format, digits only');
-// the number as people read it (Egypt: +20 120 108 1869), for the contact sentences ({wa})
+// the number as people read it (Egypt: +20 114 600 0101), for the contact sentences ({wa})
 const WA_TEXT = WA.startsWith('20') && WA.length === 12 ? `+20 ${WA.slice(2, 5)} ${WA.slice(5, 8)} ${WA.slice(8)}` : '+' + WA;
 const MONTHLY = new Set(PRICING.packages.filter((p) => p.billing === 'monthly').map((p) => p.id)); // billed monthly (Bronze, Silver, Gold); the deck is one-time
 // product names are i18n keys (name.<id>) so every language shows its own name

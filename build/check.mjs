@@ -397,7 +397,7 @@ for (const l of LANGS) {
 // name it, and every Social package on /pricing/ and in the home table has "Pay by InstaPay" with a wa.me link prefilled with its name
 {
   const WA = String(JSON.parse(rd('data/contact.json')).whatsapp || '');
-  ok(WA === '201201081869', 'data/contact.json whatsapp is 201201081869 (the number the client portal uses)');
+  ok(WA === '201146000101', 'data/contact.json whatsapp is 201146000101 (the number the client portal uses)');
   for (const l of LANGS) {
     for (const pg of ['', 'about/', 'pricing/', 'faq/', 'terms/']) ok((rd(PREFIX(l) + pg + 'index.html').match(/<footer>[\s\S]*?<\/footer>/) || [''])[0].includes(`href="https://wa.me/${WA}"`), `WhatsApp link in the footer of /${PREFIX(l)}${pg}`);
     ok((rd(PREFIX(l) + 'about/index.html').match(/<main[\s\S]*?<\/main>/) || [''])[0].includes(`href="https://wa.me/${WA}"`), `WhatsApp link on About (${l})`);

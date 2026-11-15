@@ -104,7 +104,7 @@ The country picker (home and pricing): the visitor's pick (saved), else Cloudfla
 
 ## WhatsApp
 
-`data/contact.json` holds the WhatsApp business number (`whatsapp`, digits only, international format): `201201081869` since 2026-11-15, the number the client portal uses. It adds a `https://wa.me/<number>` link to the footer, the homepage and the About page, the number in the contact sentences (`{wa}` in `about.contact.p` and `terms.who.p`), and under each Social package on `/pricing/` and in the home table a "Pay by InstaPay: message us on WhatsApp for payment details" line whose wa.me link is prefilled with the package name in the page language (`pay.wa.*`). Empty = no WhatsApp link anywhere.
+`data/contact.json` holds the WhatsApp business number (`whatsapp`, digits only, international format): `201146000101` since 2026-11-15, the number the client portal uses. It adds a `https://wa.me/<number>` link to the footer, the homepage and the About page, the number in the contact sentences (`{wa}` in `about.contact.p` and `terms.who.p`), and under each Social package on `/pricing/` and in the home table a "Pay by InstaPay: message us on WhatsApp for payment details" line whose wa.me link is prefilled with the package name in the page language (`pay.wa.*`). Empty = no WhatsApp link anywhere.
 
 ## Egypt only, payment on WhatsApp (temporary, 2026-11-15)
 
