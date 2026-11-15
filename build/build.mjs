@@ -325,9 +325,10 @@ const SIGNUP_PATH = '#/signup';
 const signupUrl = (lang, plan) => `${PORTAL}${SIGNUP_PATH}?${plan ? `plan=${encodeURIComponent(plan)}&` : ''}lang=${lang}`;
 const portalHome = (lang) => `${PORTAL}?lang=${lang}`;
 function buyHref(lang, p) { if (!PKG[p] || PKG[p].coming_soon) throw new Error('no buy link for ' + p); return isLinked(p) ? LINKS[p] : signupUrl(lang, p); }
-function buyBtn(lang, p, ghost) {
+function buyBtn(lang, p, ghost, noNote) { // noNote: the card carries the "Pay by InstaPay" WhatsApp line instead (waPay)
   if (p === 'deck') return `<button class="btn coming-soon" type="button" disabled data-unavailable="deck">${h(lang, 'pkg.deck.btn')}</button><span class="paynote">${h(lang, 'availability.deck')}</span>`;
-  const note = isLinked(p) ? '' : `<span class="paynote">${h(lang, 'pay.note')}</span>`;
+  const payNote = h(lang, 'pay.note'); // read even when not shown: it comes back when data/contact.json has no WhatsApp number
+  const note = isLinked(p) || noNote ? '' : `<span class="paynote">${payNote}</span>`;
   return `<a class="btn${ghost ? ' ghost' : ''}" href="${esc(buyHref(lang, p))}" data-product="${p}">${h(lang, `pkg.${p}.btn`)}</a>${note}`;
 }
 // home hero (audit fixes, 2026-10-19): a "Start in your portal" card whose button opens the portal sign-up (no price, no
@@ -348,7 +349,7 @@ function planCard(lang, p, hot) {
   // the VAT line ("SAR 109 + VAT 15% SAR 16.35 = SAR 125.35"), hidden in US dollars (no VAT). The Brand Deck is coming soon
   // and is never payable, so its card has no such line.
   const vatLine = '';
-  return `<article class="plan${hot ? ' hot' : ''}" data-plan="${p}"><span class="badge">${h(lang, `pkg.${p}.eye`)}</span><h3>${esc(pname(lang, p))}</h3><p class="pt">${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(lang, p)}<span class="per">${h(lang, per)}</span></div>${vatLine}<p class="billnote">${h(lang, bill)}</p>${platPick(lang, p)}${ticks(lang, `pkg.${p}`)}<p class="pnote">${h(lang, `pkg.${p}.note`)}</p><div class="buyrow">${buyBtn(lang, p, !hot)}</div>${waPay(lang, p)}</article>`;
+  return `<article class="plan${hot ? ' hot' : ''}" data-plan="${p}"><span class="badge">${h(lang, `pkg.${p}.eye`)}</span><h3>${esc(pname(lang, p))}</h3><p class="pt">${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(lang, p)}<span class="per">${h(lang, per)}</span></div>${vatLine}<p class="billnote">${h(lang, bill)}</p>${platPick(lang, p)}${ticks(lang, `pkg.${p}`)}<p class="pnote">${h(lang, `pkg.${p}.note`)}</p><div class="buyrow">${buyBtn(lang, p, !hot, !!waPay(lang, p))}</div>${waPay(lang, p)}</article>`;
 }
 // ---- home: Landing A "Billboard" (Adham, 2026-11-06) ----
 // Hero headline + the Instagram-ready phone (a made-up example café, labelled as an example), the smallest package in

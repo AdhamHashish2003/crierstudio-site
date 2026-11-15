@@ -409,6 +409,7 @@ for (const l of LANGS) {
         ok(wa[1] === m[1] && wa[2].trim() === esc(d[l]['pay.wa.line']) && wa[4] === esc(d[l]['pay.wa.link']), `"Pay by InstaPay" line on ${m[1]} (/${PREFIX(l)}${pg})`);
         const href = (wa[3] || '').replace(/&amp;/g, '&'), text = decodeURIComponent((href.split('?text=')[1] || ''));
         ok(href.startsWith(`https://wa.me/${WA}?text=`) && text.includes(d[l]['name.' + m[1]]), `WhatsApp link prefilled with the ${m[1]} package name (/${PREFIX(l)}${pg})`);
+        ok((m[0].match(/Pay by InstaPay|ادفع عبر إنستاباي/g) || []).length === 1, `one "Pay by InstaPay" line on ${m[1]} (/${PREFIX(l)}${pg})`);
         seen.push(m[1]);
       }
       ok(JSON.stringify(seen) === '["seen","visible","growing"]', `"Pay by InstaPay" under all three packages on /${PREFIX(l)}${pg}`);
