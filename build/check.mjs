@@ -32,6 +32,12 @@ ok(/^portal\/lib\/pricing\.json sha256 [0-9a-f]{64}$/.test(PRICING.generated_fro
 const LAUNCH = { seen: { USD: 750, SAR: 350, AED: 340, EGP: 2500 }, visible: { USD: 1100, SAR: 695, AED: 680, EGP: 5000 }, growing: { USD: 1500, SAR: 1045, AED: 1020, EGP: 7500 } };
 const NAMES = { seen: ['Bronze', 'البرونزية'], visible: ['Silver', 'الفضية'], growing: ['Gold', 'الذهبية'] };
 // the currencies shown besides US dollars (data-sar, data-aed, data-egp); the USA is a country in USD, so USD is not repeated
+// One country served (owner 2026-11-15, temporary: data/pricing.json funnel.countries, Egypt only): no picker, the pages written in
+// that country's currency, Offers and areaServed only there. The other countries' prices stay in data/pricing.json (pinned above).
+const SERVED = (Array.isArray(PRICING.funnel?.countries) ? PRICING.funnel.countries : []).filter((c) => c in PRICING.local.countries);
+const ONLY = SERVED.length && SERVED.length < Object.keys(PRICING.local.countries).length ? SERVED : null;
+const OFFER_CC = ONLY ? Object.fromEntries(Object.entries(PRICING.local.countries).filter(([cc]) => ONLY.includes(cc))) : PRICING.local.countries;
+const DEF_CC = ONLY ? ONLY[0] : 'SA', DEF_CUR = PRICING.local.countries[DEF_CC].currency;
 const LOCAL_CURS = [...new Set(Object.values(PRICING.local.countries).map((c) => c.currency))].filter((c) => c !== 'USD');
 ok(JSON.stringify(LOCAL_CURS) === JSON.stringify(['SAR', 'AED', 'EGP']) && PRICING.local.fallback.currency === 'USD' && PRICING.local.countries.US?.currency === 'USD' && PRICING.local.countries.US.vat_pct === 0, 'local currencies are SAR, AED, EGP; the USA and the fallback are US dollars with no VAT');
 ok(JSON.stringify(PRICING.packages.map((p) => p.id)) === JSON.stringify(['seen', 'visible', 'growing', 'deck']), 'packages are seen, visible, growing and the coming-soon deck (no Social Kit)');
@@ -100,7 +106,15 @@ for (const l of LANGS) for (const p of PAGES) {
   }
   if (p === 'pricing/') ok((h.match(/data-product="/g) || []).length === 3 && h.includes('disabled data-unavailable="deck"'), `3 buy buttons and unavailable Brand Deck on ${file}`);
   // the pricing page follows the visitor's country like the home page (2026-11-13: the US-dollar price is the USA's own price)
-  if (p === 'pricing/') ok(h.includes('id="cur-select"') && /id="cur-data"/.test(h) && h.includes('<option value="US"'), `country picker (with the USA) and currency data on ${file}`);
+  if (p === 'pricing/' && !ONLY) ok(h.includes('id="cur-select"') && /id="cur-data"/.test(h) && h.includes('<option value="US"'), `country picker (with the USA) and currency data on ${file}`);
+  // one country served: no country picker anywhere, the currency data locked to it, no US-dollar or other currency in the text
+  if (ONLY) {
+    ok(!h.includes('id="cur-select"') && !/<select[^>]*data-cc/.test(h), `no country picker on ${file}`);
+    if (/id="cur-data"/.test(h)) ok(h.includes(`"lock":"${DEF_CC}"`), `currency data locked to ${DEF_CC} on ${file}`);
+    const others = Object.values(PRICING.local.countries).map((c) => c.currency).filter((c) => c !== DEF_CUR);
+    for (const c of others) ok(!vis.includes(d[l]['cur.sym' + c] ? d[l]['cur.fmt'].replace('{cur}', d[l]['cur.sym' + c]).replace('{n}', '').trim() : c + ' ') && !(c === 'USD' && /\$\s?\d/.test(vis)), `a ${c} price in the text of ${file}`);
+    for (const m of h.matchAll(/class="(?:price )?amt" dir="(?:ltr|rtl)"[^>]*>([^<]*)</g)) ok(m[1].includes(d[l]['cur.sym' + DEF_CUR]), `price "${m[1]}" is not in ${DEF_CUR} on ${file}`);
+  }
   // Home: Landing A (Adham, 2026-11-06; walkthrough kept 2026-11-07; In-store section removed 2026-11-06): hero (SAHM's real
   // Instagram posts), The Social Kit in numbers, the client-portal walkthrough, the OK rule, the package table, a closing call. No FAQ.
   if (p === '') {
@@ -125,8 +139,8 @@ for (const l of LANGS) for (const p of PAGES) {
     // the package table: every Social package at its list and sale price from data/pricing.json, with its sign-up button
     for (const pk of PRICING.packages.filter((x) => ['seen', 'visible', 'growing'].includes(x.id))) {
       ok(new RegExp(`class="price amt" dir="(ltr|rtl)" ${dataAttrs(pk.price, pk.prices)}`).test(h) && !h.includes('class="price-list'), `table price ${pk.price} USD (${pk.id}) on ${file}`);
-      // the default country's text (Saudi Arabia, SAR before VAT) is the SAR number itself: nothing converted, nothing rounded
-      ok(h.includes(`${dataAttrs(pk.price, pk.prices)}>${d[l]['cur.fmt'].replace('{cur}', d[l]['cur.symSAR']).replace('{n}', pk.prices.SAR.toLocaleString('en-US'))}<`), `table shows SAR ${pk.prices.SAR} for ${pk.id} on ${file}`);
+      // the default country's text (Saudi Arabia, SAR before VAT; Egypt while it is the one country served) is that number itself
+      ok(h.includes(`${dataAttrs(pk.price, pk.prices)}>${d[l]['cur.fmt'].replace('{cur}', d[l]['cur.sym' + DEF_CUR]).replace('{n}', pk.prices[DEF_CUR].toLocaleString('en-US'))}<`), `table shows ${DEF_CUR} ${pk.prices[DEF_CUR]} for ${pk.id} on ${file}`);
     }
     ok((h.match(/<table class="la-table">/g) || []).length === 1 && /id="cur-data"/.test(h), `one package table with its currency data on ${file}`);
   }
@@ -214,7 +228,7 @@ ok(rd('brand-deck/index.html').includes('"@type":"Service"') && !rd('brand-deck/
 ok(rd('social/index.html').includes('"@type":"Service"') && !rd('social/index.html').includes('"offers"'), 'Social Service JSON-LD is informational, without offers');
 ok(rd('in-store/index.html').includes('"@type":"Service"') && !rd('in-store/index.html').includes('"offers"'), 'In-store Services are informational, without offers');
 // the pricing page's structured data carries each available package's US-dollar sale price (the international price)
-for (const pr of [...Object.values(LAUNCH).map((w) => `"price":"${w.USD}"`), '"unitCode":"MON"']) ok(rd('pricing/index.html').includes(pr), 'pricing JSON-LD ' + pr);
+for (const pr of [...Object.values(LAUNCH).map((w) => `"price":"${w[ONLY ? DEF_CUR : 'USD']}"`), '"unitCode":"MON"']) ok(rd('pricing/index.html').includes(pr), 'pricing JSON-LD ' + pr);
 // renamed pages: every old URL is a noindex redirect stub to the new page in the same language
 for (const l of LANGS) for (const [from, to] of Object.entries(MOVED)) {
   const pre = PREFIX(l), f = pre + from + 'index.html';
@@ -224,7 +238,8 @@ for (const l of LANGS) for (const [from, to] of Object.entries(MOVED)) {
     && s.includes(`<link rel="canonical" href="https://crierstudio.com/${pre}${tp}">`) && (th ? s.includes(`data-hash="${th}"`) : !s.includes('data-hash=')), 'stub ' + f);
   ok(!sm.includes(`/${pre}${from}<`), 'stub in sitemap ' + f);
 }
-ok(rd('pricing/index.html').includes('"@type":"ItemList"') && rd('pricing/index.html').includes('"priceCurrency":"USD"'), 'pricing JSON-LD');
+ok(rd('pricing/index.html').includes('"@type":"ItemList"') && rd('pricing/index.html').includes(`"priceCurrency":"${ONLY ? DEF_CUR : 'USD'}"`), 'pricing JSON-LD');
+if (ONLY) for (const l of LANGS) { const ld = (rd(PREFIX(l) + 'pricing/index.html').match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/) || [])[1] || ''; for (const c of [...new Set(Object.values(PRICING.local.countries).map((x) => x.currency))].filter((c) => c !== DEF_CUR)) ok(!ld.includes(`"priceCurrency":"${c}"`), `pricing JSON-LD: no ${c} offer while only ${ONLY.join(', ')} is served (${l})`); }
 // Buy buttons: every product has one config entry; empty = the client portal's sign-up, filled = the link
 {
   const links = JSON.parse(rd('payment-links.json'));
@@ -373,9 +388,35 @@ for (const l of LANGS) {
   const h = rd(PREFIX(l) + 'pricing/index.html');
   for (const pk of ['seen', 'visible', 'growing']) { const card = (h.match(new RegExp(`<article class="plan[^"]*" data-plan="${pk}"[\\s\\S]*?</article>`)) || [''])[0]; ok(card.includes(esc(d[l]['pkg.seen.f7'])), `"${d[l]['pkg.seen.f7']}" on the ${pk} card (${l})`); }
   const ld = (h.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/) || [])[1] || '';
-  for (const [cc, c] of Object.entries(PRICING.local.countries)) ok(ld.includes(`"priceCurrency":"${c.currency}"`) && ld.includes(`"eligibleRegion":"${cc}"`), `pricing JSON-LD: an offer in ${c.currency} for ${cc} (${l})`);
+  for (const [cc, c] of Object.entries(OFFER_CC)) ok(ld.includes(`"priceCurrency":"${c.currency}"`) && ld.includes(`"eligibleRegion":"${cc}"`), `pricing JSON-LD: an offer in ${c.currency} for ${cc} (${l})`);
   ok(!/"priceCurrency":"[A-Z]{3}"[^}]*"name":"(?:Brand Deck|الملف التعريفي)"|"name":"(?:Brand Deck|الملف التعريفي)","provider":\{[^}]*\},"offers"/.test(ld), `pricing JSON-LD: no Brand Deck offer while it is coming soon (${l})`);
-  ok(rd(PREFIX(l) + 'index.html').includes(`"@type":"Country","name":"${d.en['cc.SA']}","identifier":"SA"`), `Organization areaServed uses country names and ISO codes (${l})`);
+  ok(rd(PREFIX(l) + 'index.html').includes(`"@type":"Country","name":"${d.en['cc.' + DEF_CC]}","identifier":"${DEF_CC}"`), `Organization areaServed uses country names and ISO codes (${l})`);
+  if (ONLY) ok(!Object.keys(PRICING.local.countries).filter((c) => !ONLY.includes(c)).some((c) => rd(PREFIX(l) + 'index.html').includes(`"identifier":"${c}"`)), `areaServed is only ${ONLY.join(', ')} (${l})`);
+}
+// WhatsApp (owner 2026-11-15): data/contact.json has the number; the footer, the home page and About link to it, the contact sentences
+// name it, and every Social package on /pricing/ and in the home table has "Pay by InstaPay" with a wa.me link prefilled with its name
+{
+  const WA = String(JSON.parse(rd('data/contact.json')).whatsapp || '');
+  ok(WA === '201201081869', 'data/contact.json whatsapp is 201201081869 (the number the client portal uses)');
+  for (const l of LANGS) {
+    for (const pg of ['', 'about/', 'pricing/', 'faq/', 'terms/']) ok((rd(PREFIX(l) + pg + 'index.html').match(/<footer>[\s\S]*?<\/footer>/) || [''])[0].includes(`href="https://wa.me/${WA}"`), `WhatsApp link in the footer of /${PREFIX(l)}${pg}`);
+    ok((rd(PREFIX(l) + 'about/index.html').match(/<main[\s\S]*?<\/main>/) || [''])[0].includes(`href="https://wa.me/${WA}"`), `WhatsApp link on About (${l})`);
+    ok(!/by email only|email only|بالبريد الإلكتروني فقط/i.test(d[l]['about.contact.p'] + d[l]['terms.who.p']), `the contact wording is no longer "email only" (${l})`);
+    for (const [pg, block] of [['pricing/', /<article class="plan[^"]*" data-plan="(seen|visible|growing)"[\s\S]*?<\/article>/g], ['', /<td[^>]*><a class="btn[^"]*" href="[^"]*" data-product="(seen|visible|growing)"[\s\S]*?<\/td>/g]]) {
+      const h = rd(PREFIX(l) + pg + 'index.html'), seen = [];
+      for (const m of h.matchAll(block)) {
+        const wa = (m[0].match(/<p class="wapay fine" data-pkg="(\w+)">([^<]*)<a href="([^"]*)"[^>]*>([^<]*)<\/a><\/p>/) || []);
+        ok(wa[1] === m[1] && wa[2].trim() === esc(d[l]['pay.wa.line']) && wa[4] === esc(d[l]['pay.wa.link']), `"Pay by InstaPay" line on ${m[1]} (/${PREFIX(l)}${pg})`);
+        const href = (wa[3] || '').replace(/&amp;/g, '&'), text = decodeURIComponent((href.split('?text=')[1] || ''));
+        ok(href.startsWith(`https://wa.me/${WA}?text=`) && text.includes(d[l]['name.' + m[1]]), `WhatsApp link prefilled with the ${m[1]} package name (/${PREFIX(l)}${pg})`);
+        seen.push(m[1]);
+      }
+      ok(JSON.stringify(seen) === '["seen","visible","growing"]', `"Pay by InstaPay" under all three packages on /${PREFIX(l)}${pg}`);
+    }
+  }
+  ok(d.en['pay.wa.line'] + ' ' + d.en['pay.wa.link'] === 'Pay by InstaPay: message us on WhatsApp for payment details', 'the InstaPay line wording');
+}
+{
 }
 // the language: the URL wins; the memory is written only by an explicit ?lang= (the EN / AR links)
 { const inl = (rd('index.html').match(/<script>(\(function\(\)\{try\{var k='crier\.lang'[\s\S]*?)<\/script>/) || [])[1] || '';
@@ -407,7 +448,9 @@ for (const l of LANGS) {
   const STAMP = 'build/legal-stamp.json';
   if (process.argv.includes('--restamp')) {
     const today = new Date().toISOString().slice(0, 10);
-    for (const [pg, v] of Object.entries(now)) ok(v.date === today, `--restamp: ${pg} still says ${v.date}; set its "last updated" line to today (${today}) first`);
+    let prev = {}; try { prev = JSON.parse(rd(STAMP)); } catch { }
+    // a page whose text did not change keeps its date (2026-11-15: terms and refund changed, the privacy policy did not)
+    for (const [pg, v] of Object.entries(now)) ok(v.date === today || (prev[pg] && prev[pg].date === v.date && LANGS.every((l) => prev[pg][l] === v[l])), `--restamp: ${pg} still says ${v.date}; set its "last updated" line to today (${today}) first`);
     if (!fail) { fs.writeFileSync(path.join(ROOT, STAMP), JSON.stringify(now, null, 1) + '\n'); console.log('wrote ' + STAMP); }
   } else {
     let st = null; try { st = JSON.parse(rd(STAMP)); } catch { }

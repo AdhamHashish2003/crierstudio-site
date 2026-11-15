@@ -75,16 +75,24 @@ const PRICES = Object.fromEntries(PRICING.packages.map((p) => [p.id, p.price]));
 // (local.countries in data/pricing.json; packages[].prices / extra_platform_prices are NET before VAT); every other country
 // pays the USD price with no VAT. Every price carries its local net prices; site.js shows the buyer's currency (by country,
 // never by page language) with "price + VAT = total" on every page but the legal ones.
-const COUNTRIES = PRICING.local.countries;
+const COUNTRIES_ALL = PRICING.local.countries;
+// The countries the site serves NOW (owner 2026-11-15, temporary until the payment gateway exists: Egypt only): data/pricing.json
+// funnel.countries, republished from the portal's price list. RESTRICTED (a list that leaves a country out) = no country picker, no
+// "Another country (US dollars)", every price written in the first served country's currency (legal pages too) and Offers only there.
+// Every other country's price stays in data/pricing.json; to undo, the owner changes that one list in the portal's pricing.json and
+// republishes (portal/scripts/publish-pricing.cjs).
+const FUNNEL_CC = (Array.isArray(PRICING.funnel?.countries) ? PRICING.funnel.countries : []).filter((c) => c in COUNTRIES_ALL);
+const COUNTRIES = FUNNEL_CC.length ? Object.fromEntries(Object.entries(COUNTRIES_ALL).filter(([cc]) => FUNNEL_CC.includes(cc))) : COUNTRIES_ALL;
+const RESTRICTED = Object.keys(COUNTRIES).length < Object.keys(COUNTRIES_ALL).length;
 // VAT (review fix 2026-11-14, owner: not VAT-registered anywhere): a VAT line or "+ VAT" is shown only for a country whose price
 // data marks VAT as charged (vat_pct above 0, and vat_charged not false). Otherwise the price shown is the amount due.
 const vatOn = (cc) => !!cc && !!COUNTRIES[cc] && Number(COUNTRIES[cc].vat_pct) > 0 && COUNTRIES[cc].vat_charged !== false;
 const vatPct = (cc) => (vatOn(cc) ? Number(COUNTRIES[cc].vat_pct) : 0);
-const CURS = [...new Set(['USD', ...Object.values(COUNTRIES).map((c) => c.currency)])]; // the USA (2026-11-13) is a country in USD: listed once
+const CURS = [...new Set(['USD', ...Object.values(COUNTRIES_ALL).map((c) => c.currency)])]; // every currency stays in data-* (one-country mode shows only its own) // the USA (2026-11-13) is a country in USD: listed once
 // MENA landing (2026-10-16): a visitor whose country is unknown is quoted as Saudi Arabia (SAR + VAT), on every language page.
 // The HTML is written in this country's prices (no flash of US dollars); site.js then follows the visitor's pick, Cloudflare or
 // the time zone. The legal pages keep the US-dollar price list.
-const DEFAULT_CC = 'SA';
+const DEFAULT_CC = RESTRICTED ? Object.keys(COUNTRIES)[0] : 'SA';
 if (!COUNTRIES[DEFAULT_CC]) throw new Error('DEFAULT_CC is not in data/pricing.json local.countries');
 let htmlCc = DEFAULT_CC; // the country the page being built is written in (null = US dollars); set per page in the build loop
 // the same arithmetic as the checkout server and site.js: VAT on the whole order, in integer cents, rounded half-up
@@ -104,6 +112,8 @@ const PKGDATA = Object.fromEntries(PRICING.packages.filter((p) => !p.coming_soon
 const CONTACT = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'contact.json'), 'utf8'));
 const WA = String(CONTACT.whatsapp || '').replace(/[\s+()-]/g, '');
 if (WA && !/^[1-9]\d{7,14}$/.test(WA)) throw new Error('data/contact.json: whatsapp must be the number in international format, digits only');
+// the number as people read it (Egypt: +20 120 108 1869), for the contact sentences ({wa})
+const WA_TEXT = WA.startsWith('20') && WA.length === 12 ? `+20 ${WA.slice(2, 5)} ${WA.slice(5, 8)} ${WA.slice(8)}` : '+' + WA;
 const MONTHLY = new Set(PRICING.packages.filter((p) => p.billing === 'monthly').map((p) => p.id)); // billed monthly (Bronze, Silver, Gold); the deck is one-time
 // product names are i18n keys (name.<id>) so every language shows its own name
 const PRODUCTS = Object.keys(PRICES);
@@ -131,13 +141,20 @@ const faqCss = CSS.home.slice(CSS.home.indexOf('/* faq */'), CSS.home.indexOf('/
 // ---------- text helpers ----------
 const used = new Set();
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// While one country is served (RESTRICTED, Egypt only since 2026-11-15) a key may have a variant `<key>.<cc>` (e.g. home.eyebrow.eg)
+// with the wording for that time: Egypt only, payment details on WhatsApp (InstaPay). The variant is used in its place; the
+// ordinary text stays and comes back by itself when the switch is undone. Both count as used.
+const VARIANT = RESTRICTED ? '.' + DEFAULT_CC.toLowerCase() : null;
 function raw(lang, key) {
   used.add(key);
+  if (VARIANT && dicts[lang][key + VARIANT] != null) { used.add(key + VARIANT); key = key + VARIANT; }
   const v = dicts[lang][key];
   if (v == null) throw new Error(`missing i18n key ${key} (${lang})`); // strict: no silent fallback to English
   return fillPricing(v, key);
 }
-const vars = { brand: BRAND, email: EMAIL };
+const vars = { brand: BRAND, email: EMAIL, wa: WA_TEXT }; // wa: the WhatsApp number as people read it (a wa.me link in HTML text)
+// a `.<cc>` variant of a key is read only while that one country is served; it is not an unused key at other times
+const VARIANT_RE = /\.(sa|ae|eg|us)$/;
 function fillPricing(v, key) {
   const need = (x, what) => { if (x == null) throw new Error(`i18n ${key}: ${what} is not in data/pricing.json`); return x; };
   // a price becomes a marker \u0002<usd>|<SAR>|<AED>|<EGP>\u0002: t() writes it as $<usd>, h() as a <span> site.js can localise
@@ -169,10 +186,10 @@ function priceSpan(lang, vals, cls = 'amt') {
 }
 const t = (lang, key) => raw(lang, key).replace(PRICE_MARK, (m, vals) => '$' + fmtNum(+vals.split('|')[0])).replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m).replace(/<\/?(?:b|a)>/g, '');
 function h(lang, key, href) {
-  let s = raw(lang, key).replace(/\{(\w+)\}/g, (m, k) => (k === 'email' ? '\u0001E\u0001' : vars[k] ?? m));
+  let s = raw(lang, key).replace(/\{(\w+)\}/g, (m, k) => (k === 'email' ? '\u0001E\u0001' : k === 'wa' && WA ? '\u0001W\u0001' : vars[k] ?? m));
   s = esc(s).replace(/&lt;(\/?)b&gt;/g, '<$1b>')
     .replace(/&lt;a&gt;/g, href ? `<a href="${esc(href)}">` : '<a>').replace(/&lt;\/a&gt;/g, '</a>')
-    .replace(/\u0001E\u0001/g, `<a dir="ltr" href="mailto:${EMAIL}">${EMAIL}</a>`).replace(PRICE_MARK, (m, vals) => priceSpan(lang, vals));
+    .replace(/\u0001E\u0001/g, `<a dir="ltr" href="mailto:${EMAIL}">${EMAIL}</a>`).replace(/\u0001W\u0001/g, `<a dir="ltr" href="https://wa.me/${WA}" rel="noopener">${esc(WA_TEXT)}</a>`).replace(PRICE_MARK, (m, vals) => priceSpan(lang, vals));
   return s;
 }
 const jsonScript = (o) => JSON.stringify(o).replace(/</g, '\\u003c');
@@ -263,11 +280,15 @@ const money = (lang, p) => `<span class="price-pair">${priceSpan(lang, [PRICES[p
 // "Your country" dropdown: Saudi Arabia / UAE / Egypt first, "Another country (US dollars)" last (never free text). Used above
 // the prices (home, pricing and kit pages) and in the order form; site.js keeps every one of them on the same country and sends
 // that country to the checkout. Selected in the HTML: the default country (Saudi Arabia).
-const CC_OPTS = [...Object.keys(COUNTRIES), 'other'];
+const CC_OPTS = [...Object.keys(COUNTRIES), ...(RESTRICTED ? [] : ['other'])];
 const ccOptions = (lang) => CC_OPTS.map((c) => `<option value="${c}"${c === (htmlCc || 'other') ? ' selected' : ''}>${esc(t(lang, 'cc.' + c))}</option>`).join('');
 // Country picker + VAT note (home, pricing and kit pages) and the currency data site.js reads. The picker is hidden until
 // site.js runs (it needs JavaScript); the prices and the VAT note are already written for the default country.
 function curPick(lang) {
+  if (RESTRICTED) { // one country served: no picker, just what the prices are in (site.js keeps the page on that country)
+    const n = t(lang, 'cur.note' + htmlCur()) + ' ' + (vatOn(htmlCc) ? t(lang, 'cur.vatAdded').replace('{vat}', vatPct(htmlCc)) : t(lang, 'cur.due'));
+    return `<div class="curbox" id="curbox"><p class="fine vatnote" id="vat-note" aria-live="polite">${esc(n)}</p></div>`;
+  }
   const note = htmlCc ? t(lang, 'cur.note' + htmlCur()) + ' ' + (vatOn(htmlCc) ? t(lang, 'cur.vatAdded').replace('{vat}', vatPct(htmlCc)) : t(lang, 'cur.due')) : '';
   return `<div class="curbox" id="curbox" hidden><label class="curpick"><span>${h(lang, 'cur.label')}</span><select id="cur-select" data-cc>${ccOptions(lang)}</select></label><p class="fine vatnote" id="vat-note" aria-live="polite">${esc(note)}</p></div>`;
 }
@@ -279,12 +300,19 @@ function vatNote(lang, p, per = '') {
 }
 function curData(lang) {
   const countries = Object.fromEntries(Object.entries(COUNTRIES).map(([cc, c]) => [cc, { currency: c.currency, vat_pct: vatPct(cc) }]));
-  const o = { countries, def: DEFAULT_CC, fmt: t(lang, 'cur.fmt'), vatLine: t(lang, 'cur.vatLine'), plusVat: t(lang, 'cur.plusVat'), vatAdded: t(lang, 'cur.vatAdded'), due: t(lang, 'cur.due'), pk: PKGDATA };
+  const o = { countries, def: DEFAULT_CC, ...(RESTRICTED ? { lock: DEFAULT_CC } : {}), fmt: t(lang, 'cur.fmt'), vatLine: t(lang, 'cur.vatLine'), plusVat: t(lang, 'cur.plusVat'), vatAdded: t(lang, 'cur.vatAdded'), due: t(lang, 'cur.due'), pk: PKGDATA };
   for (const c of CURS) Object.assign(o, { ['sym' + c]: t(lang, 'cur.sym' + c), ['note' + c]: t(lang, 'cur.note' + c) });
   return `<script type="application/json" id="cur-data">${jsonScript(o)}</script>`;
 }
 // M14: a WhatsApp link only when data/contact.json has a number (the label key is always read, so it is never "unused")
-function waLink() { return ''; }
+function waLink(lang) { return WA ? `<a href="https://wa.me/${WA}" dir="ltr" rel="noopener" class="wa-link">${esc(t(lang, 'contact.wa'))}</a>` : ''; }
+// Pay by InstaPay (owner 2026-11-15): under each package on /pricing/ and the home table, a line and a WhatsApp link with the message
+// prefilled with the package name (in the page language). Payment details are given on WhatsApp until the payment gateway exists.
+const waPayHref = (lang, p) => `https://wa.me/${WA}?text=${encodeURIComponent(t(lang, 'pay.wa.msg').replace('{pkg}', () => pname(lang, p)))}`;
+function waPay(lang, p) {
+  if (!WA || PKG[p]?.coming_soon) return ''; // the Brand Deck is coming soon: never payable
+  return `<p class="wapay fine" data-pkg="${p}">${esc(t(lang, 'pay.wa.line'))} <a href="${esc(waPayHref(lang, p))}" dir="auto" rel="noopener" target="_blank">${esc(t(lang, 'pay.wa.link'))}</a></p>`;
+}
 const pname = (lang, p) => t(lang, `name.${p}`);
 const isLinked = (p) => LINKS[p] !== '';
 // Audit fixes (2026-10-19): every buy / plan button opens the client portal's sign-up (AR pages with ?lang=ar); the public
@@ -320,7 +348,7 @@ function planCard(lang, p, hot) {
   // the VAT line ("SAR 109 + VAT 15% SAR 16.35 = SAR 125.35"), hidden in US dollars (no VAT). The Brand Deck is coming soon
   // and is never payable, so its card has no such line.
   const vatLine = '';
-  return `<article class="plan${hot ? ' hot' : ''}" data-plan="${p}"><span class="badge">${h(lang, `pkg.${p}.eye`)}</span><h3>${esc(pname(lang, p))}</h3><p class="pt">${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(lang, p)}<span class="per">${h(lang, per)}</span></div>${vatLine}<p class="billnote">${h(lang, bill)}</p>${platPick(lang, p)}${ticks(lang, `pkg.${p}`)}<p class="pnote">${h(lang, `pkg.${p}.note`)}</p><div class="buyrow">${buyBtn(lang, p, !hot)}</div></article>`;
+  return `<article class="plan${hot ? ' hot' : ''}" data-plan="${p}"><span class="badge">${h(lang, `pkg.${p}.eye`)}</span><h3>${esc(pname(lang, p))}</h3><p class="pt">${h(lang, `pkg.${p}.tag`)}</p><div class="priceline">${money(lang, p)}<span class="per">${h(lang, per)}</span></div>${vatLine}<p class="billnote">${h(lang, bill)}</p>${platPick(lang, p)}${ticks(lang, `pkg.${p}`)}<p class="pnote">${h(lang, `pkg.${p}.note`)}</p><div class="buyrow">${buyBtn(lang, p, !hot)}</div>${waPay(lang, p)}</article>`;
 }
 // ---- home: Landing A "Billboard" (Adham, 2026-11-06) ----
 // Hero headline + the Instagram-ready phone (a made-up example café, labelled as an example), the smallest package in
@@ -388,7 +416,7 @@ function priceTable(lang) {
   const price = `<tr class="la-prow"><th scope="row">${h(lang, 'la.t.price')}</th>${TABLE_PKGS.map((p) => `<td${hot(p)}>${money(lang, p)}<span class="per">${h(lang, MONTHLY.has(p) ? 'plan.per' : 'one.per')}</span></td>`).join('')}</tr>`;
   const cls = (p, k) => { const c = [p === 'visible' && 'hot', k === 'la.t.no' && 'la-no'].filter(Boolean); return c.length ? ` class="${c.join(' ')}"` : ''; };
   const rows = TABLE_ROWS.map(([label, cells]) => `<tr><th scope="row">${h(lang, label)}</th>${cells.map((k, i) => `<td${cls(TABLE_PKGS[i], k)}>${h(lang, k)}</td>`).join('')}</tr>`).join('');
-  const buy = `<tr class="la-buy"><td></td>${TABLE_PKGS.map((p) => `<td${hot(p)}><a class="btn${p === 'visible' ? '' : ' la-line'}" href="${esc(buyHref(lang, p))}" data-product="${p}">${h(lang, `pkg.${p}.btn`)}</a></td>`).join('')}</tr>`;
+  const buy = `<tr class="la-buy"><td></td>${TABLE_PKGS.map((p) => `<td${hot(p)}><a class="btn${p === 'visible' ? '' : ' la-line'}" href="${esc(buyHref(lang, p))}" data-product="${p}">${h(lang, `pkg.${p}.btn`)}</a>${waPay(lang, p)}</td>`).join('')}</tr>`;
   return `<table class="la-table">${head}<tbody>${price}${rows}${buy}</tbody></table>`;
 }
 
@@ -553,7 +581,7 @@ const portalAuth = (route, lang) => `${PORTAL}#/${route}?intent=quote&lang=${lan
 function storeVars(lang) {
   const choose = `<option value="">${esc(t(lang, 'f.choose'))}</option>`;
   const typeOptions = choose + STORE_TYPES.map(([v, k]) => `<option value="${esc(v)}">${esc(t(lang, k))}</option>`).join('');
-  const leadCountryOptions = choose + [...Object.keys(COUNTRIES), 'other'].map((c) => `<option value="${c}">${esc(t(lang, c === 'other' ? 'is.cc.other' : 'cc.' + c))}</option>`).join('');
+  const leadCountryOptions = choose + CC_OPTS.map((c) => `<option value="${c}">${esc(t(lang, c === 'other' ? 'is.cc.other' : 'cc.' + c))}</option>`).join('');
   const msgKeys = ['f.sending', 'f.failed', 'f.tooMany', 'f.consentErr', 'is.wl.ok', 'v.web', 'v.webBad', 'v.email', 'v.emailBad', 'v.type', 'v.country', 'v.tooLong', 'v.angle'];
   return { typeOptions, leadCountryOptions, endpoint: ENDPOINT, leadMsgs: jsonScript(Object.fromEntries(msgKeys.map((k) => [k, t(lang, k)]))),
     quoteHref: esc(portalAuth('signup', lang)), quoteLoginHref: esc(portalAuth('login', lang)) };
@@ -620,7 +648,7 @@ function offerNode(lang, p) {
     const q = localQuote(p, cc), vat = q.vat_pct ? { valueAddedTaxIncluded: true } : {};
     return one(minorStr(q.total).replace(/\.00$/, ''), q.currency, { eligibleRegion: cc, ...vat, priceSpecificationVat: vat });
   });
-  return [...local, one(PRICES[p], 'USD', { description: t(lang, 'ld.intl') })];
+  return RESTRICTED ? local : [...local, one(PRICES[p], 'USD', { description: t(lang, 'ld.intl') })];
 }
 function jsonLd(lang, page) {
   const orgId = SITE + '/#organization';
@@ -821,7 +849,7 @@ function write(rel, content) {
 const built = [];
 for (const [lang] of LANGS) {
   for (const page of PAGES) {
-    htmlCc = LEGAL.includes(page) ? null : DEFAULT_CC; // the legal pages keep the US-dollar price list; pricing follows the country (2026-11-13)
+    htmlCc = LEGAL.includes(page) && !RESTRICTED ? null : DEFAULT_CC; // the legal pages keep the US-dollar price list, except while one country is served (they are in its currency then)
     const ctx = { lang, v: pageVars(lang, page) };
     const body = render(rd(`templates/${page === 'index' ? 'home' : page}.html`), ctx);
     const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${!LEGAL.includes(page) && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${page === 'index' ? '<script src="/assets/dash.js" defer></script>\n' : ''}${page === 'sculptures' ? '<script src="/assets/sculptures.js" defer></script>\n' : ''}</body>\n</html>\n`;
@@ -958,6 +986,10 @@ write('site.webmanifest', JSON.stringify({ name: BRAND, short_name: BRAND, start
 // keys in the JSON that no page used (review fix 2026-11-14: an honest check). The build records every key it read in
 // build/used-keys.json (not published) and fails on an unused one; build/check.mjs fails too if that record is missing or
 // does not match the i18n files.
+// one country served: the texts only the other countries and the picker read (country names, currency symbols and notes, the
+// picker's label, "Another country", the US-dollar offer) are kept for the undo and count as used
+if (RESTRICTED) for (const k of Object.keys(dicts.en)) if (/^(cc\.|is\.cc\.other$|cur\.(label|sym|note)|ld\.intl$)/.test(k)) used.add(k);
+for (const k of Object.keys(dicts.en)) if (VARIANT_RE.test(k) && used.has(k.replace(VARIANT_RE, ''))) used.add(k); // the base key's one-country variant
 const unused = Object.keys(dicts.en).filter((k) => !used.has(k));
 fs.writeFileSync(path.join(ROOT, 'build', 'used-keys.json'), JSON.stringify({ i18n_sha256: crypto.createHash('sha256').update(LANGS.map(([c]) => rd(`i18n/${c}.json`)).join('\n')).digest('hex'), used: [...used].sort() }, null, 1) + '\n');
 if (unused.length) { console.error('UNUSED i18n keys (delete them from every language): ' + unused.join(', ')); process.exitCode = 1; }

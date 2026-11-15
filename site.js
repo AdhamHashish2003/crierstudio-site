@@ -104,6 +104,10 @@
   function fromPick(p) { return p === "other" ? (ccSeen && !isLocal(ccSeen) ? ccSeen : null) : p; }
   if (CD && !/^(terms|privacy|refund)$/.test(page) && document.querySelector(".amt[data-usd]")) {
     var box = document.getElementById("curbox"); if (box) box.hidden = false;
+  }
+  // one country served (cur-data lock, Egypt only since 2026-11-15): the page stays in its currency, no picker, no guess, no Cloudflare
+  if (CD && CD.lock && isLocal(CD.lock) && !/^(terms|privacy|refund)$/.test(page) && document.querySelector(".amt[data-usd]")) setCountry(CD.lock);
+  else if (CD && !/^(terms|privacy|refund)$/.test(page) && document.querySelector(".amt[data-usd]")) {
     var ccSels = document.querySelectorAll("select[data-cc]");
     for (var cs = 0; cs < ccSels.length; cs++) ccSels[cs].addEventListener("change", function () { ccPicked = this.value; try { localStorage.setItem(CC_KEY, ccPicked); } catch (e) {} setCountry(fromPick(ccPicked)); });
     ccSeen = guessCountry();

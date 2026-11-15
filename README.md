@@ -104,4 +104,14 @@ The country picker (home and pricing): the visitor's pick (saved), else Cloudfla
 
 ## WhatsApp
 
-`data/contact.json` holds the WhatsApp business number (`whatsapp`, digits only, international format). It is empty: no WhatsApp link is shown anywhere until Adham supplies the number and the site is rebuilt. When set, the link appears in the footer, on the homepage and on the About page.
+`data/contact.json` holds the WhatsApp business number (`whatsapp`, digits only, international format): `201201081869` since 2026-11-15, the number the client portal uses. It adds a `https://wa.me/<number>` link to the footer, the homepage and the About page, the number in the contact sentences (`{wa}` in `about.contact.p` and `terms.who.p`), and under each Social package on `/pricing/` and in the home table a "Pay by InstaPay: message us on WhatsApp for payment details" line whose wa.me link is prefilled with the package name in the page language (`pay.wa.*`). Empty = no WhatsApp link anywhere.
+
+## Egypt only, payment on WhatsApp (temporary, 2026-11-15)
+
+Until the payment gateway exists the site serves only the countries in `data/pricing.json` `funnel.countries` (today `["EG"]`), republished from the portal's price list (`portal/lib/pricing.json` `funnel`, through `publish-pricing.cjs`). While that list leaves a country out (`RESTRICTED` in `build/build.mjs`):
+
+- no country picker and no "Another country"; every price, the legal pages included, is written in the served country's currency (EGP); `site.js` stays on that country (`cur-data` `lock`) and skips the time-zone / Cloudflare guess;
+- the pricing JSON-LD has Offers only in that country, and `areaServed` only names it;
+- a key with a `.<cc>` variant (`home.eyebrow.eg`, `bill.1.eg`, `faq.19a1.eg`, `terms.bill.p1.eg`, `refund.once.p.eg`, ...) is read in its place: Egypt only, payment details on WhatsApp (InstaPay). The ordinary texts stay in the i18n files.
+
+Every other country's price stays in `data/pricing.json`. **To undo:** in the UMA repo set `portal/lib/pricing.json` `funnel.countries` back to `["SA", "AE", "EG", "US"]`, republish (`node portal/scripts/publish-pricing.cjs --site <this dir>`), then `node build/build.mjs && node build/check.mjs` (the terms and refund pages change back, so set `leg.updated` to that day and run `node build/check.mjs --restamp`). `build/check.mjs` checks both states.
