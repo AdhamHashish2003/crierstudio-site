@@ -4,7 +4,7 @@
   var KEY = "crier.lang", CODES = ["en", "ar"];
   var de = document.documentElement, page = document.body.getAttribute("data-page");
   function saved() { try { var s = localStorage.getItem(KEY); return CODES.indexOf(s) > -1 ? s : null; } catch (e) { return null; } }
-  function pathFor(lang, p) { return "/" + (lang === "en" ? "" : lang + "/") + (p === "index" ? "" : p + "/"); }
+  function pathFor(lang, p) { return "/" + (lang === "ar" ? "" : lang + "/") + (p === "index" ? "" : p + "/"); } // Arabic first (2026-11-15): Arabic at the root, English under /en/
 
   // old URLs: /?lang=xx and /terms.html?lang=xx
   var q = null;
@@ -14,7 +14,7 @@
     // renamed pages (/kit/ and /snapshot/ -> /social/, /physical/ -> /in-store/#custom, /crier-deck/ -> /brand-deck/) carry
     // their own language and keep the full query string; the visitor's own #hash wins over the target's (data-hash)
     var own = document.body.getAttribute("data-lang"), th = document.body.getAttribute("data-hash");
-    location.replace(pathFor(own || q || saved() || "en", document.body.getAttribute("data-target")) + (own ? location.search : "") + (location.hash || (th ? "#" + th : "")));
+    location.replace(pathFor(own || q || saved() || "ar", document.body.getAttribute("data-target")) + (own ? location.search : "") + (location.hash || (th ? "#" + th : "")));
     return;
   }
   // (the page's own language is decided in <head> before paint: the URL wins; the memory only picks the language on a neutral
@@ -303,4 +303,25 @@
   if (phone.addEventListener) phone.addEventListener("change", soon);
   if (bar && window.MutationObserver) new MutationObserver(soon).observe(bar, { attributes: true, attributeFilter: ["hidden"] });
   update();
+})();
+
+/* Conversion tracking (2026-11-15): every WhatsApp link click is a GA4 event "whatsapp_click", sent through the gtag() queue that the
+   <head> tag sets up, so it follows the visitor's Consent Mode choice exactly like the page views (no event of its own is sent before
+   consent; Google gets a cookieless ping while analytics_storage is denied). Parameters: wa_location (card, table, float, quote, footer,
+   landing_*, link), package (Bronze, Silver, Gold, Diamond or none), page_type (the page's data-page) and page_language. Every wa.me
+   link opens in a new tab, so the page stays open while gtag.js sends the event. */
+(function () {
+  "use strict";
+  var NAMES = { seen: "Bronze", visible: "Silver", growing: "Gold", diamond: "Diamond" };
+  document.addEventListener("click", function (e) {
+    if (typeof window.gtag !== "function" || !e.target || !e.target.closest) return;
+    // the "or create your account" links: sign_up_click, with the package when the link carries one
+    var s = e.target.closest('a[href^="https://portal.crierstudio.com/#/signup"]');
+    if (s) { var sp = s.getAttribute("data-signup") || ""; window.gtag("event", "sign_up_click", { package: NAMES[sp] || "none", page_type: document.body.getAttribute("data-page") || "", page_language: document.documentElement.lang, transport_type: "beacon" }); return; }
+    var a = e.target.closest('a[href^="https://wa.me/"]');
+    if (!a) return;
+    var pkg = a.getAttribute("data-wa-order") || a.getAttribute("data-pkg") || "";
+    var where = a.getAttribute("data-wa") || (a.closest(".plan") ? "card" : a.closest(".la-table") ? "table" : a.closest("footer") ? "footer" : "link");
+    window.gtag("event", "whatsapp_click", { wa_location: where, package: NAMES[pkg] || "none", page_type: document.body.getAttribute("data-page") || "", page_language: document.documentElement.lang, transport_type: "beacon" });
+  }, true);
 })();

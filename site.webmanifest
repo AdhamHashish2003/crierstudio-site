@@ -1,6 +1,8 @@
 {
   "name": "Crier Studio",
   "short_name": "Crier Studio",
+  "lang": "ar",
+  "dir": "auto",
   "start_url": "/",
   "display": "browser",
   "background_color": "#F6F8EF",

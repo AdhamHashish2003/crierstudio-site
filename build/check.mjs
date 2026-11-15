@@ -5,8 +5,8 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LANGS = ['en', 'ar'];
-const REMOVED = ['es', 'fr']; // removed languages redirect to the English default
-const PREFIX = (l) => l === 'en' ? '' : l + '/'; // English (the default) at the root, Arabic under /ar/
+const REMOVED = ['es', 'fr']; // removed languages redirect to the English pages (/en/)
+const PREFIX = (l) => l === 'ar' ? '' : l + '/'; // Arabic first (2026-11-15): Arabic (the default) at the root, English under /en/
 const PAGES = ['', 'pricing/', 'brand-deck/', 'social/', 'in-store/', 'samples/', 'faq/', 'about/', 'terms/', 'privacy/', 'refund/'];
 // old URLs: redirect stubs, not in the sitemap (a target may carry a #hash; '' is the home page). Since 2026-11-14 the parked
 // pages (sculptures, fiberglass, branddeck: outside the offer, kept in _parked/) are stubs too.
@@ -414,8 +414,9 @@ for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) ok(!/sahmmena|\bSA
 // every package card has the publishing line and the branding line (2026-11-15), and the pricing JSON-LD has an offer per country
 for (const l of LANGS) {
   const h = rd(PREFIX(l) + 'pricing/index.html');
-  for (const pk of SOCIAL) { const card = (h.match(new RegExp(`<article class="plan[^"]*" data-plan="${pk}"[\\s\\S]*?</article>`)) || [''])[0]; for (const k of ['f2', 'f7', 'f8']) ok(card.includes(esc(d[l][`pkg.${pk}.${k}`])), `"${d[l][`pkg.${pk}.${k}`]}" on the ${pk} card (${l})`); }
-  ok(d.en['pkg.seen.f7'] === 'We publish on your pages and reply to comments and messages during working hours.' && d.en['pkg.seen.f8'] === 'Your brand look (colours, fonts, post templates) set up in your first month and used on every post.' && d.en['pkg.seen.f2'] === 'A story with every post', 'the owner\'s wording for stories, publishing and branding');
+  for (const pk of SOCIAL) { const card = (h.match(new RegExp(`<article class="plan[^"]*" data-plan="${pk}"[\\s\\S]*?</article>`)) || [''])[0]; for (const k of ['f2', 'f6', 'f7']) ok(card.includes(esc(d[l][`pkg.${pk}.${k}`])), `"${d[l][`pkg.${pk}.${k}`]}" on the ${pk} card (${l})`); }
+  ok(d.en['pkg.seen.f6'] === 'We publish on your pages and reply to comments and messages' && d.en['pkg.seen.f7'] === 'Brand identity (colours, fonts and post templates) in your first month' && d.en['pkg.seen.f2'] === 'A story with every post'
+    && d.ar['pkg.seen.f2'] === 'ستوري مع كل منشور' && d.ar['pkg.seen.f6'] === 'ننشر لك ونرد على التعليقات والرسائل' && d.ar['pkg.seen.f7'] === 'هوية بصرية لعلامتك', 'the owner\'s wording for stories, publishing and branding (the portal\'s plan lines, UMA ec248b3c)');
   const ld = (h.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/) || [])[1] || '';
   for (const [cc, c] of Object.entries(OFFER_CC)) ok(ld.includes(`"priceCurrency":"${c.currency}"`) && ld.includes(`"eligibleRegion":"${cc}"`), `pricing JSON-LD: an offer in ${c.currency} for ${cc} (${l})`);
   ok(!/"priceCurrency":"[A-Z]{3}"[^}]*"name":"(?:Brand Deck|الملف التعريفي)"|"name":"(?:Brand Deck|الملف التعريفي)","provider":\{[^}]*\},"offers"/.test(ld), `pricing JSON-LD: no Brand Deck offer while it is coming soon (${l})`);
@@ -450,18 +451,18 @@ for (const l of LANGS) {
   }
   // Arabic counts (2026-11-15, voice guide): no «{n} تصميمًا» template in i18n, and no rendered "3–10 + singular" on a page
   for (const [k, v] of Object.entries(d.ar)) ok(!/\{n:[\w.]+\}\s*(تصميمًا|منصة|جولة)/.test(v), `ar:${k} writes a count with a fixed noun form: use {c:<id>.<item>:<noun>}`);
-  for (const f of PUBLISHED.filter((x) => x.startsWith('ar/') && x.endsWith('.html'))) {
+  for (const f of PUBLISHED.filter((x) => x.endsWith('.html') && rd(x).includes('<html lang="ar"'))) {
     const vis = rd(f).replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ');
     ok(!/(^|[^\d,.])([3-9]|10)\s+(تصميمًا|منصة|جولة تعديل)/.test(vis), `${f}: a count of 3–10 with a singular noun (Arabic needs the plural)`);
   }
-  ok(/(^|\s)4 تصاميم /.test(rd('ar/pricing/index.html').replace(/<[^>]+>/g, ' ')) && /12 تصميمًا/.test(rd('ar/pricing/index.html')) && /4 جولات تعديل/.test(rd('ar/pricing/index.html')), 'ar pricing: «4 تصاميم», «12 تصميمًا», «4 جولات تعديل»');
+  ok(/(^|\s)4 تصاميم /.test(rd('pricing/index.html').replace(/<[^>]+>/g, ' ')) && /12 تصميمًا/.test(rd('pricing/index.html')) && /4 جولات تعديل/.test(rd('pricing/index.html')), 'ar pricing: «4 تصاميم», «12 تصميمًا», «4 جولات تعديل»');
   // we publish for the client (2026-11-15): no page says the client posts it, or that nothing is published for them
   for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) {
     const h = rd(f);
     ok(!/Nothing is published for you|then you post it|You post it|post them yourself|Posted by you|لا ننشر شيئًا نيابةً عنك|تنشره أنت|تنشره بنفسك|نشرتَه أنت/.test(h), `${f} says the client posts (we publish since 2026-11-15)`);
   }
   ok(d.en['pkg.seen.wa'] === 'Order Bronze on WhatsApp' && d.ar['pkg.seen.wa'] === 'اطلب البرونزية عبر واتساب', 'the WhatsApp order button wording');
-  ok(/^Pay by InstaPay/.test(d.en['pay.wa.line']) && /إنستاباي/.test(d.ar['pay.wa.line']), 'the InstaPay line wording');
+  ok(/^Pay by InstaPay/.test(d.en['pay.wa.line']) && /InstaPay/.test(d.ar['pay.wa.line']), 'the InstaPay line wording');
   // stale prices: no built page shows an old price that no package has any more (EGP 7,500 was Gold before 2026-11-15)
   for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) {
     const vis = rd(f).replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ');

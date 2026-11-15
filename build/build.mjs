@@ -28,8 +28,12 @@ const EMAIL = 'team@crierstudio.com';
 const BRAND = 'Crier Studio';
 const PORTAL = 'https://portal.crierstudio.com/';
 const ENDPOINT = 'https://crm-production-d789.up.railway.app/api/public/snapshot-request';
-const LANGS = [['en', 'English', 'en_US'], ['ar', 'العربية', 'ar_AR']];
-// removed languages (2026-10-16): their old URLs stay as redirect stubs to the matching English page, not in the sitemap
+const LANGS = [['en', 'English', 'en_US'], ['ar', 'العربية', 'ar_EG']];
+// ARABIC FIRST (owner 2026-11-15): Arabic is the default language at the root (/, /pricing/, ...), English lives under /en/. The old
+// Arabic URLs (/ar/...) are redirect stubs to the same page at the root; the old English root URLs are now the Arabic pages, and a
+// visitor who chose English (localStorage crier.lang) and arrives from outside the site is sent to /en/ (LANGUAGE_INLINE below).
+const DEFAULT_LANG = 'ar';
+// removed languages (2026-10-16): their old URLs stay as redirect stubs to the matching English page (/en/...), not in the sitemap
 const REMOVED = ['es', 'fr'];
 const RTL = new Set(['ar']);
 // every page exists in both languages: / (en), /ar/ and the sub-paths below
@@ -201,13 +205,13 @@ function h(lang, key, href) {
   let s = raw(lang, key).replace(/\{(\w+)\}/g, (m, k) => (k === 'email' ? '\u0001E\u0001' : k === 'wa' && WA ? '\u0001W\u0001' : vars[k] ?? m));
   s = esc(s).replace(/&lt;(\/?)b&gt;/g, '<$1b>')
     .replace(/&lt;a&gt;/g, href ? `<a href="${esc(href)}">` : '<a>').replace(/&lt;\/a&gt;/g, '</a>')
-    .replace(/\u0001E\u0001/g, `<a dir="ltr" href="mailto:${EMAIL}">${EMAIL}</a>`).replace(/\u0001W\u0001/g, `<a dir="ltr" href="https://wa.me/${WA}" rel="noopener">${esc(WA_TEXT)}</a>`).replace(PRICE_MARK, (m, vals) => priceSpan(lang, vals));
+    .replace(/\u0001E\u0001/g, `<a dir="ltr" href="mailto:${EMAIL}">${EMAIL}</a>`).replace(/\u0001W\u0001/g, `<a dir="ltr" href="https://wa.me/${WA}" rel="noopener" target="_blank">${esc(WA_TEXT)}</a>`).replace(PRICE_MARK, (m, vals) => priceSpan(lang, vals));
   return s;
 }
 const jsonScript = (o) => JSON.stringify(o).replace(/</g, '\\u003c');
 
 // ---------- URLs ----------
-const dirFor = (lang, page) => (lang === 'en' ? '' : lang + '/') + (page === 'index' ? '' : page + '/');
+const dirFor = (lang, page) => (lang === DEFAULT_LANG ? '' : lang + '/') + (page === 'index' ? '' : page + '/');
 const pathFor = (lang, page) => '/' + dirFor(lang, page);
 const urlFor = (lang, page) => SITE + pathFor(lang, page);
 
@@ -321,7 +325,7 @@ function curData(lang) {
 const waHref = (lang, key) => `https://wa.me/${WA}?text=${encodeURIComponent(t(lang, key))}`;
 // the floating WhatsApp button (2026-11-15): every page and language, a short greeting in the page language
 const waFab = (ctx) => (WA ? render(partials.waFloat, { lang: ctx.lang, v: { ...ctx.v, waFabHref: esc(waHref(ctx.lang, 'wa.fab.msg')) } }) + '\n' : (t(ctx.lang, 'wa.fab.aria'), t(ctx.lang, 'wa.fab.msg'), ''));
-function waLink(lang) { return WA ? `<a href="https://wa.me/${WA}" dir="ltr" rel="noopener" class="wa-link">${esc(t(lang, 'contact.wa'))}</a>` : ''; }
+function waLink(lang) { return WA ? `<a href="https://wa.me/${WA}" dir="ltr" rel="noopener" target="_blank" class="wa-link">${esc(t(lang, 'contact.wa'))}</a>` : ''; }
 // Order on WhatsApp (owner 2026-11-15): each Social package's MAIN button is a green "Order <package> on WhatsApp" that opens
 // wa.me with the message prefilled with the package name and its monthly price (the page language, the page's country); under it a
 // small "or create your account" link to the portal sign-up (?plan=<id>) and the "Pay by InstaPay" line. Payment details are
@@ -392,8 +396,8 @@ const SMALLEST = PRICING.packages.filter((p) => !p.coming_soon && p.items?.posts
 // the walkthrough is ONE month in the portal, so it shows no more than the smallest package's posts a month (dashPosts below)
 if (!Array.isArray(EX.posts) || EX.posts.length < 6 || SMALLEST.items.posts < 1) throw new Error('data/example-posts.json: at least 6 example posts (the hero profile grid)');
 for (const x of EX.posts) if (!EX_LAYOUTS.includes(x.layout) || !x.text?.en?.title || !x.text?.ar?.title) throw new Error('data/example-posts.json: bad post ' + JSON.stringify(x).slice(0, 60));
-const digitsOf = (lang, n) => (lang === 'ar' ? String(n).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]) : String(n));
-// a post's inner drawing in the page language (Arabic-Indic digits on Arabic pages)
+const digitsOf = (lang, n) => String(n); // digits 0–9 on every page, Arabic included (voice guide v3, 2026-11-15)
+// a post's inner drawing in the page language
 function exInner(layout, tx, tl, shapeKind) {
   const e = (s) => esc(s), n = (i) => digitsOf(tl, i);
   const mark = '<i class="xp-mark"></i>';
@@ -429,7 +433,7 @@ const TABLE_ROWS = [
   ['la.t.posts', TABLE_PKGS.map((p) => `la.t.posts.${p}`)],
   ['la.t.stories', TABLE_PKGS.map(() => 'la.t.stories.all')],
   ['la.t.reel', TABLE_PKGS.map((p) => `la.t.reel.${p}`)],
-  ['la.t.plan', TABLE_PKGS.map((p) => `pkg.${p}.f5`)],
+  ['la.t.plan', TABLE_PKGS.map((p) => `pkg.${p}.f4`)],
   ['la.t.rev', TABLE_PKGS.map((p) => `la.t.rev.${p}`)],
   ['la.t.plat', TABLE_PKGS.map((p) => `la.t.plat.${p}`)],
   ['la.t.pub', TABLE_PKGS.map(() => 'la.t.yes')],
@@ -458,7 +462,7 @@ const PI = {
   spark: 'M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18', work: 'M12 3v12M7 10l5 5 5-5M4 20h16', comment: 'M4 5h16v11H9l-5 4z',
 };
 const ic = (k, lang) => { const d = k === 'chev' && lang === 'ar' ? 'M15 6l-6 6 6 6' : PI[k]; return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`; };
-const digits = digitsOf; // Arabic-Indic on /ar/, as the portal does
+const digits = digitsOf; // 0–9 everywhere
 
 function dash(lang) {
   const T = (k) => t(lang, 'dash.' + k), D = (k) => esc(T(k)), ar = lang === 'ar';
@@ -735,10 +739,11 @@ const CONSENT_JS = (partials.consent.match(/<script>([\s\S]*?)<\/script>/) || []
 if (!CONSENT_JS || CONSENT_JS.includes('{{')) throw new Error('templates/consent.html: one inline <script> without template tags expected');
 // the site allows no 'unsafe-inline' scripts: each inline script is allowed by its sha256 hash (recomputed on every build)
 const sha = (js) => `'sha256-${crypto.createHash('sha256').update(js, 'utf8').digest('base64')}'`;
-// The language (review fix 2026-11-14): the URL's language always wins (/ar/… is Arabic, every other page English). ?lang=xx (the
-// EN / AR links) switches and is remembered in localStorage 'crier.lang'. The memory, then the browser's first en/ar language, is
-// used only on a neutral entry: the bare home page "/" reached from outside the site (no query, no same-site referrer).
-const LANGUAGE_INLINE = "(function(){try{var k='crier.lang',L=/^(en|ar)$/,p=location.pathname,q=new URLSearchParams(location.search).get('lang');if(!L.test(q||''))q=null;var m=p.match(/^\\/(en|ar|es|fr)(?=\\/|$)/),tail=m?p.slice(m[0].length):p;if(!tail)tail='/';if(tail.charAt(0)!=='/')tail='/'+tail;if(/^\\/(?:terms|privacy|refund)\\.html$/.test(tail))tail=tail.slice(0,-5)+'/';var v=m&&m[1]==='ar'?'ar':'en';if(q){v=q;try{localStorage.setItem(k,q);}catch(e){}}else if(p==='/'&&!location.search){var r='';try{r=document.referrer?new URL(document.referrer).origin:'';}catch(e){}if(r!==location.origin){var s=null;try{s=localStorage.getItem(k);}catch(e){}if(!L.test(s||'')){s=null;var ls=navigator.languages||[navigator.language||''];for(var i=0;i<ls.length;i++){var c=String(ls[i]||'').slice(0,2).toLowerCase();if(L.test(c)){s=c;break;}}}if(s)v=s;}}var target=(v==='ar'?'/ar':'')+tail;if(target!==p||q){document.documentElement.style.visibility='hidden';var u=new URL(location.href);u.pathname=target;u.searchParams.delete('lang');location.replace(u.pathname+u.search+u.hash);}}catch(e){}})();";
+// The language (Arabic first, 2026-11-15): the URL's language wins (/en/… is English, /es/ and /fr/ stubs go to English, the root
+// and the old /ar/… stubs are Arabic). ?lang=xx (the EN / AR links) switches and is remembered in localStorage 'crier.lang'. The
+// memory is used only on a root (Arabic) URL reached from outside the site (no same-site referrer): a visitor who chose English
+// gets the same page under /en/. The browser's language is not used (Arabic is the default for everyone). Query and #hash are kept.
+const LANGUAGE_INLINE = "(function(){try{var k='crier.lang',L=/^(en|ar)$/,p=location.pathname,q=new URLSearchParams(location.search).get('lang');if(!L.test(q||''))q=null;var m=p.match(/^\\/(en|ar|es|fr)(?=\\/|$)/),tail=m?p.slice(m[0].length):p;if(!tail)tail='/';if(tail.charAt(0)!=='/')tail='/'+tail;if(/^\\/(?:terms|privacy|refund)\\.html$/.test(tail))tail=tail.slice(0,-5)+'/';var v=m&&m[1]!=='ar'?'en':'ar';if(q){v=q;try{localStorage.setItem(k,q);}catch(e){}}else if(!m){var r='';try{r=document.referrer?new URL(document.referrer).origin:'';}catch(e){}if(r!==location.origin){var s=null;try{s=localStorage.getItem(k);}catch(e){}if(s==='en')v='en';}}var target=(v==='en'?'/en':'')+tail;if(target!==p||q){document.documentElement.style.visibility='hidden';var u=new URL(location.href);u.pathname=target;u.searchParams.delete('lang');location.replace(u.pathname+u.search+u.hash);}}catch(e){}})();";
 const LANGUAGE_HEAD = `<script>${LANGUAGE_INLINE}</script>`;
 const SCRIPT_HASHES = [sha(GA_INLINE), sha(LANGUAGE_INLINE), sha(CONSENT_JS)];
 const CSP = "default-src 'self'; script-src 'self' " + SCRIPT_HASHES.join(' ') + " https://static.cloudflareinsights.com https://*.googletagmanager.com; connect-src 'self' https://crm-production-d789.up.railway.app https://cloudflareinsights.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; img-src 'self' data: https://*.google-analytics.com https://*.googletagmanager.com; style-src 'self' 'unsafe-inline'; font-src 'self'; base-uri 'self'; form-action 'self'";
@@ -756,7 +761,7 @@ const ICON_LINKS = `<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x4
 const LOGO_URL = SITE + '/crier-logo.png'; // the full logo (blob + wordmark on lime), 512 x 512, for structured data
 function head(lang, page, css) {
   const title = t(lang, `meta.t.${page}`), desc = t(lang, `meta.d.${page}`), url = urlFor(lang, page);
-  const alt = LANGS.map(([c]) => `<link rel="alternate" hreflang="${c}" href="${urlFor(c, page)}">`).join('\n') + `\n<link rel="alternate" hreflang="x-default" href="${urlFor('en', page)}">`;
+  const alt = LANGS.map(([c]) => `<link rel="alternate" hreflang="${c}" href="${urlFor(c, page)}">`).join('\n') + `\n<link rel="alternate" hreflang="x-default" href="${urlFor(DEFAULT_LANG, page)}">`;
   const ogAlt = LANGS.filter(([c]) => c !== lang).map(([, , loc]) => `<meta property="og:locale:alternate" content="${loc}">`).join('\n');
   const loc = LANGS.find(([c]) => c === lang)[2];
   const pl = (f) => `<link rel="preload" href="/fonts/${f}.subset.woff2" as="font" type="font/woff2" crossorigin>`;
@@ -899,10 +904,10 @@ for (const [lang] of LANGS) {
 write(`${PARKED_DIR}/studio-deck/index.html`, rd('templates/studio-deck.html'));
 write(`${PARKED_DIR}/social-preview.html`, rd('templates/social-preview.html'));
 
-// old legal URL stubs redirect to the English default; a saved language is applied before paint
+// old legal URL stubs redirect to the default language (Arabic); a saved language is applied before paint
 for (const page of LEGAL) {
   write(`${page}.html`, hashUrls(`<!doctype html>
-<html lang="en" dir="ltr">
+<html lang="${DEFAULT_LANG}" dir="${RTL.has(DEFAULT_LANG) ? 'rtl' : 'ltr'}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -910,11 +915,11 @@ ${NOINDEX ? '<meta name="robots" content="noindex">\n' : ''}<meta http-equiv="Co
 ${GA_HEAD}
 ${LANGUAGE_HEAD}
 <title>${BRAND}</title>
-<link rel="canonical" href="${urlFor('en', page)}">
-<noscript><meta http-equiv="refresh" content="0;url=${pathFor('en', page)}"></noscript>
+<link rel="canonical" href="${urlFor(DEFAULT_LANG, page)}">
+<noscript><meta http-equiv="refresh" content="0;url=${pathFor(DEFAULT_LANG, page)}"></noscript>
 </head>
 <body data-page="redirect" data-target="${page}">
-<p><a href="${pathFor('en', page)}">${BRAND}</a></p>
+<p><a href="${pathFor(DEFAULT_LANG, page)}">${BRAND}</a></p>
 <script src="/site.js"></script>
 </body>
 </html>
@@ -950,28 +955,28 @@ ${LANGUAGE_HEAD}
 </html>
 `);
 }
-// renamed pages: English (the default) at the root, Arabic under /ar/
-for (const [from, to] of Object.entries(MOVED)) { stub('', from, 'en', to); stub('ar', from, 'ar', to); }
+// renamed pages, in each language's own folder: Arabic (the default) at the root, English under /en/
+for (const [from, to] of Object.entries(MOVED)) { stub('', from, 'ar', to); stub('en', from, 'en', to); }
 // the retired studio deck and share-image page (2026-11-14): their old addresses go home
 stub('assets', 'studio-deck', 'en', 'index');
 write('assets/social-preview.html', stubHtml('en', 'index'));
-// English lived under /en/ while Arabic was the default (2026-10-28 to 2026-10-30): every old /en/… URL redirects to the same
-// English page at the root
+// Arabic lived under /ar/ until 2026-11-15 (English was the default at the root): every old /ar/… URL redirects to the same Arabic
+// page at the root, keeping the query string and the #hash
 const LIVE_PAGES = PAGES.filter((p) => !PARKED.has(p)).map((p) => [p, p]); // parked pages are in MOVED
-for (const [from, to] of [...LIVE_PAGES, ...Object.entries(MOVED)]) stub('en', from, 'en', to);
-// removed languages: /es/… and /fr/… redirect to the default English page
+for (const [from, to] of [...LIVE_PAGES, ...Object.entries(MOVED)]) stub('ar', from, 'ar', to);
+// removed languages: /es/… and /fr/… redirect to the English page (/en/…)
 for (const lang of REMOVED) for (const [from, to] of [...LIVE_PAGES, ...Object.entries(MOVED)]) stub(lang, from, 'en', to);
 
-// 404 (one file, two languages; header and footer in English, one block per language)
+// 404 (one file, two languages; header and footer in Arabic, the default, then one block per language, Arabic first)
 {
   htmlCc = null;
-  const ctx = { lang: 'en', v: { ...pageVars('en', '404'), langpick: langpick('en', 'index'), crumbs: '' } };
-  const sections = LANGS.map(([c]) => {
+  const ctx = { lang: DEFAULT_LANG, v: { ...pageVars(DEFAULT_LANG, '404'), langpick: langpick(DEFAULT_LANG, 'index'), crumbs: '' } };
+  const sections = [...LANGS].sort(([a]) => (a === DEFAULT_LANG ? -1 : 1)).map(([c]) => {
     const links = [['index', 'crumb.home'], ['social', 'nav.social'], ['in-store', 'nav.instore'], ['pricing', 'nav.pricing']].map(([p, k]) => `<a href="${pathFor(c, p)}">${esc(t(c, k))}</a>`).join(' · ');
     return `<section lang="${c}" dir="${RTL.has(c) ? 'rtl' : 'ltr'}"><h2>${esc(t(c, 'e404.title'))}</h2><p>${esc(t(c, 'e404.p'))} <a href="${pathFor(c, 'index')}">${esc(t(c, 'e404.home'))}</a></p><p>${esc(t(c, 'e404.nav'))} ${links}</p></section>`;
   }).join('\n');
   ctx.v.sections = sections;
-  const css404 = minCss([CSS.fonts, CSS.fontsAr, CSS.legal, CSS.common, CSS.consent, CSS.chrome, 'section{padding-block:18px;border-top:2px solid var(--line)}section h2{margin-top:0}html[lang=ar] body{line-height:1.75}'].join('\n'));
+  const css404 = minCss([CSS.fonts, CSS.fontsAr, CSS.legal, CSS.common, CSS.consent, CSS.chrome, 'section{padding-block:18px;border-top:2px solid var(--line)}section h2{margin-top:0}html[lang=ar] body,section[lang=ar]{line-height:1.75}'].join('\n'));
   const body404 = `<body data-page="404">
 ${render(partials.consent, ctx)}
 <div class="wrap">
@@ -984,7 +989,7 @@ ${waFab(ctx)}<script src="/site.js" defer></script>
 </html>
 `;
   write('404.html', hashUrls(`<!doctype html>
-<html lang="en" dir="ltr">
+<html lang="${DEFAULT_LANG}" dir="${RTL.has(DEFAULT_LANG) ? 'rtl' : 'ltr'}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -1007,12 +1012,12 @@ for (const page of PAGES.filter((p) => !HIDDEN.has(p))) {
   for (const [lang] of LANGS) {
     sm.push('<url>', `<loc>${urlFor(lang, page)}</loc>`);
     for (const [c] of LANGS) sm.push(`<xhtml:link rel="alternate" hreflang="${c}" href="${urlFor(c, page)}"/>`);
-    sm.push(`<xhtml:link rel="alternate" hreflang="x-default" href="${urlFor('en', page)}"/>`, '</url>');
+    sm.push(`<xhtml:link rel="alternate" hreflang="x-default" href="${urlFor(DEFAULT_LANG, page)}"/>`, '</url>');
   }
 }
 sm.push('</urlset>', '');
 write('sitemap.xml', sm.join('\n'));
-write('site.webmanifest', JSON.stringify({ name: BRAND, short_name: BRAND, start_url: '/', display: 'browser', background_color: '#F6F8EF', theme_color: '#0E0F0C',
+write('site.webmanifest', JSON.stringify({ name: BRAND, short_name: BRAND, lang: DEFAULT_LANG, dir: 'auto', start_url: '/', display: 'browser', background_color: '#F6F8EF', theme_color: '#0E0F0C',
   icons: [{ src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' }, { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' }, { src: '/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }, { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' }] }, null, 2) + '\n');
 
 // keys in the JSON that no page used (review fix 2026-11-14: an honest check). The build records every key it read in

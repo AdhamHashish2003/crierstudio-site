@@ -15,7 +15,8 @@ async function page(viewport) {
   return { pg, google, csp };
 }
 const consentCalls = (pg) => pg.evaluate(() => (window.dataLayer || []).filter((a) => a[0] === 'consent').map((a) => [a[1], a[2]]));
-for (const [l, p] of [['en', '/'], ['es', '/es/pricing/'], ['fr', '/fr/kit/'], ['ar', '/ar/'], ['en', '/404.html'], ['ar', '/ar/privacy/']]) {
+// Arabic first (2026-11-15): Arabic at the root, English under /en/; /es/ and /fr/ stubs go to the English pages
+for (const [l, p] of [['ar', '/'], ['en', '/en/pricing/'], ['en', '/es/pricing/'], ['en', '/fr/kit/'], ['ar', '/404.html'], ['ar', '/privacy/']]) {
   const { pg, google, csp } = await page();
   // delayed gtag.js: not requested while the page loads (DOMContentLoaded); only on the first interaction or 6 s after window load
   await pg.goto(BASE + p, { waitUntil: 'domcontentloaded' });
@@ -78,7 +79,7 @@ for (const [l, p] of [['en', '/'], ['es', '/es/pricing/'], ['fr', '/fr/kit/'], [
 // clicking the consent bar loads gtag.js at once (no wait for idle); the consent update queued before it arrives is kept
 {
   const { pg, google } = await page();
-  await pg.route('**/*spatial-fallback*', async (r) => { await new Promise((res) => setTimeout(res, 4000)); r.continue().catch(() => {}); }); // hold window load (hero image)
+  await pg.route('**/assets/h/crier-logo-*', async (r) => { await new Promise((res) => setTimeout(res, 4000)); r.continue().catch(() => {}); }); // hold window load (the header's brand mark)
   await pg.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
   const before = await pg.evaluate(() => document.readyState);
   await pg.click('#consent-bar [data-consent=granted]');
@@ -90,9 +91,10 @@ for (const [l, p] of [['en', '/'], ['es', '/es/pricing/'], ['fr', '/fr/kit/'], [
   await pg.context().close();
 }
 // phones: the bar never hides the last package action (the page gets bottom padding equal to the bar height)
-for (const p of ['/pricing/', '/ar/pricing/', '/es/brand-deck/']) {
+for (const p of ['/pricing/', '/en/pricing/', '/es/brand-deck/']) {
   const { pg } = await page({ width: 360, height: 740 });
   await pg.goto(BASE + p);
+  await pg.waitForFunction(() => document.body.style.paddingBottom !== '', null, { timeout: 5000 }).catch(() => {}); // the bar's ResizeObserver sets the padding after first layout
   const r = await pg.evaluate(async () => {
     const bar = document.getElementById('consent-bar');
     const btns = [...document.querySelectorAll('[data-product], [data-unavailable]')].filter((x) => x.offsetParent);
@@ -115,8 +117,8 @@ for (const p of ['/pricing/', '/ar/pricing/', '/es/brand-deck/']) {
 // redirect stubs carry the tag but no bar and still redirect
 {
   const { pg, google } = await page();
-  await pg.goto(BASE + '/es/snapshot/'); await pg.waitForFunction(() => location.pathname === '/es/kit/', null, { timeout: 5000 }).catch(() => {});
+  await pg.goto(BASE + '/es/snapshot/'); await pg.waitForFunction(() => location.pathname === '/en/social/', null, { timeout: 5000 }).catch(() => {});
   await pg.waitForLoadState('load'); await pg.mouse.wheel(0, 40); await pg.waitForTimeout(2000);
-  ok(new URL(pg.url()).pathname === '/es/kit/' && google.length > 0, '/es/snapshot/ stub still redirects, tag loaded on the target page');
+  ok(new URL(pg.url()).pathname === '/en/social/' && google.length > 0, '/es/snapshot/ stub redirects to /en/social/, tag loaded on the target page');
 }
 await b.close(); process.exit(fail ? 1 : 0);
