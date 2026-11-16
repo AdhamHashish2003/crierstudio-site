@@ -124,12 +124,12 @@ for (const l of LANGS) for (const p of PAGES) {
   // every price span carries the US-dollar price and each local NET price (data-usd, data-sar, data-aed, data-egp), the exact
   // numbers data/pricing.json has, so site.js shows the buyer's currency without converting anything
   const dataAttrs = (usd, loc) => `data-usd="${usd}"` + LOCAL_CURS.map((c) => ` data-${c.toLowerCase()}="${loc[c]}"`).join('');
-  if (p === 'pricing/') for (const pk of PRICING.packages) {
+  if (p === 'pricing/') for (const pk of PRICING.packages.filter((x) => !x.coming_soon)) { // the coming-soon Brand Deck left the pricing page (2026-11-15)
     ok(h.includes(dataAttrs(pk.price, pk.prices)), `price ${pk.price} USD / ${LOCAL_CURS.map((c) => pk.prices[c] + ' ' + c).join(' / ')} (${pk.id}, data/pricing.json) on ${file}`);
     if (!pk.coming_soon) ok(new RegExp(`class="price amt" dir="(ltr|rtl)" ${dataAttrs(pk.price, pk.prices)}`).test(h) && !h.includes('class="price-list'), `price ${pk.price} USD, nothing struck through (${pk.id}) on ${file}`);
     if (pk.extra_platform_price) ok(h.includes(`data-extra="${pk.extra_platform_price}"`), `extra platform ${pk.extra_platform_price} USD (${pk.id}) on ${file}`);
   }
-  if (p === 'pricing/') ok((h.match(/data-product="/g) || []).length === SOCIAL.length && h.includes('disabled data-unavailable="deck"'), `${SOCIAL.length} buy buttons and unavailable Brand Deck on ${file}`);
+  if (p === 'pricing/') ok((h.match(/data-product="/g) || []).length === SOCIAL.length && !/data-unavailable="deck"|Brand Deck/.test(h), `${SOCIAL.length} buy buttons and no Brand Deck on ${file}`);
   // the pricing page follows the visitor's country like the home page (2026-11-13: the US-dollar price is the USA's own price)
   if (p === 'pricing/' && !ONLY) ok(h.includes('id="cur-select"') && /id="cur-data"/.test(h) && h.includes('<option value="US"'), `country picker (with the USA) and currency data on ${file}`);
   // one country served: no country picker anywhere, the currency data locked to it, no US-dollar or other currency in the text
@@ -300,7 +300,7 @@ for (const id of SOCIAL) ok(d.en[`pkg.${id}.wa`] === `Subscribe to ${NAMES[id][0
     for (const l of LANGS) {
       const hh = rd(PREFIX(l) + 'pricing/index.html');
       const m = hh.match(new RegExp(`<a class="btn[^"]*" href="([^"]*)" data-product="${k}"`));
-      if (k === 'deck') { ok(!m && hh.includes('disabled data-unavailable="deck"'), `Brand Deck unavailable (${l})`); continue; }
+      if (k === 'deck') { ok(!m && !hh.includes('data-unavailable="deck"'), `no Brand Deck button on the pricing page (${l})`); continue; }
       const want = links[k] || SIGNUP(l, k);
       // 2026-11-15: the main button is the WhatsApp order; the sign-up (or the payment link) is the "or create your account" link
       const acct = hh.match(new RegExp(`<a class="acct-link" href="([^"]*)" data-signup="${k}"`));
@@ -435,6 +435,9 @@ if (!VAT_ON) {
   }
   for (const l of LANGS) for (const [k, v] of Object.entries(d[l])) if (!['cur.vatLine', 'cur.plusVat', 'cur.vatAdded'].includes(k)) ok(!VAT_RE.test(v), `VAT statement in i18n ${l}:${k} (VAT wording lives only in cur.vatLine, cur.plusVat and cur.vatAdded, shown when the data charges VAT)`);
 }
+// 2026-11-15 (owner: "anything that is not in the header remove"): no published page names the Brand Deck, and the privacy page no
+// longer describes a form on the site (contact is WhatsApp, email and the client portal)
+for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) { const v = rd(f).replace(/<(script|style)\b[\s\S]*?<\/\1>/g, '').replace(/<[^>]+>/g, ' '); ok(!/Brand Deck|الملف التعريفي|fill in a form|تملأ نموذجًا/.test(v + (rd(f).match(/<meta[^>]+>/g) || []).join(' ')), `Brand Deck or site-form wording on ${f}`); }
 // every published page is in the sitemap, except redirect stubs and the 404 page
 for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) {
   const h = rd(f); if (h.includes('data-page="redirect"') || f === '404.html') continue;

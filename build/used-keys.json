@@ -1,5 +1,5 @@
 {
- "i18n_sha256": "17a4c15e71b32f852da8ff80f5bf85ff40fcb26b077a4984c56b617cbf21e305",
+ "i18n_sha256": "7225a47d8c9cdcfe3aed08b3f7d39b90b34102cdc9b32da50292b96a7fbe8299",
  "used": [
   "about.contact.h",
   "about.contact.p",
@@ -472,7 +472,6 @@
   "offer.plans",
   "og.alt",
   "one.per",
-  "one.title",
   "pay.note",
   "pay.note.eg",
   "pay.wa.line",
@@ -583,8 +582,6 @@
   "refund.ask.h",
   "refund.ask.p",
   "refund.ask.p.eg",
-  "refund.deck.h",
-  "refund.deck.p",
   "refund.h1",
   "refund.intro",
   "refund.once.h",
@@ -732,7 +729,6 @@
   "terms.nopromise.p",
   "terms.offer.h",
   "terms.offer.p1",
-  "terms.offer.p2",
   "terms.offer.p3",
   "terms.offer.p3.eg",
   "terms.own.h",

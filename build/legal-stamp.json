@@ -1,17 +1,17 @@
 {
  "terms/": {
-  "date": "2026-11-15",
-  "en": "201b786da92a438e08f7192db18b593386c264ac12e32afbda9da252aac2cfb3",
-  "ar": "31ce4d7ce26ba504f2db59e7276b48bf2921812a09fe2ebebcabd302890ce1ca"
+  "date": "2026-11-16",
+  "en": "b488d58773d1340d34fea11689ad0131c02c2b80a21c4e7450e075aa65d33bdd",
+  "ar": "36cfc85d8eab4317fcada262b67d837b887199fcdd97800e46fe0fc03023a015"
  },
  "refund/": {
-  "date": "2026-11-15",
-  "en": "ecfecd05f2ab22d0ede92c22d0cf5830482c14f891df9c7b47ef41d1985f4f51",
-  "ar": "9f687bdf8aec703d6bec3de16439840dbf1a7e8eb9e4a9e08c4b56f1f1479a29"
+  "date": "2026-11-16",
+  "en": "7fef1a7c623097a1c2b9bb22cab530fb4cb6b654e91128eacc27dd1157f94696",
+  "ar": "3811d5fb43bd7e89ef9c18d81bacf940be8b97b8b8be9e329a67b4e63bfddb3d"
  },
  "privacy/": {
-  "date": "2026-11-15",
-  "en": "f12bf04ada75af5b9a7813fd2a5244ff87e8a4d65a174e2bad45d55baa6b6542",
-  "ar": "4f3cded04ec1642f67a987c1f7b51db5b2777e47cf348bd9dd1dc27d577b79c4"
+  "date": "2026-11-16",
+  "en": "e05631b19bdb3ec163f9d221d2d1d1991f303f5ac953197ce9b81867698a1936",
+  "ar": "f0cbacae961329e75383544aaa84dc611be9429a42f00ad89a17aae1ad517255"
  }
 }

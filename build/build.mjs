@@ -768,7 +768,7 @@ function jsonLd(lang, page, landing = false) {
     // Sculptures: informational, with no offers (pieces are quoted in the client portal)
     if (page === 'sculptures') nodes.push({ '@type': 'Service', name: t(lang, 'nav.sculptures'), description: t(lang, 'meta.d.sculptures'), url: urlFor(lang, page), provider });
     if (page === 'pricing') {
-      const items = PRODUCTS.map((p) => ({ '@type': 'Service', name: pname(lang, p), provider, ...(p === 'deck' ? { description: t(lang, 'availability.deck') } : { offers: offerNode(lang, p) }) }));
+      const items = SOCIAL.map((p) => ({ '@type': 'Service', name: pname(lang, p), provider, offers: offerNode(lang, p) })); // the Brand Deck left the pricing page with its own page (2026-11-15)
       nodes.push({ '@type': 'ItemList', name: t(lang, 'pricing.h1'), itemListElement: items.map((item, i) => ({ '@type': 'ListItem', position: i + 1, item })) });
     }
     if (page === 'faq') {
