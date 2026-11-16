@@ -46,6 +46,9 @@ try {
     await page.goto(`${base}?lang=${lang}&size=${size}`);
     await page.waitForFunction('window.__ready === true');
     const dur = await page.evaluate('window.DURATION'), steps = await page.evaluate('window.STEPS');
+    // a missing text would be burned into every frame: stop before rendering if the stage shows one
+    const hole = await page.evaluate(() => (document.getElementById('stage').textContent.match(/undefined|\bnull\b|NaN|\[object/) || [])[0]);
+    if (hole) throw new Error(`stage ${lang}/${size} shows "${hole}": a text is missing in design/walkthrough-video/stage.js`);
     const shot = async (t, type = 'png') => { await page.evaluate((x) => window.seek(x), t); return page.screenshot({ type, ...(type === 'jpeg' ? { quality: 84 } : {}) }); };
     if (STILLS) { for (const t of STILLS) fs.writeFileSync(path.join(OUT, `still-${lang}-${size}-${String(t).replace('.', '_')}.png`), await shot(t)); await page.close(); continue; }
     const stem = path.join(OUT, `how-${lang}-${v.name}`), n = Math.round(dur * FPS), e = ENC[size];
