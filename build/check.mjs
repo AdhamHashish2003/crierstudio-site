@@ -291,6 +291,13 @@ if (ONLY) for (const l of LANGS) { const ld = (rd(PREFIX(l) + 'pricing/index.htm
 for (const l of LANGS) for (const [k, v] of Object.entries(d[l])) if (!/^(is\.|sc\.|faq\.25|deck\.|faq\.1[1-6]|pkg\.deck|availability\.deck|meta\.d\.brand-deck|terms\.offer\.p2)/.test(k))
   ok(!/\bOrder (on WhatsApp|Bronze|Silver|Gold|Diamond|your package)|\border (a|the|your) (monthly )?package|اطلب (البرونزية|الفضية|الذهبية|الماسية|باقتك|عبر واتساب)|تطلب (ال)?باقة/i.test(v), `${l}:${k} says order / اطلب for a package (use subscribe / اشترك)`);
 for (const id of SOCIAL) ok(d.en[`pkg.${id}.wa`] === `Subscribe to ${NAMES[id][0]} on WhatsApp` && d.ar[`pkg.${id}.wa`] === `اشترك في ${NAMES[id][1]} عبر واتساب`, `the ${id} button is "Subscribe to … on WhatsApp" / «اشترك في … عبر واتساب»`);
+// Owner's answers (2026-11-16): "this is an online agency, no hours" and "no refunds". No text may promise working hours, a refund
+// window or a refund as an outcome; the refund page states the no-refund policy. (sc.* is the parked sculptures catalogue.)
+for (const l of LANGS) for (const [k, v] of Object.entries(d[l])) if (!/^sc\./.test(k)) {
+  ok(!/working hours|business hours|ساعات العمل|أوقات العمل/i.test(v), `${l}:${k} promises working hours (the studio has none)`);
+  ok(!/within \d+ days|\d+-day refund|refund window|money back|a fix or a refund|خلال \d+ أيام|مهلة الاسترداد|تعديل أو استرداد|رد المبلغ/i.test(v), `${l}:${k} promises a refund or a refund window (the policy is no refunds)`);
+}
+ok(/do not give refunds/.test(d.en['refund.plan.p.eg']) && /لا نرد المبالغ المدفوعة/.test(d.ar['refund.plan.p.eg']), 'the refund page states the no-refund policy');
 // Buy buttons: every product has one config entry; empty = the client portal's sign-up, filled = the link
 {
   const links = JSON.parse(rd('payment-links.json'));
