@@ -913,10 +913,15 @@ html[lang=ar] .la-link{font-size:16px}
 .btn.la-line:hover{border-color:var(--ink)}
 
 /* hero */
-.la-hero h1{font-size:clamp(44px,4.7vw,70px);font-weight:800;line-height:1.02;letter-spacing:-.035em;max-width:12ch}
-.la-hero h1 .hl{background:var(--accent);color:var(--accent-ink);padding:0 .08em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
-html[lang=ar] .la-hero h1{font-weight:700;line-height:1.45;letter-spacing:0;max-width:14ch;font-size:clamp(2.2rem,3.6vw,3.25rem)}
-html[lang=ar] .la-hero h1 .hl{padding:0 .15em}
+/* The lime highlight band (fix 2026-11-15, owner: "take care of overlapping problems"). The band's height is set in em and is always
+   smaller than the line height, so a band can never cover the line above or below, whatever box the browser gives the font (browsers
+   and fallback fonts differ, and Arabic letters reach further up and down than Latin). It is a gradient centred on the text; the
+   vertical padding only makes room to paint it and does not move the lines. Latin ink spans about -0.23em to +0.79em around the
+   baseline (band 1.02em, line 1.1); Arabic with its marks about -0.47em to +0.98em (band 1.5em, line 1.62). */
+.la-hero h1{font-size:clamp(44px,4.7vw,70px);font-weight:800;line-height:1.1;letter-spacing:-.035em;max-width:12ch}
+.la-hero h1 .hl{background:linear-gradient(var(--accent),var(--accent)) 0 calc(50% + .055em)/100% 1.02em no-repeat;color:var(--accent-ink);padding:.3em .08em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+html[lang=ar] .la-hero h1{font-weight:700;line-height:1.62;letter-spacing:0;max-width:14ch;font-size:clamp(2.2rem,3.6vw,3.25rem)}
+html[lang=ar] .la-hero h1 .hl{background-position:0 calc(50% + .04em);background-size:100% 1.5em;padding:.3em .15em}
 .la-hero .lead{max-width:46ch}
 .la-hero .hc-exnote{margin-top:0}
 .ex-av{padding:3px;background:conic-gradient(from 210deg,#FEDA75,#FA7E1E,#D62976,#962FBF,#4F5BD5,#FEDA75);box-shadow:none}

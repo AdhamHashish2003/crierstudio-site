@@ -259,6 +259,11 @@ for (const l of LANGS) for (const [from, to] of Object.entries(MOVED)) {
 }
 ok(rd('pricing/index.html').includes('"@type":"ItemList"') && rd('pricing/index.html').includes(`"priceCurrency":"${ONLY ? DEF_CUR : 'USD'}"`), 'pricing JSON-LD');
 if (ONLY) for (const l of LANGS) { const ld = (rd(PREFIX(l) + 'pricing/index.html').match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/) || [])[1] || ''; for (const c of [...new Set(Object.values(PRICING.local.countries).map((x) => x.currency))].filter((c) => c !== DEF_CUR)) ok(!ld.includes(`"priceCurrency":"${c}"`), `pricing JSON-LD: no ${c} offer while only ${ONLY.join(', ')} is served (${l})`); }
+// Owner 2026-11-15: the packages are subscribed to, not ordered ("we are not a delivery or food business"): «اشترك في البرونزية عبر واتساب»
+// / "Subscribe to Bronze on WhatsApp". «اطلب» / "order" stays only where it means a request (a quote, the coming-soon Brand Deck).
+for (const l of LANGS) for (const [k, v] of Object.entries(d[l])) if (!/^(is\.|sc\.|faq\.25|deck\.|faq\.1[1-6]|pkg\.deck|availability\.deck|meta\.d\.brand-deck|terms\.offer\.p2)/.test(k))
+  ok(!/\bOrder (on WhatsApp|Bronze|Silver|Gold|Diamond|your package)|\border (a|the|your) (monthly )?package|اطلب (البرونزية|الفضية|الذهبية|الماسية|باقتك|عبر واتساب)|تطلب (ال)?باقة/i.test(v), `${l}:${k} says order / اطلب for a package (use subscribe / اشترك)`);
+for (const id of SOCIAL) ok(d.en[`pkg.${id}.wa`] === `Subscribe to ${NAMES[id][0]} on WhatsApp` && d.ar[`pkg.${id}.wa`] === `اشترك في ${NAMES[id][1]} عبر واتساب`, `the ${id} button is "Subscribe to … on WhatsApp" / «اشترك في … عبر واتساب»`);
 // Buy buttons: every product has one config entry; empty = the client portal's sign-up, filled = the link
 {
   const links = JSON.parse(rd('payment-links.json'));
@@ -461,7 +466,7 @@ for (const l of LANGS) {
     const h = rd(f);
     ok(!/Nothing is published for you|then you post it|You post it|post them yourself|Posted by you|لا ننشر شيئًا نيابةً عنك|تنشره أنت|تنشره بنفسك|نشرتَه أنت/.test(h), `${f} says the client posts (we publish since 2026-11-15)`);
   }
-  ok(d.en['pkg.seen.wa'] === 'Order Bronze on WhatsApp' && d.ar['pkg.seen.wa'] === 'اطلب البرونزية عبر واتساب', 'the WhatsApp order button wording');
+  ok(d.en['pkg.seen.wa'] === 'Subscribe to Bronze on WhatsApp' && d.ar['pkg.seen.wa'] === 'اشترك في البرونزية عبر واتساب', 'the WhatsApp subscribe button wording');
   ok(/^Pay by InstaPay/.test(d.en['pay.wa.line']) && /InstaPay/.test(d.ar['pay.wa.line']), 'the InstaPay line wording');
   // stale prices: no built page shows an old price that no package has any more (EGP 7,500 was Gold before 2026-11-15)
   for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) {

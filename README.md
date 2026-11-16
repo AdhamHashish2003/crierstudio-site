@@ -128,7 +128,7 @@ The country picker (home and pricing): the visitor's pick (saved), else Cloudfla
 ## WhatsApp
 
 `data/contact.json` holds the WhatsApp business number (`whatsapp`, digits only, international format; +20 114 600 0101 since 2026-11-15). Empty = no WhatsApp link anywhere. With a number:
-- each package card's main button is "Order <package> on WhatsApp" (prefilled with the package and its monthly price);
+- each package card's main button is "Subscribe to <package> on WhatsApp" / «اشترك في … عبر واتساب» (prefilled with the package and its monthly price). Owner 2026-11-15: packages are subscribed to, never "ordered" (`build/check.mjs` fails on order / «اطلب» wording for a package; «اطلب» stays for quotes);
 - the footer, the home page and About show the number;
 - **the floating WhatsApp button** (`templates/wa-float.html`, CSS at the end of `templates/studio-shared.css`, script at the end of `site.js`) is on every page, 404 included: round, green, bottom-right in English and bottom-left in Arabic (`inset-inline-end`), with an aria-label and a short greeting in the page language (`wa.fab.aria`, `wa.fab.msg`). It sits above the consent bar while the bar shows (`--cbar`), and on phones it fades out (`wa-fab-off`) while a link, button or field is under it, so it never covers something to tap. `build/check.mjs` checks it on every page;
 - In-store quotes go to WhatsApp (see In-store above).
