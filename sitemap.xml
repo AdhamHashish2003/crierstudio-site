@@ -25,18 +25,6 @@
 <xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/pricing/"/>
 </url>
 <url>
-<loc>https://crierstudio.com/en/brand-deck/</loc>
-<xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/en/brand-deck/"/>
-<xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/brand-deck/"/>
-<xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/brand-deck/"/>
-</url>
-<url>
-<loc>https://crierstudio.com/brand-deck/</loc>
-<xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/en/brand-deck/"/>
-<xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/brand-deck/"/>
-<xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/brand-deck/"/>
-</url>
-<url>
 <loc>https://crierstudio.com/en/social/</loc>
 <xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/en/social/"/>
 <xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/social/"/>
@@ -47,54 +35,6 @@
 <xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/en/social/"/>
 <xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/social/"/>
 <xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/social/"/>
-</url>
-<url>
-<loc>https://crierstudio.com/en/in-store/</loc>
-<xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/en/in-store/"/>
-<xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/in-store/"/>
-<xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/in-store/"/>
-</url>
-<url>
-<loc>https://crierstudio.com/in-store/</loc>
-<xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/en/in-store/"/>
-<xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/in-store/"/>
-<xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/in-store/"/>
-</url>
-<url>
-<loc>https://crierstudio.com/en/samples/</loc>
-<xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/en/samples/"/>
-<xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/samples/"/>
-<xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/samples/"/>
-</url>
-<url>
-<loc>https://crierstudio.com/samples/</loc>
-<xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/en/samples/"/>
-<xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/samples/"/>
-<xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/samples/"/>
-</url>
-<url>
-<loc>https://crierstudio.com/en/faq/</loc>
-<xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/en/faq/"/>
-<xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/faq/"/>
-<xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/faq/"/>
-</url>
-<url>
-<loc>https://crierstudio.com/faq/</loc>
-<xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/en/faq/"/>
-<xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/faq/"/>
-<xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/faq/"/>
-</url>
-<url>
-<loc>https://crierstudio.com/en/about/</loc>
-<xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/en/about/"/>
-<xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/about/"/>
-<xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/about/"/>
-</url>
-<url>
-<loc>https://crierstudio.com/about/</loc>
-<xhtml:link rel="alternate" hreflang="en" href="https://crierstudio.com/en/about/"/>
-<xhtml:link rel="alternate" hreflang="ar" href="https://crierstudio.com/about/"/>
-<xhtml:link rel="alternate" hreflang="x-default" href="https://crierstudio.com/about/"/>
 </url>
 <url>
 <loc>https://crierstudio.com/en/terms/</loc>

@@ -14,7 +14,7 @@ async function ctx(opts = {}) {
   await c.route(/googletagmanager\.com|google-analytics\.com|analytics\.google\.com|wa\.me|portal\.crierstudio\.com|crm-production/, (r) => r.abort());
   return c;
 }
-const PAGES = ['', 'pricing/', 'social/', 'in-store/', 'brand-deck/', 'samples/', 'faq/', 'about/', 'terms/', 'privacy/', 'refund/'];
+const PAGES = ['', 'pricing/', 'social/', 'terms/', 'privacy/', 'refund/'] /* In-store, Samples, FAQ, About and Brand Deck were unpublished on 2026-11-15 (their URLs redirect home) */;
 
 // 1. Arabic first: old URLs, ?lang and the saved choice (query and #hash kept)
 {
@@ -28,8 +28,13 @@ const PAGES = ['', 'pricing/', 'social/', 'in-store/', 'brand-deck/', 'samples/'
   r = await at('/es/pricing/?x=1'); ok(r[0] === '/en/pricing/?x=1', `/es/ -> /en/: ${r}`);
   r = await at('/pricing/?lang=en&plan=gold#top'); ok(r[0] === '/en/pricing/?plan=gold#top' && await pg.evaluate(() => localStorage.getItem('crier.lang')) === 'en', `?lang=en -> /en/pricing/, saved: ${r}`);
   // a visitor who chose English and comes back from outside the site to an Arabic (root) URL gets the English page
-  r = await at('/faq/'); ok(r[0] === '/en/faq/', `saved English + outside entry to /faq/ -> /en/faq/: ${r}`);
-  r = await at('/faq/?lang=ar'); ok(r[0] === '/faq/' && await pg.evaluate(() => localStorage.getItem('crier.lang')) === 'ar', `?lang=ar -> /faq/, saved ar: ${r}`);
+  r = await at('/social/'); ok(r[0] === '/en/social/', `saved English + outside entry to /social/ -> /en/social/: ${r}`);
+  r = await at('/social/?lang=ar'); ok(r[0] === '/social/' && await pg.evaluate(() => localStorage.getItem('crier.lang')) === 'ar', `?lang=ar -> /social/, saved ar: ${r}`);
+  // unpublished pages (2026-11-15) go home in their language, old Arabic and renamed URLs included
+  r = await at('/faq/'); ok(r[0] === '/' && r[1] === 'ar/rtl', `/faq/ -> / : ${r}`);
+  r = await at('/en/about/'); ok(r[0] === '/en/' && r[1] === 'en/ltr', `/en/about/ -> /en/ : ${r}`);
+  r = await at('/ar/in-store/'); ok(r[0] === '/', `/ar/in-store/ -> / : ${r}`);
+  r = await at('/en/physical/'); ok(r[0] === '/en/', `/en/physical/ -> /en/ : ${r}`);
   await c.close();
 }
 

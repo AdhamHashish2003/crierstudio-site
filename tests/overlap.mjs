@@ -17,7 +17,7 @@ import { chromium } from 'playwright-core';
 const BASE = process.env.BASE || 'http://localhost:8765';
 const b = await chromium.launch({ executablePath: process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
 let fail = 0, checked = 0; const bad = (m) => { fail++; console.log('FAIL', m); };
-const PAGES = ['', 'pricing/', 'social/', 'in-store/', 'brand-deck/', 'samples/', 'faq/', 'about/', 'terms/', 'privacy/', 'refund/'];
+const PAGES = ['', 'pricing/', 'social/', 'terms/', 'privacy/', 'refund/'] /* In-store, Samples, FAQ, About and Brand Deck were unpublished on 2026-11-15 (their URLs redirect home) */;
 const urls = [...PAGES.map((p) => '/' + p), ...PAGES.map((p) => '/en/' + p), '/404.html', ...(process.env.EXTRA ? process.env.EXTRA.split(',') : [])];
 const ONLY = process.env.ONLY ? process.env.ONLY.split(',') : null;
 

@@ -7,10 +7,13 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LANGS = ['en', 'ar'];
 const REMOVED = ['es', 'fr']; // removed languages redirect to the English pages (/en/)
 const PREFIX = (l) => l === 'ar' ? '' : l + '/'; // Arabic first (2026-11-15): Arabic (the default) at the root, English under /en/
-const PAGES = ['', 'pricing/', 'brand-deck/', 'social/', 'in-store/', 'samples/', 'faq/', 'about/', 'terms/', 'privacy/', 'refund/'];
+// 2026-11-15 (owner: "anything that is not in the header remove"): the site is the home page, /social/, /pricing/ and the legal pages.
+// In-store, Samples, FAQ, About and Brand Deck are parked (built into _parked/, their URLs redirect home).
+const PAGES = ['', 'pricing/', 'social/', 'terms/', 'privacy/', 'refund/'];
+const GONE = ['in-store/', 'samples/', 'faq/', 'about/', 'brand-deck/'];
 // old URLs: redirect stubs, not in the sitemap (a target may carry a #hash; '' is the home page). Since 2026-11-14 the parked
 // pages (sculptures, fiberglass, branddeck: outside the offer, kept in _parked/) are stubs too.
-const MOVED = { 'kit/': 'social/', 'physical/': 'in-store/#custom', 'snapshot/': 'social/', 'crier-deck/': 'brand-deck/', 'sculptures/': '', 'fiberglass/': '', 'branddeck/': 'pricing/' };
+const MOVED = { 'kit/': 'social/', 'physical/': '', 'snapshot/': 'social/', 'crier-deck/': '', 'sculptures/': '', 'fiberglass/': '', 'branddeck/': 'pricing/', 'in-store/': '', 'samples/': '', 'faq/': '', 'about/': '', 'brand-deck/': '' };
 const SKIP_DIRS = ['.git', 'node_modules', 'templates', 'build', 'tests', 'i18n', 'fonts', 'assets', 'design', '_parked'];
 const PRODUCTS = ['seen', 'visible', 'growing', 'diamond', 'deck'];
 const SOCIAL = ['seen', 'visible', 'growing', 'diamond']; // the Social packages on sale, tier order (owner 2026-11-15)
@@ -96,7 +99,10 @@ for (const l of LANGS) for (const p of PAGES) {
   ok(headerNav.includes(`href="${PORTAL_HOME(l)}"`), `portal link with ?lang=${l} in ${file}`);
   // the footer keeps every destination (About and Brand Deck moved there from the header)
   const footNav = (h.match(/<footer>[\s\S]*?<\/footer>/) || [''])[0];
-  for (const nav of ['social/', 'in-store/', ...SC_NAV, 'samples/', 'pricing/', 'faq/', 'about/', 'brand-deck/']) ok(footNav.includes(`href="/${PREFIX(l) + nav}"`), `footer link ${nav} in ${file}`);
+  // 2026-11-15 (owner): the footer lists only what the header lists (Social, Pricing, Your account), and no page links to a removed one
+  for (const nav of ['social/', 'pricing/']) ok(footNav.includes(`href="/${PREFIX(l) + nav}"`), `footer link ${nav} in ${file}`);
+  ok(footNav.includes(`href="${PORTAL_HOME(l)}"`), `footer link to the client portal in ${file}`);
+  for (const nav of GONE) ok(!new RegExp(`href="/(?:en/|ar/)?${nav}`).test(h), `a link to the removed page /${nav} in ${file}`);
   // the social line's old name is gone everywhere (EN and AR)
   ok(!/Complete Kit|complete kit|الحزمة الكاملة/.test(h), `old name "Complete Kit" in ${file}`);
   ok(h.includes('team@crierstudio.com'), `email in ${file}`);
@@ -265,9 +271,8 @@ for (const f of ['_parked/fiberglass/index.html', '_parked/branddeck/index.html'
   ok(fs.existsSync(path.join(ROOT, f)), `parked source kept: ${f}`);
 for (const f of ['assets/studio-deck/index.html', 'assets/social-preview.html']) { const h = rd(f); ok(h.includes('data-page="redirect"') && h.includes('data-target="index"') && h.includes('content="noindex"'), `${f} is a redirect stub to the home page`); }
 for (const m of ['fiberglass', 'branddeck', 'sculptures', 'studio-deck', 'social-preview']) ok(!sm.includes(m), `parked page ${m} in the sitemap`);
-ok(rd('brand-deck/index.html').includes('"@type":"Service"') && !rd('brand-deck/index.html').includes('"@type":"Offer"'), 'Brand Deck Service is informational, without an active offer');
+for (const g of GONE) for (const pre of ['', 'en/']) ok(rd(pre + g + 'index.html').includes('data-page="redirect"') && fs.existsSync(path.join(ROOT, '_parked', pre + g, 'index.html')), `/${pre}${g} is a redirect stub and its page is kept in _parked/`);
 ok(rd('social/index.html').includes('"@type":"Service"') && !rd('social/index.html').includes('"offers"'), 'Social Service JSON-LD is informational, without offers');
-ok(rd('in-store/index.html').includes('"@type":"Service"') && !rd('in-store/index.html').includes('"offers"'), 'In-store Services are informational, without offers');
 // the pricing page's structured data carries each available package's US-dollar sale price (the international price)
 for (const pr of [...Object.values(LAUNCH).map((w) => `"price":"${w[ONLY ? DEF_CUR : 'USD']}"`), '"unitCode":"MON"']) ok(rd('pricing/index.html').includes(pr), 'pricing JSON-LD ' + pr);
 // renamed pages: every old URL is a noindex redirect stub to the new page in the same language
@@ -303,7 +308,7 @@ for (const id of SOCIAL) ok(d.en[`pkg.${id}.wa`] === `Subscribe to ${NAMES[id][0
     }
   }
 }
-ok(rd('faq/index.html').includes('"@type":"FAQPage"'), 'FAQPage');
+ok(!NEW_LANDING || (rd('index.html').includes('"@type":"FAQPage"') && rd('social/index.html').includes('"@type":"FAQPage"')), 'FAQPage on the home page and /social/ (the FAQ page itself is parked)');
 ok(rd('index.html').includes('"alternateName":"Crier"') && rd('index.html').includes('"@type":"Organization"'), 'Organization + WebSite');
 // Google Analytics 4 + Consent Mode v2: every built HTML file (40 pages, 404, all redirect stubs) has the inline tag exactly once,
 // early in <head>, with consent defaulting to denied before the config call, and gtag.js loaded only on the first interaction or 6 s after page load; ads signals are never granted; the CSP allows Google's hosts
@@ -456,8 +461,7 @@ for (const l of LANGS) {
   const WA = String(JSON.parse(rd('data/contact.json')).whatsapp || '');
   ok(WA === '201146000101', 'data/contact.json whatsapp is 201146000101 (the number the client portal uses)');
   for (const l of LANGS) {
-    for (const pg of ['', 'about/', 'pricing/', 'faq/', 'terms/']) ok((rd(PREFIX(l) + pg + 'index.html').match(/<footer>[\s\S]*?<\/footer>/) || [''])[0].includes(`href="https://wa.me/${WA}"`), `WhatsApp link in the footer of /${PREFIX(l)}${pg}`);
-    ok((rd(PREFIX(l) + 'about/index.html').match(/<main[\s\S]*?<\/main>/) || [''])[0].includes(`href="https://wa.me/${WA}"`), `WhatsApp link on About (${l})`);
+    for (const pg of ['', 'pricing/', 'social/', 'terms/']) ok((rd(PREFIX(l) + pg + 'index.html').match(/<footer>[\s\S]*?<\/footer>/) || [''])[0].includes(`href="https://wa.me/${WA}"`), `WhatsApp link in the footer of /${PREFIX(l)}${pg}`);
     ok(!/by email only|email only|بالبريد الإلكتروني فقط/i.test(d[l]['about.contact.p'] + d[l]['terms.who.p']), `the contact wording is no longer "email only" (${l})`);
     // 2026-11-15: each Social package's MAIN button is the green "Order <package> on WhatsApp" (wa.me, the message prefilled with
     // the package name and its monthly price in the page language), then "or create your account" and one "Pay by InstaPay" line

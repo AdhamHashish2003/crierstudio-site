@@ -18,14 +18,16 @@ const NOINDEX = false;
 // redirect stubs to the closest current page (PARKED_TO). /sculptures/ was the "hidden for now" catalogue (2026-10-19). The
 // hand-made standalone pages (/fiberglass/, /branddeck/, /ar/branddeck/) live in _parked/ too, and /assets/studio-deck/ and
 // /assets/social-preview.html are built into _parked/ with redirect stubs at their old addresses.
-const PARKED = new Set(['sculptures']);
+// 2026-11-15 (owner: "fix the footer, many pages we already deleted… anything that is not in the header remove"): In-store, Samples,
+// FAQ, About and Brand Deck are unpublished too. The site is now the home page, /social/, /pricing/ and the three legal pages.
+const PARKED = new Set(['sculptures', 'in-store', 'samples', 'faq', 'about', 'brand-deck']);
 const PARKED_DIR = '_parked';
 // THE NEW LANDING PAGES (owner 2026-11-15): the home page and /social/ redesigned as landing pages (templates/home-v2.html and
 // social-v2.html). Held until Adham approves them: while false the live pages keep their current templates and the new ones are built
 // only into _parked/preview/ (never published) for review screenshots. Set true and rebuild to publish them.
 const SHOW_NEW_LANDING = true;
 const V2 = { index: 'home-v2', social: 'social-v2' };
-const PARKED_TO = { sculptures: 'index', fiberglass: 'index', branddeck: 'pricing' };
+const PARKED_TO = { sculptures: 'index', fiberglass: 'index', branddeck: 'pricing', 'in-store': 'index', samples: 'index', faq: 'index', about: 'index', 'brand-deck': 'index' };
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SITE = 'https://crierstudio.com';
@@ -49,14 +51,13 @@ const RTL = new Set(['ar']);
 const PAGES = ['index', 'pricing', 'brand-deck', 'social', 'in-store', 'sculptures', 'samples', 'faq', 'about', 'terms', 'privacy', 'refund'];
 // renamed pages: the old URLs stay as redirect stubs in every language (full query kept; the visitor's #hash wins over the
 // target's), not in the sitemap. A target may carry a #hash: /physical/ -> /in-store/#custom.
-const MOVED = { kit: 'social', physical: 'in-store#custom', snapshot: 'social', 'crier-deck': 'brand-deck', ...PARKED_TO };
+const MOVED = { kit: 'social', physical: 'index', snapshot: 'social', 'crier-deck': 'index', ...PARKED_TO }; // physical was In-store's custom pieces, crier-deck the Brand Deck: both pages are parked, so they go home
 const WIDE = new Set(['index', 'pricing', 'brand-deck', 'social', 'in-store', 'sculptures', 'samples', 'about']); // wide layout; the rest use the narrow reading layout
 const LEGAL = ['terms', 'privacy', 'refund'];
 // Home v2 (2026-10-18): the header shows Social · Sculptures · Pricing · Client portal; Samples and FAQ moved to the footer only
 // (In-store remains on the page and in the footer; Sculptures is parked)
 const NAV = [['social', 'nav.social'], ['pricing', 'nav.pricing'], [PORTAL, 'nav.portal']];
-// the footer keeps every destination: the header nav plus Samples, FAQ, About and Brand Deck
-const NAV_FOOT = [['social', 'nav.social'], ['in-store', 'nav.instore'], ['samples', 'nav.samples'], ['pricing', 'nav.pricing'], ['faq', 'nav.faq'], ['about', 'nav.about'], ['brand-deck', 'nav.deck'], [PORTAL, 'nav.portal']];
+const NAV_FOOT = NAV; // 2026-11-15 (owner): the footer lists only what the header lists (Social, Pricing, Your account)
 // pages built but kept out of search and the sitemap
 const HIDDEN = PARKED;
 const CRUMB_KEY = { pricing: 'nav.pricing', 'brand-deck': 'nav.deck', social: 'nav.social', 'in-store': 'nav.instore', sculptures: 'nav.sculptures', samples: 'nav.samples', faq: 'nav.faq', about: 'nav.about', terms: 'foot.terms', privacy: 'foot.privacy', refund: 'foot.refund' };
@@ -1044,7 +1045,7 @@ for (const lang of REMOVED) for (const [from, to] of [...LIVE_PAGES, ...Object.e
   htmlCc = null;
   const ctx = { lang: DEFAULT_LANG, v: { ...pageVars(DEFAULT_LANG, '404'), langpick: langpick(DEFAULT_LANG, 'index'), crumbs: '' } };
   const sections = [...LANGS].sort(([a]) => (a === DEFAULT_LANG ? -1 : 1)).map(([c]) => {
-    const links = [['index', 'crumb.home'], ['social', 'nav.social'], ['in-store', 'nav.instore'], ['pricing', 'nav.pricing']].map(([p, k]) => `<a href="${pathFor(c, p)}">${esc(t(c, k))}</a>`).join(' · ');
+    const links = [['index', 'crumb.home'], ['social', 'nav.social'], ['pricing', 'nav.pricing']].map(([p, k]) => `<a href="${pathFor(c, p)}">${esc(t(c, k))}</a>`).join(' · ');
     return `<section lang="${c}" dir="${RTL.has(c) ? 'rtl' : 'ltr'}"><h2>${esc(t(c, 'e404.title'))}</h2><p>${esc(t(c, 'e404.p'))} <a href="${pathFor(c, 'index')}">${esc(t(c, 'e404.home'))}</a></p><p>${esc(t(c, 'e404.nav'))} ${links}</p></section>`;
   }).join('\n');
   ctx.v.sections = sections;
