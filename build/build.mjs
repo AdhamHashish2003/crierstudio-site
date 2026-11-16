@@ -141,6 +141,7 @@ const dicts = Object.fromEntries(LANGS.map(([c]) => [c, JSON.parse(rd(`i18n/${c}
 const partials = {
   hero: rd('templates/hero.html'), logo: rd('templates/logo.svg.html'), footer: rd('templates/footer.html'), header: rd('templates/header.html'),
   consent: rd('templates/consent.html'), panels: rd('templates/instore-panels.html'), waFloat: rd('templates/wa-float.html'),
+  how: rd('templates/how-walkthrough.html'), // the home v2 "How it works" slot ({{>how}} in templates/home-v2.html)
 };
 const CSS = {
   fonts: rd('templates/fonts.css'), fontsAr: rd('templates/fonts-ar.css'), common: rd('templates/common.css'),

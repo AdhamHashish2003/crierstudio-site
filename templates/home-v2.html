@@ -1,11 +1,9 @@
 <main id="main-content">
     {{>hero}}
 
-    <section id="examples" class="lp-ex" aria-labelledby="ex-title">
-      <div class="la-head"><h2 id="ex-title">{{t:lp.ex.h2}}</h2><p class="lead">{{t:lp.ex.lead}}</p></div>
-      <ul class="lp-gallery" role="list">{{=exGallery}}</ul>
-      <p class="fine lp-exnote">{{t:lp.ex.note}}</p>
-    </section>
+    <!-- HOW IT WORKS slot (owner 2026-11-15): right after the hero. Today it is the current walkthrough (templates/how-walkthrough.html);
+         the walkthrough-video session replaces that partial with the video section that keeps the five steps beside it. -->
+    {{>how}}
 
     <section id="make" class="lp-make" aria-labelledby="mk-title">
       <div class="la-head"><h2 id="mk-title">{{t:lp.mk.h2}}</h2><p class="lead">{{t:lp.mk.lead}}</p></div>
@@ -17,25 +15,6 @@
       {{=curPick}}
       <div class="plans quad">{{=planCards}}</div>
       <p class="fine lp-pkfine">{{t:bill.3}} <a href="{{=pricingHref}}">{{t:la.pr.all}}</a></p>
-    </section>
-
-    <section id="walkthrough" class="wt" aria-labelledby="wt-title">
-      <div class="wt-head">
-        <span class="eyebrow">{{t:wt.eye}}</span>
-        <h2 id="wt-title">{{t:wt.h2}}</h2>
-        <p class="lead">{{t:wt.sub}}</p>
-      </div>
-      <div class="wt-grid">
-        <div class="wt-stage">
-          {{=dash}}
-        </div>
-        <div class="wt-side">
-          <div class="wt-progress" aria-hidden="true"><span class="wt-count"><bdi dir="ltr"><b>{{=wtTotal}}</b> / {{=wtTotal}}</bdi></span><span class="wt-track"><i></i></span></div>
-          <ol class="wt-steps" aria-label="{{a:wt.steps}}">{{=wtSteps}}</ol>
-          <div class="wt-detail">{{=wtDetails}}</div>
-          <div class="wt-cta"><a class="btn wa-order" href="{{=lpWaHref}}" target="_blank" rel="noopener" data-wa="home_how">{{t:lp.cta}}</a><a class="wt-from" href="{{=pricingHref}}">{{t:wt.from}}</a></div>
-        </div>
-      </div>
     </section>
 
     <section id="trust" class="la-ok" aria-labelledby="trust-title">
