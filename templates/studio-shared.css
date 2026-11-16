@@ -141,7 +141,7 @@ html[lang=ar] :is(.is-eye,.is-tag,.is-pill,.is-num,.is-foot,.zone-col h4){letter
 .isa-head{display:grid;gap:16px}
 .isa-head .eyebrow{margin:0 0 14px;color:var(--cream-label);letter-spacing:.14em}
 .isa-head h1{margin:0;max-width:none;font:600 clamp(33px,4.7vw,60px)/1.02 var(--display);letter-spacing:-.035em;font-stretch:100%;color:var(--cream-ink)}
-html[lang=ar] .isa-head h1{line-height:1.3;letter-spacing:0}
+html[lang=ar] .isa-head h1{line-height:1.5;letter-spacing:0}
 .isa-sub{margin:0;max-width:44ch;font-size:16px;line-height:1.6;color:var(--cream-muted)}
 .isa-sub b{color:var(--cream-ink)}
 .isa-kitbox{margin-top:22px}
@@ -179,7 +179,7 @@ html[lang=ar] .isa-head h1{line-height:1.3;letter-spacing:0}
 .isa-foot{margin:14px 0 0;font-size:12px;letter-spacing:.03em;color:var(--cream-label)}
 .cream .isa-custom{margin-top:56px;padding-block:44px 56px;display:grid;gap:28px;align-items:start}
 .isa-custom h2{margin:18px 0 16px;max-width:16ch;font:600 clamp(28px,3.4vw,42px)/1.08 var(--display);letter-spacing:-.03em;font-stretch:100%;color:var(--cream-ink)}
-html[lang=ar] .isa-custom h2{line-height:1.35;letter-spacing:0}
+html[lang=ar] .isa-custom h2{line-height:1.5;letter-spacing:0}
 .isa-lead{margin:0;max-width:46ch;font-size:16px;line-height:1.6;color:var(--cream-muted)}
 .isa-ctas{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;margin-top:26px}
 .cream .isa-ctas .btn{min-height:50px;padding:0 24px;border-radius:2px;font-size:15px}

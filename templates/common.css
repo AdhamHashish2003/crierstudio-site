@@ -18,6 +18,11 @@
 /* Arabic: joined letters, no tracking, no condensed stretch, roomier lines, no forced caps */
 html[lang=ar]{--display:"Noto Sans Arabic","Archivo","Segoe UI",Tahoma,"Geeza Pro",sans-serif;--body:"Noto Sans Arabic","Instrument Sans","Segoe UI",Tahoma,"Geeza Pro",sans-serif}
 html[lang=ar] :is(h1,h2,h3,.logo,.faq summary,.price){letter-spacing:0;font-stretch:normal}
+/* Arabic headings need more line height than Latin (2026-11-15): with its marks and tails Arabic ink spans up to about 1.44em, so a
+   wrapping heading gets 1.5 (h3: 1.45) and the tails of one line never touch the marks of the next. tests/overlap.mjs checks it. */
+html[lang=ar] :is(h1,h2){line-height:1.5}
+html[lang=ar] h3{line-height:1.45}
+html[lang=ar] .studio-inner .phead h1{line-height:1.5}
 html[lang=ar] :is(h1,h2,h3){line-height:1.5}
 html[lang=ar] .hero h1 .hl{padding:.05em .15em}
 html[lang=ar] :is(.eyebrow,.tag,.page .ex2){letter-spacing:0;text-transform:none}

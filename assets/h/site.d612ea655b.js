@@ -280,7 +280,8 @@
   "use strict";
   var fab = document.getElementById("wa-fab"); if (!fab) return;
   var de = document.documentElement, bar = document.getElementById("consent-bar"), phone = matchMedia("(max-width:767px)"), queued = 0;
-  var SEL = "a,button,input,select,textarea,summary,label,[role=button]", PTS = [[0.5, 0.5], [0, 0], [0.5, 0], [1, 0], [0, 0.5], [1, 0.5], [0, 1], [0.5, 1], [1, 1]], PAD = 8;
+  var SEL = "a,button,input,select,textarea,summary,label,[role=button]", PTS = [], PAD = 8;
+  for (var a = 0; a <= 4; a++) for (var c = 0; c <= 4; c++) PTS.push([a / 4, c / 4]); // a 5 x 5 grid, 18 px apart: a one-line text link cannot slip between the points
   function lift() { var h = bar && !bar.hidden ? bar.getBoundingClientRect().height : 0; de.style.setProperty("--cbar", Math.round(h) + "px"); }
   function covers() {
     if (!phone.matches || !document.elementsFromPoint) return false;
