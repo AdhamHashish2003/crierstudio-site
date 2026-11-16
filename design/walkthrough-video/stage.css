@@ -271,3 +271,4 @@ body.desk .cms{padding-top:9px;gap:8px}
 /* phone frame: whole 4:5 thumbnails; the second row only peeks above the tab bar (picture tops, never a cut line of text) */
 .phone .pc-im{aspect-ratio:4/5}
 .pc{min-width:0}
+.phone .ig-toast{top:36px}

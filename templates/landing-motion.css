@@ -105,29 +105,35 @@ html[lang=ar] .hv-aa b{line-height:1.5}
   .hv-id{display:none}
   .hv-plan{top:478px;inset-inline-start:84px;width:164px}
   .hv-story{top:262px;inset-inline-end:84px;width:126px}
-  .hv-act{top:548px;inset-inline-end:104px}
+  .hv-act{top:432px;inset-inline-end:auto;inset-inline-start:96px} /* the bottom end corner stays free: the WhatsApp button lives there */
 }
 
 /* ---------- "How it works" video ---------- */
 .hw{border-top:1px solid var(--line);padding-block:88px 56px}
 .hw-grid{align-items:center}
-.hw-frame{position:relative;aspect-ratio:16/9;border-radius:22px;overflow:hidden;background:#0E0F0C;box-shadow:0 0 0 1px var(--line),0 40px 80px -40px rgba(0,0,0,.9)}
-.hw-frame picture,.hw-poster,.hw-v{position:absolute;inset:0;display:block;width:100%;height:100%}
+/* the picture is never taller than the room on screen (a phone on its side, or the cookie bar showing: --cbar is its height, set by
+   site.js): the frame narrows instead, and the video keeps its shape */
+.hw-frame{position:relative;margin-inline:auto;max-width:max(260px,calc((100vh - 24px - var(--cbar,0px))*16/9));max-width:max(260px,calc((100svh - 24px - var(--cbar,0px))*16/9))}
+.hw-clip{position:relative;aspect-ratio:16/9;border-radius:22px;overflow:hidden;background:#0E0F0C;box-shadow:0 0 0 1px var(--line),0 40px 80px -40px rgba(0,0,0,.9)}
+.hw-clip picture,.hw-poster,.hw-v{position:absolute;inset:0;display:block;width:100%;height:100%}
 .hw-poster,.hw-v{object-fit:cover}
 .hw-v{opacity:0;transition:opacity .35s ease}
 .hw-frame.is-playing .hw-v,.hw-frame.is-ready .hw-v{opacity:1}
-.hw-toggle{all:unset;box-sizing:border-box;position:absolute;z-index:2;bottom:14px;inset-inline-end:14px;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;cursor:pointer;background:rgba(14,15,12,.72);border:1px solid rgba(246,248,239,.28);color:#F6F8EF;transition:background-color .2s,transform .2s}
-.hw-toggle:hover{background:#0E0F0C}
+.hw-bar{display:flex;align-items:center;gap:12px;margin-top:12px}
+.hw-toggle{all:unset;box-sizing:border-box;flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;cursor:pointer;background:var(--surface);border:1px solid var(--line);color:var(--ink);transition:background-color .2s,border-color .2s}
+.hw-toggle:hover{border-color:var(--accent)}
 .hw-toggle:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 .hw-toggle svg{grid-area:1/1;width:18px;height:18px}
 .hw-toggle .hw-is{display:none}
 .hw-frame.is-playing .hw-ip{display:none}.hw-frame.is-playing .hw-is{display:block}
-.hw-note{margin-top:12px}
+.hw-note{margin:0}
 .hw.is-static .wt-title{color:var(--ink)}
 .hw.is-static .wt-step .wt-num{border-color:var(--accent);color:var(--accent);background:var(--bg)}
 .hw.is-static .wt-bar{opacity:0}
 .hw.is-static .wt-progress{visibility:hidden}
 .hw .wt-btn{padding:11px 0}
+.hw .wt-label{font-size:12px}
+html[lang=ar] .hw .wt-label{font-size:13px}
 .hw .wt-title{font-size:clamp(16px,1.35vw,18.5px);line-height:1.35;font-weight:600}
 html[lang=ar] .hw .wt-title{line-height:1.6}
 .hw .wt-track i{transition:transform .25s linear}
@@ -135,10 +141,8 @@ html[lang=ar] .hw .wt-title{line-height:1.6}
 @media(max-width:1100px){.hw-grid{align-items:start}}
 @media(max-width:700px){
   .hw{padding-block:56px 40px}
-  .hw-frame{aspect-ratio:2/3;max-width:420px;margin-inline:auto;border-radius:20px}
-  .hw-toggle{width:36px;height:36px;bottom:8px;inset-inline-end:5px}
-  .hw-toggle::before{content:"";position:absolute;inset:-6px}
-  .hw-toggle svg{width:15px;height:15px}
+  .hw-frame{max-width:min(420px,max(200px,calc((100vh - 24px - var(--cbar,0px))*2/3)));max-width:min(420px,max(200px,calc((100svh - 24px - var(--cbar,0px))*2/3)))}
+  .hw-clip{aspect-ratio:2/3;border-radius:20px}
 }
 
 @media(prefers-reduced-motion:reduce){

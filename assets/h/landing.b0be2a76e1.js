@@ -55,10 +55,12 @@
     var sec = frame.closest ? frame.closest('section') : null, video = frame.querySelector('video'), btn = frame.querySelector('button'); if (!sec || !video || !btn) return;
     var steps = [].slice.call(sec.querySelectorAll('.wt-step')), times = (frame.getAttribute('data-steps') || '').split(',').map(Number), dur = +frame.getAttribute('data-dur') || 0;
     var count = sec.querySelector('.wt-count b'), track = sec.querySelector('.wt-track i');
-    var loaded = false, wanted = !reduce, inView = false, cur = -1, raf = 0;
+    var loaded = false, wanted = !reduce, inView = false, cur = -1, raf = 0, file = '';
+    var narrow = window.matchMedia ? window.matchMedia('(max-width: 700px)') : null; // the same width at which the frame turns tall
+    function pick() { return frame.getAttribute(narrow && narrow.matches ? 'data-phone' : 'data-desk'); }
     function load() {
       if (loaded) return; loaded = true;
-      var small = window.matchMedia && window.matchMedia('(max-width: 700px)').matches, base = frame.getAttribute(small ? 'data-phone' : 'data-desk');
+      var base = file = pick();
       [['.webm', 'video/webm; codecs="vp9"'], ['.mp4', 'video/mp4']].forEach(function (x) { var s = document.createElement('source'); s.src = base + x[0]; s.type = x[1]; video.appendChild(s); });
       video.muted = true; video.preload = 'metadata'; video.load(); // the first bytes only; the rest streams once it plays
     }
@@ -81,6 +83,15 @@
       if (on) { sec.classList.remove('is-static'); frame.classList.add('is-ready'); if (!raf) loop(); }
     }
     function play() { load(); var p = video.play(); if (p && p.catch) p.catch(function () {}); }
+    // a phone turned on its side crosses the width where the frame changes shape: change to the file of that shape, at the same moment
+    function reshape() {
+      if (!loaded || pick() === file) return;
+      var at = video.currentTime || 0, was = !video.paused;
+      while (video.firstChild) video.removeChild(video.firstChild);
+      loaded = false; load();
+      video.addEventListener('loadedmetadata', function () { try { video.currentTime = at; } catch (e) {} if (was && wanted) play(); }, { once: true });
+    }
+    if (narrow) { if (narrow.addEventListener) narrow.addEventListener('change', reshape); else if (narrow.addListener) narrow.addListener(reshape); }
     function sync() { if (wanted && inView && !document.hidden) play(); else if (!video.paused && (!inView || document.hidden)) video.pause(); }
     video.addEventListener('play', state); video.addEventListener('pause', state); video.addEventListener('seeked', paint);
     btn.addEventListener('click', function () { wanted = video.paused; if (wanted) play(); else video.pause(); });
