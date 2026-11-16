@@ -756,6 +756,8 @@ function jsonLd(lang, page, landing = false) {
   const nodes = [];
   if (page === 'index') {
     nodes.push({ '@type': 'Organization', '@id': orgId, name: BRAND, url: SITE + '/', logo: { '@type': 'ImageObject', url: LOGO_URL, width: 512, height: 512 }, image: LOGO_URL, email: EMAIL, description: t(lang, 'foot.blurb'),
+      // the public WhatsApp business number (data/contact.json, shown on every page), as the customer-service contact
+      ...(WA ? { contactPoint: { '@type': 'ContactPoint', contactType: 'customer service', telephone: '+' + WA, email: EMAIL, url: 'https://wa.me/' + WA, areaServed: Object.keys(COUNTRIES), availableLanguage: ['ar', 'en'] } } : {}),
       areaServed: Object.keys(COUNTRIES).map(COUNTRY_LD) });
     // Egypt-only (2026-11-15): the studio as a ProfessionalService serving Egypt, with the package offers in EGP (no street address is
     // published, so no LocalBusiness address)
@@ -968,6 +970,13 @@ function write(rel, content) {
   fs.writeFileSync(f, content);
 }
 const built = [];
+// sitemap <lastmod> (SEO, 2026-11-15): build/lastmod.json (not published) keeps each sitemap URL's page hash and the date that hash
+// first appeared. A page whose built HTML is unchanged keeps its date; a changed page gets the build day (Cairo time). So a date
+// moves only when the page really changed.
+const pageSha = new Map();
+const LASTMOD_FILE = path.join(ROOT, 'build', 'lastmod.json');
+const LASTMOD_OLD = fs.existsSync(LASTMOD_FILE) ? JSON.parse(fs.readFileSync(LASTMOD_FILE, 'utf8')) : {};
+const TODAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 for (const [lang] of LANGS) {
   for (const page of PAGES) {
     htmlCc = LEGAL.includes(page) && !RESTRICTED ? null : DEFAULT_CC; // the legal pages keep the US-dollar price list, except while one country is served (they are in its currency then)
@@ -983,6 +992,7 @@ for (const [lang] of LANGS) {
       if (PARKED.has(page)) { write(`${PARKED_DIR}/${dirFor(lang, page)}index.html`, html); continue; } // kept, never published
       if (landing && !SHOW_NEW_LANDING) { write(`${PARKED_DIR}/preview/${dirFor(lang, page)}index.html`, hashUrls(html.replace('<meta charset="utf-8">', '<meta charset="utf-8">\n<meta name="robots" content="noindex">'))); continue; } // held: review copy only
       write(dirFor(lang, page) + 'index.html', hashUrls(html));
+      pageSha.set(urlFor(lang, page), crypto.createHash('sha256').update(hashUrls(html)).digest('hex'));
       built.push([lang, page]);
     }
   }
@@ -1096,16 +1106,21 @@ ${trimIndent(body404)}`));
 
 // robots.txt, sitemap.xml, webmanifest
 write('robots.txt', `User-agent: *\nAllow: /\nSitemap: ${SITE}/sitemap.xml\n`);
+const lastmod = {};
 const sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">'];
 for (const page of PAGES.filter((p) => !HIDDEN.has(p))) {
   for (const [lang] of LANGS) {
-    sm.push('<url>', `<loc>${urlFor(lang, page)}</loc>`);
+    const u = urlFor(lang, page), old = LASTMOD_OLD[u], sha = pageSha.get(u);
+    if (!sha) throw new Error('sitemap: no built page for ' + u);
+    lastmod[u] = old && old.sha === sha ? old : { sha, date: TODAY };
+    sm.push('<url>', `<loc>${u}</loc>`, `<lastmod>${lastmod[u].date}</lastmod>`);
     for (const [c] of LANGS) sm.push(`<xhtml:link rel="alternate" hreflang="${HREFLANG(c)}" href="${urlFor(c, page)}"/>`);
     sm.push(`<xhtml:link rel="alternate" hreflang="x-default" href="${urlFor(DEFAULT_LANG, page)}"/>`, '</url>');
   }
 }
 sm.push('</urlset>', '');
 write('sitemap.xml', sm.join('\n'));
+fs.writeFileSync(LASTMOD_FILE, JSON.stringify(lastmod, null, 1) + '\n');
 write('site.webmanifest', JSON.stringify({ name: BRAND, short_name: BRAND, lang: DEFAULT_LANG, dir: 'auto', start_url: '/', display: 'browser', background_color: '#F6F8EF', theme_color: '#0E0F0C',
   icons: [{ src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' }, { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' }, { src: '/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }, { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' }] }, null, 2) + '\n');
 
