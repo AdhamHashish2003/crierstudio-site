@@ -1,5 +1,5 @@
 // Overlap and clipping checks (2026-11-15, owner: "take care of overlapping problems like this"). For every page, in Arabic and English,
-// at 375, 768 and 1280 px wide, this fails the run when:
+// at 360, 390, 768 and 1280 px wide, this fails the run when:
 //   1. the page scrolls sideways;
 //   2. a piece of text is covered by another element (hit-tested at the middle of every rendered text line);
 //   3. a piece of text is cut by an overflow:hidden box;
@@ -7,7 +7,10 @@
 //   5. a highlight band (an inline background that wraps over lines, e.g. the hero's lime band) touches the band of the next line,
 //      reaches into the letters of the line above or below, or does not cover its own letters (ink measured with canvas);
 //   6. on phones, a button or link sits under the floating WhatsApp button while it is still showing;
-//   7. a heading that wraps has letters taller than its line height (tails of one line could touch the marks of the next).
+//   7. a heading that wraps has letters taller than its line height (tails of one line could touch the marks of the next);
+//   8. on Arabic pages, numbers, signs and Latin words that the browser would reorder wrongly (phone numbers, +20, @name, "24 → 27"),
+//      Arabic-Indic digits, or Arabic inside a left-to-right box;
+//   9. a chip or badge touches or covers a text line.
 // Decorative drawings (role="img", aria-hidden: the mock phone and the mock client page) are skipped: they clip on purpose.
 // Run: BASE=http://127.0.0.1:8767 node tests/overlap.mjs      EXTRA=/_parked/preview/,/_parked/preview/en/ adds pages (with their language: ar unless /en/)
 import { chromium } from 'playwright-core';
@@ -36,7 +39,7 @@ function scan() {
     for (const q of r.getClientRects()) {
       if (q.width < 2 || q.height < 2) continue;
       if (q.right < 0 || q.left > innerWidth) continue; // off-screen helpers
-      lines.push({ el, block: blockOf(el), x0: q.left, x1: q.right, y0: q.top + sy, y1: q.bottom + sy, text: n.nodeValue.trim().slice(0, 40) });
+      lines.push({ el, node: n, block: blockOf(el), x0: q.left, x1: q.right, y0: q.top + sy, y1: q.bottom + sy, text: n.nodeValue.trim().slice(0, 40) });
     }
   }
   // 3. text cut by an overflow:hidden ancestor (scroll containers are fine: the reader can scroll them)
@@ -93,6 +96,45 @@ function scan() {
     const cs = getComputedStyle(hd), lh = parseFloat(cs.lineHeight), k = inkOf(hd, hd.textContent);
     if (lh && k.asc + k.desc > lh + 1) out.issues.push(`heading ${path(hd)} "${hd.textContent.trim().slice(0, 30)}": its letters are ${(k.asc + k.desc).toFixed(0)}px tall but the line height is ${lh.toFixed(0)}px`);
   }
+  // 8. mixed Arabic / Latin / numbers (bidi), on right-to-left pages. The browser reorders such text by fixed rules, and these patterns
+  //    come out in the wrong order unless they sit in their own left-to-right box (dir="ltr" or <bdi>):
+  //    a. groups of digits separated by spaces (a phone number: "+20 114 600 0101" would read "0101 600 114 20+");
+  //    b. a sign glued to the front of a number or Latin word (+20, @name, #tag, -5) or to its end (name/, 5+);
+  //    c. numbers or Latin words joined by an arrow or a spaced dash, colon or sign ("24 → 27", "9 - 5", "1 : 2");
+  //    d. Arabic-Indic digits (the site writes 0–9 everywhere);
+  //    e. a left-to-right box whose text is mostly Arabic.
+  if (document.documentElement.dir === 'rtl') {
+    const done = new Set(), AR = /[\u0600-\u06FF]/;
+    const flag = (el, text, why) => { const k = why + '|' + text; if (!done.has(k)) { done.add(k); out.issues.push(`bidi: "${text.trim().slice(0, 50)}" (${path(el)}): ${why}`); } };
+    for (const L of lines) {
+      if (done.has(L.node)) continue; done.add(L.node);
+      const t = L.node.nodeValue, el = L.el;
+      if (/[\u0660-\u0669\u06F0-\u06F9]/.test(t)) flag(el, t, 'Arabic-Indic digits (the site uses 0–9)');
+      if (el.closest('[dir="ltr"],bdi,[dir="auto"]')) continue; // already in its own left-to-right box
+      if (/\d[\d.,]*[ \u00A0]+\d/.test(t)) flag(el, t, 'digit groups separated by spaces need dir="ltr" (they come out reversed)');
+      if (/(^|[\s\u0600-\u06FF(«"])[+@#~^=<>\\-](?=[A-Za-z0-9])/.test(t) || /[A-Za-z0-9][+@#~^=<>\\\/](?=$|[\s\u0600-\u06FF،.؟»")])/.test(t)) flag(el, t, 'a sign glued to a number or Latin word needs dir="ltr" (the sign jumps to the other side)');
+      if (/[A-Za-z0-9][ \u00A0]*[→←↔×÷][ \u00A0]*[A-Za-z0-9]/.test(t) || /[A-Za-z0-9][ \u00A0]+[-–—:=+][ \u00A0]+[A-Za-z0-9]/.test(t)) flag(el, t, 'numbers or Latin words joined by an arrow or a spaced sign need dir="ltr" (they swap sides)');
+    }
+    for (const el of document.querySelectorAll('body [dir="ltr"]')) {
+      if (el.closest(DECOR) || (el.checkVisibility && !el.checkVisibility())) continue;
+      const own = [...el.childNodes].filter((c) => c.nodeType === 3).map((c) => c.nodeValue).join(' ');
+      const ar = (own.match(/[\u0600-\u06FF]/g) || []).length, la = (own.match(/[A-Za-z]/g) || []).length;
+      if (ar > 3 && ar > la) flag(el, own, 'a left-to-right box holds Arabic text');
+    }
+  }
+  // 9. chips and badges (small labels with their own background or border) must not touch or cover a text line of another block
+  for (const chip of document.querySelectorAll('.badge,.eyebrow,.lab,.isa-st,.la-ptag,.hc-tag,.hw-tag,[class*="chip"],[class*="pill"],[class*="badge"]')) {
+    if (chip.closest(DECOR) || (chip.checkVisibility && !chip.checkVisibility()) || !/\S/.test(chip.textContent)) continue;
+    const c = chip.getBoundingClientRect(); if (c.width < 4 || c.height < 4 || c.height > 60) continue;
+    const top = c.top + sy, bot = c.bottom + sy;
+    for (const L of lines) {
+      if (chip.contains(L.el) || L.el.contains(chip) || L.block === chip || blockOf(chip) === L.block && L.el.closest('.badge,.eyebrow') === chip) continue;
+      if (Math.min(L.x1, c.right) - Math.max(L.x0, c.left) < 3) continue; // not in the same column
+      const h = L.y1 - L.y0, a = L.y0 + h * 0.22, z = L.y1 - h * 0.22; // the letters of that line
+      const gap = Math.max(a - bot, top - z);
+      if (gap < 2) { out.issues.push(`label ${path(chip)} "${chip.textContent.trim().slice(0, 24)}" ${gap < 0 ? 'covers' : 'touches'} the text "${L.text}" (${path(L.el)})`); break; }
+    }
+  }
   out.lines = lines.map((L, i) => ({ i, x: (L.x0 + L.x1) / 2, y: (L.y0 + L.y1) / 2, text: L.text }));
   window.__lines = lines; window.__path = path;
   return out;
@@ -134,8 +176,11 @@ async function fabCovers() {
   scrollTo({ top: 0, behavior: 'instant' });
   return issues;
 }
-for (const [w, h, tag] of [[375, 812, '375'], [768, 1024, '768'], [1280, 800, '1280']]) {
-  const c = await b.newContext({ viewport: { width: w, height: h } });
+// widths: 360 (small Android), 390 (iPhone), 768 (tablet), 1280 (desktop); WIDTHS=375x812,844x390 overrides (below 768 wide = a touch phone)
+const SIZES = (process.env.WIDTHS || '360x740,390x844,768x1024,1280x800').split(',').map((x) => x.split('x').map(Number));
+for (const [w, h] of SIZES) {
+  const tag = w + 'x' + h;
+  const c = await b.newContext({ viewport: { width: w, height: h }, ...(w < 768 || h < 500 ? { isMobile: true, hasTouch: true, deviceScaleFactor: 2 } : {}) });
   await c.route(/googletagmanager\.com|google-analytics\.com|analytics\.google\.com|wa\.me|portal\.crierstudio\.com|crm-production/, (r) => r.abort());
   await c.addInitScript(() => { try { localStorage.setItem('crier_consent', 'denied'); } catch (e) {} });
   for (const u of urls) {
@@ -143,12 +188,13 @@ for (const [w, h, tag] of [[375, 812, '375'], [768, 1024, '768'], [1280, 800, '1
     const pg = await c.newPage();
     await pg.goto(BASE + u); await pg.waitForLoadState('load'); await pg.evaluate(() => document.fonts.ready);
     await pg.evaluate(async () => { for (let y = 0; y < document.documentElement.scrollHeight; y += 700) { scrollTo({ top: y, behavior: 'instant' }); await new Promise((r) => setTimeout(r, 20)); } scrollTo({ top: 0, behavior: 'instant' }); await new Promise((r) => setTimeout(r, 60)); });
+    await pg.evaluate(() => { for (const d of document.querySelectorAll('details')) d.open = true; }); // closed answers are not laid out: open them so their text is checked too
     const r = await pg.evaluate(scan);
     const issues = [...r.issues, ...(await pg.evaluate(covered)), ...(w < 768 ? await pg.evaluate(fabCovers) : [])];
     if (r.sw > r.vw) issues.unshift(`the page scrolls sideways (${r.sw} > ${r.vw})`);
     checked++;
-    for (const m of issues) bad(`${tag}px ${u}: ${m}`);
-    if (!issues.length) console.log('PASS', `${tag}px ${u} (${r.lines.length} text lines)`);
+    for (const m of issues) bad(`${tag} ${u}: ${m}`);
+    if (!issues.length) console.log('PASS', `${tag} ${u} (${r.lines.length} text lines)`);
     await pg.close();
   }
   await c.close();

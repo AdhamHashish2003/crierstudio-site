@@ -333,7 +333,7 @@ function curData(lang) {
 const waHref = (lang, key) => `https://wa.me/${WA}?text=${encodeURIComponent(t(lang, key))}`;
 // the floating WhatsApp button (2026-11-15): every page and language, a short greeting in the page language
 const waFab = (ctx) => (WA ? render(partials.waFloat, { lang: ctx.lang, v: { ...ctx.v, waFabHref: esc(waHref(ctx.lang, 'wa.fab.msg')) } }) + '\n' : (t(ctx.lang, 'wa.fab.aria'), t(ctx.lang, 'wa.fab.msg'), ''));
-function waLink(lang) { return WA ? `<a href="https://wa.me/${WA}" dir="ltr" rel="noopener" target="_blank" class="wa-link">${esc(t(lang, 'contact.wa'))}</a>` : ''; }
+function waLink(lang) { return WA ? `<a href="https://wa.me/${WA}" rel="noopener" target="_blank" class="wa-link">${esc(t(lang, 'contact.wa'))}</a>` : ''; } // the label is a word in the page language (no dir="ltr": that is for the number itself)
 // Order on WhatsApp (owner 2026-11-15): each Social package's MAIN button is a green "Order <package> on WhatsApp" that opens
 // wa.me with the message prefilled with the package name and its monthly price (the page language, the page's country); under it a
 // small "or create your account" link to the portal sign-up (?plan=<id>) and the "Pay by InstaPay" line. Payment details are

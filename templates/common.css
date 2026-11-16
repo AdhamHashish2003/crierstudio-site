@@ -117,7 +117,7 @@ html[lang=ar] .sheet .lab{letter-spacing:0;text-transform:none}
 .plans{display:grid;gap:14px;align-items:stretch}
 .plan{border:2px solid var(--ink);background:var(--paper);padding:24px 20px;display:grid;gap:14px;align-content:start;min-width:0;position:relative}
 .plan.hot{border-width:4px;box-shadow:6px 6px 0 var(--accent);background:var(--paper)}
-.plan .badge{justify-self:start;background:var(--accent);color:var(--accent-ink);font:800 .72rem/1 var(--body);letter-spacing:.08em;text-transform:uppercase;padding:.45em .7em;border:2px solid var(--ink)}
+.plan .badge{justify-self:start;background:var(--accent);color:var(--accent-ink);font:800 .75rem/1 var(--body);letter-spacing:.08em;text-transform:uppercase;padding:.45em .7em;border:2px solid var(--ink)}
 .plan h3{font-size:var(--step-2)}
 .plan .pt{color:var(--muted);font-size:var(--step--1)}
 .priceline{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}

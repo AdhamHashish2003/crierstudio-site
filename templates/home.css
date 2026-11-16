@@ -631,7 +631,7 @@ html[lang=ar] .v2 .art-3 .art-t{font-size:16.5cqh}
 .wt-step.is-done .wt-num{border-color:var(--accent);color:var(--accent)}
 .wt-step.is-active .wt-num{background:var(--accent);border-color:var(--accent);color:#0E0F0C}
 .wt-text{display:grid;gap:3px;min-width:0}
-.wt-label{font:600 11px/1.2 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);transition:color .3s}
+.wt-label{font:600 12px/1.2 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);transition:color .3s}
 html[lang=ar] .wt-label{letter-spacing:0;font-size:13px}
 .wt-title{font:600 clamp(17px,1.5vw,20px)/1.2 var(--display);letter-spacing:-.02em;color:var(--muted);transition:color .3s}
 html[lang=ar] .wt-title{letter-spacing:0;line-height:1.5}
