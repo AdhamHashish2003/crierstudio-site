@@ -51,6 +51,10 @@ for (const [lang, u] of [['ar', '/pricing/'], ['en', '/en/pricing/']]) {
   await pop;
   const ev = await pg.evaluate(() => (window.dataLayer || []).filter((a) => a[0] === 'event').map((a) => [a[1], a[2]]));
   ok(ev.some(([n, p]) => n === 'whatsapp_click' && p.package === 'Silver' && p.wa_location === 'card' && p.page_type === 'pricing'), `${u} whatsapp_click with package Silver: ${JSON.stringify(ev)}`);
+  ok(ev.some(([n, p]) => n === 'choose_plan' && p.package_id === 'visible' && p.package === 'Silver' && p.method === 'whatsapp'), `${u} choose_plan with package_id visible (whatsapp): ${JSON.stringify(ev.filter(([n]) => n === 'choose_plan'))}`);
+  await pg.evaluate(() => { const a = document.querySelector('a.acct-link[data-signup="growing"]'); a.addEventListener('click', (e) => e.preventDefault()); a.click(); });
+  const ev3 = await pg.evaluate(() => (window.dataLayer || []).filter((a) => a[0] === 'event' && a[1] === 'choose_plan').map((a) => a[2]));
+  ok(ev3.some((p) => p.package_id === 'growing' && p.method === 'account'), `${u} choose_plan with package_id growing (account): ${JSON.stringify(ev3)}`);
   await pg.click('#wa-fab'); await pg.waitForTimeout(200);
   const ev2 = await pg.evaluate(() => (window.dataLayer || []).filter((a) => a[0] === 'event' && a[1] === 'whatsapp_click').map((a) => a[2].wa_location));
   ok(ev2.includes('float'), `${u} floating button click -> whatsapp_click wa_location=float: ${ev2}`);

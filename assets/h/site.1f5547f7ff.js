@@ -312,20 +312,25 @@
 /* Conversion tracking (2026-11-15): every WhatsApp link click is a GA4 event "whatsapp_click", sent through the gtag() queue that the
    <head> tag sets up, so it follows the visitor's Consent Mode choice exactly like the page views (no event of its own is sent before
    consent; Google gets a cookieless ping while analytics_storage is denied). Parameters: wa_location (card, table, float, quote, footer,
-   landing_*, link), package (Bronze, Silver, Gold, Diamond or none), page_type (the page's data-page) and page_language. Every wa.me
+   landing_*, link), package (Bronze, Silver, Gold, Diamond or none), page_type (the page's data-page) and page_language. A package's
+   own buttons also send "choose_plan" with package_id (seen, visible, growing, diamond) and method (whatsapp or account). Every wa.me
    link opens in a new tab, so the page stays open while gtag.js sends the event. */
 (function () {
   "use strict";
   var NAMES = { seen: "Bronze", visible: "Silver", growing: "Gold", diamond: "Diamond" };
+  // choose_plan (audit H3): a click on a package's own button, with the package id (seen, visible, growing, diamond) and how it was
+  // chosen (the WhatsApp button or the "or create your account" link). It is sent beside whatsapp_click / sign_up_click.
+  function choose(id, method) { window.gtag("event", "choose_plan", { package_id: id, package: NAMES[id], method: method, page_type: document.body.getAttribute("data-page") || "", page_language: document.documentElement.lang, transport_type: "beacon" }); }
   document.addEventListener("click", function (e) {
     if (typeof window.gtag !== "function" || !e.target || !e.target.closest) return;
     // the "or create your account" links: sign_up_click, with the package when the link carries one
     var s = e.target.closest('a[href^="https://portal.crierstudio.com/#/signup"]');
-    if (s) { var sp = s.getAttribute("data-signup") || ""; window.gtag("event", "sign_up_click", { package: NAMES[sp] || "none", page_type: document.body.getAttribute("data-page") || "", page_language: document.documentElement.lang, transport_type: "beacon" }); return; }
+    if (s) { var sp = s.getAttribute("data-signup") || ""; if (NAMES[sp]) choose(sp, "account"); window.gtag("event", "sign_up_click", { package: NAMES[sp] || "none", page_type: document.body.getAttribute("data-page") || "", page_language: document.documentElement.lang, transport_type: "beacon" }); return; }
     var a = e.target.closest('a[href^="https://wa.me/"]');
     if (!a) return;
     var pkg = a.getAttribute("data-wa-order") || a.getAttribute("data-pkg") || "";
     var where = a.getAttribute("data-wa") || (a.closest(".plan") ? "card" : a.closest(".la-table") ? "table" : a.closest("footer") ? "footer" : "link");
+    if (NAMES[pkg]) choose(pkg, "whatsapp");
     window.gtag("event", "whatsapp_click", { wa_location: where, package: NAMES[pkg] || "none", page_type: document.body.getAttribute("data-page") || "", page_language: document.documentElement.lang, transport_type: "beacon" });
   }, true);
 })();
