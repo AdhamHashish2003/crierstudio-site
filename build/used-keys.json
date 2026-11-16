@@ -1,5 +1,5 @@
 {
- "i18n_sha256": "15297cf45b68448547dd6117f6ce0b36dd5d8152132d67147cf563ec80026ba8",
+ "i18n_sha256": "967f5ee8391be45d34e50dbbb729591c67aaaf8820e621683e94b04bff13f4c0",
  "used": [
   "about.contact.h",
   "about.contact.p",
@@ -377,6 +377,7 @@
   "la.t.yes",
   "lang.label",
   "ld.intl",
+  "ld.servicetype",
   "leg.conv",
   "leg.homeAria",
   "leg.updated",

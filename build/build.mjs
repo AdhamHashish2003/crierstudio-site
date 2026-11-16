@@ -43,6 +43,9 @@ const DEFAULT_LANG = 'ar';
 // removed languages (2026-10-16): their old URLs stay as redirect stubs to the matching English page (/en/...), not in the sitemap
 const REMOVED = ['es', 'fr'];
 const RTL = new Set(['ar']);
+// SEO (2026-11-15): the hreflang codes carry the region while the site serves one country (Egypt: ar-EG, en-EG), so search engines
+// see both pages as made for Egypt; x-default (the Arabic root) still covers everyone else. The html lang attribute stays 'ar' / 'en'.
+const HREFLANG = (c) => (RESTRICTED ? `${c}-${DEFAULT_CC}` : c);
 // every page exists in both languages: / (en), /ar/ and the sub-paths below
 // Two product lines (2026-10-18): Social (/social/: The Social Kit + the monthly plans) and In-store (/in-store/: The Store
 // Kit waitlist + Custom pieces, whose quotes are asked in the client portal after a free sign-up).
@@ -722,6 +725,18 @@ function sculptVars(lang) {
 // 3166-1 code), priced at the amount due; VAT is named only where the price data marks it as charged. The last Offer is the
 // US-dollar price for every other country. The Brand Deck (coming soon) has no offer.
 const COUNTRY_LD = (cc) => ({ '@type': 'Country', name: dicts.en['cc.' + cc], identifier: cc });
+// SEO (2026-11-15): every social-media Service says what kind of service it is (the phrase people search: «إدارة صفحات السوشيال ميديا»
+// / "Social media management") and where it is sold
+const SERVICE_LD = (lang) => ({ serviceType: t(lang, 'ld.servicetype'), areaServed: Object.keys(COUNTRIES).map(COUNTRY_LD) });
+// The home page's How it works video (templates/how-video.html) as a VideoObject. HOW_VIDEO_DATE is the day the video files were
+// published (git log -- assets/video/); change it when the video is re-rendered and republished.
+const HOW_VIDEO_DATE = '2026-11-15';
+const isoDur = (s) => `PT${Math.floor(s / 60) ? Math.floor(s / 60) + 'M' : ''}${Math.round(s % 60)}S`;
+function videoLd(lang) {
+  const b = `${SITE}/assets/video/how-${lang}-1080`;
+  return { '@type': 'VideoObject', name: t(lang, 'wt.h2'), description: `${t(lang, 'hw.sub')} ${t(lang, 'hw.note')}`, inLanguage: lang, thumbnailUrl: b + '-poster.jpg',
+    contentUrl: b + '.mp4', uploadDate: HOW_VIDEO_DATE, duration: isoDur(HOW.duration), publisher: { '@id': SITE + '/#organization' } };
+}
 function offerNode(lang, p) {
   const monthly = MONTHLY.has(p), url = urlFor(lang, 'pricing');
   const one = (price, currency, extra) => {
@@ -749,6 +764,7 @@ function jsonLd(lang, page, landing = false) {
       priceRange: [Math.min(...SOCIAL.map((p) => localQuote(p, DEFAULT_CC).total)), Math.max(...SOCIAL.map((p) => localQuote(p, DEFAULT_CC).total))].map((m) => fmtNum(m / 100)).join('–') + ' ' + COUNTRIES[DEFAULT_CC].currency,
       hasOfferCatalog: { '@type': 'OfferCatalog', name: t(lang, 'pricing.h1'), itemListElement: SOCIAL.flatMap((p) => offerNode(lang, p)) } });
     if (landing && LANDING_FAQ[page]) nodes.push({ '@type': 'FAQPage', inLanguage: lang, mainEntity: LANDING_FAQ[page].map((k) => ({ '@type': 'Question', name: t(lang, k + 'q'), acceptedAnswer: { '@type': 'Answer', text: t(lang, k + 'a') } })) });
+    if (landing && SHOW_NEW_LANDING) nodes.push(videoLd(lang));
     nodes.push({ '@type': 'WebSite', '@id': SITE + '/#website', name: BRAND, alternateName: 'Crier', url: SITE + '/', inLanguage: lang, publisher: { '@id': orgId } });
   } else {
     nodes.push({ '@type': 'BreadcrumbList', itemListElement: [
@@ -758,7 +774,7 @@ function jsonLd(lang, page, landing = false) {
     // informational Services without offers (audit fixes, 2026-10-19: offers and prices are on /pricing/ only)
     if (landing && LANDING_FAQ[page]) nodes.push({ '@type': 'FAQPage', inLanguage: lang, mainEntity: LANDING_FAQ[page].map((k) => ({ '@type': 'Question', name: t(lang, k + 'q'), acceptedAnswer: { '@type': 'Answer', text: t(lang, k + 'a') } })) });
     if (page === 'brand-deck' || page === 'social') {
-      nodes.push({ '@type': 'Service', name: page === 'social' ? t(lang, 'kit.title') : pname(lang, 'deck'), description: t(lang, `meta.d.${page}`), url: urlFor(lang, page), provider, availableLanguage: ['en', 'ar'] });
+      nodes.push({ '@type': 'Service', name: page === 'social' ? t(lang, 'kit.title') : pname(lang, 'deck'), ...(page === 'social' ? SERVICE_LD(lang) : {}), description: t(lang, `meta.d.${page}`), url: urlFor(lang, page), provider, availableLanguage: ['en', 'ar'] });
     }
     // In-store: The Store Kit (waitlist) and Custom pieces (requests through the client portal), informational, with no offers
     if (page === 'in-store') {
@@ -768,7 +784,7 @@ function jsonLd(lang, page, landing = false) {
     // Sculptures: informational, with no offers (pieces are quoted in the client portal)
     if (page === 'sculptures') nodes.push({ '@type': 'Service', name: t(lang, 'nav.sculptures'), description: t(lang, 'meta.d.sculptures'), url: urlFor(lang, page), provider });
     if (page === 'pricing') {
-      const items = SOCIAL.map((p) => ({ '@type': 'Service', name: pname(lang, p), provider, offers: offerNode(lang, p) })); // the Brand Deck left the pricing page with its own page (2026-11-15)
+      const items = SOCIAL.map((p) => ({ '@type': 'Service', name: pname(lang, p), provider, ...SERVICE_LD(lang), offers: offerNode(lang, p) })); // the Brand Deck left the pricing page with its own page (2026-11-15)
       nodes.push({ '@type': 'ItemList', name: t(lang, 'pricing.h1'), itemListElement: items.map((item, i) => ({ '@type': 'ListItem', position: i + 1, item })) });
     }
     if (page === 'faq') {
@@ -824,7 +840,7 @@ const ICON_LINKS = `<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x4
 const LOGO_URL = SITE + '/crier-logo.png'; // the full logo (blob + wordmark on lime), 512 x 512, for structured data
 function head(lang, page, css, landing = false) {
   const title = t(lang, `meta.t.${page}`), desc = t(lang, `meta.d.${page}`), url = urlFor(lang, page);
-  const alt = LANGS.map(([c]) => `<link rel="alternate" hreflang="${c}" href="${urlFor(c, page)}">`).join('\n') + `\n<link rel="alternate" hreflang="x-default" href="${urlFor(DEFAULT_LANG, page)}">`;
+  const alt = LANGS.map(([c]) => `<link rel="alternate" hreflang="${HREFLANG(c)}" href="${urlFor(c, page)}">`).join('\n') + `\n<link rel="alternate" hreflang="x-default" href="${urlFor(DEFAULT_LANG, page)}">`;
   const ogAlt = LANGS.filter(([c]) => c !== lang).map(([, , loc]) => `<meta property="og:locale:alternate" content="${loc}">`).join('\n');
   const loc = LANGS.find(([c]) => c === lang)[2];
   const pl = (f) => `<link rel="preload" href="/fonts/${f}.subset.woff2" as="font" type="font/woff2" crossorigin>`;
@@ -1084,7 +1100,7 @@ const sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www
 for (const page of PAGES.filter((p) => !HIDDEN.has(p))) {
   for (const [lang] of LANGS) {
     sm.push('<url>', `<loc>${urlFor(lang, page)}</loc>`);
-    for (const [c] of LANGS) sm.push(`<xhtml:link rel="alternate" hreflang="${c}" href="${urlFor(c, page)}"/>`);
+    for (const [c] of LANGS) sm.push(`<xhtml:link rel="alternate" hreflang="${HREFLANG(c)}" href="${urlFor(c, page)}"/>`);
     sm.push(`<xhtml:link rel="alternate" hreflang="x-default" href="${urlFor(DEFAULT_LANG, page)}"/>`, '</url>');
   }
 }
