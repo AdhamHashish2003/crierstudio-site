@@ -134,7 +134,7 @@ const SOCIAL = PRICING.packages.filter((p) => p.billing === 'monthly' && !p.comi
 const PRODUCTS = Object.keys(PRICES);
 const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const LINKS = JSON.parse(rd('payment-links.json'));
-// (checkout.json, the old public order form's Stripe switch, is no longer read: payment happens in the client portal)
+// (checkout.json, the old public order form's Stripe switch, was deleted on 2026-11-16: nothing read it)
 for (const k of Object.keys(LINKS)) if (!PRODUCTS.includes(k)) throw new Error('payment-links.json: unknown product ' + k);
 for (const k of PRODUCTS) {
   const v = LINKS[k];

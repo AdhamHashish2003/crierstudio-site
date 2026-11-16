@@ -16,7 +16,6 @@ exclude:
   - data
   - design
   - _parked
-  - checkout.json
   - payment-links.json
   - fonts/subset-coverage.json
   # parked material (2026-11-14): the old catalogues and branding pages' images, and the walkthrough's old real-brand crops
