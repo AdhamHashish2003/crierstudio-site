@@ -297,6 +297,8 @@ for (const l of LANGS) for (const [k, v] of Object.entries(d[l])) if (!/^sc\./.t
   ok(!/working hours|business hours|ساعات العمل|أوقات العمل/i.test(v), `${l}:${k} promises working hours (the studio has none)`);
   ok(!/within \d+ days|\d+-day refund|refund window|money back|a fix or a refund|خلال \d+ أيام|مهلة الاسترداد|تعديل أو استرداد|رد المبلغ/i.test(v), `${l}:${k} promises a refund or a refund window (the policy is no refunds)`);
 }
+// Owner (2026-11-16): the privacy page names no language or image service and has no line about outside processing of the brief
+for (const l of LANGS) for (const [k, v] of Object.entries(d[l])) ok(!/language and image services|خدمات خارجية للنصوص والصور|خدمات النصوص والصور/i.test(v), `${l}:${k} mentions outside language and image services (removed by the owner)`);
 ok(/do not give refunds/.test(d.en['refund.plan.p.eg']) && /لا نرد المبالغ المدفوعة/.test(d.ar['refund.plan.p.eg']), 'the refund page states the no-refund policy');
 // Buy buttons: every product has one config entry; empty = the client portal's sign-up, filled = the link
 {
