@@ -12,13 +12,13 @@
   window.STEPS = S; window.DURATION = END;
 
   const T = ar ? {
-    ex: 'مثال', cur: 'ج.م', per: 'شهريًا',
+    ex: 'مثال', money: n => n + ' ج.م', per: 'شهريًا',
     capL: ['الباقة', 'الدفع', 'مشروعك', 'المراجعة', 'النشر'],
     cap: ['اختر باقتك واضغط «اشترك عبر واتساب».', 'تصلك بيانات الدفع على واتساب. ادفع عبر InstaPay وأرسل الإيصال.', 'أخبرنا عن مشروعك في حسابك.', 'تصلك أول المنشورات. وافق عليها أو اطلب تعديلًا.', 'ننشر لك ونرد على التعليقات والرسائل.'],
     siteH: 'أربع باقات بأسعار واضحة', sub: 'اشترك عبر واتساب',
     pk: [['البرونزية', '2,500', '4 منشورات + 2 ريلز'], ['الفضية', '3,500', '7 منشورات + 3 ريلز'], ['الذهبية', '5,000', '12 منشورًا + 5 ريلز'], ['الماسية', '6,500', '15 منشورًا + 8 ريلز']],
     waSub: 'حساب تجاري', today: 'اليوم', ph: 'اكتب رسالة',
-    m1: 'مرحبًا Crier Studio، أرغب في الاشتراك في الباقة الفضية (3,500 ج.م شهريًا). ما تفاصيل الدفع؟',
+    m1: 'مرحبًا Crier Studio، أريد الاشتراك في الباقة الفضية (3,500 ج.م شهريًا). ما تفاصيل الدفع؟', // the site's own prefilled text (pay.wa.msg)
     greet: 'أهلاً بك في Crier Studio 👋\nشكرًا لاهتمامك بالاشتراك. إليك بيانات الدفع.\n\n<b>الباقات الشهرية:</b>\n🥉 البرونزية: 2,500 ج.م (4 منشورات + 2 ريلز)\n🥈 الفضية: 3,500 ج.م (7 منشورات + 3 ريلز)\n🥇 الذهبية: 5,000 ج.م (12 منشورًا + 5 ريلز)\n💎 الماسية: 6,500 ج.م (15 منشورًا + 8 ريلز)\n\nادفع قيمة اشتراكك عبر InstaPay إلى: <span class="blur">example@instapay</span>\n\nبعد الدفع، أرسل لنا هنا:\n1. صورة إيصال التحويل\n2. بريدك الإلكتروني المسجّل، أو اسم مشروعك\n\nسنراجع الدفع ونرد عليك هنا.',
     rc: 'إيصال تحويل', biz: 'شُرفة للقهوة',
     got: 'وصلنا الإيصال، شكرًا لك 🙏\nسنتأكد من التحويل ونرد عليك هنا فور تأكيده.',
@@ -30,7 +30,7 @@
     hmH: 'منشوراتك الأولى جاهزة', hmSub: 'راجعها، ثم وافق عليها أو اطلب تعديلًا.',
     wait: n => n + ' بانتظار مراجعتك', pend: 'بانتظار موافقتك', okd: 'تمت الموافقة', sched: 'مجدول للنشر',
     post: 'منشور', reel: 'ريلز', date: d => d + ' نوفمبر',
-    posts: [['cafe-01-offer-ar', 'لاتيه مثلّج مع فطيرة التمر', 0, 18], ['cafe-03-place-ar', 'طاولتك تنتظرك', 0, 20], ['cafe-05-tips-ar', 'كيف تختار قهوتك؟', 0, 23], ['cafe-09-reel-ar', 'قهوة على الطريقة المصرية', 1, 26]],
+    posts: [['cafe-01-offer-ar', 'لاتيه مثلّج مع فطيرة التمر', 0, 18, 100], ['cafe-05-tips-ar', 'كيف تختار قهوتك؟', 0, 20, 100], ['cafe-03-place-ar', 'طاولتك تنتظرك', 0, 23, 100], ['cafe-09-reel-ar', 'قهوة على الطريقة المصرية', 1, 26, 70]],
     changes: 'اطلب تعديلات', approve: 'يبدو جيدًا',
     bn: ['الرئيسية', 'المنشورات', 'التقويم', 'الرسائل', 'المزيد'],
     igT: 'منشورات', igName: 'شُرفة', igAv: 'ش', toast: 'تم النشر', likes: n => n + ' إعجابًا',
@@ -42,13 +42,13 @@
     co4k: 'أول المنشورات',
     co5k: 'ننشر ونرد', co5: [['تم النشر', 'على Instagram'], ['تعليق جديد', 'تم الرد'], ['رسالة جديدة', 'تم الرد']],
   } : {
-    ex: 'Example', cur: 'EGP', per: 'a month',
+    ex: 'Example', money: n => 'EGP ' + n, per: 'a month',
     capL: ['Package', 'Payment', 'Your business', 'Review', 'Publishing'],
     cap: ['Choose your package and tap “Subscribe on WhatsApp”.', 'Get the payment details on WhatsApp. Pay by InstaPay and send the receipt.', 'Tell us about your business in your account.', 'Your first posts arrive. Approve them or ask for a change.', 'We publish for you and reply to comments and messages.'],
     siteH: 'Four packages, clear prices', sub: 'Subscribe on WhatsApp',
     pk: [['Bronze', '2,500', '4 posts + 2 reels'], ['Silver', '3,500', '7 posts + 3 reels'], ['Gold', '5,000', '12 posts + 5 reels'], ['Diamond', '6,500', '15 posts + 8 reels']],
     waSub: 'Business account', today: 'Today', ph: 'Message',
-    m1: 'Hi Crier Studio, I’d like to subscribe to the Silver package (3,500 EGP a month). Could you send me the payment details?',
+    m1: 'Hi Crier Studio, I’d like to subscribe to Silver (EGP 3,500 a month). Could you send me the payment details?',
     greet: 'Welcome to Crier Studio 👋\nThank you for your interest in subscribing. Here are the payment details.\n\n<b>Monthly plans:</b>\n🥉 Bronze: 2,500 EGP (4 posts + 2 reels)\n🥈 Silver: 3,500 EGP (7 posts + 3 reels)\n🥇 Gold: 5,000 EGP (12 posts + 5 reels)\n💎 Diamond: 6,500 EGP (15 posts + 8 reels)\n\nPay for your subscription via InstaPay to: <span class="blur">example@instapay</span>\n\nOnce you’ve paid, send us:\n1. A screenshot of the transfer receipt\n2. The email you signed up with, or your business name\n\nWe’ll check your payment and reply here.',
     rc: 'Transfer receipt', biz: 'Shurfa Coffee',
     got: 'Thank you, we’ve received your receipt 🙏\nWe’ll check the transfer and get back to you here once it’s confirmed.',
@@ -60,7 +60,7 @@
     hmH: 'Your first posts are ready', hmSub: 'Check them, then approve or ask for a change.',
     wait: n => n + ' awaiting your review', pend: 'Awaiting your approval', okd: 'Approved', sched: 'Scheduled',
     post: 'Post', reel: 'Reel', date: d => 'Nov ' + d,
-    posts: [['cafe-02-photo-en', 'Coffee, the slow way.', 0, 18], ['cafe-04-carousel-en', '4 coffees, explained simply.', 0, 20], ['cafe-06-news-en', 'Iced hibiscus is back.', 0, 23], ['cafe-09-reel-ar', 'Coffee, the Egyptian way', 1, 26]],
+    posts: [['cafe-02-photo-en', 'Coffee, the slow way.', 0, 18, 100], ['cafe-06-news-en', 'Iced hibiscus is back.', 0, 20, 12], ['cafe-04-carousel-en', '4 coffees, explained simply.', 0, 23, 100], ['cafe-09-reel-ar', 'Coffee, the Egyptian way', 1, 26, 70]],
     changes: 'Ask for changes', approve: 'Looks good',
     bn: ['Home', 'Posts', 'Calendar', 'Messages', 'More'],
     igT: 'Posts', igName: 'Shurfa Coffee', igAv: 'S', toast: 'Published', likes: n => n + ' likes',
@@ -80,8 +80,9 @@
     heart: 'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z', cmt: 'M4 5h16v11H9l-5 4z', share: 'M4 11l16-7-6 16-2.5-6.5z', save: 'M6 4h12v16l-6-4-6 4z',
     home: 'M4 11l8-7 8 7v9h-5v-6H9v6H4z', layers: 'M12 3l9 5-9 5-9-5zM3 13l9 5 9-5', cal: 'M4 5h16v15H4zM8 3v4M16 3v4M4 10h16', chat: 'M4 5h16v11H9l-5 4z', more: 'M5 12h.01M12 12h.01M19 12h.01' };
   const WA = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>';
-  const img = id => `<img src="img/${id}.webp" alt="">`;
-  const price = (p, cls = 'pk-p') => `<span class="${cls}"><bdi>${p} ${T.cur}</bdi> <small>${T.per}</small></span>`;
+  // pos: which part of the picture a cropped frame keeps (0 = top, 100 = bottom), chosen so a crop never cuts through the design's own text
+  const img = (id, pos) => `<img src="img/${id}.webp" alt=""${pos == null ? '' : ` style="object-position:center ${pos}%"`}>`;
+  const price = (p, cls = 'pk-p') => `<span class="${cls}"><bdi>${T.money(p)}</bdi> <small>${T.per}</small></span>`;
   const tick = id => `<span class="tk"><i id="${id}">${svg(I.check)}</i></span>`;
   const rows = (arr, pre) => `<div class="rows">${arr.map(([a, b], i) => `<div class="rw" id="${pre}r${i}">${tick(pre + 'k' + i)}<span>${a}<small>${b}</small></span></div>`).join('')}</div>`;
   const P = T.posts;
@@ -128,11 +129,11 @@
     <div class="sc sc-home" id="s-home">
       <div class="mt"><span class="mn">${svg(I.menu)}</span><img src="img/mark.webp" alt=""><b>crier studio</b><span class="pill" id="hpill">${T.wait(4)}</span></div>
       <div class="pg"><h3>${T.hmH}</h3><p class="sub">${T.hmSub}</p>
-        <div class="gr">${P.map(([id, t, reel, d], i) => `<div class="card pc" id="pc${i}"><div class="pc-im">${img(id)}<span class="pc-k">${reel ? T.reel : T.post}</span></div><div class="pc-t">${t}</div><div class="pc-m">${i ? `<i class="dot"></i>${T.pend}` : `<span class="st"><span id="pcw"><i class="dot"></i>${T.pend}</span><span class="st-ok" id="pca"><i class="dot"></i>${T.okd}</span></span>`}</div></div>`).join('')}</div>
+        <div class="gr">${P.map(([id, t, reel, d, pos], i) => `<div class="card pc" id="pc${i}"><div class="pc-im">${img(id, pos)}<span class="pc-k">${reel ? T.reel : T.post}</span></div><div class="pc-t">${t}</div><div class="pc-m">${i ? `<i class="dot"></i>${T.pend}` : `<span class="st"><span id="pcw"><i class="dot"></i>${T.pend}</span><span class="st-ok" id="pca"><i class="dot"></i>${T.okd}</span></span>`}</div></div>`).join('')}</div>
       </div>
       <div class="bn">${[I.home, I.layers, I.cal, I.chat, I.more].map((d, i) => `<span${i ? '' : ' class="on"'}>${svg(d)}${T.bn[i]}</span>`).join('')}</div>
       <div class="scrim" id="scrim"></div>
-      <div class="sheet" id="sheet"><div class="sh-im">${img(P[0][0])}<div class="sh-ok" id="shok"><i id="shoki">${svg(I.check)}</i></div></div>
+      <div class="sheet" id="sheet"><div class="sh-im">${img(P[0][0], 100)}<div class="sh-ok" id="shok"><i id="shoki">${svg(I.check)}</i></div></div>
         <div class="sh-t">${P[0][1]}</div>
         <div class="sh-m"><span class="st"><span id="shw"><i class="dot"></i>${T.pend}</span><span class="st-ok" id="sha"><i class="dot"></i>${T.okd} · ${T.sched}: ${T.date(P[0][3])}</span></span></div>
         <div class="sh-b"><div class="btn sec">${T.changes}</div><div class="btn" id="shbtn">${T.approve}</div></div>
@@ -141,7 +142,7 @@
     <div class="sc sc-ig" id="s-ig">
       <div class="ig-hd"><span class="bk">${svg(I.back)}</span><b>${T.igT}</b></div>
       <div class="ig-u"><span class="ig-a"><i>${T.igAv}</i></span><span><b>yourbusiness</b><small>${T.igName} · ${T.ex}</small></span></div>
-      <div class="ig-im">${img(P[0][0])}<span class="ig-heart" id="bigh">${svg(I.heart, 1)}</span><span class="ig-toast" id="toast">${svg(I.check)}${T.toast}</span></div>
+      <div class="ig-im">${img(P[0][0], size === 'phone' ? 0 : 100)}<span class="ig-heart" id="bigh">${svg(I.heart, 1)}</span><span class="ig-toast" id="toast">${svg(I.check)}${T.toast}</span></div>
       <div class="ig-ac"><span class="hl">${svg(I.heart)}<span id="hf" class="f" style="position:absolute;inset:0">${svg(I.heart, 1)}</span></span>${svg(I.cmt)}${svg(I.share)}<span class="sv">${svg(I.save)}</span></div>
       <p class="ig-lk" id="lk"></p>
       <p class="ig-cp"><b>yourbusiness</b>${T.igCap}</p>
@@ -150,7 +151,7 @@
     </div>
     <span class="island"></span>
   </div></div>
-    <div class="co c1" id="co1"><div class="co-k">${T.co1k}</div><div class="co-h">${T.co1h}</div><div class="co-p"><bdi>3,500 ${T.cur}</bdi> <small>${T.per}</small></div><div class="co-x">${T.pk[1][2]}</div><div class="co-b" id="co1b">${WA}${T.sub}</div></div>
+    <div class="co c1" id="co1"><div class="co-k">${T.co1k}</div><div class="co-h">${T.co1h}</div><div class="co-p"><bdi>${T.money('3,500')}</bdi> <small>${T.per}</small></div><div class="co-x">${T.pk[1][2]}</div><div class="co-b" id="co1b">${WA}${T.sub}</div></div>
     <div class="co c2" id="co2"><div class="co-k">${T.co2k}</div>${rows(T.co2, 'c2')}</div>
     <div class="co c3" id="co3"><div class="co-k">${T.co3k}</div>${rows(T.co3, 'c3')}</div>
     <div class="co c4" id="co4"><div class="co-k">${T.co4k}</div><div class="co-im">${img(P[0][0])}</div><div class="co-st"><span class="w" id="c4w">${T.pend}</span><span class="a" id="c4a">${svg(I.check)}${T.okd}</span></div></div>

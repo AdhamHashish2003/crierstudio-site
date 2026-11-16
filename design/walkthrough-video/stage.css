@@ -163,7 +163,7 @@ body.desk .pk-b{height:27px;margin-top:8px}
 .gr{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
 .pc{position:relative;padding:5px 5px 6px;border-radius:12px}
 .pc-im{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:1/1;background:#e9e6df}
-.pc-im img{width:100%;height:100%;object-fit:cover;object-position:center 30%;display:block}
+.pc-im img{width:100%;height:100%;object-fit:cover;display:block}
 .pc-k{position:absolute;top:4px;inset-inline-start:4px;font-size:7.5px;font-weight:700;background:rgba(14,15,12,.78);color:#fff;border-radius:999px;padding:1px 6px}
 .pc-t{font-size:9px;font-weight:700;line-height:1.35;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pc-m{display:flex;align-items:center;gap:4px;font-size:7.8px;color:#6B7280;white-space:nowrap}
@@ -180,7 +180,7 @@ body.desk .pk-b{height:27px;margin-top:8px}
 .scrim{position:absolute;inset:0;background:rgba(17,24,39,.42);z-index:3}
 .sheet{position:absolute;inset-inline:0;bottom:0;z-index:4;background:#fff;border-radius:18px 18px 0 0;padding:8px 13px 16px;box-shadow:0 -10px 30px rgba(17,24,39,.15)}
 .sheet::before{content:"";display:block;width:32px;height:4px;border-radius:4px;background:#D1D5DB;margin:0 auto 8px}
-.sh-im{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:4/4.3;background:#e9e6df}
+.sh-im{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:4/5;background:#e9e6df}
 .sh-im img{width:100%;height:100%;object-fit:cover;display:block}
 .sh-t{font-size:12px;font-weight:700;margin-top:7px;line-height:1.4}
 .sh-m{font-size:9px;color:#6B7280;display:flex;align-items:center;gap:5px;margin-top:1px}
@@ -202,7 +202,7 @@ body.desk .pk-b{height:27px;margin-top:8px}
 .ig-u b{font-size:10.5px;font-weight:600;font-family:"Instrument Sans",sans-serif;direction:ltr}
 .ig-u small{display:block;font-size:8px;color:#737373;line-height:1.2}
 .ig-im{position:relative;aspect-ratio:1/1;background:#e9e6df;overflow:hidden;flex:none}
-.ig-im img{width:100%;height:100%;object-fit:cover;object-position:center 40%;display:block}
+.ig-im img{width:100%;height:100%;object-fit:cover;display:block}
 .ig-toast{position:absolute;top:8px;left:50%;white-space:nowrap;font-size:9.5px;font-weight:700;background:#C6FF00;color:#0E0F0C;border:1.5px solid #0E0F0C;border-radius:999px;padding:2px 11px;display:flex;align-items:center;gap:5px;margin-left:-70px;width:140px;justify-content:center}
 .ig-toast svg{width:10px;height:10px}
 .ig-heart{position:absolute;left:50%;top:50%;width:70px;height:70px;margin:-35px 0 0 -35px;color:#fff;filter:drop-shadow(0 4px 14px rgba(0,0,0,.4))}
@@ -256,10 +256,18 @@ body.desk .fi{height:32px}
 body.desk .chip{padding:4px 11px;font-size:10.2px}
 body.desk .bf .btn{height:34px;margin-top:6px}
 body.desk .pg{padding-top:15px}
-body.desk .pc-im{aspect-ratio:4/4.7}
+body.desk .pc-im{aspect-ratio:4/4.4}
 body.desk .gr{gap:9px;margin-top:12px}
 body.desk .cms{padding-top:9px;gap:8px}
 .phone .ig-im{aspect-ratio:3/2}
-.phone .ig-im img{object-position:center 58%}
 [dir=rtl] .ig-cp b,[dir=rtl] .cm b{margin-inline:4px 0;margin:0 0 0 5px}
 [dir=ltr] .ig-cp b,[dir=ltr] .cm b{margin:0 5px 0 0}
+
+/* Arabic needs taller lines than Latin: marks above and tails below must never touch the next line or a clipping edge */
+[lang=ar] .cap-h,.phone[lang=ar] .cap-h{line-height:1.5}
+[lang=ar] .cap-l,[lang=ar] .st-h,[lang=ar] .pg h3,[lang=ar] .co-h,[lang=ar] .co-p,[lang=ar] .sh-t,[lang=ar] .done b,[lang=ar] .rw,[lang=ar] .co-st span{line-height:1.5}
+[lang=ar] .pc-t,[lang=ar] .ig-cp{line-height:1.75}
+[lang=ar] .pill,[lang=ar] .chip,[lang=ar] .btn,[lang=ar] .pk-b,[lang=ar] .co-b,[lang=ar] .ig-toast,[lang=ar] .pc-k,[lang=ar] .wa-day,[lang=ar] .ex{line-height:1.6}
+/* phone frame: whole 4:5 thumbnails; the second row only peeks above the tab bar (picture tops, never a cut line of text) */
+.phone .pc-im{aspect-ratio:4/5}
+.pc{min-width:0}

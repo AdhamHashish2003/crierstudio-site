@@ -93,6 +93,10 @@ html[lang=ar] .hv-leg{font-size:11px}
 @keyframes hv-drop{from{opacity:0;transform:translateY(-38%) scale(.8)}}
 @keyframes hv-tick{from{opacity:.25;transform:translateY(40%)}}
 @keyframes hv-popin{0%{opacity:0;transform:translateY(6px) scale(.9)}12%,78%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-4px)}}
+/* Arabic needs taller lines than Latin (marks above, tails below) */
+html[lang=ar] .hv-stats b,html[lang=ar] .hv-tt,html[lang=ar] .hv-tag,html[lang=ar] .hv-leg,html[lang=ar] .hv-btns span{line-height:1.5}
+html[lang=ar] .hv-bio b{line-height:1.6}
+html[lang=ar] .hv-aa b{line-height:1.5}
 /* sizes: the same picture, scaled; small phones drop the identity card so the profile stays readable */
 .hv-hero .hc-exnote{max-width:46ch}
 @media(max-width:1279px){.hv{--hk:.86}}
