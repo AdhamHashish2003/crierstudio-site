@@ -23,7 +23,7 @@ const PARKED_DIR = '_parked';
 // THE NEW LANDING PAGES (owner 2026-11-15): the home page and /social/ redesigned as landing pages (templates/home-v2.html and
 // social-v2.html). Held until Adham approves them: while false the live pages keep their current templates and the new ones are built
 // only into _parked/preview/ (never published) for review screenshots. Set true and rebuild to publish them.
-const SHOW_NEW_LANDING = false;
+const SHOW_NEW_LANDING = true;
 const V2 = { index: 'home-v2', social: 'social-v2' };
 const PARKED_TO = { sculptures: 'index', fiberglass: 'index', branddeck: 'pricing' };
 
@@ -955,11 +955,14 @@ for (const [lang] of LANGS) {
   for (const page of PAGES) {
     htmlCc = LEGAL.includes(page) && !RESTRICTED ? null : DEFAULT_CC; // the legal pages keep the US-dollar price list, except while one country is served (they are in its currency then)
     for (const landing of V2[page] ? [true, false] : [false]) {
-      if (landing !== SHOW_NEW_LANDING && !(landing && !SHOW_NEW_LANDING)) continue; // live: the chosen version; held v2: preview copy too
+      // published: only the new version of the home page and /social/ is written. The old templates are still rendered (and thrown
+      // away) so they keep compiling and their texts stay in use: setting the flag back to false is the undo.
+      const dry = V2[page] && SHOW_NEW_LANDING && !landing;
       const ctx = { lang, v: landing ? { ...pageVars(lang, page), ...landingVars(lang, page) } : pageVars(lang, page) };
       const body = render(rd(`templates/${landing ? V2[page] : page === 'index' ? 'home' : page}.html`), ctx);
       const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${waFab(ctx)}${!LEGAL.includes(page) && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${body.includes('id="dash"') ? '<script src="/assets/dash.js" defer></script>\n' : ''}${body.includes('id="hv"') || body.includes('id="how-video"') ? '<script src="/assets/landing.js" defer></script>\n' : ''}${page === 'sculptures' ? '<script src="/assets/sculptures.js" defer></script>\n' : ''}</body>\n</html>\n`;
       const html = `${head(lang, page, purgeCss(cssFor(lang, page, landing), bodyHtml), landing)}\n${trimIndent(bodyHtml)}`;
+      if (dry) continue;
       if (PARKED.has(page)) { write(`${PARKED_DIR}/${dirFor(lang, page)}index.html`, html); continue; } // kept, never published
       if (landing && !SHOW_NEW_LANDING) { write(`${PARKED_DIR}/preview/${dirFor(lang, page)}index.html`, hashUrls(html.replace('<meta charset="utf-8">', '<meta charset="utf-8">\n<meta name="robots" content="noindex">'))); continue; } // held: review copy only
       write(dirFor(lang, page) + 'index.html', hashUrls(html));

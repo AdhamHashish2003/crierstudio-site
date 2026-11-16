@@ -303,6 +303,9 @@
   addEventListener("scroll", soon, { passive: true }); addEventListener("resize", soon);
   if (phone.addEventListener) phone.addEventListener("change", soon);
   if (bar && window.MutationObserver) new MutationObserver(soon).observe(bar, { attributes: true, attributeFilter: ["hidden"] });
+  // the page can also move under the button without a scroll (a video or image loading, an answer opening): look again then
+  if (window.ResizeObserver) new ResizeObserver(soon).observe(document.body);
+  addEventListener("load", soon); document.addEventListener("toggle", soon, true);
   update();
 })();
 

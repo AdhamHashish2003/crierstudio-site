@@ -19,6 +19,9 @@ const SOCIAL = ['seen', 'visible', 'growing', 'diamond']; // the Social packages
 const SIGNUP = (l, plan) => `https://portal.crierstudio.com/#/signup?${plan ? `plan=${plan}&` : ''}lang=${l}`;
 const PORTAL_HOME = (l) => `https://portal.crierstudio.com/?lang=${l}`;
 const WA = String(JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'contact.json'), 'utf8')).whatsapp || '').replace(/[\s+()-]/g, '');
+// The new landing pages (home and /social/, owner 2026-11-15) are published when build.mjs says SHOW_NEW_LANDING = true; the checks of
+// those two pages follow the flag (the old pages' checks apply again if it is set back to false).
+const NEW_LANDING = /^const SHOW_NEW_LANDING = true;/m.test(fs.readFileSync(path.join(ROOT, 'build', 'build.mjs'), 'utf8'));
 let fail = 0; const ok = (c, m) => { if (!c) { fail++; console.log('FAIL', m); } };
 const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const esc = (x) => String(x).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -133,7 +136,26 @@ for (const l of LANGS) for (const p of PAGES) {
   }
   // Home: Landing A (Adham, 2026-11-06; walkthrough kept 2026-11-07; In-store section removed 2026-11-06): hero (SAHM's real
   // Instagram posts), The Social Kit in numbers, the client-portal walkthrough, the OK rule, the package table, a closing call. No FAQ.
-  if (p === '') {
+  // The new landing pages (2026-11-15): the home page (hero with the animated example phone, How it works as a video with five steps,
+  // what you get, the four package cards, our promises, a short FAQ, a WhatsApp close) and /social/ (offer-first hero, what is
+  // included, the four cards, how it works on WhatsApp, examples, FAQ, close). Both say their examples are made up.
+  if (NEW_LANDING && (p === '' || p === 'social/')) {
+    const IDS = p === '' ? ['hero', 'walkthrough', 'make', 'pricing', 'trust', 'faq', 'start'] : ['included', 'packages', 'how', 'examples', 'faq', 'start'];
+    const at = IDS.map((id) => h.indexOf(`id="${id}"`));
+    ok(at.every((x, i) => x > -1 && (i === 0 || x > at[i - 1])), `landing sections ${IDS.join(', ')} in order on ${file}`);
+    ok((h.match(/<article class="plan[^"]*" data-plan="/g) || []).length === SOCIAL.length && /id="cur-data"/.test(h), `the four package cards with their currency data on ${file}`);
+    const where = p === '' ? ['home_hero', 'home_close'] : ['social_hero', 'social_close'];
+    for (const w of where) ok(new RegExp(`<a class="btn wa-order" href="https://wa\\.me/${WA}\\?text=[^"]+" target="_blank" rel="noopener" data-wa="${w}">${esc(d[l]['lp.cta'])}</a>`).test(h), `"${d[l]['lp.cta']}" WhatsApp button (${w}) on ${file}`);
+    ok(h.includes('"@type":"FAQPage"') && (h.match(/<details>/g) || []).length >= 5, `a short FAQ with FAQPage data on ${file}`);
+    ok(vis.includes(d[l][p === '' ? 'hv.exnote' : 'lp.ex.note']), `the examples are labelled as made up on ${file}`);
+    ok(!/portal\.crierstudio\.com\/#\/signup\?lang/.test((h.match(/<section[^>]*(?:id="hero"|class="sp-hero")[\s\S]*?<\/section>/) || [''])[0]), `the hero's main button is WhatsApp, not the sign-up, on ${file}`);
+    for (const m of h.matchAll(/<img\b[^>]*>/g)) ok(/ width="\d+" height="\d+"/.test(m[0]) && / alt="/.test(m[0]), `img size/alt on ${file}: ${m[0].slice(0, 80)}`);
+    if (p === '') {
+      ok(/<video\b[^>]*\bmuted\b[^>]*>/.test(h) && /playsinline/.test(h) && !/<video\b[^>]*\bautoplay\b/.test(h) && /src="\/assets\/video\/how-(ar|en)-1080-poster\.jpg"/.test(h), `the How it works video is muted, inline, has a poster and is started by the script (no autoplay attribute) on ${file}`);
+      ok(/<script src="\/assets\/h\/landing\.[0-9a-f]{10}\.js" defer><\/script>/.test(h) && !h.includes('id="dash"'), `landing script (hashed, from 'self'), no old dashboard, on ${file}`);
+    }
+  }
+  if (p === '' && !NEW_LANDING) {
     ok(!/store-card|is-teaser|id="businesses"|id="seasons"|id="plans"|id="in-store"|la-store/.test(h), `no package cards, Store Kit card, In-store section, industries or seasons section on ${file}`);
     const HOME_IDS = ['hero', 'kit', 'walkthrough', 'trust', 'pricing', 'start'];
     const at = HOME_IDS.map((id) => h.indexOf(`id="${id}"`));
@@ -205,7 +227,7 @@ for (const l of LANGS) for (const p of PAGES) {
   // Store Kit waitlist name. Checked in the visible text, the meta tags and the JSON-LD.
   ok(!/id="snap-|id="form-msgs"|id="request"|f-consent|__snapPayload/.test(h), `the public order form (#snap-form) is gone from ${file}`);
   // (Landing A, 2026-11-06: the home page shows the package table again, so it is allowed prices and package names too)
-  if (!['', 'pricing/', 'terms/', 'privacy/', 'refund/'].includes(p)) {
+  if (!['', 'pricing/', 'terms/', 'privacy/', 'refund/', ...(NEW_LANDING ? ['social/'] : [])].includes(p)) {
     const ld = (h.match(/<script type="application\/ld\+json">[\s\S]*?<\/script>/) || [''])[0], meta = (h.match(/<meta[^>]+>|<title>[^<]*<\/title>/g) || []).join(' ');
     const syms = ['SAR', 'AED', 'EGP'].map((c) => d[l]['cur.sym' + c].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
     const priceRe = new RegExp(`data-usd|class="(price )?amt"|"offers"|"price":|\\$\\s?\\d|(${syms.join('|')})\\s?\\d|\\d\\s?(${syms.join('|')})`);
@@ -373,7 +395,7 @@ for (const l of LANGS) for (const f of [PREFIX(l) + 'index.html', PREFIX(l) + 'p
   }
   for (const m of h.matchAll(/<a class="acct-link" href="([^"]*)" data-signup="(\w+)">/g)) ok(m[1].replace(/&amp;/g, '&') === SIGNUP(l, m[2]), `"or create your account" for ${m[2]} opens the sign-up with plan=${m[2]} on ${f}`);
   for (const m of h.matchAll(/href="(https:\/\/portal\.crierstudio\.com\/#\/signup[^"]*)"(?! data-product| data-signup)/g)) ok(!/plan=/.test(m[1]), `a generic sign-up link carries a plan on ${f}`);
-  if (f.endsWith('index.html') && !f.includes('pricing')) ok((h.match(/<tr class="la-buy">[\s\S]*?<\/tr>/) || [''])[0].split('data-product=').length === SOCIAL.length + 1 && /class="btn lime" href="[^"]*" data-product="/.test(h), `home table and "Start with" block buttons carry their package on ${f}`);
+  if (!NEW_LANDING && f.endsWith('index.html') && !f.includes('pricing')) ok((h.match(/<tr class="la-buy">[\s\S]*?<\/tr>/) || [''])[0].split('data-product=').length === SOCIAL.length + 1 && /class="btn lime" href="[^"]*" data-product="/.test(h), `home table and "Start with" block buttons carry their package on ${f}`);
 }
 // ================= Review fixes (2026-11-14): rules that keep the reviewed problems from coming back =================
 // The published set, as GitHub Pages (Jekyll) builds it: every file except paths with a part starting with "_" or ".", and the
@@ -440,7 +462,7 @@ for (const l of LANGS) {
     // 2026-11-15: each Social package's MAIN button is the green "Order <package> on WhatsApp" (wa.me, the message prefilled with
     // the package name and its monthly price in the page language), then "or create your account" and one "Pay by InstaPay" line
     const PAT = SOCIAL.join('|');
-    for (const [pg, block] of [['pricing/', new RegExp(`<article class="plan[^"]*" data-plan="(${PAT})"[\\s\\S]*?<\\/article>`, 'g')], ['', new RegExp(`<td[^>]*><a class="btn wa-order" href="[^"]*" data-product="(${PAT})"[\\s\\S]*?<\\/td>`, 'g')]]) {
+    for (const [pg, block] of [['pricing/', new RegExp(`<article class="plan[^"]*" data-plan="(${PAT})"[\\s\\S]*?<\\/article>`, 'g')], ...(NEW_LANDING ? [['', new RegExp(`<article class="plan[^"]*" data-plan="(${PAT})"[\\s\\S]*?<\\/article>`, 'g')], ['social/', new RegExp(`<article class="plan[^"]*" data-plan="(${PAT})"[\\s\\S]*?<\\/article>`, 'g')]] : [['', new RegExp(`<td[^>]*><a class="btn wa-order" href="[^"]*" data-product="(${PAT})"[\\s\\S]*?<\\/td>`, 'g')]])]) {
       const h = rd(PREFIX(l) + pg + 'index.html'), seen = [];
       for (const m of h.matchAll(block)) {
         const btn = m[0].match(/<a class="btn wa-order" href="([^"]*)" data-product="(\w+)" data-wa-order="\w+"[^>]*>([^<]*)<\/a><a class="acct-link" href="[^"]*" data-signup="(\w+)">([^<]*)<\/a>/) || [];
