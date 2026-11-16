@@ -1,0 +1,26 @@
+<!-- "How it works" as a video (owner 2026-11-15). The files in assets/video/ are rendered from design/walkthrough-video/ by
+     build/render-walkthrough.mjs; the step times come from data/how-video.json. assets/landing.js loads the video when it nears
+     the screen (the small file on phones), plays it muted in a loop while it is in view and keeps the step list in step with it.
+     Reduced motion or no JavaScript: the poster and the five steps. -->
+<section id="walkthrough" class="hw is-static" aria-labelledby="hw-title">
+  <div class="wt-head">
+    <span class="eyebrow">{{t:wt.eye}}</span>
+    <h2 id="hw-title">{{t:wt.h2}}</h2>
+    <p class="lead">{{t:hw.sub}}</p>
+  </div>
+  <div class="wt-grid hw-grid">
+    <div class="wt-stage">
+      <div class="hw-frame" id="how-video" data-desk="{{=hwDesk}}" data-phone="{{=hwPhone}}" data-steps="{{=hwTimes}}" data-dur="{{=hwDur}}">
+        <picture><source media="(max-width:700px)" srcset="{{=hwPhone}}-poster.jpg" width="720" height="1080"><img class="hw-poster" src="{{=hwDesk}}-poster.jpg" width="1920" height="1080" loading="lazy" decoding="async" alt=""></picture>
+        <video class="hw-v" muted loop playsinline preload="none" aria-label="{{a:hw.aria}}"></video>
+        <button type="button" class="hw-toggle" data-play="{{a:hw.play}}" data-pause="{{a:hw.pause}}" aria-label="{{a:hw.play}}"><svg class="hw-ip" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg><svg class="hw-is" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg></button>
+      </div>
+      <p class="fine hw-note">{{t:hw.note}}</p>
+    </div>
+    <div class="wt-side">
+      <div class="wt-progress" aria-hidden="true"><span class="wt-count"><bdi dir="ltr"><b>01</b> / {{=hwTotal}}</bdi></span><span class="wt-track"><i></i></span></div>
+      <ol class="wt-steps" aria-label="{{a:wt.steps}}">{{=hwSteps}}</ol>
+      <div class="wt-cta"><a class="btn wa-order" href="{{=lpWaHref}}" target="_blank" rel="noopener" data-wa="home_how">{{t:lp.cta}}</a><a class="wt-from" href="#pricing">{{t:wt.from}}</a></div>
+    </div>
+  </div>
+</section>

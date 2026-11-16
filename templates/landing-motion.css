@@ -1,0 +1,143 @@
+/* The new landing page's two moving pieces (owner 2026-11-15): the hero phone (hv-*) and the "How it works" video (hw-*).
+   Motion is transform and opacity only, runs only while the piece is on screen (assets/landing.js sets .is-live) and is off
+   under prefers-reduced-motion. Classes that landing.js adds are written out in full there (purgeCss). */
+
+/* ---------- hero phone ---------- */
+/* the composition is 640 x 680 and scaled as one piece (--hk) */
+.hv-stage{overflow:visible}
+.hv{--hk:1;position:absolute;top:50%;left:50%;width:640px;height:680px;margin:-340px 0 0 -320px;transform:scale(var(--hk));transform-origin:50% 50%;direction:inherit;font-family:var(--body)}
+.hv-glow{position:absolute;left:50%;top:50%;width:520px;height:520px;margin:-250px 0 0 -260px;border-radius:50%;background:radial-gradient(closest-side,rgba(198,255,0,.2),rgba(198,255,0,.06) 55%,transparent);pointer-events:none}
+.hv-phone{position:absolute;top:44px;left:170px;width:300px;padding:9px;border-radius:48px;background:linear-gradient(160deg,#2a2d22,#12130e 40%,#1d1f17);box-shadow:0 0 0 1px #3b3f31,inset 0 0 0 1.5px #0b0c09,0 60px 110px -30px rgba(0,0,0,.85),0 30px 60px -30px rgba(198,255,0,.18)}
+.hv-phone::after{content:"";position:absolute;top:19px;left:50%;width:84px;height:23px;margin-left:-42px;background:#0b0c09;border-radius:14px}
+.hv-scr{position:relative;height:606px;overflow:hidden;border-radius:39px;background:#fff;color:#111;font:400 11.5px/1.4 var(--body);letter-spacing:0;text-align:start}
+html[lang=ar] .hv-scr{line-height:1.55}
+.hv-sb{display:flex;justify-content:flex-end;align-items:center;gap:5px;height:40px;padding:6px 24px 0;direction:ltr}
+.hv-sb i{display:block;width:15px;height:8px;border-radius:2px;background:#111}
+.hv-sb i:first-child{width:13px;height:8px;background:none;border:2px solid #111}
+.hv-tb{display:flex;align-items:center;justify-content:space-between;padding:6px 15px 2px}
+.hv-tb b{display:flex;align-items:center;gap:4px;font:700 16px/1 var(--body)}
+.hv-tb b svg{width:11px;height:11px}
+.hv-acts{display:flex;gap:14px}.hv-acts svg{width:20px;height:20px}
+.hv-pr{display:flex;align-items:center;gap:14px;padding:10px 15px 6px}
+.hv-av{position:relative;flex:none;width:70px;height:70px;border-radius:50%;padding:3px;background:conic-gradient(from 200deg,#C6FF00,#6FCF2B,#F2C94C,#C6FF00)}
+.hv-avi{position:relative;z-index:1;display:grid;place-items:center;width:100%;height:100%;border-radius:50%;background:#0E0F0C;border:2.5px solid #fff;color:#C6FF00}
+.hv-avi svg{width:28px;height:28px}
+.hv-ring{position:absolute;inset:-1px;border-radius:50%;border:2px solid #A8DE00;opacity:0;animation:hv-pulse 2.8s cubic-bezier(.2,.6,.3,1) infinite;animation-play-state:paused}
+.hv-stats{flex:1;display:grid;grid-template-columns:repeat(3,1fr);text-align:center}
+.hv-stats span{display:grid;gap:1px;min-width:0}
+.hv-stats b{font:700 15.5px/1.25 var(--body);white-space:nowrap}
+.hv-stats small{font-size:10.5px;color:#444;white-space:nowrap}
+.hv-num{display:inline-block;font-variant-numeric:tabular-nums}
+.hv-bio{display:grid;gap:0;margin:0;padding:0 15px 9px;max-width:none}
+.hv-bio b{font:700 13px/1.4 var(--body)}
+.hv-bio small{font-size:11px;color:#737373}
+.hv-bio span{font-size:11.5px}
+.hv-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 15px 10px}
+.hv-btns span{display:grid;place-items:center;height:29px;border-radius:8px;background:#EFEFEF;font:600 12px/1 var(--body)}
+.hv-btns span.on{background:#0E0F0C;color:#fff}
+.hv-tabs{display:flex;border-top:1px solid #EFEFEF}
+.hv-tabs span{flex:1;display:grid;place-items:center;height:36px;color:#A8A8A8}
+.hv-tabs span.on{color:#111;box-shadow:inset 0 -1.5px 0 #111}
+.hv-tabs svg{width:19px;height:19px}
+.hv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.hv-cell{position:relative;display:block;aspect-ratio:4/5;overflow:hidden;background:#EDEAE3}
+.hv-cell img{display:block;width:100%;height:100%;object-fit:cover}
+.hv-new{z-index:2;animation:hv-drop .8s cubic-bezier(.2,.85,.25,1.12) both}
+.hv-pop{position:absolute;inset-inline-start:5px;bottom:5px;z-index:3;display:inline-flex;align-items:center;gap:3px;padding:3px 7px 3px 6px;border-radius:999px;background:rgba(14,15,12,.82);color:#fff;font:700 10px/1 var(--body);direction:ltr;animation:hv-popin 3s ease both}
+.hv-pop::before{content:"";width:9px;height:9px;background:#FF4D6A;clip-path:path("M4.5 8.2S.6 5.7.6 3A2 2 0 0 1 4.5 2 2 2 0 0 1 8.400 3c0 2.700-3.900 5.200-3.900 5.200z")}
+.is-tick{animation:hv-tick .32s ease-out}
+/* the tag on the phone's top edge */
+.hv-tag{position:absolute;z-index:4;top:26px;left:50%;transform:translateX(-50%);display:inline-flex;align-items:center;gap:7px;white-space:nowrap;background:#C6FF00;color:#0E0F0C;font:700 11px/1 var(--body);letter-spacing:.06em;text-transform:uppercase;padding:9px 14px;border-radius:999px;box-shadow:0 12px 26px rgba(0,0,0,.45),0 0 0 4px rgba(198,255,0,.14)}
+html[lang=ar] .hv-tag{font-size:13px;line-height:1.2;letter-spacing:0;text-transform:none;padding:8px 15px}
+.hv-tag svg{width:12px;height:12px;flex:none}
+/* the floating pieces: visual identity, story, content plan, activity */
+.hv-card{position:absolute;z-index:3;background:#fff;color:#111827;border-radius:18px;padding:13px;box-shadow:0 0 0 1px rgba(255,255,255,.5),0 34px 60px -18px rgba(0,0,0,.7),0 12px 22px -12px rgba(0,0,0,.5);animation:hv-float 7s ease-in-out infinite alternate;animation-play-state:paused}
+.hv-tt{font:700 11px/1.2 var(--body);letter-spacing:.08em;text-transform:uppercase;color:#111827}
+html[lang=ar] .hv-tt{font-size:13px;letter-spacing:0;text-transform:none}
+.hv-id{top:128px;inset-inline-start:0;width:168px;rotate:-4deg}
+.hv-plan{top:440px;inset-inline-start:6px;width:174px;rotate:3deg;animation-delay:-2.5s}
+.hv-story{top:226px;inset-inline-end:30px;width:142px;padding:7px 7px 10px;rotate:5deg;animation-delay:-4.5s}
+[dir=rtl] .hv-id{rotate:4deg}[dir=rtl] .hv-plan{rotate:-3deg}[dir=rtl] .hv-story{rotate:-5deg}
+.hv-sw{display:flex;margin:11px 0 11px;padding-inline-start:6px}
+.hv-sw i{width:38px;height:38px;border-radius:50%;border:2.5px solid #fff;margin-inline-start:-8px;background:#2A1A12;box-shadow:0 2px 6px rgba(17,24,39,.18)}
+.hv-sw i:nth-child(2){background:#C9973F}.hv-sw i:nth-child(3){background:#F1E7D6}.hv-sw i:nth-child(4){background:#1F6F5C}
+.hv-aa{display:flex;align-items:center;gap:10px;border-top:1px solid #EEF0F3;padding-top:9px}
+.hv-aa b{font:800 28px/1 var(--display);letter-spacing:-.04em}
+html[lang=ar] .hv-aa b{font:700 26px/1.2 var(--body);letter-spacing:0}
+.hv-aa span{font-size:10.5px;line-height:1.4;color:#6B7280}
+html[lang=ar] .hv-aa span{font-size:11px;line-height:1.5}
+.hv-simg{position:relative;aspect-ratio:9/16;border-radius:12px;overflow:hidden;background:#2A1A12}
+.hv-simg img{display:block;width:100%;height:100%;object-fit:cover}
+.hv-sbar{position:absolute;top:7px;inset-inline:8px;height:2.5px;border-radius:3px;background:rgba(255,255,255,.4);overflow:hidden}
+.hv-sbar i{position:absolute;inset:0;background:#fff;transform:scaleX(.45);transform-origin:left center;animation:hv-story 6s linear infinite;animation-play-state:paused}
+[dir=rtl] .hv-sbar i{transform-origin:right center}
+.hv-shead{position:absolute;top:15px;inset-inline-start:8px;display:flex;align-items:center;gap:5px;color:#fff;font:600 9.5px/1 var(--body);text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.hv-shead i{width:16px;height:16px;border-radius:50%;background:#0E0F0C;border:1.5px solid #C6FF00}
+.hv-story .hv-tt{margin:9px 5px 0}
+.hv-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px}
+.hv-cal i{aspect-ratio:1;border-radius:5px;background:#F1F2EE}
+.hv-cal i.p{background:#0E0F0C}.hv-cal i.r{background:#C6FF00;box-shadow:inset 0 0 0 1px #A8DE00}.hv-cal i.s{background:#fff;box-shadow:inset 0 0 0 2px #C9973F}
+.hv-leg{display:flex;gap:10px;margin-top:10px;font:600 10px/1.2 var(--body);color:#4B5563}
+html[lang=ar] .hv-leg{font-size:11px}
+.hv-leg span{display:inline-flex;align-items:center;gap:4px}
+.hv-leg span::before{content:"";width:8px;height:8px;border-radius:3px;background:#0E0F0C}
+.hv-leg .r::before{background:#C6FF00;box-shadow:inset 0 0 0 1px #A8DE00}.hv-leg .s::before{background:#fff;box-shadow:inset 0 0 0 2px #C9973F}
+.hv-act{position:absolute;z-index:4;top:540px;inset-inline-end:44px;display:flex;align-items:center;gap:13px;padding:10px 15px;border-radius:999px;background:rgba(23,25,19,.92);border:1px solid #3b3f31;color:#F6F8EF;font:700 13.5px/1 var(--body);box-shadow:0 22px 40px -14px rgba(0,0,0,.8);animation:hv-float 6s ease-in-out -1.5s infinite alternate;animation-play-state:paused}
+.hv-act span{display:inline-flex;align-items:center;gap:6px}
+.hv-act svg{width:16px;height:16px}
+.hv-act .hv-heart{color:#FF4D6A}
+.hv.is-live .hv-card,.hv.is-live .hv-act,.hv.is-live .hv-ring,.hv.is-live .hv-sbar i{animation-play-state:running}
+@keyframes hv-pulse{0%{transform:scale(1);opacity:.75}70%,100%{transform:scale(1.24);opacity:0}}
+@keyframes hv-float{from{translate:0 4px}to{translate:0 -7px}}
+@keyframes hv-story{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes hv-drop{from{opacity:0;transform:translateY(-38%) scale(.8)}}
+@keyframes hv-tick{from{opacity:.25;transform:translateY(40%)}}
+@keyframes hv-popin{0%{opacity:0;transform:translateY(6px) scale(.9)}12%,78%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-4px)}}
+/* sizes: the same picture, scaled; small phones drop the identity card so the profile stays readable */
+.hv-hero .hc-exnote{max-width:46ch}
+@media(max-width:1279px){.hv{--hk:.86}}
+@media(max-width:1100px){.hv{--hk:.74}.hv-hero .hc-stage{overflow:hidden}}
+@media(max-width:560px){
+  .hv-id{display:none}
+  .hv-plan{top:478px;inset-inline-start:84px;width:164px}
+  .hv-story{top:262px;inset-inline-end:84px;width:126px}
+  .hv-act{top:548px;inset-inline-end:104px}
+}
+
+/* ---------- "How it works" video ---------- */
+.hw{border-top:1px solid var(--line);padding-block:88px 56px}
+.hw-grid{align-items:center}
+.hw-frame{position:relative;aspect-ratio:16/9;border-radius:22px;overflow:hidden;background:#0E0F0C;box-shadow:0 0 0 1px var(--line),0 40px 80px -40px rgba(0,0,0,.9)}
+.hw-frame picture,.hw-poster,.hw-v{position:absolute;inset:0;display:block;width:100%;height:100%}
+.hw-poster,.hw-v{object-fit:cover}
+.hw-v{opacity:0;transition:opacity .35s ease}
+.hw-frame.is-playing .hw-v,.hw-frame.is-ready .hw-v{opacity:1}
+.hw-toggle{all:unset;box-sizing:border-box;position:absolute;z-index:2;bottom:14px;inset-inline-end:14px;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;cursor:pointer;background:rgba(14,15,12,.72);border:1px solid rgba(246,248,239,.28);color:#F6F8EF;transition:background-color .2s,transform .2s}
+.hw-toggle:hover{background:#0E0F0C}
+.hw-toggle:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.hw-toggle svg{grid-area:1/1;width:18px;height:18px}
+.hw-toggle .hw-is{display:none}
+.hw-frame.is-playing .hw-ip{display:none}.hw-frame.is-playing .hw-is{display:block}
+.hw-note{margin-top:12px}
+.hw.is-static .wt-title{color:var(--ink)}
+.hw.is-static .wt-step .wt-num{border-color:var(--accent);color:var(--accent);background:var(--bg)}
+.hw.is-static .wt-bar{opacity:0}
+.hw.is-static .wt-progress{visibility:hidden}
+.hw .wt-btn{padding:11px 0}
+.hw .wt-title{font-size:clamp(16px,1.35vw,18.5px);line-height:1.35;font-weight:600}
+html[lang=ar] .hw .wt-title{line-height:1.6}
+.hw .wt-track i{transition:transform .25s linear}
+.hw .wt-bar i{transition:transform .25s linear}
+@media(max-width:1100px){.hw-grid{align-items:start}}
+@media(max-width:700px){
+  .hw{padding-block:56px 40px}
+  .hw-frame{aspect-ratio:2/3;max-width:420px;margin-inline:auto;border-radius:20px}
+  .hw-toggle{width:36px;height:36px;bottom:8px;inset-inline-end:5px}
+  .hw-toggle::before{content:"";position:absolute;inset:-6px}
+  .hw-toggle svg{width:15px;height:15px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .hv-card,.hv-act,.hv-ring,.hv-sbar i,.hv-new,.hv-pop,.is-tick{animation:none}
+  .hw-v,.hw .wt-track i,.hw .wt-bar i{transition:none}
+}

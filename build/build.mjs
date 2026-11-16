@@ -141,12 +141,14 @@ const dicts = Object.fromEntries(LANGS.map(([c]) => [c, JSON.parse(rd(`i18n/${c}
 const partials = {
   hero: rd('templates/hero.html'), logo: rd('templates/logo.svg.html'), footer: rd('templates/footer.html'), header: rd('templates/header.html'),
   consent: rd('templates/consent.html'), panels: rd('templates/instore-panels.html'), waFloat: rd('templates/wa-float.html'),
-  how: rd('templates/how-walkthrough.html'), // the home v2 "How it works" slot ({{>how}} in templates/home-v2.html)
+  // the new home page (2026-11-15): its "How it works" slot ({{>how}} in templates/home-v2.html) is the video section, and its hero is the
+  // animated phone ({{>hero-v2}}); the live home page keeps templates/hero.html
+  how: rd('templates/how-video.html'), 'hero-v2': rd('templates/hero-v2.html'),
 };
 const CSS = {
   fonts: rd('templates/fonts.css'), fontsAr: rd('templates/fonts-ar.css'), common: rd('templates/common.css'),
   home: rd('templates/home.css'), legal: rd('templates/legal.css'), consent: rd('templates/consent.css'), chrome: rd('templates/studio-shared.css'),
-  sculpt: rd('templates/sculptures.css'),
+  sculpt: rd('templates/sculptures.css'), motion: rd('templates/landing-motion.css'),
 };
 const faqCss = CSS.home.slice(CSS.home.indexOf('/* faq */'), CSS.home.indexOf('/* closing */'));
 
@@ -604,10 +606,34 @@ const makeItems = (lang) => MK_ICONS.map((d, i) => `<li><span class="lp-ic" aria
 const qa = (lang, base) => `<details><summary>${h(lang, base + 'q')}</summary><div class="ans"><p>${h(lang, base + 'a', pathFor(lang, 'refund'))}</p></div></details>`;
 const LP_FAQ = ['lp.faq.1', 'lp.faq.2', 'lp.faq.3', 'lp.faq.4', 'lp.faq.5'];
 const SP_FAQ = ['sp.faq.1', 'lp.faq.1', 'lp.faq.3', 'sp.faq.4', 'sp.faq.5', 'sp.faq.6'];
+// ---- the new home page's hero phone and "How it works" video (2026-11-15; templates/hero-v2.html, how-video.html, landing-motion.css,
+// assets/landing.js). The phone's grid is the example posts as small tiles (assets/ex/s/<id>.webp, 240 px: cwebp -q 74 -resize 240 0
+// from inputs/example-content); the first nine show, the next three drop in one by one. The video files are rendered by
+// build/render-walkthrough.mjs, which also writes the step times to data/how-video.json.
+const HV_GRID = { ar: ['cafe-01-offer-ar', 'perfume-03-bakhoor-ar', 'physio-01-tips-ar', 'abaya-02-detail-ar', 'bakery-01-photo-ar', 'cafe-05-tips-ar', 'perfume-01-photo-en', 'physio-04-photo-en', 'abaya-03-carousel-en', 'abaya-04-offer-ar', 'cafe-04-carousel-en', 'bakery-03-carousel-en'],
+  en: ['perfume-01-photo-en', 'cafe-04-carousel-en', 'physio-04-photo-en', 'abaya-03-carousel-en', 'bakery-03-carousel-en', 'abaya-05-tips-en', 'cafe-01-offer-ar', 'perfume-03-bakhoor-ar', 'bakery-01-photo-ar', 'cafe-02-photo-en', 'physio-01-tips-ar', 'abaya-02-detail-ar'] };
+const HV_STORY = { ar: 'perfume-08-poll-ar', en: 'cafe-08-poll-en' }; // story polls (no button text in them)
+const HV_CAL = 'p..r.s.p..s.rp.s..p.r.sp..r.'; // one month: p post, r reel, s story
+const hvSrc = (id) => { const u = `/assets/ex/s/${id}.webp`; if (!fs.existsSync(path.join(ROOT, u.slice(1)))) throw new Error('hero phone: missing example tile ' + u); return u; };
+const HOW = JSON.parse(rd('data/how-video.json'));
+const HW_STEPS = HOW.steps.length;
+function motionVars(lang) {
+  const tile = (id) => `<span class="hv-cell"><img src="${hvSrc(id)}" width="240" height="300" decoding="async" alt=""></span>`;
+  const base = (size) => { const b = `/assets/video/how-${lang}-${size}`; for (const ext of ['.mp4', '.webm', '-poster.jpg']) if (!fs.existsSync(path.join(ROOT, b.slice(1) + ext))) throw new Error('how-it-works video: missing ' + b + ext + ' (run node build/render-walkthrough.mjs)'); return b; };
+  const two = (i) => String(i).padStart(2, '0');
+  // the still state: step 1 is the one the poster shows
+  const hwSteps = HOW.steps.map((_, k) => { const i = k + 1; return `<li class="wt-step${k ? '' : ' is-active'}" data-step="${i}"><button type="button" class="wt-btn" aria-controls="how-video" aria-current="${k ? 'false' : 'step'}"><span class="wt-num" aria-hidden="true">${two(i)}</span><span class="wt-text"><span class="wt-label">${h(lang, `hw.${i}l`)}</span><span class="wt-title">${h(lang, `hw.${i}t`)}</span></span></button><span class="wt-bar" aria-hidden="true"><i></i></span></li>`; }).join('');
+  return {
+    hvGrid: HV_GRID[lang].slice(0, 9).map(tile).join(''), hvNext: HV_GRID[lang].slice(9).map(hvSrc).join(','),
+    hvStory: `<img src="${hvSrc(HV_STORY[lang])}" width="240" height="427" decoding="async" alt="">`,
+    hvCal: [...HV_CAL].map((c) => (c === '.' ? '<i></i>' : `<i class="${c}"></i>`)).join(''), hvFol: esc(t(lang, 'hv.k').replace('{n}', '1.2')),
+    hwSteps, hwTotal: two(HW_STEPS), hwTimes: HOW.steps.join(','), hwDur: String(HOW.duration), hwDesk: base('1080'), hwPhone: base('phone'),
+  };
+}
 const waBtn = (lang, key, where, label = 'lp.cta') => `<a class="btn wa-order" href="${esc(waHref(lang, key))}" target="_blank" rel="noopener" data-wa="${where}">${h(lang, label)}</a>`;
 function landingVars(lang, page) {
   const common = { makeItems: makeItems(lang), exGallery: exGallery(lang), curPick: curPick(lang), planCards: planCards(lang) };
-  if (page === 'index') return { ...homeVars(lang), ...common, heroBtn: waBtn(lang, 'wa.fab.msg', 'home_hero'), lpWaHref: esc(waHref(lang, 'wa.fab.msg')), lpFaq: LP_FAQ.map((k) => qa(lang, k)).join('') };
+  if (page === 'index') return { ...homeVars(lang), ...common, ...motionVars(lang), heroBtn: waBtn(lang, 'wa.fab.msg', 'home_hero'), lpWaHref: esc(waHref(lang, 'wa.fab.msg')), lpFaq: LP_FAQ.map((k) => qa(lang, k)).join('') };
   return { ...common, spWaHref: esc(waHref(lang, 'sp.wamsg')), spFaq: SP_FAQ.map((k) => qa(lang, k)).join(''),
     spStack: SP_STACK[lang].map((id, i) => exImg(lang, id, ' decoding="async"', 's' + (i + 1))).join('') };
 }
@@ -855,6 +881,8 @@ const JS_WORDS = new Set([rd('site.js'), rd('assets/studio.js'), rd('assets/deck
 const DASH_WORDS = rd('assets/dash.js').match(/[A-Za-z_][\w-]*/g);
 // assets/sculptures.js (catalog filters + lightbox) only runs on /sculptures/ (#sc-grid)
 const SC_WORDS = rd('assets/sculptures.js').match(/[A-Za-z_][\w-]*/g);
+// assets/landing.js (the new home page's hero phone and video) only runs on pages with #hv or #how-video
+const LANDING_WORDS = rd('assets/landing.js').match(/[A-Za-z_][\w-]*/g);
 function cssBlocks(css) {
   const out = []; let start = 0, depth = 0, q = null, pre = '';
   for (let i = 0; i < css.length; i++) {
@@ -872,6 +900,7 @@ function purgeCss(css, html) {
   const have = new Set(JS_WORDS);
   if (html.includes('id="dash"')) for (const w of DASH_WORDS) have.add(w);
   if (html.includes('id="sc-grid"')) for (const w of SC_WORDS) have.add(w);
+  if (html.includes('id="hv"') || html.includes('id="how-video"')) for (const w of LANDING_WORDS) have.add(w);
   for (const m of html.matchAll(/\sclass="([^"]*)"/g)) for (const c of m[1].split(/\s+/)) have.add(c);
   for (const m of html.matchAll(/\sid="([^"]*)"/g)) have.add(m[1]);
   const split = (s) => { const r = []; let d = 0, st = 0; for (let i = 0; i < s.length; i++) { const c = s[i]; if (c === '(' || c === '[') d++; else if (c === ')' || c === ']') d--; else if (c === ',' && !d) { r.push(s.slice(st, i)); st = i + 1; } } r.push(s.slice(st)); return r; };
@@ -891,7 +920,7 @@ function purgeCss(css, html) {
 const trimIndent = (html) => html.split(/(<(script|style|pre|textarea)\b[\s\S]*?<\/\2>)/).map((part, i) => i % 3 === 0 ? part.replace(/\n[ \t]+/g, '\n') : i % 3 === 1 ? part : '').join('');
 // the English In-store page loads the Arabic faces too: its menu board and QR stand carry Arabic item names (the unicode-range
 // means the files download only for those glyphs)
-const cssFor = (lang, page) => minCss([CSS.fonts, lang === 'ar' || page === 'in-store' || page === 'index' ? CSS.fontsAr : '', WIDE.has(page) ? CSS.home : CSS.legal + (page === 'faq' ? '\n' + faqCss : ''), CSS.common, CSS.consent, CSS.chrome, page === 'sculptures' ? CSS.sculpt : ''].join('\n'));
+const cssFor = (lang, page, landing) => minCss([CSS.fonts, lang === 'ar' || page === 'in-store' || page === 'index' ? CSS.fontsAr : '', WIDE.has(page) ? CSS.home : CSS.legal + (page === 'faq' ? '\n' + faqCss : ''), CSS.common, CSS.consent, CSS.chrome, page === 'sculptures' ? CSS.sculpt : '', landing && page === 'index' ? CSS.motion : ''].join('\n'));
 
 // ---------- content-hashed asset copies (long browser cache) ----------
 // GitHub Pages sends every file with max-age=600. The pages therefore reference copies of the fonts, the hero images and
@@ -911,7 +940,7 @@ function hashed(url) {
   return out;
 }
 // (the sculpture images in assets/sculptures/ keep their names: the lightbox builds their URLs from the piece id)
-const hashUrls = (html) => html.replace(/\/(?:fonts|assets)\/[\w.-]+\.(?:woff2|avif|webp|png)\b|\/site\.js\b|\/assets\/(?:dash|sculptures)\.js\b/g, hashed);
+const hashUrls = (html) => html.replace(/\/(?:fonts|assets)\/[\w.-]+\.(?:woff2|avif|webp|png)\b|\/site\.js\b|\/assets\/(?:dash|sculptures|landing)\.js\b/g, hashed);
 
 // ---------- build ----------
 function write(rel, content) {
@@ -929,8 +958,8 @@ for (const [lang] of LANGS) {
       if (landing !== SHOW_NEW_LANDING && !(landing && !SHOW_NEW_LANDING)) continue; // live: the chosen version; held v2: preview copy too
       const ctx = { lang, v: landing ? { ...pageVars(lang, page), ...landingVars(lang, page) } : pageVars(lang, page) };
       const body = render(rd(`templates/${landing ? V2[page] : page === 'index' ? 'home' : page}.html`), ctx);
-      const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${waFab(ctx)}${!LEGAL.includes(page) && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${page === 'index' ? '<script src="/assets/dash.js" defer></script>\n' : ''}${page === 'sculptures' ? '<script src="/assets/sculptures.js" defer></script>\n' : ''}</body>\n</html>\n`;
-      const html = `${head(lang, page, purgeCss(cssFor(lang, page), bodyHtml), landing)}\n${trimIndent(bodyHtml)}`;
+      const bodyHtml = `<body data-page="${page}" class="studio-inner">\n${render(partials.consent, ctx)}\n<div class="wrap">\n${render(partials.header, ctx)}\n${body}\n${render(partials.footer, ctx)}\n</div>\n${waFab(ctx)}${!LEGAL.includes(page) && /class="(price )?amt"/.test(body) ? curData(lang) + '\n' : ''}<script src="/site.js" defer></script>\n${body.includes('id="dash"') ? '<script src="/assets/dash.js" defer></script>\n' : ''}${body.includes('id="hv"') || body.includes('id="how-video"') ? '<script src="/assets/landing.js" defer></script>\n' : ''}${page === 'sculptures' ? '<script src="/assets/sculptures.js" defer></script>\n' : ''}</body>\n</html>\n`;
+      const html = `${head(lang, page, purgeCss(cssFor(lang, page, landing), bodyHtml), landing)}\n${trimIndent(bodyHtml)}`;
       if (PARKED.has(page)) { write(`${PARKED_DIR}/${dirFor(lang, page)}index.html`, html); continue; } // kept, never published
       if (landing && !SHOW_NEW_LANDING) { write(`${PARKED_DIR}/preview/${dirFor(lang, page)}index.html`, hashUrls(html.replace('<meta charset="utf-8">', '<meta charset="utf-8">\n<meta name="robots" content="noindex">'))); continue; } // held: review copy only
       write(dirFor(lang, page) + 'index.html', hashUrls(html));

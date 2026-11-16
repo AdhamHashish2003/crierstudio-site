@@ -1,0 +1,40 @@
+<section class="hc la-hero hv-hero" id="hero" aria-labelledby="home-title">
+  <div class="hc-copy">
+    <span class="eyebrow">{{t:home.eyebrow}}</span>
+    <h1 id="home-title">{{=heroH1}}</h1>
+    <p class="lead">{{t:home.lead}}</p>
+    <div class="la-cta">
+      {{=heroBtn}}
+      <a class="la-link" href="#walkthrough">{{t:hero.more}}</a>
+      <a class="la-link" href="#pricing">{{t:hero.start.pricing}}</a>
+    </div>
+    <p class="hc-exnote">{{t:hv.exnote}}</p>
+  </div>
+
+  <!-- The hero phone (2026-11-15): the profile is the visitor's own («مشروعك» / "Your business", @yourbusiness), the grid is the
+       real-looking example posts, and assets/landing.js adds the quiet motion (followers rising, new posts dropping in, likes and
+       comments ticking, the story ring). Without JavaScript or with reduced motion this is the whole picture, still. -->
+  <div class="hc-stage hv-stage" role="img" aria-label="{{a:hv.aria}}">
+    <div class="hv" id="hv" data-k="{{a:hv.k}}">
+      <span class="hv-glow"></span>
+      <div class="hv-phone"><div class="hv-scr">
+        <div class="hv-sb"><i></i><i></i></div>
+        <div class="hv-tb"><b dir="ltr">{{t:hero.ig.handle}} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></b><span class="hv-acts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><path d="M12 8v8M8 12h8"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span></div>
+        <div class="hv-pr">
+          <span class="hv-av"><span class="hv-ring"></span><span class="hv-avi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v9h16v-9M3 6.5 5 4h14l2 2.5v1a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0zM10 19v-5h4v5"/></svg></span></span>
+          <span class="hv-stats"><span><b class="hv-num" id="hv-posts">24</b><small>{{t:hv.posts}}</small></span><span><b class="hv-num" id="hv-fol">{{=hvFol}}</b><small>{{t:hv.followers}}</small></span><span><b class="hv-num">180</b><small>{{t:hv.following}}</small></span></span>
+        </div>
+        <p class="hv-bio"><b><bdi>{{t:hv.name}}</bdi></b><small>{{t:hv.type}}</small><span>{{t:hv.bio}}</span></p>
+        <div class="hv-btns"><span class="on">{{t:hero.ig.follow}}</span><span>{{t:hero.ig.message}}</span></div>
+        <div class="hv-tabs"><span class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3.5 3.5h17v17h-17zM9.2 3.5v17M14.8 3.5v17M3.5 9.2h17M3.5 14.8h17"/></svg></span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M10 9l5 3-5 3z"/></svg></span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 21l-3-3H5a1.5 1.5 0 0 1-1.5-1.5v-11A1.5 1.5 0 0 1 5 4h14a1.5 1.5 0 0 1 1.5 1.5v11A1.5 1.5 0 0 1 19 18h-4z"/><circle cx="12" cy="10" r="2.5"/></svg></span></div>
+        <div class="hv-grid" id="hv-grid" data-next="{{=hvNext}}">{{=hvGrid}}</div>
+      </div></div>
+      <span class="hv-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg>{{t:hero.ig.ready}}</span>
+
+      <div class="hv-card hv-id"><div class="hv-tt">{{t:hero.bb.title}}</div><div class="hv-sw"><i></i><i></i><i></i><i></i></div><div class="hv-aa"><b>{{t:hero.bb.aa}}</b><span>{{t:hv.id.note}}</span></div></div>
+      <div class="hv-card hv-story"><div class="hv-simg">{{=hvStory}}<span class="hv-sbar"><i></i></span><span class="hv-shead"><i></i><b dir="ltr">{{t:hero.ig.handle}}</b></span></div><div class="hv-tt">{{t:hero.st.title}}</div></div>
+      <div class="hv-card hv-plan"><div class="hv-tt">{{t:hero.pl.title}}</div><div class="hv-cal">{{=hvCal}}</div><div class="hv-leg"><span class="p">{{t:hv.pl.post}}</span><span class="r">{{t:hv.pl.reel}}</span><span class="s">{{t:hv.pl.story}}</span></div></div>
+      <div class="hv-act"><span><svg class="hv-heart" viewBox="0 0 24 24" fill="currentColor"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><b class="hv-num" id="hv-likes">128</b></span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg><b class="hv-num" id="hv-cmts">12</b></span></div>
+    </div>
+  </div>
+</section>

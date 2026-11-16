@@ -1,0 +1,17 @@
+<!doctype html>
+<!-- The source of the home page's "How it works" video. Not published (design/ is excluded in _config.yml).
+     One page, four renders: ?lang=ar|en & size=desk|phone. Every movement is a function of time (window.seek(seconds)),
+     so build/render-walkthrough.mjs can step through it frame by frame and encode the frames with ffmpeg.
+     Preview: serve the repo root, open /design/walkthrough-video/stage.html?lang=ar&size=desk&play=1
+     Everything on screen is example content: a made-up café, no real receipt, and the InstaPay address is a blurred placeholder. -->
+<html>
+<head>
+<meta charset="utf-8">
+<title>How it works: video stage</title>
+<link rel="stylesheet" href="stage.css">
+</head>
+<body>
+<div id="stage"></div>
+<script src="stage.js"></script>
+</body>
+</html>
