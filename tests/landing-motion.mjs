@@ -1,5 +1,5 @@
 // The new home page's hero phone and "How it works" video (2026-11-15): templates/hero-v2.html, how-video.html, assets/landing.js.
-// While the page is held (SHOW_NEW_LANDING = false) it is tested at /_parked/preview/; after the switch, at /.
+// Tested at / (Arabic) and /en/ (English).
 // Google, wa.me and the portal are blocked: nothing leaves this machine. Run with a static server on the repo root:
 //   BASE=http://127.0.0.1:8767 node tests/landing-motion.mjs        (OUTPUT=<dir> also saves screenshots)
 import fs from 'node:fs';
@@ -9,7 +9,6 @@ const BASE = process.env.BASE || 'http://localhost:8765';
 const OUT = process.env.OUTPUT || '';
 const b = await chromium.launch({ executablePath: process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
 let fail = 0; const ok = (c, m) => { console.log(c ? 'PASS' : 'FAIL', m); if (!c) fail++; };
-const held = (await (await fetch(BASE + '/')).text()).includes('id="hv"') ? '' : '/_parked/preview';
 const HOW = JSON.parse(fs.readFileSync(new URL('../data/how-video.json', import.meta.url), 'utf8'));
 async function open(lang, opts) {
   const c = await b.newContext(opts);
@@ -18,7 +17,7 @@ async function open(lang, opts) {
   pg.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push(m.text()); }); // (the blocked Google and WhatsApp requests)
   pg.on('pageerror', (e) => errors.push(String(e)));
   pg.on('request', (r) => { if (/\/assets\/video\//.test(r.url())) media.push(new URL(r.url()).pathname); });
-  await pg.goto(BASE + held + (lang === 'ar' ? '/' : '/en/')); await pg.waitForLoadState('load');
+  await pg.goto(BASE + (lang === 'ar' ? '/' : '/en/')); await pg.waitForLoadState('load');
   return { c, pg, errors, media };
 }
 const shot = async (pg, name, sel) => { if (!OUT) return; fs.mkdirSync(OUT, { recursive: true }); const f = path.join(OUT, name + '.png'); if (sel) await pg.locator(sel).screenshot({ path: f }); else await pg.screenshot({ path: f }); };

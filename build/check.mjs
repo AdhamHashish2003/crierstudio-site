@@ -22,9 +22,6 @@ const SOCIAL = ['seen', 'visible', 'growing', 'diamond']; // the Social packages
 const SIGNUP = (l, plan) => `https://portal.crierstudio.com/#/signup?${plan ? `plan=${plan}&` : ''}lang=${l}`;
 const PORTAL_HOME = (l) => `https://portal.crierstudio.com/?lang=${l}`;
 const WA = String(JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'contact.json'), 'utf8')).whatsapp || '').replace(/[\s+()-]/g, '');
-// The new landing pages (home and /social/, owner 2026-11-15) are published when build.mjs says SHOW_NEW_LANDING = true; the checks of
-// those two pages follow the flag (the old pages' checks apply again if it is set back to false).
-const NEW_LANDING = /^const SHOW_NEW_LANDING = true;/m.test(fs.readFileSync(path.join(ROOT, 'build', 'build.mjs'), 'utf8'));
 let fail = 0; const ok = (c, m) => { if (!c) { fail++; console.log('FAIL', m); } };
 const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const esc = (x) => String(x).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -123,10 +120,13 @@ for (const l of LANGS) for (const p of PAGES) {
   // and local prices in data-* for site.js
   // every price span carries the US-dollar price and each local NET price (data-usd, data-sar, data-aed, data-egp), the exact
   // numbers data/pricing.json has, so site.js shows the buyer's currency without converting anything
-  const dataAttrs = (usd, loc) => `data-usd="${usd}"` + LOCAL_CURS.map((c) => ` data-${c.toLowerCase()}="${loc[c]}"`).join('');
+  // One country served (N35, audit 2): each price is written once in that country's currency and carries no data-* (and the page has
+  // no #cur-data), so the page source holds no dormant currency. With several countries every price carries them all.
+  const dataAttrs = (usd, loc) => (ONLY ? '' : ` data-usd="${usd}"` + LOCAL_CURS.map((c) => ` data-${c.toLowerCase()}="${loc[c]}"`).join(''));
+  const shown = (pk) => d[l]['cur.fmt'].replace('{cur}', d[l]['cur.sym' + DEF_CUR]).replace('{n}', pk.prices[DEF_CUR].toLocaleString('en-US'));
   if (p === 'pricing/') for (const pk of PRICING.packages.filter((x) => !x.coming_soon)) { // the coming-soon Brand Deck left the pricing page (2026-11-15)
-    ok(h.includes(dataAttrs(pk.price, pk.prices)), `price ${pk.price} USD / ${LOCAL_CURS.map((c) => pk.prices[c] + ' ' + c).join(' / ')} (${pk.id}, data/pricing.json) on ${file}`);
-    if (!pk.coming_soon) ok(new RegExp(`class="price amt" dir="(ltr|rtl)" ${dataAttrs(pk.price, pk.prices)}`).test(h) && !h.includes('class="price-list'), `price ${pk.price} USD, nothing struck through (${pk.id}) on ${file}`);
+    ok(ONLY ? h.includes(`>${shown(pk)}<`) : h.includes(dataAttrs(pk.price, pk.prices)), `price ${ONLY ? pk.prices[DEF_CUR] + ' ' + DEF_CUR : pk.price + ' USD / ' + LOCAL_CURS.map((c) => pk.prices[c] + ' ' + c).join(' / ')} (${pk.id}, data/pricing.json) on ${file}`);
+    if (!pk.coming_soon) ok(new RegExp(`class="price amt" dir="(ltr|rtl)"${dataAttrs(pk.price, pk.prices)}>${ONLY ? shown(pk).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '<' : ''}`).test(h) && !h.includes('class="price-list'), `price ${pk.price} USD, nothing struck through (${pk.id}) on ${file}`);
     if (pk.extra_platform_price) ok(h.includes(`data-extra="${pk.extra_platform_price}"`), `extra platform ${pk.extra_platform_price} USD (${pk.id}) on ${file}`);
   }
   if (p === 'pricing/') ok((h.match(/data-product="/g) || []).length === SOCIAL.length && !/data-unavailable="deck"|Brand Deck/.test(h), `${SOCIAL.length} buy buttons and no Brand Deck on ${file}`);
@@ -145,11 +145,11 @@ for (const l of LANGS) for (const p of PAGES) {
   // The new landing pages (2026-11-15): the home page (hero with the animated example phone, How it works as a video with five steps,
   // what you get, the four package cards, our promises, a short FAQ, a WhatsApp close) and /social/ (offer-first hero, what is
   // included, the four cards, how it works on WhatsApp, examples, FAQ, close). Both say their examples are made up.
-  if (NEW_LANDING && (p === '' || p === 'social/')) {
+  if (p === '' || p === 'social/') {
     const IDS = p === '' ? ['hero', 'walkthrough', 'make', 'pricing', 'trust', 'faq', 'start'] : ['included', 'packages', 'how', 'examples', 'faq', 'start'];
     const at = IDS.map((id) => h.indexOf(`id="${id}"`));
     ok(at.every((x, i) => x > -1 && (i === 0 || x > at[i - 1])), `landing sections ${IDS.join(', ')} in order on ${file}`);
-    ok((h.match(/<article class="plan[^"]*" data-plan="/g) || []).length === SOCIAL.length && /id="cur-data"/.test(h), `the four package cards with their currency data on ${file}`);
+    ok((h.match(/<article class="plan[^"]*" data-plan="/g) || []).length === SOCIAL.length && (ONLY ? !/id="cur-data"/.test(h) : /id="cur-data"/.test(h)), `the four package cards${ONLY ? ', no currency data for other countries,' : ' with their currency data'} on ${file}`);
     const where = p === '' ? ['home_hero', 'home_close'] : ['social_hero', 'social_close'];
     for (const w of where) ok(new RegExp(`<a class="btn wa-order" href="https://wa\\.me/${WA}\\?text=[^"]+" target="_blank" rel="noopener" data-wa="${w}">${esc(d[l]['lp.cta'])}</a>`).test(h), `"${d[l]['lp.cta']}" WhatsApp button (${w}) on ${file}`);
     ok(h.includes('"@type":"FAQPage"') && (h.match(/<details>/g) || []).length >= 5, `a short FAQ with FAQPage data on ${file}`);
@@ -160,33 +160,6 @@ for (const l of LANGS) for (const p of PAGES) {
       ok(/<video\b[^>]*\bmuted\b[^>]*>/.test(h) && /playsinline/.test(h) && !/<video\b[^>]*\bautoplay\b/.test(h) && /src="\/assets\/video\/how-(ar|en)-1080-poster\.jpg"/.test(h), `the How it works video is muted, inline, has a poster and is started by the script (no autoplay attribute) on ${file}`);
       ok(/<script src="\/assets\/h\/landing\.[0-9a-f]{10}\.js" defer><\/script>/.test(h) && !h.includes('id="dash"'), `landing script (hashed, from 'self'), no old dashboard, on ${file}`);
     }
-  }
-  if (p === '' && !NEW_LANDING) {
-    ok(!/store-card|is-teaser|id="businesses"|id="seasons"|id="plans"|id="in-store"|la-store/.test(h), `no package cards, Store Kit card, In-store section, industries or seasons section on ${file}`);
-    const HOME_IDS = ['hero', 'kit', 'walkthrough', 'trust', 'pricing', 'start'];
-    const at = HOME_IDS.map((id) => h.indexOf(`id="${id}"`));
-    ok(at.every((x, i) => x > -1 && (i === 0 || x > at[i - 1])), `home sections ${HOME_IDS.join(', ')} in order on ${file}`);
-    ok(!/id="faq"/.test(h) && h.includes('id="dash"') && h.includes('id="dash-s"'), `walkthrough and dashboard data, no FAQ, on ${file}`);
-    ok(/<script src="\/assets\/h\/dash\.[0-9a-f]{10}\.js" defer><\/script>/.test(h), `dashboard script (hashed, from 'self') on ${file}`);
-    const hero = (h.match(/<section class="hc la-hero" id="hero"[\s\S]*?<\/section>/) || [''])[0];
-    ok((hero.match(/<div class="la-cta">\s*<a class="btn" href="([^"]*)"/) || [])[1] === SIGNUP(l), `hero button -> ${SIGNUP(l)} on ${file}`);
-    ok(hero.includes('href="#walkthrough"') && hero.includes('href="#pricing"'), `hero links to #walkthrough and #pricing on ${file}`);
-    // review fix 2026-11-14: the phone shows a made-up example café, labelled as an example; no real brand, handle, logo or post
-    ok(hero.includes(esc(d[l]['hero.exnote'])) && !/data-usd|data-product/.test(hero), `hero labelled as an example, no price in it, on ${file}`);
-    ok(!/<img\b/.test(hero) && (hero.match(/class="ex-cell"/g) || []).length === 6 && hero.includes('xp-story'), `hero: six drawn example posts and a story, no images, on ${file}`);
-    // the walkthrough: no delivery time, no clock, no reel count above the smallest package
-    const wt = (h.match(/<section id="walkthrough"[\s\S]*?<\/section>/) || [''])[0], wtVis = wt.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ');
-    ok(!/\b\d+\s*(?:-\s*)?hours?\b|\d+\s*ساعة|\d+\s*ساعات|[١٢٣٤٥٦٧٨٩٠]+\s*ساعة|d-clock(?![\w-])|d-time-later/i.test(wt) && !/<img\b/.test(wt), `walkthrough: no hours, no clock, no photos, on ${file}`);
-    const smallest = Math.min(...PRICING.packages.filter((x) => !x.coming_soon).map((x) => x.items.posts));
-    let dashPosts = Infinity; try { dashPosts = JSON.parse((h.match(/<script type="application\/json" id="dash-s">([\s\S]*?)<\/script>/) || [])[1]).posts; } catch { }
-    ok(dashPosts <= smallest && !/\breels?\b|ريلز|ريل\b/i.test(wtVis), `walkthrough: ${dashPosts} posts (no more than the smallest package's ${smallest}), no reels, on ${file}`);
-    // the package table: every Social package at its list and sale price from data/pricing.json, with its sign-up button
-    for (const pk of PRICING.packages.filter((x) => ['seen', 'visible', 'growing'].includes(x.id))) {
-      ok(new RegExp(`class="price amt" dir="(ltr|rtl)" ${dataAttrs(pk.price, pk.prices)}`).test(h) && !h.includes('class="price-list'), `table price ${pk.price} USD (${pk.id}) on ${file}`);
-      // the default country's text (Saudi Arabia, SAR before VAT; Egypt while it is the one country served) is that number itself
-      ok(h.includes(`${dataAttrs(pk.price, pk.prices)}>${d[l]['cur.fmt'].replace('{cur}', d[l]['cur.sym' + DEF_CUR]).replace('{n}', pk.prices[DEF_CUR].toLocaleString('en-US'))}<`), `table shows ${DEF_CUR} ${pk.prices[DEF_CUR]} for ${pk.id} on ${file}`);
-    }
-    ok((h.match(/<table class="la-table">/g) || []).length === 1 && /id="cur-data"/.test(h), `one package table with its currency data on ${file}`);
   }
   if (p === 'pricing/') {
     // The Store Kit card was removed from pricing (owner request, 2026-11-06); the waitlist stays on /in-store/
@@ -233,7 +206,7 @@ for (const l of LANGS) for (const p of PAGES) {
   // Store Kit waitlist name. Checked in the visible text, the meta tags and the JSON-LD.
   ok(!/id="snap-|id="form-msgs"|id="request"|f-consent|__snapPayload/.test(h), `the public order form (#snap-form) is gone from ${file}`);
   // (Landing A, 2026-11-06: the home page shows the package table again, so it is allowed prices and package names too)
-  if (!['', 'pricing/', 'terms/', 'privacy/', 'refund/', ...(NEW_LANDING ? ['social/'] : [])].includes(p)) {
+  if (!['', 'pricing/', 'terms/', 'privacy/', 'refund/', 'social/'].includes(p)) {
     const ld = (h.match(/<script type="application\/ld\+json">[\s\S]*?<\/script>/) || [''])[0], meta = (h.match(/<meta[^>]+>|<title>[^<]*<\/title>/g) || []).join(' ');
     const syms = ['SAR', 'AED', 'EGP'].map((c) => d[l]['cur.sym' + c].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
     const priceRe = new RegExp(`data-usd|class="(price )?amt"|"offers"|"price":|\\$\\s?\\d|(${syms.join('|')})\\s?\\d|\\d\\s?(${syms.join('|')})`);
@@ -300,24 +273,27 @@ for (const l of LANGS) for (const [k, v] of Object.entries(d[l])) if (!/^sc\./.t
 // Owner (2026-11-16): the privacy page names no language or image service and has no line about outside processing of the brief
 for (const l of LANGS) for (const [k, v] of Object.entries(d[l])) ok(!/language and image services|خدمات خارجية للنصوص والصور|خدمات النصوص والصور/i.test(v), `${l}:${k} mentions outside language and image services (removed by the owner)`);
 ok(/do not give refunds/.test(d.en['refund.plan.p.eg']) && /لا نرد المبالغ المدفوعة/.test(d.ar['refund.plan.p.eg']), 'the refund page states the no-refund policy');
-// Buy buttons: every product has one config entry; empty = the client portal's sign-up, filled = the link
+// Voice guide v3: no Egyptian dialect in any Arabic text of the site's own, the parked sculptures page included (N39, audit 2)
+for (const [k, v] of Object.entries(d.ar)) ok(!/اللي|بتاع|مفيش|إحنا|عايز|دلوقتي|(^|\s)مش(\s|$)|قدّام|أوضة|حيطة|ترابيزة|احكيلنا|سيبنا|اتفرج|(^|\s)دي(\s|$)|كومنتات/.test(v), `ar:${k} has Egyptian dialect wording (the site's Arabic is simple formal Arabic)`);
+// N31 (audit 2): every "Subscribe on WhatsApp" button on the home page and /social/ prefills the subscribe message, not the "know more" greeting
+for (const l of LANGS) for (const pg of ['', 'social/']) for (const m of rd(PREFIX(l) + pg + 'index.html').matchAll(/<a class="btn wa-order" href="([^"]*)"[^>]*data-wa="(?:home|social)_[a-z]+"/g))
+  ok(decodeURIComponent((m[1].split('?text=')[1] || '').replace(/&#39;/g, "'").replace(/&amp;/g, '&')) === d[l]['sp.wamsg'].replace('{brand}', 'Crier Studio'), `a Subscribe on WhatsApp button on /${PREFIX(l)}${pg} prefills the subscribe message (${decodeURIComponent(m[1].split('?text=')[1] || '').slice(0, 40)})`);
+// Buy buttons (payment-links.json, always empty, was deleted on 2026-11-16): a package's "or create your account" link is the
+// client portal's sign-up with its plan
 {
-  const links = JSON.parse(rd('payment-links.json'));
-  ok(JSON.stringify(Object.keys(links).sort()) === JSON.stringify([...PRODUCTS].sort()), 'payment-links.json has exactly ' + PRODUCTS.join(', '));
   for (const k of PRODUCTS) {
-    ok(typeof links[k] === 'string' && (links[k] === '' || /^https:\/\//.test(links[k])), `payment-links.json entry ${k}`);
     for (const l of LANGS) {
       const hh = rd(PREFIX(l) + 'pricing/index.html');
       const m = hh.match(new RegExp(`<a class="btn[^"]*" href="([^"]*)" data-product="${k}"`));
       if (k === 'deck') { ok(!m && !hh.includes('data-unavailable="deck"'), `no Brand Deck button on the pricing page (${l})`); continue; }
-      const want = links[k] || SIGNUP(l, k);
+      const want = SIGNUP(l, k);
       // 2026-11-15: the main button is the WhatsApp order; the sign-up (or the payment link) is the "or create your account" link
       const acct = hh.match(new RegExp(`<a class="acct-link" href="([^"]*)" data-signup="${k}"`));
       ok(m && (/wa-order/.test(m[0]) ? acct && acct[1].replace(/&amp;/g, '&') === want : m[1].replace(/&amp;/g, '&') === want), `buy button ${k} (${l}) href`);
     }
   }
 }
-ok(!NEW_LANDING || (rd('index.html').includes('"@type":"FAQPage"') && rd('social/index.html').includes('"@type":"FAQPage"')), 'FAQPage on the home page and /social/ (the FAQ page itself is parked)');
+ok(rd('index.html').includes('"@type":"FAQPage"') && rd('social/index.html').includes('"@type":"FAQPage"'), 'FAQPage on the home page and /social/ (the FAQ page itself is parked)');
 ok(rd('index.html').includes('"alternateName":"Crier"') && rd('index.html').includes('"@type":"Organization"'), 'Organization + WebSite');
 // Google Analytics 4 + Consent Mode v2: every built HTML file (40 pages, 404, all redirect stubs) has the inline tag exactly once,
 // early in <head>, with consent defaulting to denied before the config call, and gtag.js loaded only on the first interaction or 6 s after page load; ads signals are never granted; the CSP allows Google's hosts
@@ -405,11 +381,10 @@ for (const l of LANGS) for (const f of [PREFIX(l) + 'index.html', PREFIX(l) + 'p
   for (const [all, href, id] of btns) {
     const u = href.replace(/&amp;/g, '&');
     if (/class="btn wa-order"/.test(all)) ok(u.startsWith('https://wa.me/201146000101?text=') && SOCIAL.includes(id), `button for ${id} on ${f} is its WhatsApp order (${href})`);
-    else ok(u === (JSON.parse(rd('payment-links.json'))[id] || SIGNUP(l, id)) && PRICING.packages.some((x) => x.id === id && !x.coming_soon), `button for ${id} on ${f} links to its own package (${href})`);
+    else ok(u === SIGNUP(l, id) && PRICING.packages.some((x) => x.id === id && !x.coming_soon), `button for ${id} on ${f} links to its own package (${href})`);
   }
   for (const m of h.matchAll(/<a class="acct-link" href="([^"]*)" data-signup="(\w+)">/g)) ok(m[1].replace(/&amp;/g, '&') === SIGNUP(l, m[2]), `"or create your account" for ${m[2]} opens the sign-up with plan=${m[2]} on ${f}`);
   for (const m of h.matchAll(/href="(https:\/\/portal\.crierstudio\.com\/#\/signup[^"]*)"(?! data-product| data-signup)/g)) ok(!/plan=/.test(m[1]), `a generic sign-up link carries a plan on ${f}`);
-  if (!NEW_LANDING && f.endsWith('index.html') && !f.includes('pricing')) ok((h.match(/<tr class="la-buy">[\s\S]*?<\/tr>/) || [''])[0].split('data-product=').length === SOCIAL.length + 1 && /class="btn lime" href="[^"]*" data-product="/.test(h), `home table and "Start with" block buttons carry their package on ${f}`);
 }
 // ================= Review fixes (2026-11-14): rules that keep the reviewed problems from coming back =================
 // The published set, as GitHub Pages (Jekyll) builds it: every file except paths with a part starting with "_" or ".", and the
@@ -426,9 +401,9 @@ const PUBLISHED = [];
   }
 })('');
 ok(PUBLISHED.includes('index.html') && PUBLISHED.includes('CNAME') && PUBLISHED.includes('og.png'), 'published set has the site (index.html, CNAME, og.png)');
-const INTERNAL = /\.(?:md|py|mjs|cjs|ya?ml)$|^(?:build|templates|i18n|data|tests|design|_parked)\/|^(?:checkout\.json|payment-links\.json|fonts\/subset-coverage\.json)$/i;
+const INTERNAL = /\.(?:md|py|mjs|cjs|ya?ml)$|^(?:build|templates|i18n|data|tests|design|_parked)\/|^(?:fonts\/subset-coverage\.json)$/i;
 for (const f of PUBLISHED) ok(!INTERNAL.test(f), `internal file would be published: ${f} (add it to the exclude list in _config.yml)`);
-for (const f of ['ARABIC-REVIEW.md', 'README.md', 'REVIEW-instore.md', 'TRANSLATIONS.md', 'data/pricing.json', 'i18n/en.json', 'build/check.mjs', 'fonts/subset-coverage.json', 'checkout.json', 'payment-links.json']) ok(!PUBLISHED.includes(f), `${f} would be published`);
+for (const f of ['ARABIC-REVIEW.md', 'README.md', 'REVIEW-instore.md', 'TRANSLATIONS.md', 'data/pricing.json', 'i18n/en.json', 'build/check.mjs', 'fonts/subset-coverage.json']) ok(!PUBLISHED.includes(f), `${f} would be published`);
 const pubText = PUBLISHED.filter((f) => /\.(?:html|js|css|json|xml|txt|webmanifest|svg)$/.test(f));
 const htmlVis = (h) => h.replace(/<(style|script)\b[\s\S]*?<\/\1>/g, ' ').replace(/<[^>]+>/g, ' ');
 // no payment provider is named until data/pricing.json says which one (payment_provider)
@@ -447,6 +422,8 @@ if (!VAT_ON) {
 // 2026-11-15 (owner: "anything that is not in the header remove"): no published page names the Brand Deck, and the privacy page no
 // longer describes a form on the site (contact is WhatsApp, email and the client portal)
 for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) { const v = rd(f).replace(/<(script|style)\b[\s\S]*?<\/\1>/g, '').replace(/<[^>]+>/g, ' '); ok(!/Brand Deck|الملف التعريفي|fill in a form|تملأ نموذجًا/.test(v + (rd(f).match(/<meta[^>]+>/g) || []).join(' ')), `Brand Deck or site-form wording on ${f}`); }
+// N35 (audit 2): while one country is served no published page carries another currency or country in its source
+if (ONLY) for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) { const hh = rd(f); ok(!/data-usd|data-sar|data-aed|id="cur-data"|\bSAR\b|\bAED\b|ر\.س|د\.إ|Saudi|السعودية|الإمارات/.test(hh), `a dormant currency or country (USD / SAR / AED, Saudi Arabia, the UAE) in the source of ${f}`); }
 // every published page is in the sitemap, except redirect stubs and the 404 page
 for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) {
   const h = rd(f); if (h.includes('data-page="redirect"') || f === '404.html') continue;
@@ -478,7 +455,7 @@ for (const l of LANGS) {
     // 2026-11-15: each Social package's MAIN button is the green "Order <package> on WhatsApp" (wa.me, the message prefilled with
     // the package name and its monthly price in the page language), then "or create your account" and one "Pay by InstaPay" line
     const PAT = SOCIAL.join('|');
-    for (const [pg, block] of [['pricing/', new RegExp(`<article class="plan[^"]*" data-plan="(${PAT})"[\\s\\S]*?<\\/article>`, 'g')], ...(NEW_LANDING ? [['', new RegExp(`<article class="plan[^"]*" data-plan="(${PAT})"[\\s\\S]*?<\\/article>`, 'g')], ['social/', new RegExp(`<article class="plan[^"]*" data-plan="(${PAT})"[\\s\\S]*?<\\/article>`, 'g')]] : [['', new RegExp(`<td[^>]*><a class="btn wa-order" href="[^"]*" data-product="(${PAT})"[\\s\\S]*?<\\/td>`, 'g')]])]) {
+    for (const [pg, block] of [['pricing/', new RegExp(`<article class="plan[^"]*" data-plan="(${PAT})"[\\s\\S]*?<\\/article>`, 'g')], ...[['', new RegExp(`<article class="plan[^"]*" data-plan="(${PAT})"[\\s\\S]*?<\\/article>`, 'g')], ['social/', new RegExp(`<article class="plan[^"]*" data-plan="(${PAT})"[\\s\\S]*?<\\/article>`, 'g')]]]) {
       const h = rd(PREFIX(l) + pg + 'index.html'), seen = [];
       for (const m of h.matchAll(block)) {
         const btn = m[0].match(/<a class="btn wa-order" href="([^"]*)" data-product="(\w+)" data-wa-order="\w+"[^>]*>([^<]*)<\/a><a class="acct-link" href="[^"]*" data-signup="(\w+)">([^<]*)<\/a>/) || [];
