@@ -637,7 +637,7 @@ function jsonLd(lang, page, landing = false) {
 // lost and page_view fires once. (2026-10-11, mobile PageSpeed 100: the earlier "after load + idle, at most 3 s" still ran
 // gtag.js's ~300 ms of script inside the PageSpeed test window, costing Total Blocking Time and Speed Index.)
 // Trade-off: visitors who leave within about 6 s of the page loading without scrolling, tapping or typing are not counted.
-const GA_ID = 'G-QLQ443CQ8E';
+const GA_ID = 'G-80D3L78R0G';
 const GA_INLINE = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});try{if(localStorage.getItem('crier_consent')==='granted'){gtag('consent','update',{analytics_storage:'granted'});}}catch(e){}gtag('js',new Date());gtag('config','${GA_ID}');` +
   `(function(){var w=window,d=document,n=0,E=['pointerdown','touchstart','keydown','scroll','wheel'],O={passive:true,capture:true};` +
   `function L(){if(n)return;n=1;for(var i=0;i<E.length;i++)w.removeEventListener(E[i],L,O);var s=d.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=${GA_ID}';d.head.appendChild(s);}` +

@@ -27,10 +27,10 @@ for (const [l, p] of [['ar', '/'], ['en', '/en/pricing/'], ['en', '/es/pricing/'
   await pg.waitForTimeout(1500);
   ok(google.length === 0 && !(await pg.evaluate(() => !!document.querySelector('script[src*="googletagmanager.com/gtag/js"]'))), `${p} no gtag.js without an interaction in the first seconds after load (${google.length} Google requests)`);
   await pg.mouse.wheel(0, 40); // first interaction (wheel/scroll) loads it
-  await pg.waitForFunction(() => !!document.querySelector('script[src*="googletagmanager.com/gtag/js?id=G-QLQ443CQ8E"]'), null, { timeout: 5000 }).catch(() => {});
+  await pg.waitForFunction(() => !!document.querySelector('script[src*="googletagmanager.com/gtag/js?id=G-80D3L78R0G"]'), null, { timeout: 5000 }).catch(() => {});
   await pg.waitForTimeout(300);
   const timing = await pg.evaluate(() => { const n = performance.getEntriesByType('navigation')[0]; const r = performance.getEntriesByType('resource').find((e) => e.name.includes('gtag/js')); return { loadEnd: n.loadEventEnd, gtagStart: r ? r.startTime : -1 }; });
-  ok(google.filter((u) => u.includes('gtag/js?id=G-QLQ443CQ8E')).length === 1 && timing.gtagStart >= timing.loadEnd - 1, `${p} gtag.js requested once, on the first interaction after window load (${JSON.stringify(timing)})`);
+  ok(google.filter((u) => u.includes('gtag/js?id=G-80D3L78R0G')).length === 1 && timing.gtagStart >= timing.loadEnd - 1, `${p} gtag.js requested once, on the first interaction after window load (${JSON.stringify(timing)})`);
   await pg.evaluate(() => scrollTo(0, 0));
   ok(await pg.isVisible('#consent-bar'), `${p} bar shown on first visit`);
   ok(!google.some((u) => /collect|google-analytics|analytics\.google/.test(u)), `${p} no GA hit sent before consent`);

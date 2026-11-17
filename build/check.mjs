@@ -299,7 +299,7 @@ ok(rd('index.html').includes('"alternateName":"Crier"') && rd('index.html').incl
 // early in <head>, with consent defaulting to denied before the config call, and gtag.js loaded only on the first interaction or 6 s after page load; ads signals are never granted; the CSP allows Google's hosts
 // and every inline script by its sha256 hash (no 'unsafe-inline' for scripts).
 {
-  const GA = 'G-QLQ443CQ8E';
+  const GA = 'G-80D3L78R0G';
   const walk = (dir) => fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true }).flatMap((e) => {
     const rel = dir ? dir + '/' + e.name : e.name;
     if (e.isDirectory()) return SKIP_DIRS.includes(e.name) ? [] : walk(rel);
