@@ -289,7 +289,8 @@ for (const id of SOCIAL) ok(d.en[`pkg.${id}.wa`] === `Subscribe to ${NAMES[id][0
 // window or a refund as an outcome; the refund page states the no-refund policy. (sc.* is the parked sculptures catalogue.)
 for (const l of LANGS) for (const [k, v] of Object.entries(d[l])) if (!/^sc\./.test(k)) {
   ok(!/working hours|business hours|ساعات العمل|أوقات العمل/i.test(v), `${l}:${k} promises working hours (the studio has none)`);
-  ok(!/within \d+ days|\d+-day refund|refund window|money back|a fix or a refund|خلال \d+ أيام|مهلة الاسترداد|تعديل أو استرداد|رد المبلغ/i.test(v), `${l}:${k} promises a refund or a refund window (the policy is no refunds)`);
+  // privacy.backup.p: "Backups are deleted within 30 days" (owner 2026-11-17) is a deletion deadline, not a refund window
+  ok(k === 'privacy.backup.p' || !/within \d+ days|\d+-day refund|refund window|money back|a fix or a refund|خلال \d+ أيام|مهلة الاسترداد|تعديل أو استرداد|رد المبلغ/i.test(v), `${l}:${k} promises a refund or a refund window (the policy is no refunds)`);
 }
 // Owner (2026-11-16): the privacy page names no language or image service and has no line about outside processing of the brief
 for (const l of LANGS) for (const [k, v] of Object.entries(d[l])) ok(!/language and image services|خدمات خارجية للنصوص والصور|خدمات النصوص والصور/i.test(v), `${l}:${k} mentions outside language and image services (removed by the owner)`);
