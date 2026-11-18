@@ -82,7 +82,7 @@ const SEASONS = ['ramadan', 'eids', 'national', 'white'];
 // (platforms included) and {n:<id>.<item>} (a count). Never write a price or a count into i18n or templates.
 const PRICING = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'pricing.json'), 'utf8'));
 const PKG = Object.fromEntries(PRICING.packages.map((p) => [p.id, p]));
-const PRICES = Object.fromEntries(PRICING.packages.map((p) => [p.id, p.price])); // USD: the international price, in the HTML of every language
+const PRICES = Object.fromEntries(PRICING.packages.map((p) => [p.id, p.price ?? 0])); // (S05: no USD price in one-country mode, where it is never written) // USD: the international price, in the HTML of every language
 // Launch pricing (Adham, 2026-10-15): buyers in Saudi Arabia, the UAE and Egypt pay in SAR / AED / EGP with VAT ADDED
 // (local.countries in data/pricing.json; packages[].prices / extra_platform_prices are NET before VAT); every other country
 // pays the USD price with no VAT. Every price carries its local net prices; site.js shows the buyer's currency (by country,
@@ -95,7 +95,8 @@ const COUNTRIES_ALL = PRICING.local.countries;
 // republishes (portal/scripts/publish-pricing.cjs).
 const FUNNEL_CC = (Array.isArray(PRICING.funnel?.countries) ? PRICING.funnel.countries : []).filter((c) => c in COUNTRIES_ALL);
 const COUNTRIES = FUNNEL_CC.length ? Object.fromEntries(Object.entries(COUNTRIES_ALL).filter(([cc]) => FUNNEL_CC.includes(cc))) : COUNTRIES_ALL;
-const RESTRICTED = Object.keys(COUNTRIES).length < Object.keys(COUNTRIES_ALL).length;
+// S05 (audit 3): the public data/pricing.json carries ONLY the served countries, so a funnel list means one-country mode
+const RESTRICTED = FUNNEL_CC.length > 0 && (Object.keys(COUNTRIES).length < Object.keys(COUNTRIES_ALL).length || PRICING.schema === 'crier-public-pricing/1');
 // VAT (review fix 2026-11-14, owner: not VAT-registered anywhere): a VAT line or "+ VAT" is shown only for a country whose price
 // data marks VAT as charged (vat_pct above 0, and vat_charged not false). Otherwise the price shown is the amount due.
 const vatOn = (cc) => !!cc && !!COUNTRIES[cc] && Number(COUNTRIES[cc].vat_pct) > 0 && COUNTRIES[cc].vat_charged !== false;
@@ -182,7 +183,8 @@ const VARIANT_RE = /\.(sa|ae|eg|us)$/;
 function fillPricing(v, key, lang) {
   const need = (x, what) => { if (x == null) throw new Error(`i18n ${key}: ${what} is not in data/pricing.json`); return x; };
   // a price becomes a marker \u0002<usd>|<SAR>|<AED>|<EGP>\u0002: t() writes it as $<usd>, h() as a <span> site.js can localise
-  const mark = (usd, loc, what) => '\u0002' + [need(usd, what), ...CURS.slice(1).map((c) => need(loc?.[c], what + ' ' + c))].join('|') + '\u0002';
+  // S05: the public price data has no US-dollar price while only other countries are served; one-country pages never write it
+  const mark = (usd, loc, what) => '\u0002' + [RESTRICTED && usd == null ? '0' : need(usd, what), ...CURS.slice(1).map((c) => need(loc?.[c], what + ' ' + c))].join('|') + '\u0002';
   return v.replace(/\{price:(\w+)\}/g, (m, id) => mark(PKG[id]?.price, PKG[id]?.prices, 'price ' + id))
     .replace(/\{extra:(\w+)\}/g, (m, id) => mark(PKG[id]?.extra_platform_price, PKG[id]?.extra_platform_prices, 'extra platform price ' + id))
     .replace(/\{plat:(\w+)\}/g, (m, id) => String(need(PKG[id]?.platforms_included, 'platforms of ' + id)))
@@ -212,7 +214,9 @@ function priceSpan(lang, vals, cls = 'amt') {
   const data = RESTRICTED ? '' : ` data-usd="${usd}"${CURS.slice(1).map((c, i) => ` data-${c.toLowerCase()}="${loc[i]}"`).join('')}`;
   return `<span class="${cls}" dir="${cur !== 'USD' && RTL.has(lang) ? 'rtl' : 'ltr'}"${data}>${esc(text)}</span>`;
 }
-const t = (lang, key) => raw(lang, key).replace(PRICE_MARK, (m, vals) => '$' + fmtNum(+vals.split('|')[0])).replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m).replace(/<\/?(?:b|a)>/g, '');
+// plain-text price: US dollars, or (one country served, S05) that country's currency, the same text priceSpan() shows
+const priceText = (lang, vals) => { const [usd, ...loc] = String(vals).split('|'), cur = RESTRICTED ? htmlCur() : 'USD'; return cur === 'USD' ? '$' + fmtNum(+usd) : fmtMoney(lang, cur, +loc[CURS.indexOf(cur) - 1]); };
+const t = (lang, key) => raw(lang, key).replace(PRICE_MARK, (m, vals) => priceText(lang, vals)).replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m).replace(/<\/?(?:b|a)>/g, '');
 function h(lang, key, href) {
   let s = raw(lang, key).replace(/\{(\w+)\}/g, (m, k) => (k === 'email' ? '\u0001E\u0001' : k === 'wa' && WA ? '\u0001W\u0001' : vars[k] ?? m));
   s = esc(s).replace(/&lt;(\/?)b&gt;/g, '<$1b>')

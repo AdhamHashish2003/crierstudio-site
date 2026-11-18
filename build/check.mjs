@@ -31,42 +31,63 @@ const d = Object.fromEntries(LANGS.map((l) => [l, JSON.parse(rd(`i18n/${l}.json`
 const PRICING = JSON.parse(rd('data/pricing.json'));
 ok(/^portal\/lib\/pricing\.json sha256 [0-9a-f]{64}$/.test(PRICING.generated_from || ''), 'data/pricing.json was not written by publish-pricing.cjs');
 // Country prices (owner 2026-11-15): FOUR monthly packages, Bronze / Silver / Gold / Diamond (ids seen / visible / growing /
-// diamond), one price per country and package (EGP = Egypt, SAR = Saudi Arabia, AED = the UAE, USD = the USA and every other
-// country). Egypt EGP 2,500 / 3,500 / 5,000 / 6,500; Saudi Arabia and the UAE are the rule (double Egypt, generated in the UMA repo);
-// USD as before, Diamond's USD 1,900 a placeholder (not shown while Egypt is the one country served). No list price, nothing
-// struck through. These numbers are pinned here so a republish of data/pricing.json that drifts from the decision fails the build.
-const LAUNCH = { seen: { USD: 750, SAR: 350, AED: 340, EGP: 2500 }, visible: { USD: 1100, SAR: 485, AED: 475, EGP: 3500 }, growing: { USD: 1500, SAR: 695, AED: 680, EGP: 5000 }, diamond: { USD: 1900, SAR: 905, AED: 885, EGP: 6500 } };
+// diamond), Egypt EGP 2,500 / 3,500 / 5,000 / 6,500. No list price, nothing struck through. Pinned here so a republish of
+// data/pricing.json that drifts from the decision fails the build. S05 (audit 3, 2026-11-17): this public repository pins and
+// shows only the prices of the countries served; the studio's prices for other markets live in its private price list.
+const LAUNCH = { seen: { EGP: 2500 }, visible: { EGP: 3500 }, growing: { EGP: 5000 }, diamond: { EGP: 6500 } };
 const NAMES = { seen: ['Bronze', 'البرونزية'], visible: ['Silver', 'الفضية'], growing: ['Gold', 'الذهبية'], diamond: ['Diamond', 'الماسية'] };
 // the prices before 2026-11-15 that no package has any more: a page or a text that still shows one is stale (EGP 7,500 was Gold)
 const CURRENT = new Set(Object.values(LAUNCH).flatMap((w) => Object.entries(w).map(([c, n]) => c + n)));
-const STALE = { EGP: [5000, 7500], SAR: [695, 1045], AED: [680, 1020] }; // the old Silver and Gold prices
+const STALE = { EGP: [5000, 7500] }; // the old Silver and Gold prices
 const STALE_NOW = Object.entries(STALE).flatMap(([c, ns]) => ns.filter((n) => !CURRENT.has(c + n)).map((n) => [c, n]));
 // the currencies shown besides US dollars (data-sar, data-aed, data-egp); the USA is a country in USD, so USD is not repeated
 // One country served (owner 2026-11-15, temporary: data/pricing.json funnel.countries, Egypt only): no picker, the pages written in
 // that country's currency, Offers and areaServed only there. The other countries' prices stay in data/pricing.json (pinned above).
 const SERVED = (Array.isArray(PRICING.funnel?.countries) ? PRICING.funnel.countries : []).filter((c) => c in PRICING.local.countries);
-const ONLY = SERVED.length && SERVED.length < Object.keys(PRICING.local.countries).length ? SERVED : null;
+// S05 (audit 3): the public data/pricing.json (schema crier-public-pricing/1) holds only the served countries
+const PUBLIC = PRICING.schema === 'crier-public-pricing/1';
+const ONLY = SERVED.length && (PUBLIC || SERVED.length < Object.keys(PRICING.local.countries).length) ? SERVED : null;
 const OFFER_CC = ONLY ? Object.fromEntries(Object.entries(PRICING.local.countries).filter(([cc]) => ONLY.includes(cc))) : PRICING.local.countries;
 const DEF_CC = ONLY ? ONLY[0] : 'SA', DEF_CUR = PRICING.local.countries[DEF_CC].currency;
 const LOCAL_CURS = [...new Set(Object.values(PRICING.local.countries).map((c) => c.currency))].filter((c) => c !== 'USD');
-ok(JSON.stringify(LOCAL_CURS) === JSON.stringify(['SAR', 'AED', 'EGP']) && PRICING.local.fallback.currency === 'USD' && PRICING.local.countries.US?.currency === 'USD' && PRICING.local.countries.US.vat_pct === 0, 'local currencies are SAR, AED, EGP; the USA and the fallback are US dollars with no VAT');
+const HAS_USD = !PUBLIC || Object.values(PRICING.local.countries).some((c) => c.currency === 'USD'); // the public file has US dollars only when the USA is served
+ok(PUBLIC ? JSON.stringify(Object.keys(PRICING.local.countries)) === JSON.stringify(SERVED) && LOCAL_CURS.every((c) => ['SAR', 'AED', 'EGP'].includes(c)) : JSON.stringify(LOCAL_CURS) === JSON.stringify(['SAR', 'AED', 'EGP']) && PRICING.local.fallback.currency === 'USD' && PRICING.local.countries.US?.currency === 'USD' && PRICING.local.countries.US.vat_pct === 0, 'local currencies are SAR, AED, EGP; the USA and the fallback are US dollars with no VAT');
 ok(JSON.stringify(PRICING.packages.map((p) => p.id)) === JSON.stringify([...SOCIAL, 'deck']), 'packages are seen, visible, growing, diamond and the coming-soon deck (no Social Kit)');
 // the four packages have the same items (only the counts differ): posts, a story with every post, reels, the calendar, revision
 // rounds, publishing and branding; every one includes all three platforms (owner 2026-11-15)
 for (const id of SOCIAL) { const p = PRICING.packages.find((x) => x.id === id); ok(p && p.platforms_included === 3 && p.items.stories === p.items.posts && p.items.publishing === 1 && p.items.branding === 1 && p.items.calendar === 1 && !('campaign_concepts' in p.items) && !('ad_copies' in p.items) && !('competitor_update' in p.items), `${id}: all three platforms, a story with every post, publishing and branding, no campaign / ad copy / competitor update`); }
-ok(STALE_NOW.length === 3 && STALE_NOW.some(([c, n]) => c === 'EGP' && n === 7500), 'the old Gold price EGP 7,500 is stale');
+ok(STALE_NOW.length === 1 && STALE_NOW.some(([c, n]) => c === 'EGP' && n === 7500), 'the old Gold price EGP 7,500 is stale');
 for (const [id, want] of Object.entries(LAUNCH)) {
   const p = PRICING.packages.find((x) => x.id === id);
-  ok(p && !p.coming_soon && p.billing === 'monthly' && p.price === want.USD && p.prices.USD === want.USD && !('list_price' in p) && !('list_prices' in p), `$${want.USD} a month, no list price (${id})`);
+  ok(p && !p.coming_soon && p.billing === 'monthly' && (!HAS_USD || (p.price === want.USD && p.prices.USD === want.USD)) && !('list_price' in p) && !('list_prices' in p), `$${want.USD} a month, no list price (${id})`);
   for (const c of LOCAL_CURS) ok(p && p.prices[c] === want[c], `${c} ${want[c]} a month (${id})`);
   ok(d.en['name.' + id] === NAMES[id][0] && d.ar['name.' + id] === NAMES[id][1], `name of ${id} is ${NAMES[id].join(' / ')}`);
 }
 for (const p of PRICING.packages) {
-  ok(Number.isInteger(p.price) && p.price > 0, `US-dollar price (${p.id})`);
+  if (HAS_USD) ok(Number.isInteger(p.price) && p.price > 0, `US-dollar price (${p.id})`);
   for (const c of LOCAL_CURS) ok(Number.isInteger(p.prices[c]) && p.prices[c] > 0, `${c} price (${p.id})`);
 }
-const PRICE_NUMS = [...new Set(PRICING.packages.flatMap((p) => [p.price, p.extra_platform_price].filter(Boolean)))];
-const PRICE_RE = new RegExp('\\$\\s?(' + PRICE_NUMS.join('|') + ')(?!\\d)|(?<![\\d.,])(' + PRICE_NUMS.join('|') + ')\\s?\\$');
+// S05 + O02 (audit 3): data/pricing.json is the public allowlist written by uma portal/scripts/publish-pricing.cjs: only these fields
+// may appear (a field the studio adds to its private price list never reaches this public repository by default), and
+// projection_sha256 must be the sha256 of the rest, so a hand edit or a stale partial copy fails here
+{
+  const ALLOW = { top: ['schema', 'generated_from', 'funnel', 'local', 'platforms', 'rules', 'packages', 'projection_sha256'], funnel: ['countries'], local: ['countries'], country: ['currency', 'vat_pct'], rules: ['first_month_includes_kit'],
+    pkg: ['id', 'tier', 'name', 'name_ar', 'billing', 'coming_soon', 'retired', 'platforms_included', 'items', 'prices', 'extra_platform_prices'],
+    items: ['posts', 'stories', 'described_reels', 'calendar', 'revision_rounds', 'publishing', 'branding', 'deck_screen_pdf', 'deck_print_pdf', 'products'] };
+  const extra = (o, allowed, where) => Object.keys(o || {}).filter((k) => !allowed.includes(k)).map((k) => where + '.' + k);
+  const bad = [...extra(PRICING, ALLOW.top, 'pricing'), ...extra(PRICING.funnel, ALLOW.funnel, 'funnel'), ...extra(PRICING.local, ALLOW.local, 'local'), ...extra(PRICING.rules, ALLOW.rules, 'rules'),
+    ...Object.entries(PRICING.local?.countries || {}).flatMap(([cc, c]) => extra(c, ALLOW.country, 'local.countries.' + cc)),
+    ...(PRICING.packages || []).flatMap((p) => [...extra(p, ALLOW.pkg, 'packages.' + p.id), ...extra(p.items, ALLOW.items, `packages.${p.id}.items`),
+      ...['prices', 'extra_platform_prices'].flatMap((k) => extra(p[k], LOCAL_CURS.concat(HAS_USD ? ['USD'] : []), `packages.${p.id}.${k}`))])];
+  ok(PUBLIC, 'data/pricing.json is the public projection (schema crier-public-pricing/1): run uma portal/scripts/publish-pricing.cjs --site <this repo>');
+  ok(bad.length === 0, 'data/pricing.json carries fields outside the public allowlist: ' + bad.join(', '));
+  ok(!(PRICING.funnel?.countries || []).some((cc) => !(cc in (PRICING.local?.countries || {}))) && Object.keys(PRICING.local?.countries || {}).every((cc) => SERVED.includes(cc)), 'data/pricing.json lists exactly the served countries');
+  const canonical = (v) => JSON.stringify(v, (k, x) => (x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.keys(x).sort().map((key) => [key, x[key]])) : x));
+  const { projection_sha256: claimed, ...rest } = PRICING;
+  ok(/^[0-9a-f]{64}$/.test(claimed || '') && crypto.createHash('sha256').update(canonical(rest)).digest('hex') === claimed, 'data/pricing.json projection_sha256 does not match its content (edited by hand?): republish it with publish-pricing.cjs');
+}
+const PRICE_NUMS = [...new Set([...PRICING.packages.flatMap((p) => [p.price, p.extra_platform_price, ...Object.values(p.prices || {})].filter(Boolean)), ...Object.values(LAUNCH).flatMap((w) => Object.values(w))])].flatMap((n) => [n, n.toLocaleString('en-US')]); // (S05: every shown price, with and without its comma)
+const PRICE_RE = new RegExp('(?:\\$|EGP|ج\\.م)\\s?(' + PRICE_NUMS.join('|') + ')(?![\\d,])|(?<![\\d.,])(' + PRICE_NUMS.join('|') + ')\\s?(?:\\$|EGP|ج\\.م|جنيه)');
 for (const l of LANGS) for (const [k, v] of Object.entries(d[l])) ok(!PRICE_RE.test(v), `a price is written into i18n ${l}:${k} (use {price:<id>})`);
 for (const f of fs.readdirSync(path.join(ROOT, 'templates'))) ok(!PRICE_RE.test(rd('templates/' + f)), `a price is written into templates/${f}`);
 const en = Object.keys(d.en).sort();
@@ -126,7 +147,7 @@ for (const l of LANGS) for (const p of PAGES) {
   const shown = (pk) => d[l]['cur.fmt'].replace('{cur}', d[l]['cur.sym' + DEF_CUR]).replace('{n}', pk.prices[DEF_CUR].toLocaleString('en-US'));
   if (p === 'pricing/') for (const pk of PRICING.packages.filter((x) => !x.coming_soon)) { // the coming-soon Brand Deck left the pricing page (2026-11-15)
     ok(ONLY ? h.includes(`>${shown(pk)}<`) : h.includes(dataAttrs(pk.price, pk.prices)), `price ${ONLY ? pk.prices[DEF_CUR] + ' ' + DEF_CUR : pk.price + ' USD / ' + LOCAL_CURS.map((c) => pk.prices[c] + ' ' + c).join(' / ')} (${pk.id}, data/pricing.json) on ${file}`);
-    if (!pk.coming_soon) ok(new RegExp(`class="price amt" dir="(ltr|rtl)"${dataAttrs(pk.price, pk.prices)}>${ONLY ? shown(pk).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '<' : ''}`).test(h) && !h.includes('class="price-list'), `price ${pk.price} USD, nothing struck through (${pk.id}) on ${file}`);
+    if (!pk.coming_soon) ok(new RegExp(`class="price amt" dir="(ltr|rtl)"${dataAttrs(pk.price, pk.prices)}>${ONLY ? shown(pk).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '<' : ''}`).test(h) && !h.includes('class="price-list'), `price ${ONLY ? shown(pk) : pk.price + ' USD'}, nothing struck through (${pk.id}) on ${file}`);
     if (pk.extra_platform_price) ok(h.includes(`data-extra="${pk.extra_platform_price}"`), `extra platform ${pk.extra_platform_price} USD (${pk.id}) on ${file}`);
   }
   if (p === 'pricing/') ok((h.match(/data-product="/g) || []).length === SOCIAL.length && !/data-unavailable="deck"|Brand Deck/.test(h), `${SOCIAL.length} buy buttons and no Brand Deck on ${file}`);
@@ -136,7 +157,7 @@ for (const l of LANGS) for (const p of PAGES) {
   if (ONLY) {
     ok(!h.includes('id="cur-select"') && !/<select[^>]*data-cc/.test(h), `no country picker on ${file}`);
     if (/id="cur-data"/.test(h)) ok(h.includes(`"lock":"${DEF_CC}"`), `currency data locked to ${DEF_CC} on ${file}`);
-    const others = Object.values(PRICING.local.countries).map((c) => c.currency).filter((c) => c !== DEF_CUR);
+    const others = ['USD', 'SAR', 'AED', 'EGP'].filter((c) => c !== DEF_CUR); // (S05: every currency the studio prices in, not only those in the public file)
     for (const c of others) ok(!vis.includes(d[l]['cur.sym' + c] ? d[l]['cur.fmt'].replace('{cur}', d[l]['cur.sym' + c]).replace('{n}', '').trim() : c + ' ') && !(c === 'USD' && /\$\s?\d/.test(vis)), `a ${c} price in the text of ${file}`);
     for (const m of h.matchAll(/class="(?:price )?amt" dir="(?:ltr|rtl)"[^>]*>([^<]*)</g)) ok(m[1].includes(d[l]['cur.sym' + DEF_CUR]), `price "${m[1]}" is not in ${DEF_CUR} on ${file}`);
   }
@@ -258,7 +279,7 @@ for (const l of LANGS) for (const [from, to] of Object.entries(MOVED)) {
   ok(!sm.includes(`/${pre}${from}<`), 'stub in sitemap ' + f);
 }
 ok(rd('pricing/index.html').includes('"@type":"ItemList"') && rd('pricing/index.html').includes(`"priceCurrency":"${ONLY ? DEF_CUR : 'USD'}"`), 'pricing JSON-LD');
-if (ONLY) for (const l of LANGS) { const ld = (rd(PREFIX(l) + 'pricing/index.html').match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/) || [])[1] || ''; for (const c of [...new Set(Object.values(PRICING.local.countries).map((x) => x.currency))].filter((c) => c !== DEF_CUR)) ok(!ld.includes(`"priceCurrency":"${c}"`), `pricing JSON-LD: no ${c} offer while only ${ONLY.join(', ')} is served (${l})`); }
+if (ONLY) for (const l of LANGS) { const ld = (rd(PREFIX(l) + 'pricing/index.html').match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/) || [])[1] || ''; for (const c of ['USD', 'SAR', 'AED', 'EGP'].filter((c) => c !== DEF_CUR)) ok(!ld.includes(`"priceCurrency":"${c}"`), `pricing JSON-LD: no ${c} offer while only ${ONLY.join(', ')} is served (${l})`); }
 // Owner 2026-11-15: the packages are subscribed to, not ordered ("we are not a delivery or food business"): «اشترك في البرونزية عبر واتساب»
 // / "Subscribe to Bronze on WhatsApp". «اطلب» / "order" stays only where it means a request (a quote, the coming-soon Brand Deck).
 for (const l of LANGS) for (const [k, v] of Object.entries(d[l])) if (!/^(is\.|sc\.|faq\.25|deck\.|faq\.1[1-6]|pkg\.deck|availability\.deck|meta\.d\.brand-deck|terms\.offer\.p2)/.test(k))

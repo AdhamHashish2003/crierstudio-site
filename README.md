@@ -116,18 +116,20 @@ Cloudflare rule (owner, one time; Cloudflare dashboard > crierstudio.com > Cachi
 
 Four monthly packages (owner 2026-11-15), Bronze (`seen`), Silver (`visible`), Gold (`growing`) and Diamond (`diamond`), plus the Brand Deck (`deck`, coming soon, never payable). The Social Kit, Stay Visible and Keep Growing are retired names. Prices and counts come only from `data/pricing.json`, republished from the studio's master price list (`node portal/scripts/publish-pricing.cjs --site <this dir>`); never type a price into i18n or templates (`build/check.mjs` fails). `build/check.mjs` pins this table:
 
-**Egypt only (since 2026-11-15):** the site shows the EGP column only, and payment is InstaPay over WhatsApp. While one country is served the built pages carry that currency only: no `data-usd` / `data-sar` / `data-aed` on prices and no `#cur-data` (audit 2, N35; `build/check.mjs` fails on a dormant currency or country in a published page's source). The USD, SAR and AED columns are dormant: they stay in `data/pricing.json` and are pinned by `build/check.mjs` for the day `funnel.countries` lists other countries again.
+**Egypt only (since 2026-11-15):** the site shows EGP prices only, and payment is InstaPay over WhatsApp. While one country is served the built pages carry that currency only: no `data-usd` / `data-sar` / `data-aed` on prices and no `#cur-data` (audit 2, N35; `build/check.mjs` fails on a dormant currency or country in a published page's source).
 
-| Package, a month | USD (USA and other countries, dormant) | SAR (Saudi Arabia, dormant) | AED (UAE, dormant) | EGP (Egypt, shown) |
-| --- | --- | --- | --- | --- |
-| Bronze | $750 | 350 | 340 | 2,500 |
-| Silver | $1,100 | 485 | 475 | 3,500 |
-| Gold | $1,500 | 695 | 680 | 5,000 |
-| Diamond | $1,900 (placeholder) | 905 | 885 | 6,500 |
+**Public price data (audit 3, S05, 2026-11-17):** this repository is public, so `data/pricing.json` is an allowlist written by the UMA repo's `portal/scripts/publish-pricing.cjs` (schema `crier-public-pricing/1`): the served countries with their currency and the VAT charged, the platforms, the "first month includes the brand look" term, and per package its id, tier, names, billing, platforms, deliverable counts and prices in the served currencies. Nothing else: no spend caps, payment aliases, exchange rates, price rules, VAT notes, notes, or prices for countries not served. `build/check.mjs` fails on any other field and on a `projection_sha256` that does not match the content (a hand edit). Older commits of this repository still contain the full price list; whether to rewrite that history is a separate owner decision. When `funnel.countries` lists more countries, the export adds their prices and `build/check.mjs`'s `LAUNCH` table must pin them.
+
+| Package, a month | EGP (Egypt) |
+| --- | --- |
+| Bronze | 2,500 |
+| Silver | 3,500 |
+| Gold | 5,000 |
+| Diamond | 6,500 |
 
 Arabic counts (2026-11-15, voice guide) go through ONE helper: `{c:<id>.<item>:<noun>}` writes the count with its noun in the right form from `cnt.<noun>` ("one:…|two:…|few:{n} …|many:{n} …|other:{n} …", `Intl.PluralRules`), so «4 تصاميم», «12 تصميمًا», «4 جولات تعديل»; `build/check.mjs` fails on «{n} تصميمًا» templates and on 3–10 with a singular noun. Every page says we publish for the client after the client approves (FAQ, trust lines, walkthrough, terms); the check fails on "you post it" wording.
 
-Every package has the same items, only the counts differ (`pkg.<id>.f1`..`f7`): designed posts 4 / 7 / 12 / 15, a story with every post, reels 2 / 3 / 5 / 8, the monthly content calendar, revision rounds 1 / 1 / 2 / 4 per piece, all three platforms, "We publish on your pages and reply to comments and messages." and the brand look set up in the first month. `build/check.mjs` flags the prices no package has any more as stale (EGP 7,500, SAR 1,045, AED 1,020: Gold before 2026-11-15).
+Every package has the same items, only the counts differ (`pkg.<id>.f1`..`f7`): designed posts 4 / 7 / 12 / 15, a story with every post, reels 2 / 3 / 5 / 8, the monthly content calendar, revision rounds 1 / 1 / 2 / 4 per piece, all three platforms, "We publish on your pages and reply to comments and messages." and the brand look set up in the first month. `build/check.mjs` flags the prices no package has any more as stale (EGP 7,500: Gold before 2026-11-15).
 
 The price shown is the amount due. VAT (owner, 2026-11-14: not VAT-registered anywhere): a VAT line or "+ VAT" appears only for a country whose `local.countries.<CC>` in the price data marks VAT as charged (`vat_pct` above 0 and `vat_charged` not false); otherwise none, and `build/check.mjs` fails on any VAT statement. Payment (Egypt only, since 2026-11-15): the client subscribes on WhatsApp, gets the InstaPay details there, pays and sends the receipt; nothing is charged or renewed automatically and there are no refunds. No payment link is sent. (Dormant, for other countries: a payment link after sign-up.) No card payment provider is named anywhere on the site (`build/check.mjs` fails on "Stripe" until `data/pricing.json` names a provider in `payment_provider`).
 
