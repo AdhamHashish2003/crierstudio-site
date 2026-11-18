@@ -1,5 +1,5 @@
 {
- "i18n_sha256": "dab86b74e3147afc7ced57a8b636364bb88c1f70f8664f4cd8678739c9c67305",
+ "i18n_sha256": "b1ad82cf7bae1e7d328740a804ef19fce8ca6ccd33820467998b3d46b072e91e",
  "used": [
   "about.contact.h",
   "about.contact.p",
@@ -436,6 +436,8 @@
   "privacy.ga.h",
   "privacy.ga.p1",
   "privacy.ga.p2",
+  "privacy.gen.h",
+  "privacy.gen.p",
   "privacy.h1",
   "privacy.intro",
   "privacy.keep.h",
