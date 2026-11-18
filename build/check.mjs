@@ -502,6 +502,19 @@ for (const l of LANGS) {
   ok(rec && rec.i18n_sha256 === sum, 'build/used-keys.json is missing or older than the i18n files: run node build/build.mjs first');
   if (rec) for (const k of Object.keys(d.en)) ok(rec.used.includes(k), `unused i18n key ${k} (no page reads it: delete it in every language)`);
 }
+// S06 (audit 3): the hashed files (assets/h/) are exactly the files of the releases in build/hashed-releases.json, the newest release
+// is what the built pages name, and every file's bytes match the hash in its name
+{
+  let log = null; try { log = JSON.parse(rd('build/hashed-releases.json')); } catch { }
+  ok(log && Array.isArray(log.releases) && log.releases.length > 0, 'build/hashed-releases.json is missing: run node build/build.mjs');
+  if (log) {
+    const onDisk = fs.readdirSync(path.join(ROOT, 'assets', 'h')).sort(), kept = [...new Set(log.releases.flatMap((r) => r.files))].sort();
+    ok(JSON.stringify(onDisk) === JSON.stringify(kept), `assets/h/ holds exactly the files of the recorded releases (on disk ${onDisk.length}, recorded ${kept.length})`);
+    for (const f of onDisk) { const m = f.match(/\.([0-9a-f]{10})\.\w+$/); ok(m && crypto.createHash('sha256').update(fs.readFileSync(path.join(ROOT, 'assets', 'h', f))).digest('hex').startsWith(m[1]), `assets/h/${f}: bytes match the hash in its name`); }
+    const named = new Set(); for (const p of PAGES) for (const l of LANGS) for (const u of rd(PREFIX(l) + p + 'index.html').match(/\/assets\/h\/[\w.-]+/g) || []) named.add(u.slice('/assets/h/'.length));
+    ok([...named].every((f) => log.releases[0].files.includes(f)), 'the built pages name only files of the newest release');
+  }
+}
 // legal pages: their "last updated" date may not be older than their text. build/legal-stamp.json holds, per legal page and
 // language, a fingerprint of the page's text (the date line left out) and the date it carries. Changed text with an unchanged
 // stamp fails; after a change, set the date to the day of the change and run: node build/check.mjs --restamp

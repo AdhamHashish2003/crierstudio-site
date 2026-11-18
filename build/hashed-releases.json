@@ -1,0 +1,152 @@
+{
+ "about": "S06 (audit 3): the hashed asset sets of recent releases, newest first; build/build.mjs keeps their files in assets/h/ (see HASHED_DIR).",
+ "keep_releases": 10,
+ "keep_days": 30,
+ "releases": [
+  {
+   "id": "7acb269ea21a",
+   "files": [
+    "archivo-latin-wght-normal.subset.0e0287c02d.woff2",
+    "crier-logo-160.09cb37df74.webp",
+    "crier-logo-240.5b93963dcf.webp",
+    "crier-logo-80.5823630d60.webp",
+    "instrument-sans-latin-var.subset.dabf7e3c18.woff2",
+    "landing.b0be2a76e1.js",
+    "noto-sans-arabic-arabic-400-normal.subset.72f499b144.woff2",
+    "noto-sans-arabic-arabic-700-normal.subset.52b009295a.woff2",
+    "site.1f5547f7ff.js"
+   ]
+  },
+  {
+   "id": "b5134f27464e",
+   "files": [
+    "archivo-latin-wght-normal.subset.0e0287c02d.woff2",
+    "crier-logo-160.09cb37df74.webp",
+    "crier-logo-240.5b93963dcf.webp",
+    "crier-logo-80.5823630d60.webp",
+    "instrument-sans-latin-var.subset.dabf7e3c18.woff2",
+    "landing.b0be2a76e1.js",
+    "noto-sans-arabic-arabic-400-normal.subset.72f499b144.woff2",
+    "noto-sans-arabic-arabic-700-normal.subset.52b009295a.woff2",
+    "site.2d10054c90.js"
+   ],
+   "replaced": "2026-11-15"
+  },
+  {
+   "id": "07494bc54c50",
+   "files": [
+    "archivo-latin-wght-normal.subset.0e0287c02d.woff2",
+    "crier-logo-160.09cb37df74.webp",
+    "crier-logo-240.5b93963dcf.webp",
+    "crier-logo-80.5823630d60.webp",
+    "instrument-sans-latin-var.subset.dabf7e3c18.woff2",
+    "landing.46eeb5aabd.js",
+    "noto-sans-arabic-arabic-400-normal.subset.72f499b144.woff2",
+    "noto-sans-arabic-arabic-700-normal.subset.52b009295a.woff2",
+    "site.2d10054c90.js"
+   ],
+   "replaced": "2026-11-15"
+  },
+  {
+   "id": "8327b074baad",
+   "files": [
+    "archivo-latin-wght-normal.subset.0e0287c02d.woff2",
+    "crier-logo-160.09cb37df74.webp",
+    "crier-logo-240.5b93963dcf.webp",
+    "crier-logo-80.5823630d60.webp",
+    "dash.022ad5a0cc.js",
+    "instrument-sans-latin-var.subset.dabf7e3c18.woff2",
+    "landing.46eeb5aabd.js",
+    "noto-sans-arabic-arabic-400-normal.subset.72f499b144.woff2",
+    "noto-sans-arabic-arabic-700-normal.subset.52b009295a.woff2",
+    "site.d612ea655b.js"
+   ],
+   "replaced": "2026-11-15"
+  },
+  {
+   "id": "e1ec60c6a144",
+   "files": [
+    "archivo-latin-wght-normal.subset.0e0287c02d.woff2",
+    "crier-logo-160.09cb37df74.webp",
+    "crier-logo-240.5b93963dcf.webp",
+    "crier-logo-80.5823630d60.webp",
+    "dash.022ad5a0cc.js",
+    "instrument-sans-latin-var.subset.dabf7e3c18.woff2",
+    "noto-sans-arabic-arabic-400-normal.subset.72f499b144.woff2",
+    "noto-sans-arabic-arabic-700-normal.subset.52b009295a.woff2",
+    "site.d612ea655b.js"
+   ],
+   "replaced": "2026-11-15"
+  },
+  {
+   "id": "4db38494d7ee",
+   "files": [
+    "archivo-latin-wght-normal.subset.0e0287c02d.woff2",
+    "crier-logo-160.09cb37df74.webp",
+    "crier-logo-240.5b93963dcf.webp",
+    "crier-logo-80.5823630d60.webp",
+    "dash.022ad5a0cc.js",
+    "instrument-sans-latin-var.subset.dabf7e3c18.woff2",
+    "noto-sans-arabic-arabic-400-normal.subset.72f499b144.woff2",
+    "noto-sans-arabic-arabic-700-normal.subset.52b009295a.woff2",
+    "site.b063883bfb.js"
+   ],
+   "replaced": "2026-11-15"
+  },
+  {
+   "id": "472a6f88f305",
+   "files": [
+    "archivo-latin-wght-normal.subset.0e0287c02d.woff2",
+    "crier-logo-160.09cb37df74.webp",
+    "crier-logo-240.5b93963dcf.webp",
+    "crier-logo-80.5823630d60.webp",
+    "dash.022ad5a0cc.js",
+    "instrument-sans-latin-var.subset.dabf7e3c18.woff2",
+    "noto-sans-arabic-arabic-400-normal.subset.72f499b144.woff2",
+    "noto-sans-arabic-arabic-700-normal.subset.52b009295a.woff2",
+    "site.6e21587804.js"
+   ],
+   "replaced": "2026-11-15"
+  },
+  {
+   "id": "a6cc6f03e135",
+   "files": [
+    "archivo-latin-wght-normal.subset.0e0287c02d.woff2",
+    "crier-mark-120.dbe68e28d2.webp",
+    "crier-mark-80.0ef23bedca.webp",
+    "dash.022ad5a0cc.js",
+    "instrument-sans-latin-var.subset.dabf7e3c18.woff2",
+    "noto-sans-arabic-arabic-400-normal.subset.72f499b144.woff2",
+    "noto-sans-arabic-arabic-700-normal.subset.52b009295a.woff2",
+    "site.6e21587804.js"
+   ],
+   "replaced": "2026-11-15"
+  },
+  {
+   "id": "5a7fbb90dafa",
+   "files": [
+    "archivo-latin-wght-normal.subset.0e0287c02d.woff2",
+    "crier-mark-120.dbe68e28d2.webp",
+    "crier-mark-80.0ef23bedca.webp",
+    "dash.022ad5a0cc.js",
+    "instrument-sans-latin-var.subset.dabf7e3c18.woff2",
+    "noto-sans-arabic-arabic-400-normal.subset.72f499b144.woff2",
+    "noto-sans-arabic-arabic-700-normal.subset.52b009295a.woff2",
+    "site.d314708f5f.js"
+   ],
+   "replaced": "2026-11-15"
+  },
+  {
+   "id": "fa5c015a7694",
+   "files": [
+    "archivo-latin-wght-normal.subset.0e0287c02d.woff2",
+    "dash.022ad5a0cc.js",
+    "instrument-sans-latin-var.subset.dabf7e3c18.woff2",
+    "noto-sans-arabic-arabic-400-normal.subset.72f499b144.woff2",
+    "noto-sans-arabic-arabic-700-normal.subset.52b009295a.woff2",
+    "site.d314708f5f.js"
+   ],
+   "replaced": "2026-11-15"
+  }
+ ]
+}

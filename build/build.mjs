@@ -157,6 +157,12 @@ const VARIANT = RESTRICTED ? '.' + DEFAULT_CC.toLowerCase() : null;
 function raw(lang, key) {
   used.add(key);
   if (VARIANT && dicts[lang][key + VARIANT] != null) { used.add(key + VARIANT); key = key + VARIANT; }
+  // S08 (audit 3): a text that gives the WhatsApp number ({wa}) has a "<key>.nowa" twin without it, used when data/contact.json has
+  // no number (both count as used); the build fails rather than write "on WhatsApp at +"
+  if (dicts[lang][key] != null && dicts[lang][key].includes('{wa}')) {
+    if (dicts[lang][key + '.nowa'] == null) throw new Error(`i18n ${key} (${lang}) names {wa} but has no ${key}.nowa text for a site without a WhatsApp number`);
+    used.add(key + '.nowa'); if (!WA) key = key + '.nowa';
+  }
   const v = dicts[lang][key];
   if (v == null) throw new Error(`missing i18n key ${key} (${lang})`); // strict: no silent fallback to English
   return fillPricing(v, key, lang);
@@ -328,20 +334,34 @@ function curData(lang) {
   return `<script type="application/json" id="cur-data">${jsonScript(o)}</script>`;
 }
 // M14: a WhatsApp link only when data/contact.json has a number (the label key is always read, so it is never "unused")
-// a wa.me link with a prefilled message (an i18n key, in the page language)
-const waHref = (lang, key) => `https://wa.me/${WA}?text=${encodeURIComponent(t(lang, key))}`;
+// S08 (audit 3, 2026-11-17): THE contact-link resolver, for the generic, package, floating, quote and legal links. With a number in
+// data/contact.json: wa.me/<number> with the message in the page language. Without one: the portal sign-up in the page language,
+// keeping the chosen package (?plan=), or email when asked (mail: the custom-piece quote). Never a wa.me link without a recipient.
+function contactHref(lang, msg, { plan, mail } = {}) {
+  if (WA) return `https://wa.me/${WA}?text=${encodeURIComponent(msg)}`;
+  return mail ? `mailto:${EMAIL}?subject=${encodeURIComponent(msg)}` : signupUrl(lang, plan);
+}
+// a contact link with a prefilled message (an i18n key, in the page language)
+const waHref = (lang, key, opts) => contactHref(lang, t(lang, key), opts);
+// the page's main "Subscribe on WhatsApp" button (where: the GA4 wa_location); without a number, "Create your account" to the sign-up
+function ctaBtn(lang, key, where) {
+  const fallback = h(lang, 'lp.cta.account'), label = h(lang, 'lp.cta'), href = waHref(lang, key); // all read either way: never "unused"
+  if (WA) return `<a class="btn wa-order" href="${esc(href)}" target="_blank" rel="noopener" data-wa="${where}">${label}</a>`;
+  return `<a class="btn" href="${esc(contactHref(lang, ''))}" data-signup="${where}">${fallback}</a>`;
+}
 // the floating WhatsApp button (2026-11-15): every page and language, a short greeting in the page language
 const waFab = (ctx) => (WA ? render(partials.waFloat, { lang: ctx.lang, v: { ...ctx.v, waFabHref: esc(waHref(ctx.lang, 'wa.fab.msg')) } }) + '\n' : (t(ctx.lang, 'wa.fab.aria'), t(ctx.lang, 'wa.fab.msg'), ''));
-function waLink(lang) { return WA ? `<a href="https://wa.me/${WA}" rel="noopener" target="_blank" class="wa-link">${esc(t(lang, 'contact.wa'))}</a>` : ''; } // the label is a word in the page language (no dir="ltr": that is for the number itself)
+function waLink(lang) { const label = esc(t(lang, 'contact.wa')); return WA ? `<a href="https://wa.me/${WA}" rel="noopener" target="_blank" class="wa-link">${label}</a>` : ''; } // the label is a word in the page language (no dir="ltr": that is for the number itself)
 // Order on WhatsApp (owner 2026-11-15): each Social package's MAIN button is a green "Order <package> on WhatsApp" that opens
 // wa.me with the message prefilled with the package name and its monthly price (the page language, the page's country); under it a
 // small "or create your account" link to the portal sign-up (?plan=<id>) and the "Pay by InstaPay" line. Payment details are
 // given on WhatsApp until the payment gateway exists.
 const waPrice = (lang, p) => (htmlCc ? display(lang, localQuote(p, htmlCc)) : '$' + fmtNum(PKG[p].price));
-const waPayHref = (lang, p) => `https://wa.me/${WA}?text=${encodeURIComponent(t(lang, 'pay.wa.msg').replace('{pkg}', () => pname(lang, p)).replace('{price}', () => waPrice(lang, p)))}`;
+const waPayHref = (lang, p) => contactHref(lang, t(lang, 'pay.wa.msg').replace('{pkg}', () => pname(lang, p)).replace('{price}', () => waPrice(lang, p)), { plan: p });
 function waPay(lang, p) {
+  const line = esc(t(lang, 'pay.wa.line')); waPayHref(lang, p); // both read without a number too (S08: the build must not fail on unused keys)
   if (!WA || PKG[p]?.coming_soon) return ''; // the Brand Deck is coming soon: never payable
-  return `<p class="wapay fine" data-pkg="${p}">${esc(t(lang, 'pay.wa.line'))}</p>`;
+  return `<p class="wapay fine" data-pkg="${p}">${line}</p>`;
 }
 const pname = (lang, p) => t(lang, `name.${p}`);
 // Audit fixes (2026-10-19): every buy / plan button opens the client portal's sign-up (AR pages with ?lang=ar); the public
@@ -462,13 +482,13 @@ function motionVars(lang) {
     hwSteps, hwTotal: two(HW_STEPS), hwTimes: HOW.steps.join(','), hwDur: String(HOW.duration), hwDesk: base('1080'), hwPhone: base('phone'),
   };
 }
-const waBtn = (lang, key, where, label = 'lp.cta') => `<a class="btn wa-order" href="${esc(waHref(lang, key))}" target="_blank" rel="noopener" data-wa="${where}">${h(lang, label)}</a>`;
+const waBtn = ctaBtn; // (the home hero)
 function landingVars(lang, page) {
   const common = { makeItems: makeItems(lang), exGallery: exGallery(lang), curPick: curPick(lang), planCards: planCards(lang) };
   // N31 (audit 2): the home page's "Subscribe on WhatsApp" buttons prefill the subscribe message (sp.wamsg), like /social/; only the
   // floating button keeps the "I would like to know more" greeting
-  if (page === 'index') return { heroH1: heroH1(lang), trust: homeTrust(lang), ...common, ...motionVars(lang), heroBtn: waBtn(lang, 'sp.wamsg', 'home_hero'), lpWaHref: esc(waHref(lang, 'sp.wamsg')), lpFaq: LP_FAQ.map((k) => qa(lang, k)).join('') };
-  return { ...common, spWaHref: esc(waHref(lang, 'sp.wamsg')), spFaq: SP_FAQ.map((k) => qa(lang, k)).join(''),
+  if (page === 'index') return { heroH1: heroH1(lang), trust: homeTrust(lang), ...common, ...motionVars(lang), heroBtn: waBtn(lang, 'sp.wamsg', 'home_hero'), ctaHomeClose: ctaBtn(lang, 'sp.wamsg', 'home_close'), ctaHomeHow: ctaBtn(lang, 'sp.wamsg', 'home_how'), lpFaq: LP_FAQ.map((k) => qa(lang, k)).join('') };
+  return { ...common, ctaSocialHero: ctaBtn(lang, 'sp.wamsg', 'social_hero'), ctaSocialClose: ctaBtn(lang, 'sp.wamsg', 'social_close'), spFaq: SP_FAQ.map((k) => qa(lang, k)).join(''),
     spStack: SP_STACK[lang].map((id, i) => exImg(lang, id, ' decoding="async"', 's' + (i + 1))).join('') };
 }
 const LANDING_FAQ = { index: LP_FAQ, social: SP_FAQ };
@@ -496,7 +516,7 @@ function seasons(lang) {
 // the page language; "Already a client? Log in" its sign-in with the same intent (portal PORTAL-API.md, "Custom pieces quotes").
 // 2026-11-15 (owner): the portal quote sign-up is being removed; "Request a quote" and "Already a client?" open WhatsApp with
 // "I'd like a quote for a custom piece" in the page language (is.q.wamsg). Without a WhatsApp number they fall back to email.
-const quoteHref = (lang) => (WA ? waHref(lang, 'is.q.wamsg') : `mailto:${EMAIL}?subject=${encodeURIComponent(t(lang, 'is.q.wamsg'))}`);
+const quoteHref = (lang) => waHref(lang, 'is.q.wamsg', { mail: true });
 function storeVars(lang) {
   const choose = `<option value="">${esc(t(lang, 'f.choose'))}</option>`;
   const typeOptions = choose + STORE_TYPES.map(([v, k]) => `<option value="${esc(v)}">${esc(t(lang, k))}</option>`).join('');
@@ -772,16 +792,22 @@ const cssFor = (lang, page, landing) => minCss([CSS.fonts, lang === 'ar' || page
 // GitHub Pages sends every file with max-age=600. The pages therefore reference copies of the fonts, the hero images and
 // site.js whose names carry a hash of their content: /assets/h/<name>.<sha256:10>.<ext>. A changed file gets a new name, so a
 // Cloudflare Cache Rule can let browsers keep everything under /assets/h/ for a year (the rule is in README.md). The folder is
-// rebuilt from scratch on every build; the original files stay where they are for anything else that links to them.
-const HASHED_DIR = 'assets/h';
-fs.rmSync(path.join(ROOT, HASHED_DIR), { recursive: true, force: true });
+// original files stay where they are for anything else that links to them.
+// S06 (audit 3, 2026-11-17): the folder is no longer wiped. A page that is already open, or a copy of an older page in a browser
+// or Cloudflare cache, can ask for one of its hashed files minutes or days after the next release. Each distinct set of hashed
+// files the pages use is a release in build/hashed-releases.json (not published); the files of the last HASHED_KEEP releases,
+// and of every release replaced less than HASHED_DAYS days ago, stay in assets/h/. Older ones are deleted only when a new release
+// is recorded, so building the same sources twice changes nothing. Rolling back = restoring the old sources and building: the
+// old set becomes the newest release again and the newer files stay for the same window.
+const HASHED_DIR = 'assets/h', HASHED_LOG = path.join(ROOT, 'build', 'hashed-releases.json'), HASHED_KEEP = 10, HASHED_DAYS = 30;
 const hashedUrls = new Map();
 function hashed(url) {
   if (hashedUrls.has(url)) return hashedUrls.get(url);
   const src = path.join(ROOT, url.slice(1)), buf = fs.readFileSync(src);
   const ext = path.extname(url), out = `/${HASHED_DIR}/${path.basename(url, ext)}.${crypto.createHash('sha256').update(buf).digest('hex').slice(0, 10)}${ext}`;
   fs.mkdirSync(path.join(ROOT, HASHED_DIR), { recursive: true });
-  fs.writeFileSync(path.join(ROOT, out.slice(1)), buf);
+  const dest = path.join(ROOT, out.slice(1));
+  if (!fs.existsSync(dest) || !fs.readFileSync(dest).equals(buf)) fs.writeFileSync(dest, buf);
   hashedUrls.set(url, out);
   return out;
 }
@@ -803,7 +829,7 @@ const built = [];
 const pageSha = new Map();
 const LASTMOD_FILE = path.join(ROOT, 'build', 'lastmod.json');
 const LASTMOD_OLD = fs.existsSync(LASTMOD_FILE) ? JSON.parse(fs.readFileSync(LASTMOD_FILE, 'utf8')) : {};
-const TODAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+const TODAY = process.env.CRIER_BUILD_DATE /* tests only (tests/asset-retention.mjs) */ || new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 for (const [lang] of LANGS) {
   for (const page of PAGES) {
     htmlCc = LEGAL.includes(page) && !RESTRICTED ? null : DEFAULT_CC; // the legal pages keep the US-dollar price list, except while one country is served (they are in its currency then)
@@ -944,6 +970,25 @@ write('sitemap.xml', sm.join('\n'));
 fs.writeFileSync(LASTMOD_FILE, JSON.stringify(lastmod, null, 1) + '\n');
 write('site.webmanifest', JSON.stringify({ name: BRAND, short_name: BRAND, lang: DEFAULT_LANG, dir: 'auto', start_url: '/', display: 'browser', background_color: '#F6F8EF', theme_color: '#0E0F0C',
   icons: [{ src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' }, { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' }, { src: '/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }, { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' }] }, null, 2) + '\n');
+
+// S06: record this build's hashed files as a release and delete only files outside the support window (see HASHED_DIR)
+{
+  const files = [...new Set([...hashedUrls.values()].map((u) => path.basename(u)))].sort();
+  const id = crypto.createHash('sha256').update(files.join('\n')).digest('hex').slice(0, 12);
+  let log = { releases: [] }; try { log = JSON.parse(fs.readFileSync(HASHED_LOG, 'utf8')); } catch { }
+  if (log.releases[0]?.id !== id) {
+    const rest = log.releases.filter((r) => r.id !== id); // an older set built again (a rollback) becomes the newest release
+    if (rest[0] && !rest[0].replaced) rest[0] = { ...rest[0], replaced: TODAY };
+    const cutoff = Date.parse(TODAY) - HASHED_DAYS * 86400e3;
+    log = { about: 'S06 (audit 3): the hashed asset sets of recent releases, newest first; build/build.mjs keeps their files in assets/h/ (see HASHED_DIR).', keep_releases: HASHED_KEEP, keep_days: HASHED_DAYS,
+      releases: [{ id, files }, ...rest].filter((r, i) => i < HASHED_KEEP || !r.replaced || Date.parse(r.replaced) >= cutoff) };
+    fs.writeFileSync(HASHED_LOG, JSON.stringify(log, null, 1) + '\n');
+  }
+  const keep = new Set(log.releases.flatMap((r) => r.files));
+  for (const f of fs.readdirSync(path.join(ROOT, HASHED_DIR))) if (!keep.has(f)) fs.rmSync(path.join(ROOT, HASHED_DIR, f));
+  const missing = [...keep].filter((f) => !fs.existsSync(path.join(ROOT, HASHED_DIR, f)));
+  if (missing.length) console.warn('hashed files of a recent release are missing (restore them from git): ' + missing.join(', '));
+}
 
 // keys in the JSON that no page used (review fix 2026-11-14: an honest check). The build records every key it read in
 // build/used-keys.json (not published) and fails on an unused one; build/check.mjs fails too if that record is missing or
