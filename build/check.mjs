@@ -339,13 +339,16 @@ ok(rd('index.html').includes('"alternateName":"Crier"') && rd('index.html').incl
     const loader = `s.src='https://www.googletagmanager.com/gtag/js?id=${GA}';d.head.appendChild(s);`;
     ok(h.split(loader).length === 2 && h.indexOf(loader) < headEnd, `GA: exactly one delayed gtag.js loader inline in <head> of ${f}`);
     ok((h.match(/googletagmanager\.com\/gtag\/js/g) || []).length === 1, `GA: no second gtag.js loader in ${f}`);
-    ok(h.includes("E=['pointerdown','touchstart','keydown','scroll','wheel']") && h.includes('for(var i=0;i<E.length;i++)w.addEventListener(E[i],L,O);') && h.includes("function T(){setTimeout(L,6000);}if(d.readyState==='complete')T();else w.addEventListener('load',T);"), `GA: loader waits for the first interaction, or 6 s after window load, in ${f}`);
-    ok(h.includes(`t.closest('#consent-bar,[data-consent-open],a[href$="#cookie-settings"]'))L();},true)`), `GA: loader runs at once on consent-bar interaction in ${f}`);
+    ok(h.includes("E=['pointerdown','touchstart','keydown','scroll','wheel']") && h.includes('function A(){for(var i=0;i<E.length;i++)w.addEventListener(E[i],L,O);') && h.includes('setTimeout(L,6000)'), `GA: with consent, the loader waits for the first interaction, or 6 s after window load, in ${f}`);
+    // S02 (audit 3, owner 2026-11-17: opt-in): gtag.js is requested only with consent: the loader refuses while Google's off switch is set,
+    // the switch is set unless crier_consent is 'granted', the delayed loader is armed only then, and Accept (the 'crier:consent' event) loads at once
+    ok(h.includes("function L(){if(n||w[K])return;") && h.includes("K='ga-disable-") && h.includes("try{ok=localStorage.getItem('crier_consent')==='granted';}catch(e){}w[K]=!ok;") && h.includes("if(ok){gtag('consent','update',{analytics_storage:'granted'});A();}") && !h.includes("closest('#consent-bar"), `GA: opt-in: gtag.js only after Accept, never on a click of the bar or Decline, in ${f}`);
+    ok(h.includes("d.addEventListener('crier:consent',function(e){if(e.detail==='granted'){") && h.includes("else{w[K]=true;if(n)location.reload();}});})();"), `GA: Accept loads it at once; Decline or withdrawal switches it off, in ${f}`);
     const inl = [...h.slice(0, headEnd).matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]).find((x) => x.includes("gtag('consent','default'"));
     ok(inl && inl.indexOf("gtag('consent','default'") > -1 && inl.indexOf("gtag('consent','default'") < inl.indexOf('d.createElement'), `GA: consent defaults set inline in <head> before the loader in ${f}`);
     const cfg = `gtag('config','${GA}')`, def = "gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500})";
     ok(h.split(cfg).length === 2 && h.split(def).length === 2 && h.indexOf(def) < h.indexOf(cfg) && h.indexOf(cfg) < headEnd, `GA: consent default (all denied) before the one config call in ${f}`);
-    ok(h.includes("if(localStorage.getItem('crier_consent')==='granted'){gtag('consent','update',{analytics_storage:'granted'});}"), `GA: returning visitor who accepted gets analytics_storage granted in ${f}`);
+    ok(h.includes("if(ok){gtag('consent','update',{analytics_storage:'granted'});"), `GA: returning visitor who accepted gets analytics_storage granted in ${f}`);
     ok(!/(ad_storage|ad_user_data|ad_personalization)\s*:\s*['"]granted/.test(h), `GA: ads signals never granted in ${f}`);
     const cspAt = h.indexOf('http-equiv="Content-Security-Policy"');
     ok(cspAt > -1 && cspAt < h.indexOf('<script'), `GA: CSP meta comes before the first script in ${f}`);

@@ -974,6 +974,9 @@ html[lang=ar] .la-kitprice .price,html[lang=ar] .la-price .price{letter-spacing:
 html[lang=ar] .la-oklist b{font-weight:700;letter-spacing:0;line-height:1.45}
 html[lang=ar] .la-oklist li{line-height:1.75}
 .la-oklist a{font-weight:700;text-underline-offset:4px}
+/* S07 (audit 3): the links that close a sentence on the home page are 44 px tall to tap (the package note, the refund link, the email) */
+.lp-pkfine a,.la-oklist a,.la-contact a,.how-alt a{display:inline-flex;align-items:center;min-height:44px}
+.how-alt{margin-top:18px;max-width:60ch}
 
 /* five steps on a line with the brand's diamond */
 .la-steps{display:grid;grid-template-columns:repeat(5,1fr);position:relative;list-style:none;margin:0;padding:0}

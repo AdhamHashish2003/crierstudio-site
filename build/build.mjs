@@ -488,7 +488,9 @@ function motionVars(lang) {
 }
 const waBtn = ctaBtn; // (the home hero)
 function landingVars(lang, page) {
-  const common = { makeItems: makeItems(lang), exGallery: exGallery(lang), curPick: curPick(lang), planCards: planCards(lang) };
+  // S01 (audit 3, owner 2026-11-17): the second way to start, under the WhatsApp steps on the home page and /social/: set up first, then
+  // pay on WhatsApp (the same two paths, in the same order, as the pricing, terms and refund pages)
+  const common = { makeItems: makeItems(lang), exGallery: exGallery(lang), curPick: curPick(lang), planCards: planCards(lang), howAlt: `<p class="fine how-alt">${h(lang, 'how.alt', signupUrl(lang))}</p>` };
   // N31 (audit 2): the home page's "Subscribe on WhatsApp" buttons prefill the subscribe message (sp.wamsg), like /social/; only the
   // floating button keeps the "I would like to know more" greeting
   if (page === 'index') return { heroH1: heroH1(lang), trust: homeTrust(lang), ...common, ...motionVars(lang), heroBtn: waBtn(lang, 'sp.wamsg', 'home_hero'), ctaHomeClose: ctaBtn(lang, 'sp.wamsg', 'home_close'), ctaHomeHow: ctaBtn(lang, 'sp.wamsg', 'home_how'), lpFaq: LP_FAQ.map((k) => qa(lang, k)).join('') };
@@ -651,24 +653,27 @@ function jsonLd(lang, page, landing = false) {
   return `<script type="application/ld+json">${jsonScript({ '@context': 'https://schema.org', '@graph': nodes })}</script>`;
 }
 // ---------- Google Analytics 4 + Consent Mode v2 ----------
-// Every page (all languages, 404, redirect stubs) carries this once, right after the CSP meta. Consent defaults to denied for
-// everything; only analytics_storage is granted, and only after the visitor presses Accept in the consent bar
-// (templates/consent.html, localStorage 'crier_consent'). Ads signals stay denied always.
-// Speed (2026-10-11, owner approved "delay Analytics"): gtag.js (~176 KB) is NOT a <script src> in <head>. The inline script
-// sets the consent defaults and queues js/config in dataLayer right away. gtag.js itself is injected on the visitor's first
-// interaction (pointerdown, touchstart, keydown, scroll or wheel), or 6 s after the window 'load' event if there is none, or at
-// once when the visitor uses the consent bar or the Cookie settings link. gtag.js replays the queue on arrival, so nothing is
-// lost and page_view fires once. (2026-10-11, mobile PageSpeed 100: the earlier "after load + idle, at most 3 s" still ran
-// gtag.js's ~300 ms of script inside the PageSpeed test window, costing Total Blocking Time and Speed Index.)
-// Trade-off: visitors who leave within about 6 s of the page loading without scrolling, tapping or typing are not counted.
+// Every page (all languages, 404, redirect stubs) carries this once, right after the CSP meta.
+// S02 (audit 3, owner 2026-11-17: opt-in): Google Analytics loads ONLY after the visitor presses Accept in the consent bar
+// (templates/consent.html, localStorage 'crier_consent' = 'granted'). With no choice, or after Decline, gtag.js is never requested:
+// nothing about the visit reaches Google and no analytics cookie is set. gtag() is always defined, so site.js's events (whatsapp_click,
+// sign_up_click, choose_plan) only queue in dataLayer; at Accept the queue keeps only the consent, js and config entries, so an
+// event from before the choice is never sent. Withdrawal (Decline in Cookie settings) sets Google's own off switch
+// (window['ga-disable-<id>']), deletes the _ga cookies and, when gtag.js was already running on the page, reloads it: gtag.js's own
+// automatic events (scroll, engagement) do not all obey the off switch, and a fresh page never loads it again (no consent update
+// either: gtag.js would send that change to Google as one more ping), so
+// gtag.js is not loaded on later pages. Consent defaults stay denied for everything; ads signals are always denied.
+// The consent bar announces each choice with a 'crier:consent' event on document (detail 'granted' or 'denied').
+// Speed (2026-10-11): with consent already given, gtag.js is still injected late: on the first interaction (pointerdown,
+// touchstart, keydown, scroll or wheel) or 6 s after 'load', and at once when the visitor presses Accept.
 const GA_ID = 'G-80D3L78R0G';
-const GA_INLINE = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});try{if(localStorage.getItem('crier_consent')==='granted'){gtag('consent','update',{analytics_storage:'granted'});}}catch(e){}gtag('js',new Date());gtag('config','${GA_ID}');` +
-  `(function(){var w=window,d=document,n=0,E=['pointerdown','touchstart','keydown','scroll','wheel'],O={passive:true,capture:true};` +
-  `function L(){if(n)return;n=1;for(var i=0;i<E.length;i++)w.removeEventListener(E[i],L,O);var s=d.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=${GA_ID}';d.head.appendChild(s);}` +
-  `for(var i=0;i<E.length;i++)w.addEventListener(E[i],L,O);` +
-  `function T(){setTimeout(L,6000);}` +
-  `if(d.readyState==='complete')T();else w.addEventListener('load',T);` +
-  `d.addEventListener('click',function(e){var t=e.target;if(t&&t.closest&&t.closest('#consent-bar,[data-consent-open],a[href$="#cookie-settings"]'))L();},true);})();`;
+const GA_INLINE = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.CRIER_GA='${GA_ID}';gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});gtag('js',new Date());gtag('config','${GA_ID}');` +
+  `(function(){var w=window,d=document,n=0,E=['pointerdown','touchstart','keydown','scroll','wheel'],O={passive:true,capture:true},K='ga-disable-${GA_ID}',ok=0;` +
+  `try{ok=localStorage.getItem('crier_consent')==='granted';}catch(e){}w[K]=!ok;` +
+  `function L(){if(n||w[K])return;n=1;for(var i=0;i<E.length;i++)w.removeEventListener(E[i],L,O);var s=d.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=${GA_ID}';d.head.appendChild(s);}` +
+  `function A(){for(var i=0;i<E.length;i++)w.addEventListener(E[i],L,O);if(d.readyState==='complete')setTimeout(L,6000);else w.addEventListener('load',function(){setTimeout(L,6000);});}` +
+  `if(ok){gtag('consent','update',{analytics_storage:'granted'});A();}` +
+  `d.addEventListener('crier:consent',function(e){if(e.detail==='granted'){if(!n){var q=w.dataLayer,k=[];for(var i=0;i<q.length;i++){var c=q[i]&&q[i][0];if(c==='consent'||c==='js'||c==='config')k.push(q[i]);}q.length=0;for(i=0;i<k.length;i++)q.push(k[i]);}w[K]=false;gtag('consent','update',{analytics_storage:'granted'});L();}else{w[K]=true;if(n)location.reload();}});})();`;
 const GA_HEAD = `<script>${GA_INLINE}</script>`;
 const CONSENT_JS = (partials.consent.match(/<script>([\s\S]*?)<\/script>/) || [])[1];
 if (!CONSENT_JS || CONSENT_JS.includes('{{')) throw new Error('templates/consent.html: one inline <script> without template tags expected');

@@ -1,5 +1,5 @@
 {
- "i18n_sha256": "445456df9b397e6b59c0a2d073dd90a2e5d023291f9e39ce63d5374f1b1d9c87",
+ "i18n_sha256": "dab86b74e3147afc7ced57a8b636364bb88c1f70f8664f4cd8678739c9c67305",
  "used": [
   "about.contact.h",
   "about.contact.p",
@@ -181,6 +181,7 @@
   "home.trust.f5",
   "home.trust.own",
   "home.trust.refund",
+  "how.alt",
   "hv.aria",
   "hv.bio",
   "hv.exnote",

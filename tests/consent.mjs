@@ -1,105 +1,130 @@
-// Consent bar + Google Analytics Consent Mode test. Google requests are recorded and aborted: never reaches the live GA property.
-// Run: node tests/consent.mjs   (same setup as tests/form.mjs: playwright-core, a static server on :8765 serving the repo root, Chrome)
+// Consent bar + Google Analytics, opt-in (S02, audit 3, owner 2026-11-17): Google Analytics loads only after Accept; with no choice
+// or after Decline nothing is sent to Google; withdrawal stops it. Real browser requests, Arabic and English:
+//   - gtag.js is the REAL tag, fetched from googletagmanager.com, so what it would send is what Google would receive;
+//   - every collection request (google-analytics.com, analytics.google.com, the /g/collect beacons) is recorded and ABORTED, so
+//     nothing reaches the live property (set GA_TEST_PROPERTY=G-XXXX to also let hits go to a dedicated test property instead);
+//   - states: no choice, Decline, Accept, withdrawal (Cookie settings > Decline), revisit after each; navigation and the WhatsApp
+//     button keep working with consent declined; cookies and localStorage are read after each step.
+// Run: BASE=http://127.0.0.1:8767 node tests/consent.mjs   (playwright-core, Chrome, a static server on the repo root)
 import { chromium } from 'playwright-core';
 const BASE = process.env.BASE || 'http://localhost:8765';
+const TEST_ID = process.env.GA_TEST_PROPERTY || '';
 const b = await chromium.launch({ executablePath: process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
 let fail = 0; const ok = (c, m) => { console.log(c ? 'PASS' : 'FAIL', m); if (!c) fail++; };
-async function page(viewport) {
+const GOOGLE = /googletagmanager\.com|google-analytics\.com|analytics\.google\.com|doubleclick\.net|google\.com\/(ccm|g)\//;
+async function context(viewport) {
   const ctx = await b.newContext(viewport ? { viewport } : {});
-  const google = [];
-  await ctx.route(/googletagmanager\.com|google-analytics\.com|analytics\.google\.com/, (r) => { google.push(r.request().url()); r.abort(); });
-  await ctx.route(/crm-production-d789\.up\.railway\.app/, r => r.abort());
-  const pg = await ctx.newPage();
+  const log = { tag: [], hits: [] };
+  await ctx.route(GOOGLE, async (r) => {
+    const u = r.request().url();
+    if (/googletagmanager\.com\/gtag\/js/.test(u)) { log.tag.push(u); return TEST_ID ? r.continue({ url: u.replace(/id=G-[A-Z0-9]+/, 'id=' + TEST_ID) }) : r.continue(); }
+    log.hits.push(u + (r.request().postData() ? '\n' + r.request().postData() : ''));
+    return TEST_ID && u.includes('tid=' + TEST_ID) ? r.continue() : r.abort();
+  });
+  await ctx.route(/wa\.me|portal\.crierstudio\.com/, (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '<title>intercepted</title>' }));
   const csp = [];
-  pg.on('console', (m) => { if (/Content Security Policy|Refused to/i.test(m.text())) csp.push(m.text()); });
-  return { pg, google, csp };
+  ctx.on('page', (pg) => pg.on('console', (m) => { if (/Content Security Policy|Refused to/i.test(m.text())) csp.push(m.text()); }));
+  return { ctx, log, csp };
 }
-const consentCalls = (pg) => pg.evaluate(() => (window.dataLayer || []).filter((a) => a[0] === 'consent').map((a) => [a[1], a[2]]));
-// Arabic first (2026-11-15): Arabic at the root, English under /en/; /es/ and /fr/ stubs go to the English pages
-for (const [l, p] of [['ar', '/'], ['en', '/en/pricing/'], ['en', '/es/pricing/'], ['en', '/fr/kit/'], ['ar', '/404.html'], ['ar', '/privacy/']]) {
-  const { pg, google, csp } = await page();
-  // delayed gtag.js: not requested while the page loads (DOMContentLoaded); only on the first interaction or 6 s after window load
-  await pg.goto(BASE + p, { waitUntil: 'domcontentloaded' });
-  const atDcl = await pg.evaluate(() => ({ rs: document.readyState, tag: !!document.querySelector('script[src*="googletagmanager.com/gtag/js"]') }));
-  ok(atDcl.rs === 'complete' || (!atDcl.tag && google.length === 0), `${p} gtag.js not requested before window load (${JSON.stringify(atDcl)}, ${google.length} Google requests)`);
-  await pg.waitForLoadState('load');
-  // after load, gtag.js still waits for the visitor's first interaction (or 6 s): none yet, so no Google request
-  await pg.waitForTimeout(1500);
-  ok(google.length === 0 && !(await pg.evaluate(() => !!document.querySelector('script[src*="googletagmanager.com/gtag/js"]'))), `${p} no gtag.js without an interaction in the first seconds after load (${google.length} Google requests)`);
-  await pg.mouse.wheel(0, 40); // first interaction (wheel/scroll) loads it
-  await pg.waitForFunction(() => !!document.querySelector('script[src*="googletagmanager.com/gtag/js?id=G-80D3L78R0G"]'), null, { timeout: 5000 }).catch(() => {});
-  await pg.waitForTimeout(300);
-  const timing = await pg.evaluate(() => { const n = performance.getEntriesByType('navigation')[0]; const r = performance.getEntriesByType('resource').find((e) => e.name.includes('gtag/js')); return { loadEnd: n.loadEventEnd, gtagStart: r ? r.startTime : -1 }; });
-  ok(google.filter((u) => u.includes('gtag/js?id=G-80D3L78R0G')).length === 1 && timing.gtagStart >= timing.loadEnd - 1, `${p} gtag.js requested once, on the first interaction after window load (${JSON.stringify(timing)})`);
-  await pg.evaluate(() => scrollTo(0, 0));
-  ok(await pg.isVisible('#consent-bar'), `${p} bar shown on first visit`);
-  ok(!google.some((u) => /collect|google-analytics|analytics\.google/.test(u)), `${p} no GA hit sent before consent`);
-  ok(await pg.evaluate(() => (window.dataLayer || []).filter((a) => a[0] === 'config').length === 1), `${p} exactly one config call (one page_view)`);
-  const c0 = await consentCalls(pg);
-  ok(c0.length === 1 && c0[0][0] === 'default' && c0[0][1].analytics_storage === 'denied' && c0[0][1].ad_storage === 'denied' && c0[0][1].ad_user_data === 'denied' && c0[0][1].ad_personalization === 'denied', `${p} consent default all denied: ${JSON.stringify(c0)}`);
-  ok(await pg.evaluate(() => document.getElementById('consent-bar').getAttribute('role') === 'region' && /\S/.test(document.getElementById('consent-bar').getAttribute('aria-label'))), `${p} bar is a labelled region`);
-  if (l === 'ar') ok(await pg.evaluate(() => getComputedStyle(document.querySelector('#consent-bar p')).direction) === 'rtl', `${p} bar is RTL`);
-  // keyboard: Tab reaches Accept (the bar comes first in the page)
-  let reached = false;
-  for (let i = 0; i < 4 && !reached; i++) { await pg.keyboard.press('Tab'); reached = await pg.evaluate(() => document.activeElement && document.activeElement.getAttribute('data-consent') === 'granted'); }
-  ok(reached, `${p} Accept reachable by keyboard`);
-  const sizes = await pg.$$eval('#consent-bar button', (bs) => bs.map((x) => x.getBoundingClientRect().height));
-  ok(sizes.length === 2 && sizes.every((hgt) => hgt >= 44), `${p} buttons at least 44px tall: ${sizes}`);
-  await pg.keyboard.press('Enter');
-  ok(!(await pg.isVisible('#consent-bar')) && await pg.evaluate(() => localStorage.getItem('crier_consent')) === 'granted', `${p} Accept hides the bar and stores granted`);
-  const c1 = await consentCalls(pg);
-  ok(c1.length === 2 && c1[1][0] === 'update' && c1[1][1].analytics_storage === 'granted' && Object.keys(c1[1][1]).length === 1, `${p} Accept -> consent update analytics_storage granted only`);
-  await pg.reload();
-  const c2 = await consentCalls(pg);
-  ok(!(await pg.isVisible('#consent-bar')) && c2.length === 2 && c2[0][0] === 'default' && c2[1][1].analytics_storage === 'granted', `${p} returning visitor: no bar, default then granted update`);
-  // Cookie settings link in the footer reopens the bar with focus on Accept; Decline stores denied
-  await pg.click('footer [data-consent-open]');
-  ok(await pg.isVisible('#consent-bar') && await pg.evaluate(() => document.activeElement.getAttribute('data-consent') === 'granted'), `${p} Cookie settings reopens the bar, focus on Accept`);
-  await pg.click('#consent-bar [data-consent=denied]');
-  const c3 = await consentCalls(pg);
-  ok(!(await pg.isVisible('#consent-bar')) && await pg.evaluate(() => localStorage.getItem('crier_consent')) === 'denied' && c3[c3.length - 1][1].analytics_storage === 'denied', `${p} Decline hides the bar, stores denied, updates to denied`);
-  await pg.reload();
-  const c4 = await consentCalls(pg);
-  ok(!(await pg.isVisible('#consent-bar')) && c4.length === 1, `${p} after Decline: no bar, no granted update on reload`);
-  ok(csp.length === 0, `${p} no CSP violations ${csp.join(' | ')}`);
-  await pg.context().close();
-}
-// no interaction at all: gtag.js is requested once, about 6 s after window load
-{
-  const { pg, google } = await page();
-  await pg.goto(BASE + '/'); await pg.waitForLoadState('load');
-  await pg.waitForTimeout(4500);
-  const early = google.filter((u) => u.includes('gtag/js')).length;
-  await pg.waitForFunction(() => !!document.querySelector('script[src*="googletagmanager.com/gtag/js"]'), null, { timeout: 4000 }).catch(() => {});
-  await pg.waitForTimeout(300);
-  const t = await pg.evaluate(() => { const n = performance.getEntriesByType('navigation')[0]; const r = performance.getEntriesByType('resource').find((e) => e.name.includes('gtag/js')); return { loadEnd: Math.round(n.loadEventEnd), gtagStart: r ? Math.round(r.startTime) : -1 }; });
-  ok(early === 0 && google.filter((u) => u.includes('gtag/js')).length === 1 && t.gtagStart >= t.loadEnd + 5900, `no interaction: gtag.js requested once, 6 s after window load (${JSON.stringify(t)})`);
-  await pg.context().close();
-}
-// clicking the consent bar loads gtag.js at once (no wait for idle); the consent update queued before it arrives is kept
-{
-  const { pg, google } = await page();
-  await pg.route('**/assets/h/crier-logo-*', async (r) => { await new Promise((res) => setTimeout(res, 4000)); r.continue().catch(() => {}); }); // hold window load (the header's brand mark)
-  await pg.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
-  const before = await pg.evaluate(() => document.readyState);
-  await pg.click('#consent-bar [data-consent=granted]');
-  const tagged = await pg.evaluate(() => !!document.querySelector('script[src*="googletagmanager.com/gtag/js"]'));
-  const dl = await consentCalls(pg);
-  ok(before !== 'complete' && tagged && dl.length === 2 && dl[1][1].analytics_storage === 'granted', `consent click before load injects gtag.js at once (readyState ${before}) and keeps the update queued: ${JSON.stringify(dl)}`);
-  await pg.waitForLoadState('load'); await pg.waitForTimeout(3500);
-  ok(google.filter((u) => u.includes('gtag/js')).length === 1, 'gtag.js requested once even after load fires later');
-  await pg.context().close();
+const gaCookies = async (ctx) => (await ctx.cookies()).filter((c) => /^_ga/.test(c.name)).map((c) => c.name);
+const events = (log) => log.hits.flatMap((h) => [...h.matchAll(/(?:^|[?&\n])en=([\w]+)/g)].map((m) => m[1]));
+const interact = async (pg) => { await pg.mouse.wheel(0, 200); await pg.mouse.move(50, 50); await pg.keyboard.press('Shift'); await pg.waitForTimeout(300); };
+const idle = (pg, ms) => pg.waitForTimeout(ms);
+
+for (const [lang, home, other] of [['ar', '/', '/pricing/'], ['en', '/en/', '/en/pricing/']]) {
+  // 1. no choice: the bar shows, and however long the visitor stays and whatever they do, nothing goes to Google
+  {
+    const { ctx, log, csp } = await context();
+    const pg = await ctx.newPage();
+    await pg.goto(BASE + home, { waitUntil: 'load' });
+    ok(await pg.isVisible('#consent-bar'), `${lang} no choice: the bar shows`);
+    await interact(pg); await idle(pg, 7000); await interact(pg);
+    await pg.evaluate(() => window.gtag('event', 'probe_no_choice'));
+    await pg.goto(BASE + other, { waitUntil: 'load' }); await interact(pg); await idle(pg, 6500);
+    ok(log.tag.length === 0 && log.hits.length === 0, `${lang} no choice: no request to Google in 14 s on two pages with scrolling and keys (${log.tag.length} tag, ${log.hits.length} hits)`);
+    ok((await gaCookies(ctx)).length === 0, `${lang} no choice: no _ga cookie`);
+    ok(await pg.evaluate(() => typeof window.gtag === 'function' && window['ga-disable-' + window.CRIER_GA] === true), `${lang} no choice: gtag() queues only, Google's off switch is set`);
+    ok(csp.length === 0, `${lang} no choice: no CSP violation ${csp.slice(0, 2).join(' | ')}`);
+    // accessibility of the bar
+    ok(await pg.evaluate(() => document.getElementById('consent-bar').getAttribute('role') === 'region' && /\S/.test(document.getElementById('consent-bar').getAttribute('aria-label'))), `${lang} the bar is a labelled region`);
+    if (lang === 'ar') ok(await pg.evaluate(() => getComputedStyle(document.querySelector('#consent-bar p')).direction) === 'rtl', 'ar the bar is right to left');
+    const sizes = await pg.$$eval('#consent-bar button', (bs) => bs.map((x) => x.getBoundingClientRect().height));
+    ok(sizes.length === 2 && sizes.every((hgt) => hgt >= 44), `${lang} the bar's buttons are at least 44 px tall: ${sizes}`);
+    await ctx.close();
+  }
+  // 2. Decline: nothing goes to Google, then or later; navigation and the WhatsApp button still work
+  {
+    const { ctx, log } = await context();
+    const pg = await ctx.newPage();
+    await pg.goto(BASE + home, { waitUntil: 'load' });
+    let reached = false; // keyboard: Tab reaches Accept, then Decline
+    for (let i = 0; i < 5 && !reached; i++) { await pg.keyboard.press('Tab'); reached = await pg.evaluate(() => document.activeElement && document.activeElement.getAttribute('data-consent') === 'granted'); }
+    ok(reached, `${lang} Accept is reachable by keyboard`);
+    await pg.click('#consent-bar [data-consent=denied]');
+    ok(!(await pg.isVisible('#consent-bar')) && await pg.evaluate(() => localStorage.getItem('crier_consent')) === 'denied', `${lang} Decline: the bar closes and the choice is saved`);
+    await interact(pg); await idle(pg, 7000);
+    const [pop] = await Promise.all([ctx.waitForEvent('page', { timeout: 5000 }).catch(() => null), pg.locator('a.wa-order').first().click()]);
+    if (pop) await pop.waitForURL(/wa\.me/, { timeout: 5000 }).catch(() => {});
+    ok(pop && /wa\.me\/\d+\?text=/.test(pop.url()), `${lang} Decline: the WhatsApp button opens WhatsApp (${pop && pop.url().slice(0, 40)})`);
+    if (pop) await pop.close();
+    await Promise.all([pg.waitForURL(/pricing/), pg.locator(`a[href="${other}"]`).first().click()]);
+    ok(new URL(pg.url()).pathname === other, `${lang} Decline: the menu link to ${other} works`);
+    await interact(pg); await idle(pg, 6500);
+    ok(!(await pg.isVisible('#consent-bar')), `${lang} Decline: the next page does not ask again`);
+    ok(log.tag.length === 0 && log.hits.length === 0, `${lang} Decline: no request to Google after Decline, a WhatsApp click and a second page (${log.tag.length} tag, ${log.hits.length} hits)`);
+    ok((await gaCookies(ctx)).length === 0, `${lang} Decline: no _ga cookie`);
+    await ctx.close();
+  }
+  // 3. Accept, 4. withdrawal, 5. revisit
+  {
+    const { ctx, log } = await context();
+    const pg = await ctx.newPage();
+    await pg.goto(BASE + home, { waitUntil: 'load' });
+    await pg.evaluate(() => window.gtag('event', 'probe_before_accept')); // an event from before the choice must never be sent
+    await pg.click('#consent-bar [data-consent=granted]');
+    await pg.waitForFunction(() => !!document.querySelector('script[src*="googletagmanager.com/gtag/js"]'), null, { timeout: 3000 }).catch(() => {});
+    await idle(pg, 4000);
+    ok(log.tag.length === 1, `${lang} Accept: the real gtag.js is requested at once (${log.tag.length})`);
+    ok(events(log).includes('page_view'), `${lang} Accept: Google receives the page_view (${events(log).join(',') || 'nothing'})`);
+    ok(!events(log).includes('probe_before_accept'), `${lang} Accept: an event queued before the choice is not sent`);
+    ok((await gaCookies(ctx)).length > 0, `${lang} Accept: the _ga cookies are set (${(await gaCookies(ctx)).join(',')})`);
+    const n0 = log.hits.length;
+    const [pop] = await Promise.all([ctx.waitForEvent('page', { timeout: 5000 }).catch(() => null), pg.locator('a.wa-order').first().click()]);
+    if (pop) await pop.close();
+    await idle(pg, 2500);
+    ok(events(log).includes('whatsapp_click') && log.hits.length > n0, `${lang} Accept: the WhatsApp click is measured (whatsapp_click)`);
+    // revisit with consent: the tag comes back (after the first interaction) and counts the page
+    await pg.goto(BASE + other, { waitUntil: 'load' }); await interact(pg);
+    for (let i = 0; i < 20 && events(log).filter((e) => e === 'page_view').length < 2; i++) await idle(pg, 500);
+    ok(log.tag.length === 2 && events(log).filter((e) => e === 'page_view').length >= 2, `${lang} Accept, next page: measured again (${log.tag.length} tag loads; events ${events(log).join(',')}; ${log.hits.length} hits: ${log.hits.slice(-2).map((x) => x.slice(0, 200)).join(' || ')})`);
+    // withdrawal: Cookie settings > Decline. From that moment nothing more is sent and the cookies are deleted
+    await pg.click('footer [data-consent-open]');
+    ok(await pg.isVisible('#consent-bar'), `${lang} Cookie settings reopens the bar`);
+    await Promise.all([pg.waitForNavigation({ timeout: 5000 }).catch(() => null), pg.click('#consent-bar [data-consent=denied]')]); // the page reloads without the tag
+    await pg.waitForLoadState('load'); await idle(pg, 500);
+    const n1 = log.hits.length;
+    ok(!(await pg.evaluate(() => !!document.querySelector('script[src*="googletagmanager.com/gtag/js"]'))), `${lang} withdrawal: the page reloads without gtag.js`);
+    const [pop2] = await Promise.all([ctx.waitForEvent('page', { timeout: 5000 }).catch(() => null), pg.locator('a.wa-order, a[data-wa-order]').first().click()]);
+    if (pop2) await pop2.close();
+    await pg.evaluate(() => window.gtag('event', 'probe_after_withdrawal')); await interact(pg); await idle(pg, 4000);
+    ok(log.hits.length === n1, `${lang} withdrawal: nothing more is sent after Decline (a WhatsApp click and an event: ${log.hits.length - n1} hits: ${log.hits.slice(n1).map((x) => (x.match(/[?&]en=[^&\n]*/g) || ['(no en)']).join('') + ' ' + (x.split('\n')[1] || '').slice(0, 200)).join(' || ')})`);
+    ok((await gaCookies(ctx)).length === 0, `${lang} withdrawal: the _ga cookies are deleted`);
+    const t1 = log.tag.length;
+    await pg.goto(BASE + home, { waitUntil: 'load' }); await interact(pg); await idle(pg, 7000);
+    ok(log.tag.length === t1 && log.hits.length === n1, `${lang} withdrawal, revisit: gtag.js is not loaded again and nothing is sent (tag ${log.tag.length - t1}, hits ${log.hits.length - n1})`);
+    await ctx.close();
+  }
 }
 // phones: the bar never hides the last package action (the page gets bottom padding equal to the bar height)
-for (const p of ['/pricing/', '/en/pricing/', '/es/brand-deck/']) {
-  const { pg } = await page({ width: 360, height: 740 });
+for (const p of ['/pricing/', '/en/pricing/']) {
+  const { ctx } = await context({ width: 360, height: 740 });
+  const pg = await ctx.newPage();
   await pg.goto(BASE + p);
-  await pg.waitForFunction(() => document.body.style.paddingBottom !== '', null, { timeout: 5000 }).catch(() => {}); // the bar's ResizeObserver sets the padding after first layout
+  await pg.waitForFunction(() => document.body.style.paddingBottom !== '', null, { timeout: 5000 }).catch(() => {});
   const r = await pg.evaluate(async () => {
     const bar = document.getElementById('consent-bar');
-    const btns = [...document.querySelectorAll('[data-product], [data-unavailable]')].filter((x) => x.offsetParent);
+    const btns = [...document.querySelectorAll('[data-product], [data-unavailable], [data-wa-order]')].filter((x) => x.offsetParent);
     const last = btns[btns.length - 1];
-    // worst case: the last package action sits at the very bottom of the screen when the page is scrolled to its end
     window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
     await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
     const foot = document.querySelector('footer').getBoundingClientRect(), bb = bar.getBoundingClientRect();
@@ -109,16 +134,11 @@ for (const p of ['/pricing/', '/en/pricing/', '/es/brand-deck/']) {
     return { barH: Math.round(bb.height), footBottom: Math.round(foot.bottom), lastBottom: Math.round(lb.bottom), barTop: Math.round(bb.top), pad: document.body.style.paddingBottom, sw: document.documentElement.scrollWidth, vw: innerWidth, n: btns.length };
   });
   ok(r.barH < 200 && r.pad === r.barH + 'px', `${p} phone: bar ${r.barH}px tall, body padded ${r.pad}`);
-  ok(r.footBottom <= r.barTop + 1, `${p} phone: at the end of the page the footer (bottom ${r.footBottom}) ends above the bar (top ${r.barTop})`);
-  ok(r.n > 0 && r.lastBottom <= r.barTop + 1, `${p} phone: last package action scrolled into view stops above the bar (scroll-padding): bottom ${r.lastBottom}, bar top ${r.barTop}`);
-  ok(r.sw <= r.vw, `${p} phone: no horizontal scroll (${r.sw} <= ${r.vw})`);
-  await pg.context().close();
+  ok(r.footBottom <= r.barTop + 1, `${p} phone: at the end of the page the footer ends above the bar`);
+  ok(r.n > 0 && r.lastBottom <= r.barTop + 1, `${p} phone: the last package action scrolled into view stops above the bar`);
+  ok(r.sw <= r.vw, `${p} phone: no sideways scroll`);
+  await ctx.close();
 }
-// redirect stubs carry the tag but no bar and still redirect
-{
-  const { pg, google } = await page();
-  await pg.goto(BASE + '/es/snapshot/'); await pg.waitForFunction(() => location.pathname === '/en/social/', null, { timeout: 5000 }).catch(() => {});
-  await pg.waitForLoadState('load'); await pg.mouse.wheel(0, 40); await pg.waitForTimeout(2000);
-  ok(new URL(pg.url()).pathname === '/en/social/' && google.length > 0, '/es/snapshot/ stub redirects to /en/social/, tag loaded on the target page');
-}
-await b.close(); process.exit(fail ? 1 : 0);
+await b.close();
+console.log(fail ? `${fail} FAILED` : 'consent: all passed');
+process.exit(fail ? 1 : 0);

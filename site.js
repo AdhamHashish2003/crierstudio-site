@@ -310,8 +310,8 @@
 })();
 
 /* Conversion tracking (2026-11-15): every WhatsApp link click is a GA4 event "whatsapp_click", sent through the gtag() queue that the
-   <head> tag sets up, so it follows the visitor's Consent Mode choice exactly like the page views (no event of its own is sent before
-   consent; Google gets a cookieless ping while analytics_storage is denied). Parameters: wa_location (card, table, float, quote, footer,
+   <head> tag sets up, so it follows the visitor's choice exactly like the page views (opt-in, audit 3 S02: without Accept gtag.js is
+   never loaded and the queue is dropped at Accept, so nothing is sent before consent or after Decline). Parameters: wa_location (card, table, float, quote, footer,
    landing_*, link), package (Bronze, Silver, Gold, Diamond or none), page_type (the page's data-page) and page_language. A package's
    own buttons also send "choose_plan" with package_id (seen, visible, growing, diamond) and method (whatsapp or account). Every wa.me
    link opens in a new tab, so the page stays open while gtag.js sends the event. */

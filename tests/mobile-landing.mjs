@@ -5,7 +5,7 @@
 // tap to pause and play); the hero phone (fits the screen, runs, frame times while it animates, the WhatsApp button is not on the
 // phone's screen); every button and link is at least 44 px to tap; no text under 12 px.
 // The hero and the How it works section are this test's own subject: anything wrong there fails the run. Tap sizes and small text
-// found in the rest of the page (header, package cards, FAQ, footer) are printed as NOTE lines and fail the run only with STRICT=1.
+// found in the rest of the page (header, package cards, FAQ, footer) fail the run too since audit 3 (S07); ADVISORY=1 prints them as NOTE lines.
 // Google, wa.me and the portal are blocked. Run with a static server on the repo root (one that answers Range requests):
 //   BASE=http://127.0.0.1:8767 node tests/mobile-landing.mjs        (OUTPUT=<dir> also saves screenshots of every phone)
 import fs from 'node:fs';
@@ -16,9 +16,9 @@ const OUT = process.env.OUTPUT || '';
 const b = await chromium.launch({ executablePath: process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
 let fail = 0; const notes = [];
 const ok = (c, m) => { console.log(c ? 'PASS' : 'FAIL', m); if (!c) fail++; };
-const STRICT = !!process.env.STRICT;
+const STRICT = !process.env.ADVISORY; // S07 (audit 3): the whole page's tap sizes and text sizes fail by default; ADVISORY=1 prints them as notes
 const note = (m) => { console.log('NOTE', m); notes.push(m); };
-// own: in the hero or How it works (fails); rest: elsewhere on the page (a NOTE, or a failure with STRICT=1)
+// own: in the hero or How it works; rest: elsewhere on the page (both fail; with ADVISORY=1 the rest is a NOTE)
 const sized = (tag, what, x) => { ok(x.own.length === 0, `${tag}: ${what} in the hero and How it works ${x.own.slice(0, 6).join(' | ')}`); if (x.rest.length) (STRICT ? (m) => ok(false, m) : note)(`${tag}: ${what}, rest of the page: ${x.rest.slice(0, 8).join(' | ')}${x.rest.length > 8 ? ` … ${x.rest.length} in all` : ''}`); };
 const ios = devices['iPhone 15'].userAgent, android = devices['Pixel 7'].userAgent;
 // the screen area a page really gets (browser bars taken off)
@@ -156,5 +156,5 @@ for (const lang of ['ar', 'en']) for (const [phone, viewport, dpr, userAgent] of
   await c.close();
 }
 await b.close();
-console.log(fail ? `${fail} FAILED` : 'all passed', notes.length ? `(${notes.length} notes about the rest of the page; STRICT=1 makes them failures)` : '');
+console.log(fail ? `${fail} FAILED` : 'all passed', notes.length ? `(${notes.length} notes about the rest of the page; without ADVISORY=1 they are failures)` : '');
 process.exit(fail ? 1 : 0);
