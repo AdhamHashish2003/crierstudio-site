@@ -536,6 +536,9 @@ for (const l of LANGS) {
     ok([...named].every((f) => log.releases[0].files.includes(f)), 'the built pages name only files of the newest release');
   }
 }
+// O02 (audit 3): /release.json (published) names the build and the price data it was built from
+{ let rel = null; try { rel = JSON.parse(rd('release.json')); } catch { }
+  ok(rel && /^[0-9a-f]{16}$/.test(rel.release) && rel.pricing?.projection_sha256 === PRICING.projection_sha256 && rel.pricing?.generated_from === PRICING.generated_from, 'release.json is missing or names other price data: run node build/build.mjs'); }
 // legal pages: their "last updated" date may not be older than their text. build/legal-stamp.json holds, per legal page and
 // language, a fingerprint of the page's text (the date line left out) and the date it carries. Changed text with an unchanged
 // stamp fails; after a change, set the date to the day of the change and run: node build/check.mjs --restamp

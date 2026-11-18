@@ -819,7 +819,9 @@ function hashed(url) {
 const hashUrls = (html) => html.replace(/\/(?:fonts|assets)\/[\w.-]+\.(?:woff2|avif|webp|png)\b|\/site\.js\b|\/assets\/(?:sculptures|landing)\.js\b/g, hashed);
 
 // ---------- build ----------
+const writtenSha = new Map(); // O02: every file this build writes, for the release identity (release.json)
 function write(rel, content) {
+  writtenSha.set(rel, crypto.createHash('sha256').update(content).digest('hex'));
   // every inline script that runs must be allowed by a CSP hash, or the browser blocks it
   if (rel.endsWith('.html')) for (const m of content.matchAll(/<script>([\s\S]*?)<\/script>/g)) if (!SCRIPT_HASHES.includes(sha(m[1]))) throw new Error('inline script without a CSP hash in ' + rel);
   const f = path.join(ROOT, rel);
@@ -992,6 +994,12 @@ write('site.webmanifest', JSON.stringify({ name: BRAND, short_name: BRAND, lang:
   for (const f of fs.readdirSync(path.join(ROOT, HASHED_DIR))) if (!keep.has(f)) fs.rmSync(path.join(ROOT, HASHED_DIR, f));
   const missing = [...keep].filter((f) => !fs.existsSync(path.join(ROOT, HASHED_DIR, f)));
   if (missing.length) console.warn('hashed files of a recent release are missing (restore them from git): ' + missing.join(', '));
+  // O02 (audit 3): /release.json names this build: one id over every file the build wrote and the hashed files the pages use, and
+  // the price data it was built from. The Pages workflow reads it back from crierstudio.com after a deploy; the same sources always
+  // give the same id (no dates or times in it).
+  const parts = [...writtenSha].sort(([a], [b]) => (a < b ? -1 : 1)).map(([f, h]) => f + ' ' + h).concat(files.map((f) => HASHED_DIR + '/' + f));
+  const rel = { release: crypto.createHash('sha256').update(parts.join('\n')).digest('hex').slice(0, 16), assets: id, pricing: { projection_sha256: PRICING.projection_sha256 || null, generated_from: PRICING.generated_from || null } };
+  fs.writeFileSync(path.join(ROOT, 'release.json'), JSON.stringify(rel, null, 1) + '\n');
 }
 
 // keys in the JSON that no page used (review fix 2026-11-14: an honest check). The build records every key it read in

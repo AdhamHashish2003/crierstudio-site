@@ -1,0 +1,8 @@
+{
+ "release": "9bccdf0c41a5a41d",
+ "assets": "7acb269ea21a",
+ "pricing": {
+  "projection_sha256": "307ed8302b9706babdf3b722c601efb3f8e437f1876cc3d612d72d0e0211f31e",
+  "generated_from": "portal/lib/pricing.json sha256 212e50b50e69c6867a1a7b141cbfcf8c9d04bf3954f67479a235250be038edea"
+ }
+}

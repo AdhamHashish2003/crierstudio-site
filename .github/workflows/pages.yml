@@ -1,0 +1,99 @@
+# O02 (audit 3, 2026-11-17): crierstudio.com is published only after the site is verified.
+#   verify  (every push and pull request, forks included; read-only, no secrets): rebuild from the sources and fail when the
+#           committed site differs (stale or hand-edited output), build/check.mjs (texts, prices, the price data's allowlist and
+#           fingerprint), the link check and the browser checks (launch, overlap, mobile, contact links, asset retention).
+#   upstream (main only): the price data was built from the CURRENT uma portal/lib/pricing.json (build/verify-upstream.mjs, with the
+#           UMA_PRICING_TOKEN secret, which pull requests never receive).
+#   deploy  (main only, after both, when the repository variable PAGES_GATED is 1): GitHub Pages from this workflow (Jekyll applies
+#           _config.yml's exclusions as before; the custom domain stays in the Pages settings), then build/verify-live.mjs reads the
+#           release back from crierstudio.com.
+# Restore an earlier release: re-run the deploy of that release's workflow run (Actions > the run > Re-run jobs), or revert on main.
+name: Pages
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Rebuild; the committed site must be exactly what the sources build
+        run: |
+          node build/build.mjs
+          git status --porcelain
+          test -z "$(git status --porcelain)" || { echo "::error::the committed site is not what the sources build (stale or edited by hand): run node build/build.mjs and commit"; git diff --stat; exit 1; }
+      - name: Static checks (texts, prices, price data allowlist and fingerprint)
+        run: node build/check.mjs
+      - name: Links and assets
+        run: EXTERNAL=0 node tests/links.mjs
+      - name: Browser checks
+        env:
+          CHROME: /usr/bin/google-chrome
+          BASE: http://127.0.0.1:8767
+        run: |
+          npm install --no-save --no-package-lock playwright-core@1.59.1
+          python3 -m http.server 8767 --bind 127.0.0.1 >/dev/null 2>&1 &
+          sleep 1
+          node tests/launch.mjs
+          node tests/overlap.mjs
+          node tests/mobile.mjs
+          STRICT=1 node tests/mobile-landing.mjs
+          node tests/contact-fallback.mjs
+          node tests/asset-retention.mjs
+  upstream:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: The price data is the studio's current price list
+        env:
+          UMA_PRICING_TOKEN: ${{ secrets.UMA_PRICING_TOKEN }}
+        run: node build/verify-upstream.mjs
+  deploy:
+    needs: [verify, upstream]
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && vars.PAGES_GATED == '1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/configure-pages@v5
+      - uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+      - uses: actions/upload-pages-artifact@v3
+      - id: deployment
+        uses: actions/deploy-pages@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Read the release back from crierstudio.com
+        run: node build/verify-live.mjs
