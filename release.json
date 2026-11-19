@@ -1,6 +1,6 @@
 {
- "release": "ef2d71239396b73c",
- "assets": "32dc632cfda6",
+ "release": "60550a9c60cbe629",
+ "assets": "814bd65e726d",
  "pricing": {
   "projection_sha256": "742b290e444ed7ed1122c729d5ca71a1958692e51698ef1ecc6dc35688d77910",
   "generated_from": "portal/lib/pricing.json sha256 8cab907405ffea91546c66a0fafb01ddf5e589791292a0171247b23a947f0dfe"

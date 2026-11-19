@@ -501,7 +501,7 @@ const HOW = JSON.parse(rd('data/how-video.json'));
 const HW_STEPS = HOW.steps.length;
 function motionVars(lang) {
   const tile = (id) => `<span class="hv-cell"><img src="${hvSrc(id)}" width="240" height="300" decoding="async" alt=""></span>`;
-  const base = (size) => { const b = `/assets/video/how-${lang}-${size}`; for (const ext of ['.mp4', '.webm', '-poster.jpg']) if (!fs.existsSync(path.join(ROOT, b.slice(1) + ext))) throw new Error('how-it-works video: missing ' + b + ext + ' (run node build/render-walkthrough.mjs)'); return b; };
+  const base = (size, v = '') => { const b = `/assets/video/how-${lang}${v}-${size}`; for (const ext of ['.mp4', '.webm', '-poster.jpg']) if (!fs.existsSync(path.join(ROOT, b.slice(1) + ext))) throw new Error('how-it-works video: missing ' + b + ext + ' (run node build/render-walkthrough.mjs)'); return b; };
   const two = (i) => String(i).padStart(2, '0');
   // the still state: step 1 is the one the poster shows
   const hwSteps = HOW.steps.map((_, k) => { const i = k + 1; return `<li class="wt-step${k ? '' : ' is-active'}" data-step="${i}"><button type="button" class="wt-btn" aria-controls="how-video" aria-current="${k ? 'false' : 'step'}"><span class="wt-num" aria-hidden="true">${two(i)}</span><span class="wt-text"><span class="wt-label">${h(lang, `hw.${i}l`)}</span><span class="wt-title">${h(lang, `hw.${i}t`)}</span></span></button><span class="wt-bar" aria-hidden="true"><i></i></span></li>`; }).join('');
@@ -510,6 +510,9 @@ function motionVars(lang) {
     hvStory: `<img src="${hvSrc(HV_STORY[lang])}" width="240" height="427" decoding="async" alt="">`,
     hvCal: [...HV_CAL].map((c) => (c === '.' ? '<i></i>' : `<i class="${c}"></i>`)).join(''), hvFol: esc(t(lang, 'hv.k').replace('{n}', '1.2')),
     hwSteps, hwTotal: two(HW_STEPS), hwTimes: HOW.steps.join(','), hwDur: String(HOW.duration), hwDesk: base('1080'), hwPhone: base('phone'),
+    // MULTI (owner 2026-11-19): visitors from the other served countries (the USA, Saudi Arabia, the UAE) get the country-neutral
+    // video (no InstaPay, no prices: render-walkthrough.mjs --v neutral); site.js switches to it. Egypt keeps the one above.
+    hwNeutral: MULTI ? ` data-cv-video="${base('1080', '-neutral').replace(/-1080$/, '')}"` : '',
   };
 }
 const waBtn = ctaBtn; // (the home hero)

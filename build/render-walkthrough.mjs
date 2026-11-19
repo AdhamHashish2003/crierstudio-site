@@ -5,6 +5,7 @@
 //   node build/render-walkthrough.mjs                  all four videos (ar/en x desk/phone) + posters into assets/video/
 //   node build/render-walkthrough.mjs --lang ar --size phone
 //   node build/render-walkthrough.mjs --posters         only the poster images again
+//   node build/render-walkthrough.mjs --v neutral       the version for visitors outside Egypt (no InstaPay, no prices): how-<lang>-neutral-*
 //   node build/render-walkthrough.mjs --stills 2.4,9,15 --out /tmp/x     PNG stills only (for checking a change)
 //
 // Needs playwright-core (as the browser tests do), Google Chrome (CHROME overrides the path) and ffmpeg with libx264 + libvpx-vp9.
@@ -22,6 +23,8 @@ const FPS = +arg('fps', 30), OUT = path.resolve(arg('out', path.join(ROOT, 'asse
 const STILLS = arg('stills', '') ? arg('stills').split(',').map(Number) : null;
 const POSTER_T = +arg('poster', 1.95); // step 1: the four packages, Silver picked, before the tap
 const POSTERS_ONLY = process.argv.includes('--posters'); // only the poster images again
+const V = arg('v', ''); // '' = Egypt's version; 'neutral' = the USA, Saudi Arabia and the UAE (owner 2026-11-19)
+if (V && V !== 'neutral') throw new Error('--v takes only neutral');
 // desk: 960x540 at 2x = 1920x1080 (1080p). phone: 360x540 at 2x = 720x1080, the lighter file for small screens.
 const VIEW = { desk: { width: 960, height: 540, name: '1080' }, phone: { width: 360, height: 540, name: 'phone' } };
 // x264: CRF 24 keeps flat UI and small text clean; VP9 at CRF 36 is about the same quality at ~60% of the size.
@@ -43,16 +46,16 @@ try {
   for (const lang of LANGS) for (const size of SIZES) {
     const v = VIEW[size], page = await browser.newPage({ viewport: { width: v.width, height: v.height }, deviceScaleFactor: 2 });
     page.on('pageerror', (e) => { throw e; });
-    await page.goto(`${base}?lang=${lang}&size=${size}`);
+    await page.goto(`${base}?lang=${lang}&size=${size}${V ? '&v=' + V : ''}`);
     await page.waitForFunction('window.__ready === true');
     const dur = await page.evaluate('window.DURATION'), steps = await page.evaluate('window.STEPS');
     // a missing text would be burned into every frame: stop before rendering if the stage shows one
     const hole = await page.evaluate(() => (document.getElementById('stage').textContent.match(/undefined|\bnull\b|NaN|\[object/) || [])[0]);
     if (hole) throw new Error(`stage ${lang}/${size} shows "${hole}": a text is missing in design/walkthrough-video/stage.js`);
     const shot = async (t, type = 'png') => { await page.evaluate((x) => window.seek(x), t); return page.screenshot({ type, ...(type === 'jpeg' ? { quality: 84 } : {}) }); };
-    if (STILLS) { for (const t of STILLS) fs.writeFileSync(path.join(OUT, `still-${lang}-${size}-${String(t).replace('.', '_')}.png`), await shot(t)); await page.close(); continue; }
-    const stem = path.join(OUT, `how-${lang}-${v.name}`), n = Math.round(dur * FPS), e = ENC[size];
-    if (POSTERS_ONLY) { fs.writeFileSync(stem + '-poster.jpg', await shot(POSTER_T, 'jpeg')); console.log(`${lang} ${size}: poster`); await page.close(); continue; }
+    if (STILLS) { for (const t of STILLS) fs.writeFileSync(path.join(OUT, `still-${lang}${V ? '-' + V : ''}-${size}-${String(t).replace('.', '_')}.png`), await shot(t)); await page.close(); continue; }
+    const stem = path.join(OUT, `how-${lang}${V ? '-' + V : ''}-${v.name}`), n = Math.round(dur * FPS), e = ENC[size];
+    if (POSTERS_ONLY) { fs.writeFileSync(stem + '-poster.jpg', await shot(POSTER_T, 'jpeg')); console.log(`${lang}${V ? ' ' + V : ''} ${size}: poster`); await page.close(); continue; }
     // one pass over the frames feeds both encoders
     // PNG frames (RGB) are converted once to BT.709 limited-range 4:2:0, and both files are tagged with it, so the colours match the page
     const color = ['-vf', 'scale=out_color_matrix=bt709:out_range=tv,format=yuv420p', '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-color_range', 'tv'];
@@ -66,7 +69,7 @@ try {
     // the page keeps its step list in step with the video from these numbers (build/build.mjs reads the file)
     const hw = path.join(ROOT, 'data/how-video.json'), meta = JSON.parse(fs.readFileSync(hw, 'utf8'));
     if (meta.duration !== dur || String(meta.steps) !== String(steps)) fs.writeFileSync(hw, JSON.stringify({ ...meta, duration: dur, steps }, null, 1).replace(/\[\n\s+([\d.,\s]+?)\n\s+\]/, (m, x) => '[' + x.replace(/\s+/g, ' ') + ']') + '\n');
-    console.log(`${lang} ${size}: ${n} frames, ${dur}s, steps ${steps.join('/')} · mp4 ${kb(stem + '.mp4')} · webm ${kb(stem + '.webm')} · ${Math.round((Date.now() - t0) / 1000)}s`);
+    console.log(`${lang}${V ? ' ' + V : ''} ${size}: ${n} frames, ${dur}s, steps ${steps.join('/')} · mp4 ${kb(stem + '.mp4')} · webm ${kb(stem + '.webm')} · ${Math.round((Date.now() - t0) / 1000)}s`);
     await page.close();
   }
 } finally { await browser.close(); server.close(); }

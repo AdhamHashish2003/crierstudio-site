@@ -607,6 +607,9 @@ if (MULTI) {
     const ld = (rd(PREFIX(l) + 'pricing/index.html').match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/) || [])[1] || '';
     for (const cc of ONLY) ok(ld.includes(`"priceCurrency":"${PRICING.local.countries[cc].currency}"`) && ld.includes(`"eligibleRegion":"${cc}"`), `pricing JSON-LD has the ${cc} offer (${l})`);
   }
+  // the How it works video: Egypt's on the page, the country-neutral one (no InstaPay, no prices) named for the other countries
+  for (const l of LANGS) ok(rd(PREFIX(l) + 'index.html').includes(`data-desk="/assets/video/how-${l}-1080"`) && rd(PREFIX(l) + 'index.html').includes(`data-cv-video="/assets/video/how-${l}-neutral"`) && ['-1080.mp4', '-1080.webm', '-1080-poster.jpg', '-phone.mp4', '-phone.webm', '-phone-poster.jpg'].every((x) => fs.existsSync(path.join(ROOT, `assets/video/how-${l}-neutral${x}`))), `the neutral How it works video for ${l} is published and named on the home page`);
+  { const st = rd('design/walkthrough-video/stage.js'), nv = st.slice(st.indexOf('if (neutral) Object.assign(T'), st.indexOf('// ---- markup ----')); ok(nv.length > 200 && !/InstaPay|ج\.م|EGP|\$\d|SAR|AED|ر\.س|د\.إ/.test(nv), 'the neutral video names no InstaPay and no price'); }
   // the English pages never redirect; the Arabic ones only for the USA
   const geo = (rd('index.html').match(/<script>(\(function\(\)\{try\{var w=window,d=document\.documentElement,K='crier\.loc'[\s\S]*?)<\/script>/) || [])[1] || '';
   ok(/c!=='US'\|\|d\.lang!=='ar'/.test(geo) && /s==='ar'/.test(geo) && /bot\|crawl\|spider/.test(geo), 'the country script redirects only a US visitor on an Arabic page, never a crawler or one who chose Arabic');

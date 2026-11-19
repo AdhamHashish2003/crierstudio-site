@@ -59,6 +59,13 @@ for (const lang of ['ar', 'en']) for (const cc of CASES) {
   const cur = PRICING.local.countries[own(cc)].currency;
   ok(note.startsWith((d[lang]['cur.note' + cur + '.all'] || d[lang]['cur.note' + cur]).trim()), `${label}: currency note "${note.trim()}"`);
   ok(!errors.length, `${label}: no script errors ${errors.join(' | ')}`);
+  // the How it works video on the home page: Egypt's (InstaPay, EGP) for Egypt and every other country, the neutral one otherwise
+  {
+    await pg.goto(BASE + (lang === 'ar' ? '/' : '/en/')); await pg.waitForLoadState('load'); await pg.waitForTimeout(300);
+    const v = await pg.evaluate(() => { const f = document.getElementById('how-video'); return f ? [f.getAttribute('data-desk'), f.getAttribute('data-phone'), f.querySelector('img.hw-poster').getAttribute('src')] : null; });
+    const want = own(cc) === DEF ? `/assets/video/how-${lang}-` : `/assets/video/how-${lang}-neutral-`;
+    ok(v && v[0] === want + '1080' && v[1] === want + 'phone' && v[2] === want + '1080-poster.jpg', `${label}: How it works video ${v && v[0]}`);
+  }
   if (OUT) {
     fs.mkdirSync(OUT, { recursive: true });
     // the packages section: the currency note, the four cards (price, WhatsApp button, payment line)
@@ -106,6 +113,16 @@ for (const p of ['/', '/pricing/']) {
   const { c, pg } = await visit('/en/terms/', { cc: 'SA' });
   const txt = await pg.evaluate(() => document.body.innerText);
   ok(['$250', 'SAR 950', 'AED 950', 'EGP 2,500', 'InstaPay', 'card', 'bank transfer'].every((x) => txt.includes(x)), '/en/terms/ states every country\'s prices and way to pay');
+  await c.close();
+}
+// the US visitor's How it works video really is the neutral one, and it plays
+{
+  const { c, pg } = await visit('/en/', { cc: 'US' });
+  await pg.locator('#how-video').scrollIntoViewIfNeeded(); await pg.waitForTimeout(500);
+  await pg.locator('#how-video button').click().catch(() => {});
+  const ok1 = await pg.waitForFunction(() => { const v = document.querySelector('#how-video video'); return v && /how-en-neutral-1080\.(webm|mp4)$/.test(v.currentSrc) && v.readyState >= 2; }, null, { timeout: 15000 }).then(() => true).catch(() => false);
+  const src = await pg.evaluate(() => document.querySelector('#how-video video').currentSrc);
+  ok(ok1, `US: the How it works video loads the neutral file (${src})`);
   await c.close();
 }
 // Saudi Arabia and the UAE stay on the Arabic pages

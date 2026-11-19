@@ -107,6 +107,16 @@
         var alt = lc ? cv[c1].getAttribute("data-cv-" + lc) : null;
         cv[c1].innerHTML = alt != null ? alt : cv[c1].__cvDef;
       }
+      // the How it works video: the country-neutral one (no InstaPay, no prices) for the other served countries, Egypt's otherwise.
+      // assets/landing.js reads data-desk / data-phone when it loads the video (near the screen), so this is set before that.
+      var hv = document.getElementById("how-video"), nv = hv && hv.getAttribute("data-cv-video");
+      if (nv) {
+        if (hv.__cvDef == null) hv.__cvDef = [hv.getAttribute("data-desk"), hv.getAttribute("data-phone")];
+        var off = !lc || lc === CD.fallback.toLowerCase(), dk = off ? hv.__cvDef[0] : nv + "-1080", pn = off ? hv.__cvDef[1] : nv + "-phone";
+        hv.setAttribute("data-desk", dk); hv.setAttribute("data-phone", pn);
+        var hs = hv.querySelector("picture source"), pi = hv.querySelector("img.hw-poster");
+        if (hs) hs.setAttribute("srcset", pn + "-poster.jpg"); if (pi) pi.setAttribute("src", dk + "-poster.jpg");
+      }
       var hl = document.querySelectorAll("a[data-cv-href-us], a[data-cv-href-sa], a[data-cv-href-ae]");
       for (var c2 = 0; c2 < hl.length; c2++) {
         if (hl[c2].__cvDef == null) hl[c2].__cvDef = hl[c2].getAttribute("href");
