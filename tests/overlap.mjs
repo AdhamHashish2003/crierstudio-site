@@ -14,6 +14,15 @@
 // Decorative drawings (role="img", aria-hidden: the mock phone and the mock client page) are skipped: they clip on purpose.
 // Run: BASE=http://127.0.0.1:8767 node tests/overlap.mjs      EXTRA=/_parked/preview/,/_parked/preview/en/ adds pages (with their language: ar unless /en/)
 import { chromium } from 'playwright-core';
+
+// COUNTRY=US|SA|AE|EG|KW (owner 2026-11-19, several countries): the visitor's country as Cloudflare would report it, so the page is
+// checked in that country's currency and texts. A US visitor is kept on the Arabic pages too (as if they chose Arabic), to check them.
+const COUNTRY = /^[A-Z]{2}$/.test(process.env.COUNTRY || '') ? process.env.COUNTRY : null;
+async function asCountry(c) {
+  if (!COUNTRY) return;
+  await c.route('**/cdn-cgi/trace', (r) => r.fulfill({ status: 200, contentType: 'text/plain', body: `fl=1\nh=crierstudio.com\nloc=${COUNTRY}\n` }));
+  await c.addInitScript((cc) => { try { localStorage.setItem('crier.loc', cc); if (cc === 'US' && !localStorage.getItem('crier.lang')) localStorage.setItem('crier.lang', 'ar'); } catch (e) {} }, COUNTRY);
+}
 const BASE = process.env.BASE || 'http://localhost:8765';
 const b = await chromium.launch({ executablePath: process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
 let fail = 0, checked = 0; const bad = (m) => { fail++; console.log('FAIL', m); };
@@ -181,6 +190,7 @@ const SIZES = (process.env.WIDTHS || '360x740,390x844,768x1024,1280x800').split(
 for (const [w, h] of SIZES) {
   const tag = w + 'x' + h;
   const c = await b.newContext({ viewport: { width: w, height: h }, ...(w < 768 || h < 500 ? { isMobile: true, hasTouch: true, deviceScaleFactor: 2 } : {}) });
+  await asCountry(c);
   await c.route(/googletagmanager\.com|google-analytics\.com|analytics\.google\.com|wa\.me|portal\.crierstudio\.com|crm-production/, (r) => r.abort());
   await c.addInitScript(() => { try { localStorage.setItem('crier_consent', 'denied'); } catch (e) {} });
   for (const u of urls) {

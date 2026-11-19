@@ -1,15 +1,30 @@
 {
  "schema": "crier-public-pricing/1",
- "generated_from": "portal/lib/pricing.json sha256 212e50b50e69c6867a1a7b141cbfcf8c9d04bf3954f67479a235250be038edea",
+ "generated_from": "portal/lib/pricing.json sha256 8cab907405ffea91546c66a0fafb01ddf5e589791292a0171247b23a947f0dfe",
  "funnel": {
   "countries": [
-   "EG"
+   "EG",
+   "US",
+   "SA",
+   "AE"
   ]
  },
  "local": {
   "countries": {
    "EG": {
     "currency": "EGP",
+    "vat_pct": 0
+   },
+   "US": {
+    "currency": "USD",
+    "vat_pct": 0
+   },
+   "SA": {
+    "currency": "SAR",
+    "vat_pct": 0
+   },
+   "AE": {
+    "currency": "AED",
     "vat_pct": 0
    }
   }
@@ -40,7 +55,10 @@
     "branding": 1
    },
    "prices": {
-    "EGP": 2500
+    "EGP": 2500,
+    "USD": 250,
+    "SAR": 950,
+    "AED": 950
    }
   },
   {
@@ -60,7 +78,10 @@
     "branding": 1
    },
    "prices": {
-    "EGP": 3500
+    "EGP": 3500,
+    "USD": 500,
+    "SAR": 1900,
+    "AED": 1850
    }
   },
   {
@@ -80,7 +101,10 @@
     "branding": 1
    },
    "prices": {
-    "EGP": 5000
+    "EGP": 5000,
+    "USD": 750,
+    "SAR": 2800,
+    "AED": 2750
    }
   },
   {
@@ -100,7 +124,10 @@
     "branding": 1
    },
    "prices": {
-    "EGP": 6500
+    "EGP": 6500,
+    "USD": 1000,
+    "SAR": 3750,
+    "AED": 3700
    }
   },
   {
@@ -115,9 +142,12 @@
     "products": 11
    },
    "prices": {
-    "EGP": 740
+    "EGP": 740,
+    "USD": 15,
+    "SAR": 59,
+    "AED": 59
    }
   }
  ],
- "projection_sha256": "307ed8302b9706babdf3b722c601efb3f8e437f1876cc3d612d72d0e0211f31e"
+ "projection_sha256": "742b290e444ed7ed1122c729d5ca71a1958692e51698ef1ecc6dc35688d77910"
 }

@@ -4,6 +4,20 @@
  "keep_days": 30,
  "releases": [
   {
+   "id": "32dc632cfda6",
+   "files": [
+    "archivo-latin-wght-normal.subset.0e0287c02d.woff2",
+    "crier-logo-160.09cb37df74.webp",
+    "crier-logo-240.5b93963dcf.webp",
+    "crier-logo-80.5823630d60.webp",
+    "instrument-sans-latin-var.subset.dabf7e3c18.woff2",
+    "landing.b0be2a76e1.js",
+    "noto-sans-arabic-arabic-400-normal.subset.72f499b144.woff2",
+    "noto-sans-arabic-arabic-700-normal.subset.52b009295a.woff2",
+    "site.849b88704f.js"
+   ]
+  },
+  {
    "id": "35dea4ff139d",
    "files": [
     "archivo-latin-wght-normal.subset.0e0287c02d.woff2",
@@ -15,7 +29,8 @@
     "noto-sans-arabic-arabic-400-normal.subset.72f499b144.woff2",
     "noto-sans-arabic-arabic-700-normal.subset.52b009295a.woff2",
     "site.e27368e348.js"
-   ]
+   ],
+   "replaced": "2026-11-19"
   },
   {
    "id": "7acb269ea21a",

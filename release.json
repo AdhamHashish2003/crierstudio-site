@@ -1,8 +1,8 @@
 {
- "release": "41f4e50910209da2",
- "assets": "35dea4ff139d",
+ "release": "ef2d71239396b73c",
+ "assets": "32dc632cfda6",
  "pricing": {
-  "projection_sha256": "307ed8302b9706babdf3b722c601efb3f8e437f1876cc3d612d72d0e0211f31e",
-  "generated_from": "portal/lib/pricing.json sha256 212e50b50e69c6867a1a7b141cbfcf8c9d04bf3954f67479a235250be038edea"
+  "projection_sha256": "742b290e444ed7ed1122c729d5ca71a1958692e51698ef1ecc6dc35688d77910",
+  "generated_from": "portal/lib/pricing.json sha256 8cab907405ffea91546c66a0fafb01ddf5e589791292a0171247b23a947f0dfe"
  }
 }
