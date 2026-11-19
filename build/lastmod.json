@@ -1,50 +1,50 @@
 {
  "https://crierstudio.com/en/": {
-  "sha": "3e86382ab0b05a68c7a75d046ea2b1f0183f8726077cb1d213c126ef5505b295",
-  "date": "2026-11-18"
+  "sha": "de252307ddfcc449e07e7fe23a582baf7e84217386e639adb48d7c169c975ba6",
+  "date": "2026-11-19"
  },
  "https://crierstudio.com/": {
-  "sha": "59968483be6809fc37ddd6929ab49c033f42c9c5b515434ca55fcfdc5d6a9588",
-  "date": "2026-11-18"
+  "sha": "38a8d3d72bffc456df86ec28044c57fcd4c549107b6e26de111d8a60520434ac",
+  "date": "2026-11-19"
  },
  "https://crierstudio.com/en/pricing/": {
-  "sha": "58c536fda5ea7e96b8254bc6c7627d4ce1b3a840685f3e66f2bc96fbc30db94c",
-  "date": "2026-11-18"
+  "sha": "f25f7ccbf5984c931155d58a9768ae6a38926c75b0ec018a89f7221997e7c2de",
+  "date": "2026-11-19"
  },
  "https://crierstudio.com/pricing/": {
-  "sha": "80f464abbcf0691e95408407737670214110e7b33ea7b3f5b040670c109dce1f",
-  "date": "2026-11-18"
+  "sha": "5845d9f7175dcc2e60c3c12e256cc6543d82818a9ec1380e4a8ba50f5333dfbb",
+  "date": "2026-11-19"
  },
  "https://crierstudio.com/en/social/": {
-  "sha": "02d3241c347e76125b5b997e3451160e1e357a957523357cf0bf40cbb8437de6",
-  "date": "2026-11-18"
+  "sha": "338e57aee380fe777cd83d327aab1d183b04e69dff1a94621b16cadfea860504",
+  "date": "2026-11-19"
  },
  "https://crierstudio.com/social/": {
-  "sha": "99e61b16708e206f0ab803a2ac22b36ecdd962eb045d6defd48b426faf28d6cf",
-  "date": "2026-11-18"
+  "sha": "46216f06d102cbb179320f0791d1d6c02f79a14afe504671fe1cb8edf5b894b1",
+  "date": "2026-11-19"
  },
  "https://crierstudio.com/en/terms/": {
-  "sha": "bbdcd9792da19e2e80856d680c1acc1ec3299824ecdccb7193c77394ac61d7fc",
-  "date": "2026-11-18"
+  "sha": "2e3dd8e57c91bdaeb49d43410fdf790293fed7a2530b7c0e91fc9b3aeb219b32",
+  "date": "2026-11-19"
  },
  "https://crierstudio.com/terms/": {
-  "sha": "0e3d169b4f472f4805a14d1dc03f373179a5ab30e9149e71db0773b7231d6e7c",
-  "date": "2026-11-18"
+  "sha": "ecb0c804034b11672783774f46469b2db29c397dd8ec2283cbc302c8db14e074",
+  "date": "2026-11-19"
  },
  "https://crierstudio.com/en/privacy/": {
-  "sha": "8c664bad253191392358b5f0c711ea60151ccb34465c621bbfe6ab1ae74039de",
-  "date": "2026-11-19"
+  "sha": "4ea32e035fa8376ab7a7feb43f2f61ca16b23c61338d457f5dbe4feaa8b5fa62",
+  "date": "2026-11-20"
  },
  "https://crierstudio.com/privacy/": {
-  "sha": "a34a74889f78cddc1ec572611b9751652500852bde8c20e9aae2155f0000f5d0",
-  "date": "2026-11-19"
+  "sha": "3857acc143d11066acfe7f3aed586a49399aee60a5affc8b1c4c995cdf7c0e28",
+  "date": "2026-11-20"
  },
  "https://crierstudio.com/en/refund/": {
-  "sha": "2ca0c7779f6b427d2bf9d96712ffc72e5d5a5a95b8fef807ec5447914654e8f8",
-  "date": "2026-11-18"
+  "sha": "19e03d6d5ab051894a1918fdb26c5795b65ae0a989ed2238ed1a2361ce819379",
+  "date": "2026-11-19"
  },
  "https://crierstudio.com/refund/": {
-  "sha": "69eb26e65d71e39504ed652350043e759f856366a45f4f24e3d1f387393dbbf2",
-  "date": "2026-11-18"
+  "sha": "9ed0cbb426e1cd51f3111b84e0cd08cd5fd49659ec571cfe8ad1685638c1c481",
+  "date": "2026-11-19"
  }
 }

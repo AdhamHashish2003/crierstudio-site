@@ -13,6 +13,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright-core';
+
+// COUNTRY=US|SA|AE|EG|KW (owner 2026-11-19, several countries): the visitor's country as Cloudflare would report it, so the page is
+// checked in that country's currency and texts. A US visitor is kept on the Arabic pages too (as if they chose Arabic), to check them.
+const COUNTRY = /^[A-Z]{2}$/.test(process.env.COUNTRY || '') ? process.env.COUNTRY : null;
+async function asCountry(c) {
+  if (!COUNTRY) return;
+  await c.route('**/cdn-cgi/trace', (r) => r.fulfill({ status: 200, contentType: 'text/plain', body: `fl=1\nh=crierstudio.com\nloc=${COUNTRY}\n` }));
+  await c.addInitScript((cc) => { try { localStorage.setItem('crier.loc', cc); if (cc === 'US' && !localStorage.getItem('crier.lang')) localStorage.setItem('crier.lang', 'ar'); } catch (e) {} }, COUNTRY);
+}
 const BASE = process.env.BASE || 'http://localhost:8765';
 const OUT = process.env.OUTPUT || '';
 const b = await chromium.launch({ executablePath: process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
@@ -58,6 +67,7 @@ function audit() {
 }
 for (const [dev, w, h] of DEVICES) {
   const c = await b.newContext({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true, deviceScaleFactor: 2, userAgent: 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36' });
+  await asCountry(c);
   await c.route(/googletagmanager\.com|google-analytics\.com|analytics\.google\.com|wa\.me|portal\.crierstudio\.com|crm-production/, (r) => r.abort());
   await c.addInitScript(() => { try { localStorage.setItem('crier_consent', 'denied'); } catch (e) {} });
   for (const [lang, u] of PAGES) {

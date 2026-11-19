@@ -44,7 +44,9 @@ const REMOVED = ['es', 'fr'];
 const RTL = new Set(['ar']);
 // SEO (2026-11-15): the hreflang codes carry the region while the site serves one country (Egypt: ar-EG, en-EG), so search engines
 // see both pages as made for Egypt; x-default (the Arabic root) still covers everyone else. The html lang attribute stays 'ar' / 'en'.
-const HREFLANG = (c) => (RESTRICTED ? `${c}-${DEFAULT_CC}` : c);
+// Several countries (MULTI, owner 2026-11-19): plain language codes again (the English pages are for the USA, the Arabic ones for Egypt,
+// Saudi Arabia and the UAE), x-default the Arabic root.
+const HREFLANG = (c) => (RESTRICTED && !MULTI ? `${c}-${DEFAULT_CC}` : c);
 // every page exists in both languages: / (en), /ar/ and the sub-paths below
 // Two product lines (2026-10-18): Social (/social/: The Social Kit + the monthly plans) and In-store (/in-store/: The Store
 // Kit waitlist + Custom pieces, whose quotes are asked in the client portal after a free sign-up).
@@ -82,7 +84,7 @@ const SEASONS = ['ramadan', 'eids', 'national', 'white'];
 // (platforms included) and {n:<id>.<item>} (a count). Never write a price or a count into i18n or templates.
 const PRICING = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'pricing.json'), 'utf8'));
 const PKG = Object.fromEntries(PRICING.packages.map((p) => [p.id, p]));
-const PRICES = Object.fromEntries(PRICING.packages.map((p) => [p.id, p.price ?? 0])); // (S05: no USD price in one-country mode, where it is never written) // USD: the international price, in the HTML of every language
+const PRICES = Object.fromEntries(PRICING.packages.map((p) => [p.id, p.price ?? p.prices?.USD ?? 0])); // (S05: no USD price in one-country mode, where it is never written) // USD: the international price, in the HTML of every language
 // Launch pricing (Adham, 2026-10-15): buyers in Saudi Arabia, the UAE and Egypt pay in SAR / AED / EGP with VAT ADDED
 // (local.countries in data/pricing.json; packages[].prices / extra_platform_prices are NET before VAT); every other country
 // pays the USD price with no VAT. Every price carries its local net prices; site.js shows the buyer's currency (by country,
@@ -105,7 +107,13 @@ const CURS = [...new Set(['USD', ...Object.values(COUNTRIES_ALL).map((c) => c.cu
 // MENA landing (2026-10-16): a visitor whose country is unknown is quoted as Saudi Arabia (SAR + VAT), on every language page.
 // The HTML is written in this country's prices (no flash of US dollars); site.js then follows the visitor's pick, Cloudflare or
 // the time zone. The legal pages keep the US-dollar price list.
-const DEFAULT_CC = RESTRICTED ? Object.keys(COUNTRIES)[0] : 'SA';
+// Several countries served (MULTI, owner 2026-11-19: Egypt, the USA, Saudi Arabia and the UAE, each in its own currency): the pages are
+// written for the FIRST one (Egypt), which is also what a visitor from any other country sees; every price carries every served
+// currency (data-*), and a text that differs by country has <key>.us / .sa / .ae wording carried beside it (data-cv-*), for site.js
+// to show the visitor's own country (Cloudflare's /cdn-cgi/trace). No picker. Keys with a ".all" variant hold the four-country wording
+// (legal pages, titles), read before the first country's ".eg" variant. Arabic pages send a US visitor (never a crawler) to /en/.
+const MULTI = RESTRICTED && FUNNEL_CC.length > 1;
+const DEFAULT_CC = RESTRICTED ? FUNNEL_CC[0] : 'SA';
 if (!COUNTRIES[DEFAULT_CC]) throw new Error('DEFAULT_CC is not in data/pricing.json local.countries');
 let htmlCc = DEFAULT_CC; // the country the page being built is written in (null = US dollars); set per page in the build loop
 // the same arithmetic as the checkout server and site.js: VAT on the whole order, in integer cents, rounded half-up
@@ -154,10 +162,13 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 // While one country is served (RESTRICTED, Egypt only since 2026-11-15) a key may have a variant `<key>.<cc>` (e.g. home.eyebrow.eg)
 // with the wording for that time: Egypt only, payment details on WhatsApp (InstaPay). The variant is used in its place; the
 // ordinary text stays and comes back by itself when the switch is undone. Both count as used.
-const VARIANT = RESTRICTED ? '.' + DEFAULT_CC.toLowerCase() : null;
-function raw(lang, key) {
+const VARIANTS = RESTRICTED ? [...(MULTI ? ['.all'] : []), '.' + DEFAULT_CC.toLowerCase()] : [];
+// cc (MULTI only): the text a visitor from that country reads, <key>.<cc> when there is one, else the page's own text
+function raw(lang, key, cc) {
   used.add(key);
-  if (VARIANT && dicts[lang][key + VARIANT] != null) { used.add(key + VARIANT); key = key + VARIANT; }
+  const own = cc && cc !== DEFAULT_CC ? key + '.' + cc.toLowerCase() : null;
+  if (own && dicts[lang][own] != null) { used.add(own); key = own; }
+  else for (const v of VARIANTS) if (dicts[lang][key + v] != null) { used.add(key + v); key = key + v; break; }
   // S08 (audit 3): a text that gives the WhatsApp number ({wa}) has a "<key>.nowa" twin without it, used when data/contact.json has
   // no number (both count as used); the build fails rather than write "on WhatsApp at +"
   if (dicts[lang][key] != null && dicts[lang][key].includes('{wa}')) {
@@ -179,13 +190,15 @@ function countText(lang, noun, n) {
 }
 const vars = { brand: BRAND, email: EMAIL, wa: WA_TEXT }; // wa: the WhatsApp number as people read it (a wa.me link in HTML text)
 // a `.<cc>` variant of a key is read only while that one country is served; it is not an unused key at other times
-const VARIANT_RE = /\.(sa|ae|eg|us)$/;
+const VARIANT_RE = /\.(sa|ae|eg|us|all)$/;
 function fillPricing(v, key, lang) {
   const need = (x, what) => { if (x == null) throw new Error(`i18n ${key}: ${what} is not in data/pricing.json`); return x; };
   // a price becomes a marker \u0002<usd>|<SAR>|<AED>|<EGP>\u0002: t() writes it as $<usd>, h() as a <span> site.js can localise
   // S05: the public price data has no US-dollar price while only other countries are served; one-country pages never write it
   const mark = (usd, loc, what) => '\u0002' + [RESTRICTED && usd == null ? '0' : need(usd, what), ...CURS.slice(1).map((c) => need(loc?.[c], what + ' ' + c))].join('|') + '\u0002';
-  return v.replace(/\{price:(\w+)\}/g, (m, id) => mark(PKG[id]?.price, PKG[id]?.prices, 'price ' + id))
+  // {price:<id>@<CC>}: that country's price as plain text, whatever the page's country (the legal pages' list of the four)
+  return v.replace(/\{price:(\w+)@([A-Z]{2})\}/g, (m, id, cc) => { if (!COUNTRIES[cc]) throw new Error(`i18n ${key}: ${cc} is not served`); return display(lang, localQuote(id, cc)); })
+    .replace(/\{price:(\w+)\}/g, (m, id) => mark(PKG[id]?.price, PKG[id]?.prices, 'price ' + id))
     .replace(/\{extra:(\w+)\}/g, (m, id) => mark(PKG[id]?.extra_platform_price, PKG[id]?.extra_platform_prices, 'extra platform price ' + id))
     .replace(/\{plat:(\w+)\}/g, (m, id) => String(need(PKG[id]?.platforms_included, 'platforms of ' + id)))
     .replace(/\{n:(\w+)\.(\w+)\}/g, (m, id, item) => String(need(PKG[id]?.items?.[item], `count ${id}.${item}`)))
@@ -211,14 +224,21 @@ function priceSpan(lang, vals, cls = 'amt') {
   const text = cur === 'USD' ? '$' + fmtNum(+usd) : fmtMoney(lang, cur, +loc[CURS.indexOf(cur) - 1]) + (/(^|\s)(?:price|price-list)(\s|$)/.test(cls) || !vatOn(htmlCc) ? '' : ' ' + t(lang, 'cur.plusVat'));
   // One country served (N35, audit 2): the price is written once, in that country's currency, and the page source carries no other
   // currency (no data-usd / data-sar / data-aed, no #cur-data). With several countries each price carries them all for site.js.
-  const data = RESTRICTED ? '' : ` data-usd="${usd}"${CURS.slice(1).map((c, i) => ` data-${c.toLowerCase()}="${loc[i]}"`).join('')}`;
+  const data = RESTRICTED && !MULTI ? '' : ` data-usd="${usd}"${CURS.slice(1).map((c, i) => ` data-${c.toLowerCase()}="${loc[i]}"`).join('')}`;
   return `<span class="${cls}" dir="${cur !== 'USD' && RTL.has(lang) ? 'rtl' : 'ltr'}"${data}>${esc(text)}</span>`;
 }
 // plain-text price: US dollars, or (one country served, S05) that country's currency, the same text priceSpan() shows
 const priceText = (lang, vals) => { const [usd, ...loc] = String(vals).split('|'), cur = RESTRICTED ? htmlCur() : 'USD'; return cur === 'USD' ? '$' + fmtNum(+usd) : fmtMoney(lang, cur, +loc[CURS.indexOf(cur) - 1]); };
 const t = (lang, key) => raw(lang, key).replace(PRICE_MARK, (m, vals) => priceText(lang, vals)).replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m).replace(/<\/?(?:b|a)>/g, '');
+// MULTI: a text with a <key>.us / .sa / .ae variant is wrapped in <span class="cv" data-cv-us="…"> with each country's own HTML
 function h(lang, key, href) {
-  let s = raw(lang, key).replace(/\{(\w+)\}/g, (m, k) => (k === 'email' ? '\u0001E\u0001' : k === 'wa' && WA ? '\u0001W\u0001' : vars[k] ?? m));
+  const s = hHtml(lang, raw(lang, key), href);
+  const alts = MULTI ? Object.keys(COUNTRIES).filter((cc) => cc !== DEFAULT_CC && dicts[lang][key + '.' + cc.toLowerCase()] != null) : [];
+  if (!alts.length) return s;
+  return `<span class="cv"${alts.map((cc) => ` data-cv-${cc.toLowerCase()}="${esc(hHtml(lang, raw(lang, key, cc), href))}"`).join('')}>${s}</span>`;
+}
+function hHtml(lang, text, href) {
+  let s = text.replace(/\{(\w+)\}/g, (m, k) => (k === 'email' ? '\u0001E\u0001' : k === 'wa' && WA ? '\u0001W\u0001' : vars[k] ?? m));
   s = esc(s).replace(/&lt;(\/?)b&gt;/g, '<$1b>')
     .replace(/&lt;a&gt;/g, href ? `<a href="${esc(href)}">` : '<a>').replace(/&lt;\/a&gt;/g, '</a>')
     .replace(/\u0001E\u0001/g, `<a dir="ltr" href="mailto:${EMAIL}">${EMAIL}</a>`).replace(/\u0001W\u0001/g, `<a dir="ltr" href="https://wa.me/${WA}" rel="noopener" target="_blank">${esc(WA_TEXT)}</a>`).replace(PRICE_MARK, (m, vals) => priceSpan(lang, vals));
@@ -332,9 +352,9 @@ function vatNote(lang, p, per = '') {
 }
 function curData(lang) {
   const countries = Object.fromEntries(Object.entries(COUNTRIES).map(([cc, c]) => [cc, { currency: c.currency, vat_pct: vatPct(cc) }]));
-  const o = { countries, def: DEFAULT_CC, ...(RESTRICTED ? { lock: DEFAULT_CC } : {}), fmt: t(lang, 'cur.fmt'), vatLine: t(lang, 'cur.vatLine'), plusVat: t(lang, 'cur.plusVat'), vatAdded: t(lang, 'cur.vatAdded'), due: t(lang, 'cur.due'), pk: PKGDATA };
+  const o = { countries, def: DEFAULT_CC, ...(RESTRICTED && !MULTI ? { lock: DEFAULT_CC } : {}), ...(MULTI ? { fallback: DEFAULT_CC } : {}), fmt: t(lang, 'cur.fmt'), vatLine: t(lang, 'cur.vatLine'), plusVat: t(lang, 'cur.plusVat'), vatAdded: t(lang, 'cur.vatAdded'), due: t(lang, 'cur.due'), pk: PKGDATA };
   for (const c of CURS) Object.assign(o, { ['sym' + c]: t(lang, 'cur.sym' + c), ['note' + c]: t(lang, 'cur.note' + c) });
-  if (RESTRICTED) return ''; // one country served: nothing for site.js to switch (the texts above are still read, so they stay in use)
+  if (RESTRICTED && !MULTI) return ''; // one country served: nothing for site.js to switch (the texts above are still read, so they stay in use)
   return `<script type="application/json" id="cur-data">${jsonScript(o)}</script>`;
 }
 // M14: a WhatsApp link only when data/contact.json has a number (the label key is always read, so it is never "unused")
@@ -363,7 +383,7 @@ function waLink(lang) { const label = esc(t(lang, 'contact.wa')); return WA ? `<
 const waPrice = (lang, p) => (htmlCc ? display(lang, localQuote(p, htmlCc)) : '$' + fmtNum(PKG[p].price));
 const waPayHref = (lang, p) => contactHref(lang, t(lang, 'pay.wa.msg').replace('{pkg}', () => pname(lang, p)).replace('{price}', () => waPrice(lang, p)), { plan: p });
 function waPay(lang, p) {
-  const line = esc(t(lang, 'pay.wa.line')); waPayHref(lang, p); // both read without a number too (S08: the build must not fail on unused keys)
+  const line = h(lang, 'pay.wa.line'); waPayHref(lang, p); // both read without a number too (S08: the build must not fail on unused keys)
   if (!WA || PKG[p]?.coming_soon) return ''; // the Brand Deck is coming soon: never payable
   return `<p class="wapay fine" data-pkg="${p}">${line}</p>`;
 }
@@ -378,11 +398,17 @@ const SIGNUP_PATH = '#/signup';
 const signupUrl = (lang, plan) => `${PORTAL}${SIGNUP_PATH}?${plan ? `plan=${encodeURIComponent(plan)}&` : ''}lang=${lang}`;
 const portalHome = (lang) => `${PORTAL}?lang=${lang}`;
 function buyHref(lang, p) { if (!PKG[p] || PKG[p].coming_soon) throw new Error('no buy link for ' + p); return signupUrl(lang, p); } // (payment-links.json, always empty, was deleted on 2026-11-16)
+// MULTI: the same link written for each other served country (data-cv-href-us …), for site.js to use the visitor's own
+function cvHrefs(fn) {
+  if (!MULTI) return '';
+  const keep = htmlCc;
+  try { return Object.keys(COUNTRIES).filter((cc) => cc !== DEFAULT_CC).map((cc) => { htmlCc = cc; return ` data-cv-href-${cc.toLowerCase()}="${esc(fn())}"`; }).join(''); } finally { htmlCc = keep; }
+}
 function buyBtn(lang, p, ghost, noNote) { // noNote: the card carries the "Pay by InstaPay" WhatsApp line instead (waPay)
   if (p === 'deck') return `<button class="btn coming-soon" type="button" disabled data-unavailable="deck">${h(lang, 'pkg.deck.btn')}</button><span class="paynote">${h(lang, 'availability.deck')}</span>`;
   const payNote = h(lang, 'pay.note'); // read even when not shown: it comes back when data/contact.json has no WhatsApp number
   const choose = h(lang, `pkg.${p}.btn`), order = h(lang, `pkg.${p}.wa`), acct = h(lang, 'plan.orAccount'); // all read: the plain button comes back without a number
-  if (WA && SOCIAL.includes(p)) return `<a class="btn wa-order" href="${esc(waPayHref(lang, p))}" data-product="${p}" data-wa-order="${p}" rel="noopener" target="_blank">${order}</a><a class="acct-link" href="${esc(buyHref(lang, p))}" data-signup="${p}">${acct}</a>`;
+  if (WA && SOCIAL.includes(p)) return `<a class="btn wa-order" href="${esc(waPayHref(lang, p))}" data-product="${p}" data-wa-order="${p}" rel="noopener" target="_blank"${cvHrefs(() => waPayHref(lang, p))}>${order}</a><a class="acct-link" href="${esc(buyHref(lang, p))}" data-signup="${p}">${acct}</a>`;
   const note = noNote ? '' : `<span class="paynote">${payNote}</span>`;
   return `<a class="btn${ghost ? ' ghost' : ''}" href="${esc(buyHref(lang, p))}" data-product="${p}">${choose}</a>${note}`;
 }
@@ -475,7 +501,7 @@ const HOW = JSON.parse(rd('data/how-video.json'));
 const HW_STEPS = HOW.steps.length;
 function motionVars(lang) {
   const tile = (id) => `<span class="hv-cell"><img src="${hvSrc(id)}" width="240" height="300" decoding="async" alt=""></span>`;
-  const base = (size) => { const b = `/assets/video/how-${lang}-${size}`; for (const ext of ['.mp4', '.webm', '-poster.jpg']) if (!fs.existsSync(path.join(ROOT, b.slice(1) + ext))) throw new Error('how-it-works video: missing ' + b + ext + ' (run node build/render-walkthrough.mjs)'); return b; };
+  const base = (size, v = '') => { const b = `/assets/video/how-${lang}${v}-${size}`; for (const ext of ['.mp4', '.webm', '-poster.jpg']) if (!fs.existsSync(path.join(ROOT, b.slice(1) + ext))) throw new Error('how-it-works video: missing ' + b + ext + ' (run node build/render-walkthrough.mjs)'); return b; };
   const two = (i) => String(i).padStart(2, '0');
   // the still state: step 1 is the one the poster shows
   const hwSteps = HOW.steps.map((_, k) => { const i = k + 1; return `<li class="wt-step${k ? '' : ' is-active'}" data-step="${i}"><button type="button" class="wt-btn" aria-controls="how-video" aria-current="${k ? 'false' : 'step'}"><span class="wt-num" aria-hidden="true">${two(i)}</span><span class="wt-text"><span class="wt-label">${h(lang, `hw.${i}l`)}</span><span class="wt-title">${h(lang, `hw.${i}t`)}</span></span></button><span class="wt-bar" aria-hidden="true"><i></i></span></li>`; }).join('');
@@ -484,6 +510,9 @@ function motionVars(lang) {
     hvStory: `<img src="${hvSrc(HV_STORY[lang])}" width="240" height="427" decoding="async" alt="">`,
     hvCal: [...HV_CAL].map((c) => (c === '.' ? '<i></i>' : `<i class="${c}"></i>`)).join(''), hvFol: esc(t(lang, 'hv.k').replace('{n}', '1.2')),
     hwSteps, hwTotal: two(HW_STEPS), hwTimes: HOW.steps.join(','), hwDur: String(HOW.duration), hwDesk: base('1080'), hwPhone: base('phone'),
+    // MULTI (owner 2026-11-19): visitors from the other served countries (the USA, Saudi Arabia, the UAE) get the country-neutral
+    // video (no InstaPay, no prices: render-walkthrough.mjs --v neutral); site.js switches to it. Egypt keeps the one above.
+    hwNeutral: MULTI ? ` data-cv-video="${base('1080', '-neutral').replace(/-1080$/, '')}"` : '',
   };
 }
 const waBtn = ctaBtn; // (the home hero)
@@ -685,7 +714,15 @@ const sha = (js) => `'sha256-${crypto.createHash('sha256').update(js, 'utf8').di
 // gets the same page under /en/. The browser's language is not used (Arabic is the default for everyone). Query and #hash are kept.
 const LANGUAGE_INLINE = "(function(){try{var k='crier.lang',L=/^(en|ar)$/,p=location.pathname,q=new URLSearchParams(location.search).get('lang');if(!L.test(q||''))q=null;var m=p.match(/^\\/(en|ar|es|fr)(?=\\/|$)/),tail=m?p.slice(m[0].length):p;if(!tail)tail='/';if(tail.charAt(0)!=='/')tail='/'+tail;if(/^\\/(?:terms|privacy|refund)\\.html$/.test(tail))tail=tail.slice(0,-5)+'/';var v=m&&m[1]!=='ar'?'en':'ar';if(q){v=q;try{localStorage.setItem(k,q);}catch(e){}}else if(!m){var r='';try{r=document.referrer?new URL(document.referrer).origin:'';}catch(e){}if(r!==location.origin){var s=null;try{s=localStorage.getItem(k);}catch(e){}if(s==='en')v='en';}}var target=(v==='en'?'/en':'')+tail;if(target!==p||q){document.documentElement.style.visibility='hidden';var u=new URL(location.href);u.pathname=target;u.searchParams.delete('lang');location.replace(u.pathname+u.search+u.hash);}}catch(e){}})();";
 const LANGUAGE_HEAD = `<script>${LANGUAGE_INLINE}</script>`;
-const SCRIPT_HASHES = [sha(GA_INLINE), sha(LANGUAGE_INLINE), sha(CONSENT_JS)];
+// The visitor's country (MULTI, owner 2026-11-19), before paint: Cloudflare's /cdn-cgi/trace (loc=XX), remembered in localStorage
+// 'crier.loc' so the next page knows it at once; window.__crierLoc is the promise site.js reads for the prices and texts. A visitor
+// in the USA on an Arabic page goes to the same page under /en/, unless they chose Arabic (the AR link: ?lang=ar, remembered in
+// 'crier.lang'). Crawlers (by user agent) are never redirected and never re-priced: they read the page as built (Egypt), which
+// every visitor outside the USA, Saudi Arabia and the UAE also gets; the Arabic and English URLs stay separate, self-canonical and
+// tied by hreflang, so both are indexed.
+const GEO_INLINE = "(function(){try{var w=window,d=document.documentElement,K='crier.loc',ua=navigator.userAgent||'';if(/bot|crawl|spider|slurp|mediapartners|lighthouse|inspectiontool|facebookexternalhit|bingpreview|embedly|whatsapp|telegram|skypeuripreview|preview/i.test(ua)){w.__crierBot=true;return;}function go(c){if(c!=='US'||d.lang!=='ar'||/^\\/en(\\/|$)/.test(location.pathname))return;var s=null;try{s=localStorage.getItem('crier.lang');}catch(e){}if(s==='ar'||/[?&]lang=/.test(location.search))return;d.style.visibility='hidden';location.replace('/en'+location.pathname+location.search+location.hash);}var c=null;try{c=localStorage.getItem(K);}catch(e){}if(c&&!/^[A-Z]{2}$/.test(c))c=null;if(c)go(c);if(w.fetch)w.__crierLoc=fetch('/cdn-cgi/trace',{cache:'no-store'}).then(function(r){return r.ok?r.text():'';}).then(function(t){var m=/(?:^|\\n)loc=([A-Z]{2})(?:\\n|$)/.exec(t||''),l=m&&m[1]!=='XX'&&m[1]!=='T1'?m[1]:null;if(l){try{localStorage.setItem(K,l);}catch(e){}if(l!==c)go(l);}return l||c;}).catch(function(){return c;});}catch(e){}})();";
+const GEO_HEAD = MULTI ? `<script>${GEO_INLINE}</script>` : '';
+const SCRIPT_HASHES = [sha(GA_INLINE), sha(LANGUAGE_INLINE), sha(CONSENT_JS), ...(MULTI ? [sha(GEO_INLINE)] : [])];
 const CSP = "default-src 'self'; script-src 'self' " + SCRIPT_HASHES.join(' ') + " https://static.cloudflareinsights.com https://*.googletagmanager.com; connect-src 'self' https://cloudflareinsights.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; img-src 'self' data: https://*.google-analytics.com https://*.googletagmanager.com; style-src 'self' 'unsafe-inline'; font-src 'self'; base-uri 'self'; form-action 'self'";
 // Brand (2026-11-15, the glossy blob logo; the kit is in ~/Projects/crier/inputs/brand/kit/): the favicons are the blob alone on a lime
 // tile (no wordmark, so it reads at 16-32 px); the app icons and the apple-touch icon are the glossy blob; the share image is
@@ -718,7 +755,7 @@ function head(lang, page, css, landing = false) {
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 ${NOINDEX || HIDDEN.has(page) ? '<meta name="robots" content="noindex">\n' : ''}<meta http-equiv="Content-Security-Policy" content="${esc(CSP)}">
 ${LANGUAGE_HEAD}
-${GA_HEAD}
+${GEO_HEAD ? GEO_HEAD + '\n' : ''}${GA_HEAD}
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">

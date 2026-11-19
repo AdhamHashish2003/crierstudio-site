@@ -98,6 +98,32 @@
     var note = document.getElementById("vat-note"); if (note) note.textContent = (CD["note" + cur] || "") + " " + (vatOf(cc) ? (CD.vatAdded || "").replace("{vat}", vatOf(cc)) : (CD.due || ""));
     var sels = document.querySelectorAll("select[data-cc]");
     for (var s = 0; s < sels.length; s++) sels[s].value = isLocal(cc) ? cc : "other";
+    // several countries (MULTI, cur-data fallback): the texts and WhatsApp links written for each country (data-cv-<cc>,
+    // data-cv-href-<cc>); the page's own text and link are kept to come back to (Egypt and every other country)
+    if (CD.fallback) {
+      var lc = (cc || "").toLowerCase(), cv = document.querySelectorAll(".cv");
+      for (var c1 = 0; c1 < cv.length; c1++) {
+        if (cv[c1].__cvDef == null) cv[c1].__cvDef = cv[c1].innerHTML;
+        var alt = lc ? cv[c1].getAttribute("data-cv-" + lc) : null;
+        cv[c1].innerHTML = alt != null ? alt : cv[c1].__cvDef;
+      }
+      // the How it works video: the country-neutral one (no InstaPay, no prices) for the other served countries, Egypt's otherwise.
+      // assets/landing.js reads data-desk / data-phone when it loads the video (near the screen), so this is set before that.
+      var hv = document.getElementById("how-video"), nv = hv && hv.getAttribute("data-cv-video");
+      if (nv) {
+        if (hv.__cvDef == null) hv.__cvDef = [hv.getAttribute("data-desk"), hv.getAttribute("data-phone")];
+        var off = !lc || lc === CD.fallback.toLowerCase(), dk = off ? hv.__cvDef[0] : nv + "-1080", pn = off ? hv.__cvDef[1] : nv + "-phone";
+        hv.setAttribute("data-desk", dk); hv.setAttribute("data-phone", pn);
+        var hs = hv.querySelector("picture source"), pi = hv.querySelector("img.hw-poster");
+        if (hs) hs.setAttribute("srcset", pn + "-poster.jpg"); if (pi) pi.setAttribute("src", dk + "-poster.jpg");
+      }
+      var hl = document.querySelectorAll("a[data-cv-href-us], a[data-cv-href-sa], a[data-cv-href-ae]");
+      for (var c2 = 0; c2 < hl.length; c2++) {
+        if (hl[c2].__cvDef == null) hl[c2].__cvDef = hl[c2].getAttribute("href");
+        var ah = lc ? hl[c2].getAttribute("data-cv-href-" + lc) : null;
+        hl[c2].setAttribute("href", ah != null ? ah : hl[c2].__cvDef);
+      }
+    }
     for (var k = 0; k < curHooks.length; k++) curHooks[k]();
   }
   // "Other" keeps the detected country code when it is not one of the three (Kuwait stays KW, US dollars)
@@ -107,6 +133,20 @@
   }
   // one country served (cur-data lock, Egypt only since 2026-11-15): the page stays in its currency, no picker, no guess, no Cloudflare
   if (CD && CD.lock && isLocal(CD.lock) && !/^(terms|privacy|refund)$/.test(page) && document.querySelector(".amt[data-usd]")) setCountry(CD.lock);
+  // several countries served (owner 2026-11-19: Egypt, the USA, Saudi Arabia, the UAE; cur-data fallback = Egypt): the visitor's
+  // country from Cloudflare (the <head> script's window.__crierLoc, remembered as 'crier.loc'); a served country shows its own
+  // currency and texts, every other country (and an unknown one) keeps the page as written (Egypt). No picker. Crawlers keep the page
+  // as built (window.__crierBot). The legal pages are not switched: they state all four countries.
+  else if (CD && CD.fallback && isLocal(CD.fallback)) {
+    if (!/^(terms|privacy|refund)$/.test(page) && !window.__crierBot) {
+      var mine = function (c) { return isLocal(c) ? c : CD.fallback; }, known = null;
+      try { known = localStorage.getItem("crier.loc"); } catch (e) {}
+      if (known && /^[A-Z]{2}$/.test(known) && mine(known) !== CD.fallback) setCountry(mine(known));
+      var later = window.__crierLoc || (window.fetch ? fetch("/cdn-cgi/trace").then(function (r) { return r.ok ? r.text() : ""; }).then(function (tx) {
+        var m = /(?:^|\n)loc=([A-Z]{2})(?:\n|$)/.exec(tx || ""); return m && m[1] !== "XX" && m[1] !== "T1" ? m[1] : null; }).catch(function () { return null; }) : null);
+      if (later) later.then(function (l) { if (l && mine(l) !== (cc || CD.fallback)) setCountry(mine(l)); });
+    }
+  }
   else if (CD && !/^(terms|privacy|refund)$/.test(page) && document.querySelector(".amt[data-usd]")) {
     var ccSels = document.querySelectorAll("select[data-cc]");
     for (var cs = 0; cs < ccSels.length; cs++) ccSels[cs].addEventListener("change", function () { ccPicked = this.value; try { localStorage.setItem(CC_KEY, ccPicked); } catch (e) {} setCountry(fromPick(ccPicked)); });

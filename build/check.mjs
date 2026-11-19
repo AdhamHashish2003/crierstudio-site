@@ -34,7 +34,8 @@ ok(/^portal\/lib\/pricing\.json sha256 [0-9a-f]{64}$/.test(PRICING.generated_fro
 // diamond), Egypt EGP 2,500 / 3,500 / 5,000 / 6,500. No list price, nothing struck through. Pinned here so a republish of
 // data/pricing.json that drifts from the decision fails the build. S05 (audit 3, 2026-11-17): this public repository pins and
 // shows only the prices of the countries served; the studio's prices for other markets live in its private price list.
-const LAUNCH = { seen: { EGP: 2500 }, visible: { EGP: 3500 }, growing: { EGP: 5000 }, diamond: { EGP: 6500 } };
+// owner 2026-11-19: the USA, Saudi Arabia and the UAE, each in its own currency (pinned only while that country is served)
+const LAUNCH = { seen: { EGP: 2500, USD: 250, SAR: 950, AED: 950 }, visible: { EGP: 3500, USD: 500, SAR: 1900, AED: 1850 }, growing: { EGP: 5000, USD: 750, SAR: 2800, AED: 2750 }, diamond: { EGP: 6500, USD: 1000, SAR: 3750, AED: 3700 } };
 const NAMES = { seen: ['Bronze', 'البرونزية'], visible: ['Silver', 'الفضية'], growing: ['Gold', 'الذهبية'], diamond: ['Diamond', 'الماسية'] };
 // the prices before 2026-11-15 that no package has any more: a page or a text that still shows one is stale (EGP 7,500 was Gold)
 const CURRENT = new Set(Object.values(LAUNCH).flatMap((w) => Object.entries(w).map(([c, n]) => c + n)));
@@ -47,6 +48,9 @@ const SERVED = (Array.isArray(PRICING.funnel?.countries) ? PRICING.funnel.countr
 // S05 (audit 3): the public data/pricing.json (schema crier-public-pricing/1) holds only the served countries
 const PUBLIC = PRICING.schema === 'crier-public-pricing/1';
 const ONLY = SERVED.length && (PUBLIC || SERVED.length < Object.keys(PRICING.local.countries).length) ? SERVED : null;
+// several countries served (owner 2026-11-19: EG, US, SA, AE): every price carries every served currency, the texts and WhatsApp
+// links carry each country's own version (data-cv-*), no picker, cur-data falls back to the first country (Egypt)
+const MULTI = !!ONLY && ONLY.length > 1;
 const OFFER_CC = ONLY ? Object.fromEntries(Object.entries(PRICING.local.countries).filter(([cc]) => ONLY.includes(cc))) : PRICING.local.countries;
 const DEF_CC = ONLY ? ONLY[0] : 'SA', DEF_CUR = PRICING.local.countries[DEF_CC].currency;
 const LOCAL_CURS = [...new Set(Object.values(PRICING.local.countries).map((c) => c.currency))].filter((c) => c !== 'USD');
@@ -59,12 +63,12 @@ for (const id of SOCIAL) { const p = PRICING.packages.find((x) => x.id === id); 
 ok(STALE_NOW.length === 1 && STALE_NOW.some(([c, n]) => c === 'EGP' && n === 7500), 'the old Gold price EGP 7,500 is stale');
 for (const [id, want] of Object.entries(LAUNCH)) {
   const p = PRICING.packages.find((x) => x.id === id);
-  ok(p && !p.coming_soon && p.billing === 'monthly' && (!HAS_USD || (p.price === want.USD && p.prices.USD === want.USD)) && !('list_price' in p) && !('list_prices' in p), `$${want.USD} a month, no list price (${id})`);
+  ok(p && !p.coming_soon && p.billing === 'monthly' && (!HAS_USD || ((p.price ?? p.prices.USD) === want.USD && p.prices.USD === want.USD)) && !('list_price' in p) && !('list_prices' in p), `$${want.USD} a month, no list price (${id})`);
   for (const c of LOCAL_CURS) ok(p && p.prices[c] === want[c], `${c} ${want[c]} a month (${id})`);
   ok(d.en['name.' + id] === NAMES[id][0] && d.ar['name.' + id] === NAMES[id][1], `name of ${id} is ${NAMES[id].join(' / ')}`);
 }
 for (const p of PRICING.packages) {
-  if (HAS_USD) ok(Number.isInteger(p.price) && p.price > 0, `US-dollar price (${p.id})`);
+  if (HAS_USD) ok(Number.isInteger(p.price ?? p.prices?.USD) && (p.price ?? p.prices.USD) > 0, `US-dollar price (${p.id})`);
   for (const c of LOCAL_CURS) ok(Number.isInteger(p.prices[c]) && p.prices[c] > 0, `${c} price (${p.id})`);
 }
 // S05 + O02 (audit 3): data/pricing.json is the public allowlist written by uma portal/scripts/publish-pricing.cjs: only these fields
@@ -143,11 +147,11 @@ for (const l of LANGS) for (const p of PAGES) {
   // numbers data/pricing.json has, so site.js shows the buyer's currency without converting anything
   // One country served (N35, audit 2): each price is written once in that country's currency and carries no data-* (and the page has
   // no #cur-data), so the page source holds no dormant currency. With several countries every price carries them all.
-  const dataAttrs = (usd, loc) => (ONLY ? '' : ` data-usd="${usd}"` + LOCAL_CURS.map((c) => ` data-${c.toLowerCase()}="${loc[c]}"`).join(''));
+  const dataAttrs = (usd, loc) => (ONLY && !MULTI ? '' : ` data-usd="${usd}"` + LOCAL_CURS.map((c) => ` data-${c.toLowerCase()}="${loc[c]}"`).join(''));
   const shown = (pk) => d[l]['cur.fmt'].replace('{cur}', d[l]['cur.sym' + DEF_CUR]).replace('{n}', pk.prices[DEF_CUR].toLocaleString('en-US'));
   if (p === 'pricing/') for (const pk of PRICING.packages.filter((x) => !x.coming_soon)) { // the coming-soon Brand Deck left the pricing page (2026-11-15)
-    ok(ONLY ? h.includes(`>${shown(pk)}<`) : h.includes(dataAttrs(pk.price, pk.prices)), `price ${ONLY ? pk.prices[DEF_CUR] + ' ' + DEF_CUR : pk.price + ' USD / ' + LOCAL_CURS.map((c) => pk.prices[c] + ' ' + c).join(' / ')} (${pk.id}, data/pricing.json) on ${file}`);
-    if (!pk.coming_soon) ok(new RegExp(`class="price amt" dir="(ltr|rtl)"${dataAttrs(pk.price, pk.prices)}>${ONLY ? shown(pk).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '<' : ''}`).test(h) && !h.includes('class="price-list'), `price ${ONLY ? shown(pk) : pk.price + ' USD'}, nothing struck through (${pk.id}) on ${file}`);
+    ok(ONLY ? h.includes(`>${shown(pk)}<`) : h.includes(dataAttrs(pk.price ?? pk.prices.USD, pk.prices)), `price ${ONLY ? pk.prices[DEF_CUR] + ' ' + DEF_CUR : pk.price + ' USD / ' + LOCAL_CURS.map((c) => pk.prices[c] + ' ' + c).join(' / ')} (${pk.id}, data/pricing.json) on ${file}`);
+    if (!pk.coming_soon) ok(new RegExp(`class="price amt" dir="(ltr|rtl)"${dataAttrs(pk.price ?? pk.prices.USD, pk.prices)}>${ONLY ? shown(pk).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '<' : ''}`).test(h) && !h.includes('class="price-list'), `price ${ONLY ? shown(pk) : pk.price + ' USD'}, nothing struck through (${pk.id}) on ${file}`);
     if (pk.extra_platform_price) ok(h.includes(`data-extra="${pk.extra_platform_price}"`), `extra platform ${pk.extra_platform_price} USD (${pk.id}) on ${file}`);
   }
   if (p === 'pricing/') ok((h.match(/data-product="/g) || []).length === SOCIAL.length && !/data-unavailable="deck"|Brand Deck/.test(h), `${SOCIAL.length} buy buttons and no Brand Deck on ${file}`);
@@ -156,9 +160,10 @@ for (const l of LANGS) for (const p of PAGES) {
   // one country served: no country picker anywhere, the currency data locked to it, no US-dollar or other currency in the text
   if (ONLY) {
     ok(!h.includes('id="cur-select"') && !/<select[^>]*data-cc/.test(h), `no country picker on ${file}`);
-    if (/id="cur-data"/.test(h)) ok(h.includes(`"lock":"${DEF_CC}"`), `currency data locked to ${DEF_CC} on ${file}`);
+    if (/id="cur-data"/.test(h)) ok(MULTI ? h.includes(`"fallback":"${DEF_CC}"`) && !h.includes('"lock"') : h.includes(`"lock":"${DEF_CC}"`), `currency data ${MULTI ? 'falling back' : 'locked'} to ${DEF_CC} on ${file}`);
     const others = ['USD', 'SAR', 'AED', 'EGP'].filter((c) => c !== DEF_CUR); // (S05: every currency the studio prices in, not only those in the public file)
-    for (const c of others) ok(!vis.includes(d[l]['cur.sym' + c] ? d[l]['cur.fmt'].replace('{cur}', d[l]['cur.sym' + c]).replace('{n}', '').trim() : c + ' ') && !(c === 'USD' && /\$\s?\d/.test(vis)), `a ${c} price in the text of ${file}`);
+    // (MULTI: the legal pages state each served country's prices on purpose, terms.offer.p3.all)
+    for (const c of others) if (!(MULTI && /^(terms|privacy|refund)\/$/.test(p))) ok(!vis.includes(d[l]['cur.sym' + c] ? d[l]['cur.fmt'].replace('{cur}', d[l]['cur.sym' + c]).replace('{n}', '').trim() : c + ' ') && !(c === 'USD' && /\$\s?\d/.test(vis)), `a ${c} price in the text of ${file}`);
     for (const m of h.matchAll(/class="(?:price )?amt" dir="(?:ltr|rtl)"[^>]*>([^<]*)</g)) ok(m[1].includes(d[l]['cur.sym' + DEF_CUR]), `price "${m[1]}" is not in ${DEF_CUR} on ${file}`);
   }
   // Home: Landing A (Adham, 2026-11-06; walkthrough kept 2026-11-07; In-store section removed 2026-11-06): hero (SAHM's real
@@ -170,7 +175,7 @@ for (const l of LANGS) for (const p of PAGES) {
     const IDS = p === '' ? ['hero', 'walkthrough', 'make', 'pricing', 'trust', 'faq', 'start'] : ['included', 'packages', 'how', 'examples', 'faq', 'start'];
     const at = IDS.map((id) => h.indexOf(`id="${id}"`));
     ok(at.every((x, i) => x > -1 && (i === 0 || x > at[i - 1])), `landing sections ${IDS.join(', ')} in order on ${file}`);
-    ok((h.match(/<article class="plan[^"]*" data-plan="/g) || []).length === SOCIAL.length && (ONLY ? !/id="cur-data"/.test(h) : /id="cur-data"/.test(h)), `the four package cards${ONLY ? ', no currency data for other countries,' : ' with their currency data'} on ${file}`);
+    ok((h.match(/<article class="plan[^"]*" data-plan="/g) || []).length === SOCIAL.length && (ONLY && !MULTI ? !/id="cur-data"/.test(h) : /id="cur-data"/.test(h)), `the four package cards${ONLY && !MULTI ? ', no currency data for other countries,' : ' with their currency data'} on ${file}`);
     const where = p === '' ? ['home_hero', 'home_close'] : ['social_hero', 'social_close'];
     for (const w of where) ok(new RegExp(`<a class="btn wa-order" href="https://wa\\.me/${WA}\\?text=[^"]+" target="_blank" rel="noopener" data-wa="${w}">${esc(d[l]['lp.cta'])}</a>`).test(h), `"${d[l]['lp.cta']}" WhatsApp button (${w}) on ${file}`);
     ok(h.includes('"@type":"FAQPage"') && (h.match(/<details>/g) || []).length >= 5, `a short FAQ with FAQPage data on ${file}`);
@@ -279,7 +284,7 @@ for (const l of LANGS) for (const [from, to] of Object.entries(MOVED)) {
   ok(!sm.includes(`/${pre}${from}<`), 'stub in sitemap ' + f);
 }
 ok(rd('pricing/index.html').includes('"@type":"ItemList"') && rd('pricing/index.html').includes(`"priceCurrency":"${ONLY ? DEF_CUR : 'USD'}"`), 'pricing JSON-LD');
-if (ONLY) for (const l of LANGS) { const ld = (rd(PREFIX(l) + 'pricing/index.html').match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/) || [])[1] || ''; for (const c of ['USD', 'SAR', 'AED', 'EGP'].filter((c) => c !== DEF_CUR)) ok(!ld.includes(`"priceCurrency":"${c}"`), `pricing JSON-LD: no ${c} offer while only ${ONLY.join(', ')} is served (${l})`); }
+if (ONLY && !MULTI) for (const l of LANGS) { const ld = (rd(PREFIX(l) + 'pricing/index.html').match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/) || [])[1] || ''; for (const c of ['USD', 'SAR', 'AED', 'EGP'].filter((c) => c !== DEF_CUR)) ok(!ld.includes(`"priceCurrency":"${c}"`), `pricing JSON-LD: no ${c} offer while only ${ONLY.join(', ')} is served (${l})`); }
 // Owner 2026-11-15: the packages are subscribed to, not ordered ("we are not a delivery or food business"): «اشترك في البرونزية عبر واتساب»
 // / "Subscribe to Bronze on WhatsApp". «اطلب» / "order" stays only where it means a request (a quote, the coming-soon Brand Deck).
 for (const l of LANGS) for (const [k, v] of Object.entries(d[l])) if (!/^(is\.|sc\.|faq\.25|deck\.|faq\.1[1-6]|pkg\.deck|availability\.deck|meta\.d\.brand-deck|terms\.offer\.p2)/.test(k))
@@ -448,7 +453,7 @@ if (!VAT_ON) {
 // longer describes a form on the site (contact is WhatsApp, email and the client portal)
 for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) { const v = rd(f).replace(/<(script|style)\b[\s\S]*?<\/\1>/g, '').replace(/<[^>]+>/g, ' '); ok(!/Brand Deck|الملف التعريفي|fill in a form|تملأ نموذجًا/.test(v + (rd(f).match(/<meta[^>]+>/g) || []).join(' ')), `Brand Deck or site-form wording on ${f}`); }
 // N35 (audit 2): while one country is served no published page carries another currency or country in its source
-if (ONLY) for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) { const hh = rd(f); ok(!/data-usd|data-sar|data-aed|id="cur-data"|\bSAR\b|\bAED\b|ر\.س|د\.إ|Saudi|السعودية|الإمارات/.test(hh), `a dormant currency or country (USD / SAR / AED, Saudi Arabia, the UAE) in the source of ${f}`); }
+if (ONLY && !MULTI) for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) { const hh = rd(f); ok(!/data-usd|data-sar|data-aed|id="cur-data"|\bSAR\b|\bAED\b|ر\.س|د\.إ|Saudi|السعودية|الإمارات/.test(hh), `a dormant currency or country (USD / SAR / AED, Saudi Arabia, the UAE) in the source of ${f}`); }
 // every published page is in the sitemap, except redirect stubs and the 404 page
 for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) {
   const h = rd(f); if (h.includes('data-page="redirect"') || f === '404.html') continue;
@@ -576,6 +581,39 @@ for (const l of LANGS) {
       ok(old.date === v.date && LANGS.every((l) => old[l] === v[l]), `/${pg}: ${STAMP} is out of date (run node build/check.mjs --restamp after updating the date)`);
     }
   }
+}
+// Several countries (owner 2026-11-19: Egypt, the USA, Saudi Arabia, the UAE). The pages are written for Egypt (also every other
+// country); each served country's own text and WhatsApp link ride beside it (data-cv-<cc>, data-cv-href-<cc>); the <head> script
+// reads the country from Cloudflare and sends a US visitor on an Arabic page (never a crawler, never one who chose Arabic) to /en/;
+// hreflang is plain ar / en; the terms state each country's prices; the pricing JSON-LD has one Offer per served country.
+if (MULTI) {
+  const others = ONLY.filter((c) => c !== DEF_CC);
+  for (const l of LANGS) {
+    for (const pg of ['', 'pricing/', 'social/']) {
+      const f = PREFIX(l) + pg + 'index.html', h = rd(f);
+      ok(/<script>\(function\(\)\{try\{var w=window,d=document\.documentElement,K='crier\.loc'/.test(h) && /id="cur-data"/.test(h) && h.includes(`"fallback":"${DEF_CC}"`), `country script and currency data (falling back to ${DEF_CC}) on ${f}`);
+      for (const cc of others) ok(h.includes(`data-cv-${cc.toLowerCase()}="`), `${cc} texts carried on ${f}`);
+      for (const pk of SOCIAL) for (const cc of others) {
+        const m = h.match(new RegExp(`data-wa-order="${pk}"[^>]*data-cv-href-${cc.toLowerCase()}="([^"]*)"`));
+        const cur = PRICING.local.countries[cc].currency, n = LAUNCH[pk][cur];
+        const text = m ? decodeURIComponent(m[1].replace(/&amp;/g, '&').split('?text=')[1] || '') : '';
+        ok(m && text.includes(n.toLocaleString('en-US')) && text.includes(d[l]['name.' + pk]), `${cc} WhatsApp order for ${pk} names its ${cur} ${n} on ${f}: ${text}`);
+      }
+      ok(!/cur-select|data-cc|"lock"/.test(h), `no country picker and no lock on ${f}`);
+    }
+    for (const pg of ['', 'pricing/']) { const h = rd(PREFIX(l) + pg + 'index.html'); for (const c of LANGS) ok(h.includes(`hreflang="${c}" href=`), `plain hreflang ${c} on /${PREFIX(l)}${pg}`); }
+    const terms = rd(PREFIX(l) + 'terms/index.html');
+    for (const cc of others) { const cur = PRICING.local.countries[cc].currency; for (const pk of SOCIAL) { const n = LAUNCH[pk][cur].toLocaleString('en-US'); ok(terms.includes(cur === 'USD' ? '$' + n : n), `/${PREFIX(l)}terms/ states the ${cc} price of ${pk} (${cur} ${n})`); } }
+    ok(!/InstaPay/.test(d[l]['terms.bill.p1.all']) || /البطاقة|card/.test(d[l]['terms.bill.p1.all']), `the terms name every way to pay (${l})`);
+    const ld = (rd(PREFIX(l) + 'pricing/index.html').match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/) || [])[1] || '';
+    for (const cc of ONLY) ok(ld.includes(`"priceCurrency":"${PRICING.local.countries[cc].currency}"`) && ld.includes(`"eligibleRegion":"${cc}"`), `pricing JSON-LD has the ${cc} offer (${l})`);
+  }
+  // the How it works video: Egypt's on the page, the country-neutral one (no InstaPay, no prices) named for the other countries
+  for (const l of LANGS) ok(rd(PREFIX(l) + 'index.html').includes(`data-desk="/assets/video/how-${l}-1080"`) && rd(PREFIX(l) + 'index.html').includes(`data-cv-video="/assets/video/how-${l}-neutral"`) && ['-1080.mp4', '-1080.webm', '-1080-poster.jpg', '-phone.mp4', '-phone.webm', '-phone-poster.jpg'].every((x) => fs.existsSync(path.join(ROOT, `assets/video/how-${l}-neutral${x}`))), `the neutral How it works video for ${l} is published and named on the home page`);
+  { const st = rd('design/walkthrough-video/stage.js'), nv = st.slice(st.indexOf('if (neutral) Object.assign(T'), st.indexOf('// ---- markup ----')); ok(nv.length > 200 && !/InstaPay|ج\.م|EGP|\$\d|SAR|AED|ر\.س|د\.إ/.test(nv), 'the neutral video names no InstaPay and no price'); }
+  // the English pages never redirect; the Arabic ones only for the USA
+  const geo = (rd('index.html').match(/<script>(\(function\(\)\{try\{var w=window,d=document\.documentElement,K='crier\.loc'[\s\S]*?)<\/script>/) || [])[1] || '';
+  ok(/c!=='US'\|\|d\.lang!=='ar'/.test(geo) && /s==='ar'/.test(geo) && /bot\|crawl\|spider/.test(geo), 'the country script redirects only a US visitor on an Arabic page, never a crawler or one who chose Arabic');
 }
 console.log(fail ? `${fail} FAILED` : `all checks passed (${urls.length} pages, ${LANGS.length} languages)`);
 process.exit(fail ? 1 : 0);

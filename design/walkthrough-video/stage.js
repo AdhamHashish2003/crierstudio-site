@@ -4,6 +4,9 @@
   const q = new URLSearchParams(location.search);
   const lang = q.get('lang') === 'en' ? 'en' : 'ar', size = q.get('size') === 'phone' ? 'phone' : 'desk';
   const ar = lang === 'ar', rtl = ar;
+  // ?v=neutral (owner 2026-11-19): the version for visitors outside Egypt (the USA, Saudi Arabia, the UAE): no InstaPay and no price in
+  // any currency, the payment details simply come on WhatsApp. Egypt keeps the version without it.
+  const neutral = q.get('v') === 'neutral';
   document.documentElement.lang = lang; document.documentElement.dir = rtl ? 'rtl' : 'ltr';
   document.body.lang = lang; document.body.className = size;
 
@@ -73,6 +76,25 @@
     co4k: 'Your first posts',
     co5k: 'We publish and reply', co5: [['Published', 'on Instagram'], ['New comment', 'Replied'], ['New message', 'Replied']],
   };
+
+  if (neutral) Object.assign(T, ar ? {
+    money: () => 'شهريًا', per: '',
+    cap: [T.cap[0], 'تصلك بيانات الدفع على واتساب. ادفع وأرسل لنا الإيصال.', T.cap[2], T.cap[3], T.cap[4]],
+    siteH: 'أربع باقات شهرية',
+    m1: 'مرحبًا Crier Studio، أريد الاشتراك في الباقة الفضية. ما تفاصيل الدفع؟',
+    greet: 'أهلاً بك في Crier Studio 👋\nشكرًا لاهتمامك بالاشتراك. إليك بيانات الدفع.\n\n<b>الباقات الشهرية:</b>\n🥉 البرونزية (4 منشورات + 2 ريلز)\n🥈 الفضية (7 منشورات + 3 ريلز)\n🥇 الذهبية (12 منشورًا + 5 ريلز)\n💎 الماسية (15 منشورًا + 8 ريلز)\n\nتفاصيل الدفع: <span class="blur">example-payment-details</span>\n\nبعد الدفع، أرسل لنا هنا:\n1. صورة إيصال الدفع\n2. بريدك الإلكتروني المسجّل، أو اسم مشروعك\n\nسنراجع الدفع ونرد عليك هنا.',
+    rc: 'إيصال الدفع', got: 'وصلنا الإيصال، شكرًا لك 🙏\nسنتأكد من الدفع ونرد عليك هنا فور تأكيده.',
+    c1: 'يبدو لذيذًا. هل هو متوفر دائمًا؟', c2: 'نعم، متوفر دائمًا. بانتظارك.',
+    co2k: 'الدفع عبر واتساب', co2: [['بيانات الدفع', 'تصلك على واتساب'], ['صورة الإيصال', 'ترسلها في المحادثة'], ['اسم مشروعك', 'لنربط الدفع بحسابك']],
+  } : {
+    money: () => 'Monthly', per: '',
+    cap: [T.cap[0], 'Get the payment details on WhatsApp. Pay and send us the receipt.', T.cap[2], T.cap[3], T.cap[4]],
+    siteH: 'Four monthly packages',
+    m1: 'Hi Crier Studio, I’d like to subscribe to Silver. Could you send me the payment details?',
+    greet: 'Welcome to Crier Studio 👋\nThank you for your interest in subscribing. Here are the payment details.\n\n<b>Monthly plans:</b>\n🥉 Bronze (4 posts + 2 reels)\n🥈 Silver (7 posts + 3 reels)\n🥇 Gold (12 posts + 5 reels)\n💎 Diamond (15 posts + 8 reels)\n\nPayment details: <span class="blur">example-payment-details</span>\n\nOnce you’ve paid, send us:\n1. A screenshot of the payment receipt\n2. The email you signed up with, or your business name\n\nWe’ll check your payment and reply here.',
+    rc: 'Payment receipt', got: 'Thank you, we’ve received your receipt 🙏\nWe’ll check the payment and get back to you here once it’s confirmed.',
+    co2k: 'Pay on WhatsApp', co2: [['Payment details', 'Sent to you on WhatsApp'], ['Receipt screenshot', 'You send it in the chat'], ['Your business name', 'So we match the payment']],
+  });
 
   // ---- markup ----
   const svg = (d, fill) => `<svg viewBox="0 0 24 24" fill="${fill ? 'currentColor' : 'none'}" stroke="${fill ? 'none' : 'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
