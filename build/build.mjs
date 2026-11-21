@@ -919,6 +919,17 @@ write(`${PARKED_DIR}/social-preview.html`, rd('templates/social-preview.html'));
 // the unlisted hand-made pages (UNLISTED): published as committed, never written by the build; each must exist and carry noindex
 for (const p of UNLISTED) { const f = path.join(ROOT, p, 'index.html'); if (!fs.existsSync(f) || !/<meta name="robots" content="noindex[",]/.test(fs.readFileSync(f, 'utf8'))) throw new Error(`UNLISTED: ${p}/index.html is missing or has no robots noindex`); }
 
+// ---------- IndexNow (SEO batch 2026-11-20) ----------
+// ONE config spot: build/indexnow.json {key, host, keyLocation}. The build publishes the key file /<key>.txt (content = the key) and
+// deletes any other 32-hex .txt key file at the site root, so rotating the key = change it in build/indexnow.json and rebuild.
+// scripts/indexnow-ping.mjs sends the sitemap's URLs after a deploy (dry run unless --send).
+{
+  const cfg = JSON.parse(rd('build/indexnow.json'));
+  if (!/^[0-9a-f]{32}$/.test(cfg.key || '') || cfg.host !== new URL(SITE).host || cfg.keyLocation !== `${SITE}/${cfg.key}.txt`) throw new Error('build/indexnow.json: key (32 hex), host crierstudio.com and keyLocation https://crierstudio.com/<key>.txt');
+  for (const f of fs.readdirSync(ROOT)) if (/^[0-9a-f]{32}\.txt$/.test(f) && f !== cfg.key + '.txt') fs.rmSync(path.join(ROOT, f));
+  write(cfg.key + '.txt', cfg.key);
+}
+
 // ---------- REDIRECTS: every old URL -> its final page (SEO batch 2026-11-20) ----------
 // THE one map of the site's old URLs (single source of truth). Each entry is an old URL path and the published page it ends on, in ONE
 // hop (never a stub or another redirect). The build writes it three ways, so they always agree:

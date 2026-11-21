@@ -643,6 +643,14 @@ for (const f of UNLISTED) {
     ok(sm.includes(`<loc>https://crierstudio.com${to.split('#')[0]}</loc>`), `redirect ${from} ends on ${to}, a page in the sitemap`);
   }
 }
+// IndexNow: one key in build/indexnow.json, its key file at the root (content = the key), no other key file, not in the sitemap or robots.txt
+{
+  let cfg = null; try { cfg = JSON.parse(rd('build/indexnow.json')); } catch { }
+  ok(cfg && /^[0-9a-f]{32}$/.test(cfg.key) && cfg.host === 'crierstudio.com' && cfg.keyLocation === `https://crierstudio.com/${cfg.key}.txt`, 'build/indexnow.json: {key: 32 hex, host, keyLocation}');
+  const keys = fs.readdirSync(ROOT).filter((x) => /^[0-9a-f]{32}\.txt$/.test(x));
+  ok(cfg && keys.length === 1 && keys[0] === cfg.key + '.txt' && rd(keys[0]) === cfg.key && PUBLISHED.includes(keys[0]), `the IndexNow key file is /${cfg && cfg.key}.txt (and no other): ${keys.join(', ')}`);
+  ok(cfg && !sm.includes(cfg.key) && !rd('robots.txt').includes(cfg.key), 'the IndexNow key is not in the sitemap or robots.txt');
+}
 // the page proposals (proposals/) and the prepared ops files are never published
 ok(!PUBLISHED.some((f) => /^(proposals|ops|scripts)\//.test(f)), 'proposals/, ops/ and scripts/ are not published');
 console.log(fail ? `${fail} FAILED` : `all checks passed (${urls.length} pages, ${LANGS.length} languages)`);
