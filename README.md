@@ -33,6 +33,12 @@ Published: the home page, `/social/`, `/pricing/` and the legal pages (`/terms/`
   (`--url <url>` pings only some). Never run it with `--send` before the key file is live.
 - **Proposals.** `proposals/` holds drafts of new pages (services, a MENA landing page, optional country pages) for the owner. Not
   built, not published (`_config.yml` excludes it), not in the sitemap.
+- **No redirect by country (round 2, after Bing's "Blocked" on /en/).** A visitor in the USA on an Arabic page is no longer sent
+  to `/en/` automatically: a bar above the header (`#geo-hint`, built by `GEO_INLINE` in `build/build.mjs`, text `geo.*`, CSS at the
+  end of `templates/consent.css`) offers the same page in English, address and #hash kept; following it remembers English, closing it
+  remembers Arabic. The automatic redirect ran for people but not for crawlers (by user agent), so one URL ended on two different
+  pages: a sneaky-redirect / cloaking pattern. Crawlers are still not re-priced (they read the page as built, in Egypt's prices).
+  `tests/countries.mjs` checks the bar, and that Googlebot and Bingbot from the USA end on the same URL as a person.
 
 ## Landing pages: home and /social/ (2026-11-15, approved by Adham, published 2026-11-16)
 

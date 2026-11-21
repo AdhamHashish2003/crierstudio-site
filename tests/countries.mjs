@@ -1,6 +1,6 @@
 // Several countries (owner 2026-11-19): Egypt, the USA, Saudi Arabia and the UAE each see their own currency, payment line and
-// WhatsApp order message; every other country (and an unknown one) sees Egypt's page as built. A US visitor on an Arabic page goes
-// to the same page under /en/, unless they chose Arabic (the AR link) or are a crawler. The country is faked by answering
+// WhatsApp order message; every other country (and an unknown one) sees Egypt's page as built. A US visitor on an Arabic page is
+// offered the same page under /en/ by a bar (no redirect), unless they chose Arabic (the AR link). The country is faked by answering
 // /cdn-cgi/trace the way Cloudflare does. Nothing leaves the machine (Google, WhatsApp and the portal are blocked).
 //   BASE=http://127.0.0.1:8767 node tests/countries.mjs        (OUTPUT=<dir> also saves a screenshot of the packages per country)
 import fs from 'node:fs';
@@ -77,20 +77,34 @@ for (const lang of ['ar', 'en']) for (const cc of CASES) {
   await c.close();
 }
 
-// the USA on an Arabic page: sent to the English page (every published page), the address and the #hash kept
+// the USA on an Arabic page (SEO round 2, 2026-11-20): no redirect any more; the page stays, and a bar above the header offers the
+// same page in English (address and #hash kept). Following it goes there; closing it remembers Arabic.
 for (const p of ['/', '/pricing/', '/social/', '/terms/']) {
   const { c, pg } = await visit(p + '?utm_source=test#faq', { cc: 'US' });
   const u = new URL(pg.url());
-  ok(u.pathname === '/en' + p && u.search === '?utm_source=test' && u.hash === '#faq', `US on ${p}: sent to ${u.pathname}${u.search}${u.hash}`);
+  const bar = await pg.evaluate(() => { const b = document.getElementById('geo-hint'), a = b && b.querySelector('a'); return b ? { lang: b.lang, href: a.getAttribute('href'), text: b.textContent, before: b.nextElementSibling && b.nextElementSibling.matches('header.top') } : null; });
+  ok(u.pathname === p && u.search === '?utm_source=test', `US on ${p}: stays on ${u.pathname}${u.search} (no redirect)`);
+  ok(bar && bar.lang === 'en' && bar.href === '/en' + p + '?utm_source=test#faq' && bar.before && bar.text.includes(d.en['geo.go']), `US on ${p}: the English bar links to ${bar && bar.href}`);
+  if (p === '/pricing/') {
+    await pg.locator('#geo-hint a').click(); await pg.waitForURL((x) => x.pathname === '/en/pricing/', { timeout: 15000 }).catch(() => {});
+    const v = new URL(pg.url());
+    ok(v.pathname === '/en/pricing/' && v.search === '?utm_source=test' && v.hash === '#faq', `US: following the bar opens ${v.pathname}${v.search}${v.hash}`);
+  }
   await c.close();
 }
-// ... and on the next visit at once (the country is remembered), with no Arabic shown first
+// ... on the next page at once (the country is remembered), and closing it keeps it away
 {
   const { c, pg } = await visit('/', { cc: 'US' });
   await pg.goto(BASE + '/pricing/'); await pg.waitForLoadState('load');
-  ok(new URL(pg.url()).pathname === '/en/pricing/', 'US, second page: sent to /en/pricing/ from the remembered country');
+  ok(new URL(pg.url()).pathname === '/pricing/' && await pg.locator('#geo-hint').count() === 1, 'US, second page: stays on /pricing/ with the English bar');
+  await pg.locator('#geo-hint .geo-x').click();
+  ok(await pg.locator('#geo-hint').count() === 0, 'US: the close button removes the bar');
+  await pg.goto(BASE + '/social/'); await pg.waitForLoadState('load'); await pg.waitForTimeout(400);
+  ok(new URL(pg.url()).pathname === '/social/' && await pg.locator('#geo-hint').count() === 0, 'US after closing the bar: no bar on the next Arabic page');
   await c.close();
 }
+// no bar on English pages, nor for the other countries
+for (const [p, cc] of [['/en/pricing/', 'US'], ['/', 'EG'], ['/', 'SA'], ['/', 'KW']]) { const { c, pg } = await visit(p, { cc }); ok(await pg.locator('#geo-hint').count() === 0, `${cc} on ${p}: no English bar`); await c.close(); }
 // a US visitor who taps the Arabic link stays on Arabic, in US dollars
 {
   const { c, pg } = await visit('/en/pricing/', { cc: 'US' });
@@ -101,11 +115,14 @@ for (const p of ['/', '/pricing/', '/social/', '/terms/']) {
   ok(new URL(pg.url()).pathname === '/', 'US after tapping AR: the home page stays Arabic too');
   await c.close();
 }
-// crawlers: never redirected, never re-priced (they index the Arabic page as built, in Egypt's prices)
-for (const p of ['/', '/pricing/']) {
-  const { c, pg } = await visit(p, { cc: 'US', ua: GOOGLEBOT });
-  const price = p === '/pricing/' ? await pg.evaluate(() => document.querySelector('.price.amt').textContent.trim()) : null;
-  ok(new URL(pg.url()).pathname === p && (price == null || price === money('ar', DEF, priceOf(DEF, 'seen'))), `Googlebot from the USA on ${p}: stays${price ? ', ' + price : ''}`);
+// crawlers: never redirected, never re-priced (they index the Arabic page as built, in Egypt's prices); since nothing redirects by
+// country any more, a crawler and a person in the USA end on the same URL and see the same bar
+const BINGBOT = 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm) Chrome/116.0.1938.76 Safari/537.36';
+for (const [ua, name] of [[GOOGLEBOT, 'Googlebot'], [BINGBOT, 'Bingbot']]) for (const p of ['/', '/pricing/', '/en/']) {
+  const { c, pg } = await visit(p, { cc: 'US', ua });
+  const price = /pricing/.test(p) ? await pg.evaluate(() => document.querySelector('.price.amt').textContent.trim()) : null;
+  const bar = await pg.locator('#geo-hint').count();
+  ok(new URL(pg.url()).pathname === p && (price == null || price === money('ar', DEF, priceOf(DEF, 'seen'))) && bar === (p.startsWith('/en/') ? 0 : 1), `${name} from the USA on ${p}: stays${price ? ', ' + price : ''}, English bar ${bar ? 'shown' : 'not shown'} as for a person`);
   await c.close();
 }
 // the legal pages are not re-priced: they state all four countries
