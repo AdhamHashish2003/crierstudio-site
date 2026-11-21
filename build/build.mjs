@@ -34,7 +34,9 @@ const EMAIL = 'team@crierstudio.com';
 const BRAND = 'Crier Studio';
 const PORTAL = 'https://portal.crierstudio.com/';
 const ENDPOINT = 'https://crm-production-d789.up.railway.app/api/public/snapshot-request';
-const LANGS = [['en', 'English', 'en_US'], ['ar', 'العربية', 'ar_EG']];
+// og:locale (SEO batch 2026-11-20): Arabic is ar_AR, Facebook's locale for Arabic everywhere (the site serves the Middle East and North
+// Africa, not Egypt alone)
+const LANGS = [['en', 'English', 'en_US'], ['ar', 'العربية', 'ar_AR']];
 // ARABIC FIRST (owner 2026-11-15): Arabic is the default language at the root (/, /pricing/, ...), English lives under /en/. The old
 // Arabic URLs (/ar/...) are redirect stubs to the same page at the root; the old English root URLs are now the Arabic pages, and a
 // visitor who chose English (localStorage crier.lang) and arrives from outside the site is sent to /en/ (LANGUAGE_INLINE below).
@@ -610,9 +612,14 @@ function sculptVars(lang) {
 // 3166-1 code), priced at the amount due; VAT is named only where the price data marks it as charged. The last Offer is the
 // US-dollar price for every other country. The Brand Deck (coming soon) has no offer.
 const COUNTRY_LD = (cc) => ({ '@type': 'Country', name: dicts.en['cc.' + cc], identifier: cc });
+// areaServed (SEO batch 2026-11-20): each served country (its own price and currency: data/pricing.json funnel, EG, SA, AE, US), plus
+// the region the site speaks to, the Middle East and North Africa (any other country buys at the US-dollar price). Names in English on
+// both languages, like the countries; the Arabic page adds the region's Arabic name as alternateName.
+const MENA_LD = (lang) => ({ '@type': 'Place', name: 'Middle East and North Africa', ...(lang === 'ar' ? { alternateName: 'الشرق الأوسط وشمال أفريقيا' } : {}) });
+const AREA_LD = (lang) => [...Object.keys(COUNTRIES).map(COUNTRY_LD), MENA_LD(lang)];
 // SEO (2026-11-15): every social-media Service says what kind of service it is (the phrase people search: «إدارة صفحات السوشيال ميديا»
 // / "Social media management") and where it is sold
-const SERVICE_LD = (lang) => ({ serviceType: t(lang, 'ld.servicetype'), areaServed: Object.keys(COUNTRIES).map(COUNTRY_LD) });
+const SERVICE_LD = (lang) => ({ serviceType: t(lang, 'ld.servicetype'), areaServed: AREA_LD(lang) });
 // The home page's How it works video (templates/how-video.html) as a VideoObject. HOW_VIDEO_DATE is the day the video files were
 // published (git log -- assets/video/); change it when the video is re-rendered and republished.
 const HOW_VIDEO_DATE = '2026-11-15';
@@ -640,14 +647,14 @@ function jsonLd(lang, page, landing = false) {
   const orgId = SITE + '/#organization';
   const nodes = [];
   if (page === 'index') {
-    nodes.push({ '@type': 'Organization', '@id': orgId, name: BRAND, url: SITE + '/', logo: { '@type': 'ImageObject', url: LOGO_URL, width: 512, height: 512 }, image: LOGO_URL, email: EMAIL, description: t(lang, 'foot.blurb'),
+    nodes.push({ '@type': 'Organization', '@id': orgId, name: BRAND, url: SITE + '/', logo: { '@type': 'ImageObject', url: LOGO_URL, width: 512, height: 512 }, image: LOGO_URL, email: EMAIL, description: t(lang, 'ld.org'),
       // the public WhatsApp business number (data/contact.json, shown on every page), as the customer-service contact
       ...(WA ? { contactPoint: { '@type': 'ContactPoint', contactType: 'customer service', telephone: '+' + WA, email: EMAIL, url: 'https://wa.me/' + WA, areaServed: Object.keys(COUNTRIES), availableLanguage: ['ar', 'en'] } } : {}),
-      areaServed: Object.keys(COUNTRIES).map(COUNTRY_LD) });
+      areaServed: AREA_LD(lang) });
     // Egypt-only (2026-11-15): the studio as a ProfessionalService serving Egypt, with the package offers in EGP (no street address is
     // published, so no LocalBusiness address)
     nodes.push({ '@type': 'ProfessionalService', '@id': SITE + '/#service', name: BRAND, url: urlFor(lang, 'index'), image: LOGO_URL, logo: LOGO_URL, email: EMAIL, ...(WA ? { telephone: '+' + WA } : {}),
-      description: t(lang, 'meta.d.index'), areaServed: Object.keys(COUNTRIES).map(COUNTRY_LD), availableLanguage: ['ar', 'en'], parentOrganization: { '@id': orgId },
+      description: t(lang, 'meta.d.index'), areaServed: AREA_LD(lang), availableLanguage: ['ar', 'en'], parentOrganization: { '@id': orgId },
       priceRange: [Math.min(...SOCIAL.map((p) => localQuote(p, DEFAULT_CC).total)), Math.max(...SOCIAL.map((p) => localQuote(p, DEFAULT_CC).total))].map((m) => fmtNum(m / 100)).join('–') + ' ' + COUNTRIES[DEFAULT_CC].currency,
       hasOfferCatalog: { '@type': 'OfferCatalog', name: t(lang, 'pricing.h1'), itemListElement: SOCIAL.flatMap((p) => offerNode(lang, p)) } });
     if (landing && LANDING_FAQ[page]) nodes.push({ '@type': 'FAQPage', inLanguage: lang, mainEntity: LANDING_FAQ[page].map((k) => ({ '@type': 'Question', name: t(lang, k + 'q'), acceptedAnswer: { '@type': 'Answer', text: t(lang, k + 'a') } })) });
@@ -665,7 +672,7 @@ function jsonLd(lang, page, landing = false) {
     }
     // In-store: The Store Kit (waitlist) and Custom pieces (requests through the client portal), informational, with no offers
     if (page === 'in-store') {
-      nodes.push({ '@type': 'Service', name: t(lang, 'name.store'), description: t(lang, 'is.kit.line'), url: urlFor(lang, page) + '#kit', provider, areaServed: Object.keys(COUNTRIES).map(COUNTRY_LD) });
+      nodes.push({ '@type': 'Service', name: t(lang, 'name.store'), description: t(lang, 'is.kit.line'), url: urlFor(lang, page) + '#kit', provider, areaServed: AREA_LD(lang) });
       nodes.push({ '@type': 'Service', name: t(lang, 'is.c.name'), description: t(lang, 'is.c.intro'), url: urlFor(lang, page) + '#custom', provider });
     }
     // Sculptures: informational, with no offers (pieces are quoted in the client portal)
