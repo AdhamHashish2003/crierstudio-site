@@ -114,6 +114,18 @@ for (const l of LANGS) for (const p of PAGES) {
   ok(h.includes(`<html lang="${l}" dir="${l === 'ar' ? 'rtl' : 'ltr'}">`), `html lang/dir ${file}`);
   ok((h.match(/<link rel="alternate" hreflang="/g) || []).length === LANGS.length + 1, `hreflang ${file}`); // each language + x-default
   ok(/<title>[^<]{8,}<\/title>/.test(h) && /<meta name="description" content="[^"]{40,}">/.test(h), `title/description ${file}`);
+  // titles and descriptions (SEO round 2, 2026-11-20): meta description, og:description and twitter:description 140-160 characters,
+  // <title>, og:title and twitter:title at most 60 (JS string length of the entity-decoded text); og:locale ar_EG / en_US, the other
+  // as og:locale:alternate
+  {
+    const dec = (x) => x.replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n)).replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16))).replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    const meta = (attr, name) => { const m = h.match(new RegExp(`<meta ${attr}="${name}" content="([^"]*)">`)); return m ? dec(m[1]) : null; };
+    const title = dec((h.match(/<title>([^<]*)<\/title>/) || ['', ''])[1]);
+    for (const [n, v] of [['title', title], ['og:title', meta('property', 'og:title')], ['twitter:title', meta('name', 'twitter:title')]]) ok(v != null && v.length > 0 && v.length <= 60, `${n} on ${file} is ${v == null ? 'missing' : v.length + ' characters'} (max 60): ${v}`);
+    for (const [n, v] of [['description', meta('name', 'description')], ['og:description', meta('property', 'og:description')], ['twitter:description', meta('name', 'twitter:description')]]) ok(v != null && v.length >= 140 && v.length <= 160, `${n} on ${file} is ${v == null ? 'missing' : v.length + ' characters'} (140-160): ${v}`);
+    const loc = { ar: 'ar_EG', en: 'en_US' }, other = l === 'ar' ? 'en' : 'ar';
+    ok(meta('property', 'og:locale') === loc[l] && meta('property', 'og:locale:alternate') === loc[other] && (h.match(/og:locale:alternate/g) || []).length === 1, `og:locale ${loc[l]} with og:locale:alternate ${loc[other]} on ${file}`);
+  }
   // alt text (SEO round 2, 2026-11-20): every <img> on a published page has an alt attribute; the example posts, the hero story,
   // the video poster and the logo describe what they show (alt="" is left only for purely decorative pictures, none today)
   for (const m of h.matchAll(/<img\b[^>]*>/gi)) {

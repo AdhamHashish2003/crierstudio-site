@@ -8,7 +8,7 @@ Published: the home page, `/social/`, `/pricing/` and the legal pages (`/terms/`
 
 - **Who the site speaks to.** Titles, descriptions, og:/twitter: tags and the Organization / ProfessionalService descriptions speak to
   businesses across the Middle East and North Africa («الشرق الأوسط وشمال أفريقيا»), and to the USA on the English pages (the keys
-  `meta.t.*.all`, `meta.d.*.all` and `ld.org`; og:locale `ar_AR`). `areaServed` (`AREA_LD` in `build/build.mjs`) is Country EG, SA,
+  `meta.t.*.all`, `meta.d.*.all` and `ld.org`; og:locale `ar_EG` again since round 2). `areaServed` (`AREA_LD` in `build/build.mjs`) is Country EG, SA,
   AE, US (the countries with their own price: data/pricing.json `funnel.countries`) plus `{"@type":"Place","name":"Middle East and
   North Africa"}` (the Arabic page adds the Arabic name as `alternateName`).
 - **Old URLs: one map, one hop.** `REDIRECTS` in `build/build.mjs` is the only list of old URLs and the published page each one ends
@@ -44,6 +44,10 @@ Published: the home page, `/social/`, `/pricing/` and the legal pages (`/terms/`
   three tiles `assets/landing.js` drops in later get theirs from `data-next-alt`), the hero story `hv.storyAlt`, the How it works
   poster `hw.posterAlt`, the logo `logo.alt` ("Crier Studio"). A new example tile needs its alt in `data/examples.json` (the build fails
   without it).
+- **Title and description lengths (round 2).** `build/check.mjs` fails a published page whose `<title>`, og:title or twitter:title
+  is over 60 characters, or whose meta description, og:description or twitter:description is outside 140-160 (JS string length
+  of the decoded text), and pins og:locale (`ar_EG` / `en_US`, the other as og:locale:alternate). The served keys are the `.all`
+  variants where they exist (`meta.t.index.all`, `meta.d.terms.all`, ...), else the base key (`meta.d.privacy`, `meta.d.refund`).
 
 ## Landing pages: home and /social/ (2026-11-15, approved by Adham, published 2026-11-16)
 

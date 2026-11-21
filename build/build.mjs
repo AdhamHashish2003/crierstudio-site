@@ -41,9 +41,9 @@ const EMAIL = 'team@crierstudio.com';
 const BRAND = 'Crier Studio';
 const PORTAL = 'https://portal.crierstudio.com/';
 const ENDPOINT = 'https://crm-production-d789.up.railway.app/api/public/snapshot-request';
-// og:locale (SEO batch 2026-11-20): Arabic is ar_AR, Facebook's locale for Arabic everywhere (the site serves the Middle East and North
-// Africa, not Egypt alone)
-const LANGS = [['en', 'English', 'en_US'], ['ar', 'العربية', 'ar_AR']];
+// og:locale: Arabic is ar_EG (back from ar_AR in SEO round 2, 2026-11-20, owner); each page names the other language's locale as
+// og:locale:alternate (Arabic pages: en_US, English pages: ar_EG). build/check.mjs pins both.
+const LANGS = [['en', 'English', 'en_US'], ['ar', 'العربية', 'ar_EG']];
 // ARABIC FIRST (owner 2026-11-15): Arabic is the default language at the root (/, /pricing/, ...), English lives under /en/. The old
 // Arabic URLs (/ar/...) are redirect stubs to the same page at the root; the old English root URLs are now the Arabic pages, and a
 // visitor who chose English (localStorage crier.lang) and arrives from outside the site is sent to /en/ (LANGUAGE_INLINE below).
