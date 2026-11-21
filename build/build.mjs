@@ -26,7 +26,14 @@ const PARKED_DIR = '_parked';
 // The old landing templates (home.html, social.html, hero.html, the drawn "Example Café" and the mock client page) were deleted on
 // 2026-11-16 (audit 2, N44); they are in git history before that date.
 const V2 = { index: 'home-v2', social: 'social-v2' };
-const PARKED_TO = { sculptures: 'index', fiberglass: 'index', branddeck: 'pricing', 'in-store': 'index', samples: 'index', faq: 'index', about: 'index', 'brand-deck': 'index' };
+// SEO batch 2026-11-20: Samples goes to /social/ (its closest live page) and the old /branddeck/ to the home page like every other
+// parked page (the Brand Deck left /pricing/ on 2026-11-15), so every old URL reaches its final page in one hop (REDIRECTS below).
+const PARKED_TO = { sculptures: 'index', fiberglass: 'index', branddeck: 'index', 'in-store': 'index', samples: 'social', faq: 'index', about: 'index', 'brand-deck': 'index' };
+// UNLISTED (SEO batch 2026-11-20): hand-made pages that are published but never listed. /fiberglass/ is the real Fiberglass page
+// (restored: commit 212bb12 had moved it to _parked/ and put a redirect stub at its address). The build never writes there (no stub,
+// no redirect rule), it is not in the sitemap, no page links to it, and it carries its own <meta name="robots" content="noindex,nofollow">.
+// Its old language copies (/ar/, /en/, /es/, /fr/fiberglass/) stay stubs to the home page in their language.
+const UNLISTED = new Set(['fiberglass']);
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SITE = 'https://crierstudio.com';
@@ -909,68 +916,109 @@ for (const [lang] of LANGS) {
 write(`${PARKED_DIR}/studio-deck/index.html`, rd('templates/studio-deck.html'));
 write(`${PARKED_DIR}/social-preview.html`, rd('templates/social-preview.html'));
 
-// old legal URL stubs redirect to the default language (Arabic); a saved language is applied before paint
-for (const page of LEGAL) {
-  write(`${page}.html`, hashUrls(`<!doctype html>
-<html lang="${DEFAULT_LANG}" dir="${RTL.has(DEFAULT_LANG) ? 'rtl' : 'ltr'}">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-${NOINDEX ? '<meta name="robots" content="noindex">\n' : ''}<meta http-equiv="Content-Security-Policy" content="${esc(CSP)}">
-${GA_HEAD}
-${LANGUAGE_HEAD}
-<title>${BRAND}</title>
-<link rel="canonical" href="${urlFor(DEFAULT_LANG, page)}">
-<noscript><meta http-equiv="refresh" content="0;url=${pathFor(DEFAULT_LANG, page)}"></noscript>
-</head>
-<body data-page="redirect" data-target="${page}">
-<p><a href="${pathFor(DEFAULT_LANG, page)}">${BRAND}</a></p>
-<script src="/site.js"></script>
-</body>
-</html>
-`));
-}
+// the unlisted hand-made pages (UNLISTED): published as committed, never written by the build; each must exist and carry noindex
+for (const p of UNLISTED) { const f = path.join(ROOT, p, 'index.html'); if (!fs.existsSync(f) || !/<meta name="robots" content="noindex[",]/.test(fs.readFileSync(f, 'utf8'))) throw new Error(`UNLISTED: ${p}/index.html is missing or has no robots noindex`); }
 
-// redirect stub at /<from>/ (in the folder of language `dir`) to page `to` in language `lang`; `to` may carry a #hash
-// (physical -> in-store#custom). site.js keeps the full query string, and the visitor's own #hash if there is one, else the
-// target's; without JS the meta refresh goes to the new page (with the target's #hash). Not in the sitemap.
-function stub(dir, from, lang, to) {
-  const folder = (dir ? dir + '/' : '') + (from === 'index' ? '' : from + '/');
-  write(folder + 'index.html', stubHtml(lang, to));
+// ---------- REDIRECTS: every old URL -> its final page (SEO batch 2026-11-20) ----------
+// THE one map of the site's old URLs (single source of truth). Each entry is an old URL path and the published page it ends on, in ONE
+// hop (never a stub or another redirect). The build writes it three ways, so they always agree:
+//   1. a stub page at the old address (GitHub Pages cannot send a 301): noindex, canonical = the final page, a meta refresh to it, and
+//      site.js, which keeps the query string and the visitor's #hash;
+//   2. build/redirects.json (not published), read by tests/redirect-map.mjs and build/check.mjs;
+//   3. ops/cloudflare/redirect-rules.json, the Cloudflare Single Redirect rules (real 301s), prepared, not applied (ops/cloudflare/README.md).
+// The map: a renamed or parked page (MOVED) goes to its new page in the same language: Arabic at the root, English under /en/; the old
+// /ar/<page>/ URLs to the Arabic page they now are (or where that page went); /es/ and /fr/ to the English one; the old legal .html
+// URLs to the Arabic legal pages (site.js applies a saved language); the retired studio deck and share-image page to the English home.
+const LIVE = new Set(PAGES.filter((p) => !PARKED.has(p))); // the published pages
+const LIVE_PAGES = [...LIVE].map((p) => [p, p]); // parked pages are in MOVED
+const finalPage = (page) => { const to = LIVE.has(page) ? page : MOVED[page]; if (!LIVE.has(String(to).split('#')[0])) throw new Error(`REDIRECTS: ${page} does not end on a published page (${to})`); return to; };
+const REDIRECTS = new Map(); // old path -> { lang (the stub's language, null = the visitor's), to (page[#hash]), href (the final path) }
+function addRedirect(from, lang, page, own = true) {
+  const to = finalPage(page), [pg, hash = ''] = to.split('#'), href = pathFor(lang, pg) + (hash ? '#' + hash : '');
+  if (REDIRECTS.has(from)) throw new Error('REDIRECTS: two entries for ' + from);
+  REDIRECTS.set(from, { lang: own ? lang : null, page: lang, to, href });
 }
-function stubHtml(lang, to) {
-  const [pg, hash = ''] = to.split('#'), href = pathFor(lang, pg) + (hash ? '#' + hash : '');
+const oldPath = (dir, from) => '/' + (dir ? dir + '/' : '') + (from === 'index' ? '' : from + '/');
+// renamed and parked pages, in each language's own folder (the unlisted /fiberglass/ itself is a real page, not a redirect)
+for (const [from, to] of Object.entries(MOVED)) { if (!UNLISTED.has(from)) addRedirect(oldPath('', from), 'ar', to); addRedirect(oldPath('en', from), 'en', to); }
+// Arabic lived under /ar/ until 2026-11-15: every old /ar/… URL goes to the Arabic page at the root (or where it went)
+for (const [from, to] of [...LIVE_PAGES, ...Object.entries(MOVED)]) addRedirect(oldPath('ar', from), 'ar', to);
+// removed languages (2026-10-16): /es/… and /fr/… go to the English page (or where it went)
+for (const lang of REMOVED) for (const [from, to] of [...LIVE_PAGES, ...Object.entries(MOVED)]) addRedirect(oldPath(lang, from), 'en', to);
+// the old legal URLs (/terms.html …): the Arabic legal page, or the English one for a visitor who chose English (no own language)
+for (const page of LEGAL) addRedirect(`/${page}.html`, DEFAULT_LANG, page, false);
+// the retired studio deck and share-image page (2026-11-14): their old addresses go to the English home page
+addRedirect('/assets/studio-deck/', 'en', 'index');
+addRedirect('/assets/social-preview.html', 'en', 'index');
+for (const p of UNLISTED) for (const [from] of REDIRECTS) if (from === `/${p}/`) throw new Error(`REDIRECTS: the unlisted /${p}/ page must not be redirected`);
+
+// the stub page: noindex, canonical and a meta refresh to the final page, so it works without JavaScript and for crawlers; site.js
+// (with JavaScript) goes there at once and keeps the full query string and the visitor's own #hash (else the target's). No language
+// script here (the old one sent /ar/kit/ to /kit/ first: a second hop); site.js applies a saved English choice on a root stub instead.
+function stubHtml(from, r) {
+  const [pg, hash = ''] = r.to.split('#');
   return hashUrls(`<!doctype html>
-<html lang="${lang}" dir="${RTL.has(lang) ? 'rtl' : 'ltr'}">
+<html lang="${r.page}" dir="${RTL.has(r.page) ? 'rtl' : 'ltr'}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
 <meta http-equiv="Content-Security-Policy" content="${esc(CSP)}">
 ${GA_HEAD}
-${LANGUAGE_HEAD}
 <title>${BRAND}</title>
-<link rel="canonical" href="${urlFor(lang, pg)}">
-<noscript><meta http-equiv="refresh" content="0;url=${href}"></noscript>
+<link rel="canonical" href="${SITE}${r.href.split('#')[0]}">
+<meta http-equiv="refresh" content="0; url=${r.href}">
 </head>
-<body data-page="redirect" data-target="${pg}"${hash ? ` data-hash="${hash}"` : ''} data-lang="${lang}">
-<p><a href="${href}">${BRAND}</a></p>
+<body data-page="redirect" data-target="${pg}"${hash ? ` data-hash="${hash}"` : ''}${r.lang ? ` data-lang="${r.lang}"` : ''}>
+<p><a href="${r.href}">${BRAND}</a></p>
 <script src="/site.js"></script>
 </body>
 </html>
 `);
 }
-// renamed pages, in each language's own folder: Arabic (the default) at the root, English under /en/
-for (const [from, to] of Object.entries(MOVED)) { stub('', from, 'ar', to); stub('en', from, 'en', to); }
-// the retired studio deck and share-image page (2026-11-14): their old addresses go home
-stub('assets', 'studio-deck', 'en', 'index');
-write('assets/social-preview.html', stubHtml('en', 'index'));
-// Arabic lived under /ar/ until 2026-11-15 (English was the default at the root): every old /ar/… URL redirects to the same Arabic
-// page at the root, keeping the query string and the #hash
-const LIVE_PAGES = PAGES.filter((p) => !PARKED.has(p)).map((p) => [p, p]); // parked pages are in MOVED
-for (const [from, to] of [...LIVE_PAGES, ...Object.entries(MOVED)]) stub('ar', from, 'ar', to);
-// removed languages: /es/… and /fr/… redirect to the English page (/en/…)
-for (const lang of REMOVED) for (const [from, to] of [...LIVE_PAGES, ...Object.entries(MOVED)]) stub(lang, from, 'en', to);
+for (const [from, r] of REDIRECTS) write(from.endsWith('/') ? from.slice(1) + 'index.html' : from.slice(1), stubHtml(from, r));
+fs.writeFileSync(path.join(ROOT, 'build', 'redirects.json'), JSON.stringify({ about: 'SEO batch 2026-11-20: every old URL and the published page it ends on in one hop. Written by build/build.mjs (REDIRECTS); the stub pages and ops/cloudflare/redirect-rules.json are written from the same map. Do not edit.', redirects: Object.fromEntries([...REDIRECTS].map(([f, r]) => [f, r.href])) }, null, 1) + '\n');
+
+// Cloudflare Single Redirects (prepared, not applied): the same map as rules for the zone's http_request_dynamic_redirect phase. The Free
+// plan allows 10 rules, so old URLs that go to the same page share a rule (`in {…}`), and the /ar/, /es/ + /fr/ and legal .html URLs
+// that keep their page name are one dynamic rule each. Rules 2-5 keep the names of the zone's four existing rules (their targets are
+// fixed here: /ar/social/ and In-store are themselves redirects now). A rule's paths are listed with and without the slash and with
+// index.html (static rules only: a dynamic target is computed from the path, so it lists the slash form).
+{
+  const CF = SITE, PATH = 'http.request.uri.path';
+  const variants = (p) => (p.endsWith('/') && p !== '/' ? [p.slice(0, -1), p, p + 'index.html'] : [p]);
+  const inSet = (paths) => `(${PATH} in {${paths.map((p) => JSON.stringify(p)).join(' ')}})`;
+  const rule = (description, paths, target) => ({ description, expression: inSet(paths), action: 'redirect', action_parameters: { from_value: { status_code: 301, target_url: target, preserve_query_string: true } }, enabled: true });
+  const groups = { kit: [], kitAr: [], home: [], homeAr: [], en: [], enSocial: [], ar: [], esfr: [], legal: [] };
+  for (const [from, r] of REDIRECTS) {
+    const pg = r.to.split('#')[0], m = from.match(/^\/(ar|en|es|fr|assets)\//), dir = m ? m[1] : '', name = from.slice(dir ? dir.length + 2 : 1).replace(/\/$/, '');
+    if (r.href.includes('#')) throw new Error('Cloudflare rules: no #hash targets expected (' + from + ')');
+    if (/^\/\w+\.html$/.test(from) && LEGAL.includes(from.slice(1, -5)) && r.href === pathFor('ar', from.slice(1, -5))) groups.legal.push(from);
+    else if (dir === 'ar' && LIVE.has(name) && name !== 'index' && r.href === '/' + name + '/') groups.ar.push(from);
+    else if ((dir === 'es' || dir === 'fr') && LIVE.has(name) && name !== 'index' && r.href === '/en/' + name + '/') groups.esfr.push(from);
+    else if (r.href === pathFor('ar', 'social')) groups[dir === 'ar' ? 'kitAr' : 'kit'].push(...variants(from));
+    else if (r.href === pathFor('ar', 'index')) groups[dir === 'ar' ? 'homeAr' : 'home'].push(...variants(from));
+    else if (r.href === pathFor('en', 'index')) groups.en.push(...variants(from));
+    else if (r.href === pathFor('en', 'social')) groups.enSocial.push(...variants(from));
+    else throw new Error(`Cloudflare rules: no rule for ${from} -> ${r.href}`);
+  }
+  const rules = [
+    { description: 'www to apex', expression: '(http.host eq "www.crierstudio.com")', action: 'redirect', action_parameters: { from_value: { status_code: 301, target_url: { expression: `concat("${CF}", ${PATH})` }, preserve_query_string: true } }, enabled: true },
+    rule('Social Kit: kit + snapshot', groups.kit, { value: CF + pathFor('ar', 'social') }),
+    rule('Social Kit AR', groups.kitAr, { value: CF + pathFor('ar', 'social') }),
+    rule('Physical to Custom pieces', groups.home, { value: CF + pathFor('ar', 'index') }),
+    rule('Physical to Custom pieces AR', groups.homeAr, { value: CF + pathFor('ar', 'index') }),
+    rule('English: parked pages to the English home page', groups.en, { value: CF + pathFor('en', 'index') }),
+    rule('English: samples, kit and snapshot to /en/social/', groups.enSocial, { value: CF + pathFor('en', 'social') }),
+    rule('Old /ar/ pages to the Arabic pages at the root', groups.ar, { expression: `concat("${CF}", substring(${PATH}, 3))` }),
+    rule('Spanish and French pages to English', groups.esfr, { expression: `concat("${CF}/en", substring(${PATH}, 3))` }),
+    rule('Old legal .html URLs', groups.legal, { expression: `concat("${CF}", substring(${PATH}, 0, -5), "/")` }),
+  ];
+  if (rules.length > 10) throw new Error('Cloudflare rules: the Free plan allows 10 Single Redirect rules');
+  for (const r of rules) { if (r.expression.length >= 4096) throw new Error(`Cloudflare rule "${r.description}": expression over 4,096 characters`); if (r.expression.includes('{}')) throw new Error(`Cloudflare rule "${r.description}": no paths`); }
+  fs.mkdirSync(path.join(ROOT, 'ops', 'cloudflare'), { recursive: true });
+  fs.writeFileSync(path.join(ROOT, 'ops', 'cloudflare', 'redirect-rules.json'), JSON.stringify({ rules }, null, 1) + '\n');
+}
 
 // 404 (one file, two languages; header and footer in Arabic, the default, then one block per language, Arabic first)
 {
@@ -1065,4 +1113,4 @@ for (const k of Object.keys(dicts.en)) if (VARIANT_RE.test(k) && used.has(k.repl
 const unused = Object.keys(dicts.en).filter((k) => !used.has(k));
 fs.writeFileSync(path.join(ROOT, 'build', 'used-keys.json'), JSON.stringify({ i18n_sha256: crypto.createHash('sha256').update(LANGS.map(([c]) => rd(`i18n/${c}.json`)).join('\n')).digest('hex'), used: [...used].sort() }, null, 1) + '\n');
 if (unused.length) { console.error('UNUSED i18n keys (delete them from every language): ' + unused.join(', ')); process.exitCode = 1; }
-console.log(`built ${built.length} pages + ${LEGAL.length + LANGS.length * Object.keys(MOVED).length + LIVE_PAGES.length + Object.keys(MOVED).length + REMOVED.length * (LIVE_PAGES.length + Object.keys(MOVED).length) + 2} stubs + 404 + robots/sitemap/manifest (noindex ${NOINDEX ? 'ON' : 'off'})`);
+console.log(`built ${built.length} pages + ${REDIRECTS.size} stubs + 404 + robots/sitemap/manifest (noindex ${NOINDEX ? 'ON' : 'off'})`);

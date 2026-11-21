@@ -1,0 +1,154 @@
+{
+ "rules": [
+  {
+   "description": "www to apex",
+   "expression": "(http.host eq \"www.crierstudio.com\")",
+   "action": "redirect",
+   "action_parameters": {
+    "from_value": {
+     "status_code": 301,
+     "target_url": {
+      "expression": "concat(\"https://crierstudio.com\", http.request.uri.path)"
+     },
+     "preserve_query_string": true
+    }
+   },
+   "enabled": true
+  },
+  {
+   "description": "Social Kit: kit + snapshot",
+   "expression": "(http.request.uri.path in {\"/kit\" \"/kit/\" \"/kit/index.html\" \"/snapshot\" \"/snapshot/\" \"/snapshot/index.html\" \"/samples\" \"/samples/\" \"/samples/index.html\"})",
+   "action": "redirect",
+   "action_parameters": {
+    "from_value": {
+     "status_code": 301,
+     "target_url": {
+      "value": "https://crierstudio.com/social/"
+     },
+     "preserve_query_string": true
+    }
+   },
+   "enabled": true
+  },
+  {
+   "description": "Social Kit AR",
+   "expression": "(http.request.uri.path in {\"/ar/kit\" \"/ar/kit/\" \"/ar/kit/index.html\" \"/ar/snapshot\" \"/ar/snapshot/\" \"/ar/snapshot/index.html\" \"/ar/samples\" \"/ar/samples/\" \"/ar/samples/index.html\"})",
+   "action": "redirect",
+   "action_parameters": {
+    "from_value": {
+     "status_code": 301,
+     "target_url": {
+      "value": "https://crierstudio.com/social/"
+     },
+     "preserve_query_string": true
+    }
+   },
+   "enabled": true
+  },
+  {
+   "description": "Physical to Custom pieces",
+   "expression": "(http.request.uri.path in {\"/physical\" \"/physical/\" \"/physical/index.html\" \"/crier-deck\" \"/crier-deck/\" \"/crier-deck/index.html\" \"/sculptures\" \"/sculptures/\" \"/sculptures/index.html\" \"/branddeck\" \"/branddeck/\" \"/branddeck/index.html\" \"/in-store\" \"/in-store/\" \"/in-store/index.html\" \"/faq\" \"/faq/\" \"/faq/index.html\" \"/about\" \"/about/\" \"/about/index.html\" \"/brand-deck\" \"/brand-deck/\" \"/brand-deck/index.html\"})",
+   "action": "redirect",
+   "action_parameters": {
+    "from_value": {
+     "status_code": 301,
+     "target_url": {
+      "value": "https://crierstudio.com/"
+     },
+     "preserve_query_string": true
+    }
+   },
+   "enabled": true
+  },
+  {
+   "description": "Physical to Custom pieces AR",
+   "expression": "(http.request.uri.path in {\"/ar\" \"/ar/\" \"/ar/index.html\" \"/ar/physical\" \"/ar/physical/\" \"/ar/physical/index.html\" \"/ar/crier-deck\" \"/ar/crier-deck/\" \"/ar/crier-deck/index.html\" \"/ar/sculptures\" \"/ar/sculptures/\" \"/ar/sculptures/index.html\" \"/ar/fiberglass\" \"/ar/fiberglass/\" \"/ar/fiberglass/index.html\" \"/ar/branddeck\" \"/ar/branddeck/\" \"/ar/branddeck/index.html\" \"/ar/in-store\" \"/ar/in-store/\" \"/ar/in-store/index.html\" \"/ar/faq\" \"/ar/faq/\" \"/ar/faq/index.html\" \"/ar/about\" \"/ar/about/\" \"/ar/about/index.html\" \"/ar/brand-deck\" \"/ar/brand-deck/\" \"/ar/brand-deck/index.html\"})",
+   "action": "redirect",
+   "action_parameters": {
+    "from_value": {
+     "status_code": 301,
+     "target_url": {
+      "value": "https://crierstudio.com/"
+     },
+     "preserve_query_string": true
+    }
+   },
+   "enabled": true
+  },
+  {
+   "description": "English: parked pages to the English home page",
+   "expression": "(http.request.uri.path in {\"/en/physical\" \"/en/physical/\" \"/en/physical/index.html\" \"/en/crier-deck\" \"/en/crier-deck/\" \"/en/crier-deck/index.html\" \"/en/sculptures\" \"/en/sculptures/\" \"/en/sculptures/index.html\" \"/en/fiberglass\" \"/en/fiberglass/\" \"/en/fiberglass/index.html\" \"/en/branddeck\" \"/en/branddeck/\" \"/en/branddeck/index.html\" \"/en/in-store\" \"/en/in-store/\" \"/en/in-store/index.html\" \"/en/faq\" \"/en/faq/\" \"/en/faq/index.html\" \"/en/about\" \"/en/about/\" \"/en/about/index.html\" \"/en/brand-deck\" \"/en/brand-deck/\" \"/en/brand-deck/index.html\" \"/es\" \"/es/\" \"/es/index.html\" \"/es/physical\" \"/es/physical/\" \"/es/physical/index.html\" \"/es/crier-deck\" \"/es/crier-deck/\" \"/es/crier-deck/index.html\" \"/es/sculptures\" \"/es/sculptures/\" \"/es/sculptures/index.html\" \"/es/fiberglass\" \"/es/fiberglass/\" \"/es/fiberglass/index.html\" \"/es/branddeck\" \"/es/branddeck/\" \"/es/branddeck/index.html\" \"/es/in-store\" \"/es/in-store/\" \"/es/in-store/index.html\" \"/es/faq\" \"/es/faq/\" \"/es/faq/index.html\" \"/es/about\" \"/es/about/\" \"/es/about/index.html\" \"/es/brand-deck\" \"/es/brand-deck/\" \"/es/brand-deck/index.html\" \"/fr\" \"/fr/\" \"/fr/index.html\" \"/fr/physical\" \"/fr/physical/\" \"/fr/physical/index.html\" \"/fr/crier-deck\" \"/fr/crier-deck/\" \"/fr/crier-deck/index.html\" \"/fr/sculptures\" \"/fr/sculptures/\" \"/fr/sculptures/index.html\" \"/fr/fiberglass\" \"/fr/fiberglass/\" \"/fr/fiberglass/index.html\" \"/fr/branddeck\" \"/fr/branddeck/\" \"/fr/branddeck/index.html\" \"/fr/in-store\" \"/fr/in-store/\" \"/fr/in-store/index.html\" \"/fr/faq\" \"/fr/faq/\" \"/fr/faq/index.html\" \"/fr/about\" \"/fr/about/\" \"/fr/about/index.html\" \"/fr/brand-deck\" \"/fr/brand-deck/\" \"/fr/brand-deck/index.html\" \"/assets/studio-deck\" \"/assets/studio-deck/\" \"/assets/studio-deck/index.html\" \"/assets/social-preview.html\"})",
+   "action": "redirect",
+   "action_parameters": {
+    "from_value": {
+     "status_code": 301,
+     "target_url": {
+      "value": "https://crierstudio.com/en/"
+     },
+     "preserve_query_string": true
+    }
+   },
+   "enabled": true
+  },
+  {
+   "description": "English: samples, kit and snapshot to /en/social/",
+   "expression": "(http.request.uri.path in {\"/en/kit\" \"/en/kit/\" \"/en/kit/index.html\" \"/en/snapshot\" \"/en/snapshot/\" \"/en/snapshot/index.html\" \"/en/samples\" \"/en/samples/\" \"/en/samples/index.html\" \"/es/kit\" \"/es/kit/\" \"/es/kit/index.html\" \"/es/snapshot\" \"/es/snapshot/\" \"/es/snapshot/index.html\" \"/es/samples\" \"/es/samples/\" \"/es/samples/index.html\" \"/fr/kit\" \"/fr/kit/\" \"/fr/kit/index.html\" \"/fr/snapshot\" \"/fr/snapshot/\" \"/fr/snapshot/index.html\" \"/fr/samples\" \"/fr/samples/\" \"/fr/samples/index.html\"})",
+   "action": "redirect",
+   "action_parameters": {
+    "from_value": {
+     "status_code": 301,
+     "target_url": {
+      "value": "https://crierstudio.com/en/social/"
+     },
+     "preserve_query_string": true
+    }
+   },
+   "enabled": true
+  },
+  {
+   "description": "Old /ar/ pages to the Arabic pages at the root",
+   "expression": "(http.request.uri.path in {\"/ar/pricing/\" \"/ar/social/\" \"/ar/terms/\" \"/ar/privacy/\" \"/ar/refund/\"})",
+   "action": "redirect",
+   "action_parameters": {
+    "from_value": {
+     "status_code": 301,
+     "target_url": {
+      "expression": "concat(\"https://crierstudio.com\", substring(http.request.uri.path, 3))"
+     },
+     "preserve_query_string": true
+    }
+   },
+   "enabled": true
+  },
+  {
+   "description": "Spanish and French pages to English",
+   "expression": "(http.request.uri.path in {\"/es/pricing/\" \"/es/social/\" \"/es/terms/\" \"/es/privacy/\" \"/es/refund/\" \"/fr/pricing/\" \"/fr/social/\" \"/fr/terms/\" \"/fr/privacy/\" \"/fr/refund/\"})",
+   "action": "redirect",
+   "action_parameters": {
+    "from_value": {
+     "status_code": 301,
+     "target_url": {
+      "expression": "concat(\"https://crierstudio.com/en\", substring(http.request.uri.path, 3))"
+     },
+     "preserve_query_string": true
+    }
+   },
+   "enabled": true
+  },
+  {
+   "description": "Old legal .html URLs",
+   "expression": "(http.request.uri.path in {\"/terms.html\" \"/privacy.html\" \"/refund.html\"})",
+   "action": "redirect",
+   "action_parameters": {
+    "from_value": {
+     "status_code": 301,
+     "target_url": {
+      "expression": "concat(\"https://crierstudio.com\", substring(http.request.uri.path, 0, -5), \"/\")"
+     },
+     "preserve_query_string": true
+    }
+   },
+   "enabled": true
+  }
+ ]
+}

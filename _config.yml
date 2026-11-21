@@ -17,10 +17,13 @@ exclude:
   - design
   - _parked
   - fonts/subset-coverage.json
-  # parked material (2026-11-14): the old catalogues and branding pages' images, and the walkthrough's old real-brand crops
+  # SEO batch 2026-11-20: the prepared Cloudflare rules, the IndexNow ping script and the page proposals are not published
+  - ops
+  - scripts
+  - proposals
+  # parked material (2026-11-14): the old catalogues and branding pages' images, and the walkthrough's old real-brand crops.
+  # (assets/fiberglass and assets/fiberglass-a are published again since 2026-11-20: the unlisted /fiberglass/ page uses them.)
   - assets/demo
-  - assets/fiberglass
-  - assets/fiberglass-a
   - assets/branddeck
   - assets/sculptures
   - assets/sculptures.js

@@ -11,10 +11,13 @@
   try { q = new URLSearchParams(location.search).get("lang"); } catch (e) {}
   if (CODES.indexOf(q) < 0) q = null;
   if (page === "redirect") {
-    // renamed pages (/kit/ and /snapshot/ -> /social/, /physical/ -> /in-store/#custom, /crier-deck/ -> /brand-deck/) carry
-    // their own language and keep the full query string; the visitor's own #hash wins over the target's (data-hash)
-    var own = document.body.getAttribute("data-lang"), th = document.body.getAttribute("data-hash");
-    location.replace(pathFor(own || q || saved() || "ar", document.body.getAttribute("data-target")) + (own ? location.search : "") + (location.hash || (th ? "#" + th : "")));
+    // old URLs (build/build.mjs REDIRECTS: /kit/ -> /social/, parked pages -> home, /ar/… -> the root, /es/ and /fr/ -> /en/) carry
+    // their final page and language and keep the full query string; the visitor's own #hash wins over the target's (data-hash).
+    // A root (Arabic) stub reached from outside the site by a visitor who chose English goes to the English page, as the <head>
+    // language script does on a real Arabic page (stubs have no language script: it made a second hop).
+    var own = document.body.getAttribute("data-lang"), th = document.body.getAttribute("data-hash"), lang = own || q || saved() || "ar";
+    if (own === "ar" && !q && saved() === "en" && !/^\/ar(\/|$)/.test(location.pathname)) { var ref = ""; try { ref = document.referrer ? new URL(document.referrer).origin : ""; } catch (e) {} if (ref !== location.origin) lang = "en"; }
+    location.replace(pathFor(lang, document.body.getAttribute("data-target")) + (own ? location.search : "") + (location.hash || (th ? "#" + th : "")));
     return;
   }
   // (the page's own language is decided in <head> before paint: the URL wins; the memory only picks the language on a neutral

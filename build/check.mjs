@@ -13,8 +13,14 @@ const PAGES = ['', 'pricing/', 'social/', 'terms/', 'privacy/', 'refund/'];
 const GONE = ['in-store/', 'samples/', 'faq/', 'about/', 'brand-deck/'];
 // old URLs: redirect stubs, not in the sitemap (a target may carry a #hash; '' is the home page). Since 2026-11-14 the parked
 // pages (sculptures, fiberglass, branddeck: outside the offer, kept in _parked/) are stubs too.
-const MOVED = { 'kit/': 'social/', 'physical/': '', 'snapshot/': 'social/', 'crier-deck/': '', 'sculptures/': '', 'fiberglass/': '', 'branddeck/': 'pricing/', 'in-store/': '', 'samples/': '', 'faq/': '', 'about/': '', 'brand-deck/': '' };
-const SKIP_DIRS = ['.git', 'node_modules', 'templates', 'build', 'tests', 'i18n', 'fonts', 'assets', 'design', '_parked'];
+// SEO batch 2026-11-20: samples -> /social/, branddeck -> home (every old URL ends on a published page in one hop: tests/redirect-map.mjs)
+const MOVED = { 'kit/': 'social/', 'physical/': '', 'snapshot/': 'social/', 'crier-deck/': '', 'sculptures/': '', 'fiberglass/': '', 'branddeck/': '', 'in-store/': '', 'samples/': 'social/', 'faq/': '', 'about/': '', 'brand-deck/': '' };
+// UNLISTED (SEO batch 2026-11-20, owner allowlist): hand-made pages that are published but not listed: noindex, not in the sitemap, no
+// page links to them, no redirect stub or rule. /fiberglass/ is the real Fiberglass page, restored (212bb12 had replaced it with a stub);
+// its old language copies (/en/, /ar/, /es/, /fr/fiberglass/) stay stubs to the home page in their language.
+const UNLISTED = ['fiberglass/index.html'];
+const UNLISTED_ROOT = UNLISTED.map((f) => f.replace(/index\.html$/, '')); // their folders: no root stub there
+const SKIP_DIRS = ['.git', 'node_modules', 'templates', 'build', 'tests', 'i18n', 'fonts', 'assets', 'design', '_parked', 'ops', 'scripts', 'proposals'];
 const PRODUCTS = ['seen', 'visible', 'growing', 'diamond', 'deck'];
 const SOCIAL = ['seen', 'visible', 'growing', 'diamond']; // the Social packages on sale, tier order (owner 2026-11-15)
 // Audit fixes (2026-10-19): every buy / plan / start button opens the client portal's sign-up (AR pages with ?lang=ar)
@@ -266,7 +272,7 @@ ok((sm.match(/<url>/g) || []).length === urls.length, 'sitemap url count');
 for (const u of urls) ok(sm.includes(`<loc>${u}</loc>`), 'sitemap missing ' + u);
 for (const u of hiddenUrls) ok(!sm.includes(u), 'hidden page in sitemap ' + u);
 // parked pages (2026-11-14): the source stays in _parked/ (never published); the public URLs are redirect stubs (MOVED below)
-for (const f of ['_parked/fiberglass/index.html', '_parked/branddeck/index.html', '_parked/ar/branddeck/index.html', '_parked/sculptures/index.html', '_parked/ar/sculptures/index.html', '_parked/studio-deck/index.html', '_parked/social-preview.html'])
+for (const f of ['_parked/branddeck/index.html', '_parked/ar/branddeck/index.html', '_parked/sculptures/index.html', '_parked/ar/sculptures/index.html', '_parked/studio-deck/index.html', '_parked/social-preview.html'])
   ok(fs.existsSync(path.join(ROOT, f)), `parked source kept: ${f}`);
 for (const f of ['assets/studio-deck/index.html', 'assets/social-preview.html']) { const h = rd(f); ok(h.includes('data-page="redirect"') && h.includes('data-target="index"') && h.includes('content="noindex"'), `${f} is a redirect stub to the home page`); }
 for (const m of ['fiberglass', 'branddeck', 'sculptures', 'studio-deck', 'social-preview']) ok(!sm.includes(m), `parked page ${m} in the sitemap`);
@@ -277,9 +283,10 @@ for (const pr of [...Object.values(LAUNCH).map((w) => `"price":"${w[ONLY ? DEF_C
 // renamed pages: every old URL is a noindex redirect stub to the new page in the same language
 for (const l of LANGS) for (const [from, to] of Object.entries(MOVED)) {
   const pre = PREFIX(l), f = pre + from + 'index.html';
+  if (UNLISTED.includes(f)) continue; // the restored unlisted page (checked below)
   ok(fs.existsSync(path.join(ROOT, f)), 'missing stub ' + f); if (!fs.existsSync(path.join(ROOT, f))) continue;
   const s = rd(f), [tp, th] = to.split('#');
-  ok(s.includes('data-page="redirect"') && s.includes(`data-target="${tp ? tp.slice(0, -1) : 'index'}"`) && s.includes(`data-lang="${l}"`) && s.includes('content="noindex"') && s.includes(`url=/${pre}${to}"`)
+  ok(s.includes('data-page="redirect"') && s.includes(`data-target="${tp ? tp.slice(0, -1) : 'index'}"`) && s.includes(`data-lang="${l}"`) && s.includes('content="noindex"') && s.includes(`<meta http-equiv="refresh" content="0; url=/${pre}${to}">`) && !s.includes('<noscript><meta http-equiv="refresh"')
     && s.includes(`<link rel="canonical" href="https://crierstudio.com/${pre}${tp}">`) && (th ? s.includes(`data-hash="${th}"`) : !s.includes('data-hash=')), 'stub ' + f);
   ok(!sm.includes(`/${pre}${from}<`), 'stub in sitemap ' + f);
 }
@@ -332,8 +339,8 @@ ok(rd('index.html').includes('"alternateName":"Crier"') && rd('index.html').incl
     if (e.isDirectory()) return SKIP_DIRS.includes(e.name) ? [] : walk(rel);
     return e.name.endsWith('.html') ? [rel] : [];
   });
-  const files = walk('');
-  ok(files.length === urls.length + 1 + 3 + PAGES.length + LANGS.length * Object.keys(MOVED).length + Object.keys(MOVED).length + REMOVED.length * (PAGES.length + Object.keys(MOVED).length), `GA: expected every built HTML file, found ${files.length}`);
+  const files = walk('').filter((f) => !UNLISTED.includes(f)); // the unlisted hand-made pages are published as they were made (no GA, no consent bar)
+  ok(files.length === urls.length + 1 + 3 + PAGES.length + LANGS.length * Object.keys(MOVED).length - UNLISTED_ROOT.length + Object.keys(MOVED).length + REMOVED.length * (PAGES.length + Object.keys(MOVED).length), `GA: expected every built HTML file, found ${files.length}`);
   for (const f of files) {
     const h = rd(f), headEnd = h.indexOf('</head>');
     const nav = (h.match(/<nav class="main-nav"[\s\S]*?<\/nav>/) || [''])[0];
@@ -431,7 +438,7 @@ const PUBLISHED = [];
   }
 })('');
 ok(PUBLISHED.includes('index.html') && PUBLISHED.includes('CNAME') && PUBLISHED.includes('og.png'), 'published set has the site (index.html, CNAME, og.png)');
-const INTERNAL = /\.(?:md|py|mjs|cjs|ya?ml)$|^(?:build|templates|i18n|data|tests|design|_parked)\/|^(?:fonts\/subset-coverage\.json)$/i;
+const INTERNAL = /\.(?:md|py|mjs|cjs|ya?ml)$|^(?:build|templates|i18n|data|tests|design|_parked|ops|scripts|proposals)\/|^(?:fonts\/subset-coverage\.json)$/i;
 for (const f of PUBLISHED) ok(!INTERNAL.test(f), `internal file would be published: ${f} (add it to the exclude list in _config.yml)`);
 for (const f of ['ARABIC-REVIEW.md', 'README.md', 'REVIEW-instore.md', 'TRANSLATIONS.md', 'data/pricing.json', 'i18n/en.json', 'build/check.mjs', 'fonts/subset-coverage.json']) ok(!PUBLISHED.includes(f), `${f} would be published`);
 const pubText = PUBLISHED.filter((f) => /\.(?:html|js|css|json|xml|txt|webmanifest|svg)$/.test(f));
@@ -456,7 +463,7 @@ for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) { const v = rd(f).
 if (ONLY && !MULTI) for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) { const hh = rd(f); ok(!/data-usd|data-sar|data-aed|id="cur-data"|\bSAR\b|\bAED\b|ر\.س|د\.إ|Saudi|السعودية|الإمارات/.test(hh), `a dormant currency or country (USD / SAR / AED, Saudi Arabia, the UAE) in the source of ${f}`); }
 // every published page is in the sitemap, except redirect stubs and the 404 page
 for (const f of PUBLISHED.filter((x) => x.endsWith('.html'))) {
-  const h = rd(f); if (h.includes('data-page="redirect"') || f === '404.html') continue;
+  const h = rd(f); if (h.includes('data-page="redirect"') || f === '404.html' || UNLISTED.includes(f)) continue;
   const u = 'https://crierstudio.com/' + f.replace(/(^|\/)index\.html$/, '$1');
   ok(sm.includes(`<loc>${u}</loc>`), `published page outside the sitemap: ${f} (add it to the sitemap, park it or make it a redirect)`);
 }
@@ -615,5 +622,28 @@ if (MULTI) {
   const geo = (rd('index.html').match(/<script>(\(function\(\)\{try\{var w=window,d=document\.documentElement,K='crier\.loc'[\s\S]*?)<\/script>/) || [])[1] || '';
   ok(/c!=='US'\|\|d\.lang!=='ar'/.test(geo) && /s==='ar'/.test(geo) && /bot\|crawl\|spider/.test(geo), 'the country script redirects only a US visitor on an Arabic page, never a crawler or one who chose Arabic');
 }
+// ================= SEO batch 2026-11-20 =================
+// UNLISTED pages: published (not excluded), noindex, not in the sitemap, not a stub, and no other published file links to them; their assets exist
+for (const f of UNLISTED) {
+  const u = '/' + f.replace(/index\.html$/, ''), h = fs.existsSync(path.join(ROOT, f)) ? rd(f) : '';
+  ok(h && PUBLISHED.includes(f), `unlisted page ${f} exists and is published`);
+  ok(/<meta name="robots" content="noindex[",]/.test(h) && !h.includes('data-page="redirect"'), `unlisted page ${f} carries robots noindex and is not a redirect stub`);
+  ok(!sm.includes(`https://crierstudio.com${u}<`), `unlisted page ${u} is not in the sitemap`);
+  for (const g of PUBLISHED.filter((x) => /\.(html|xml|txt|js|webmanifest)$/.test(x) && x !== f)) ok(!new RegExp(`href="(?:https://crierstudio\\.com)?${u.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["#?]`).test(rd(g)), `${g} links to the unlisted page ${u}`);
+  for (const m of h.matchAll(/(?:src|href)="(\/[^"#?]+)"/g)) ok(PUBLISHED.includes(m[1].slice(1)), `unlisted page ${f}: ${m[1]} is not published`);
+  ok(!/"\/fiberglass\/"/.test(rd('build/redirects.json')) && !rd('ops/cloudflare/redirect-rules.json').includes('"/fiberglass/"'), `unlisted page ${u} is not in the redirect map or the Cloudflare rules`);
+}
+// the one redirect map (build/redirects.json) and the stubs agree; every target is a sitemap page (tests/redirect-map.mjs evaluates the Cloudflare rules)
+{
+  let map = null; try { map = JSON.parse(rd('build/redirects.json')).redirects; } catch { }
+  ok(map && Object.keys(map).length > 50, 'build/redirects.json is missing: run node build/build.mjs');
+  for (const [from, to] of Object.entries(map || {})) {
+    const f = from.endsWith('/') ? from.slice(1) + 'index.html' : from.slice(1), h = fs.existsSync(path.join(ROOT, f)) ? rd(f) : '';
+    ok(h.includes('data-page="redirect"') && h.includes(`<meta http-equiv="refresh" content="0; url=${to}">`) && h.includes(`<link rel="canonical" href="https://crierstudio.com${to.split('#')[0]}">`) && h.includes('content="noindex"'), `stub ${f} -> ${to} (noindex, canonical and refresh to the final page)`);
+    ok(sm.includes(`<loc>https://crierstudio.com${to.split('#')[0]}</loc>`), `redirect ${from} ends on ${to}, a page in the sitemap`);
+  }
+}
+// the page proposals (proposals/) and the prepared ops files are never published
+ok(!PUBLISHED.some((f) => /^(proposals|ops|scripts)\//.test(f)), 'proposals/, ops/ and scripts/ are not published');
 console.log(fail ? `${fail} FAILED` : `all checks passed (${urls.length} pages, ${LANGS.length} languages)`);
 process.exit(fail ? 1 : 0);
