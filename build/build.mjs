@@ -509,14 +509,17 @@ const hvSrc = (id) => { const u = `/assets/ex/s/${id}.webp`; if (!fs.existsSync(
 const HOW = JSON.parse(rd('data/how-video.json'));
 const HW_STEPS = HOW.steps.length;
 function motionVars(lang) {
-  const tile = (id) => `<span class="hv-cell"><img src="${hvSrc(id)}" width="240" height="300" decoding="async" alt=""></span>`;
+  // alt text (SEO round 2): what each example post shows, from data/examples.json, marked as an example; the story poll's is hv.storyAlt
+  const tileAlt = (id) => { const x = EXS[id]; if (!x || !x.alt || !x.alt[lang]) throw new Error('hero phone: no alt text for ' + id + ' in data/examples.json'); return t(lang, 'ex.altPre') + x.alt[lang]; };
+  const tile = (id) => `<span class="hv-cell"><img src="${hvSrc(id)}" width="240" height="300" decoding="async" alt="${esc(tileAlt(id))}"></span>`;
   const base = (size, v = '') => { const b = `/assets/video/how-${lang}${v}-${size}`; for (const ext of ['.mp4', '.webm', '-poster.jpg']) if (!fs.existsSync(path.join(ROOT, b.slice(1) + ext))) throw new Error('how-it-works video: missing ' + b + ext + ' (run node build/render-walkthrough.mjs)'); return b; };
   const two = (i) => String(i).padStart(2, '0');
   // the still state: step 1 is the one the poster shows
   const hwSteps = HOW.steps.map((_, k) => { const i = k + 1; return `<li class="wt-step${k ? '' : ' is-active'}" data-step="${i}"><button type="button" class="wt-btn" aria-controls="how-video" aria-current="${k ? 'false' : 'step'}"><span class="wt-num" aria-hidden="true">${two(i)}</span><span class="wt-text"><span class="wt-label">${h(lang, `hw.${i}l`)}</span><span class="wt-title">${h(lang, `hw.${i}t`)}</span></span></button><span class="wt-bar" aria-hidden="true"><i></i></span></li>`; }).join('');
   return {
     hvGrid: HV_GRID[lang].slice(0, 9).map(tile).join(''), hvNext: HV_GRID[lang].slice(9).map(hvSrc).join(','),
-    hvStory: `<img src="${hvSrc(HV_STORY[lang])}" width="240" height="427" decoding="async" alt="">`,
+    hvNextAlt: esc(HV_GRID[lang].slice(9).map((id) => tileAlt(id).replace(/\|/g, '/')).join('|')), // assets/landing.js gives the dropped-in tiles these
+    hvStory: `<img src="${hvSrc(HV_STORY[lang])}" width="240" height="427" decoding="async" alt="${esc(t(lang, 'hv.storyAlt'))}">`,
     hvCal: [...HV_CAL].map((c) => (c === '.' ? '<i></i>' : `<i class="${c}"></i>`)).join(''), hvFol: esc(t(lang, 'hv.k').replace('{n}', '1.2')),
     hwSteps, hwTotal: two(HW_STEPS), hwTimes: HOW.steps.join(','), hwDur: String(HOW.duration), hwDesk: base('1080'), hwPhone: base('phone'),
     // MULTI (owner 2026-11-19): visitors from the other served countries (the USA, Saudi Arabia, the UAE) get the country-neutral

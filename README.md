@@ -39,6 +39,11 @@ Published: the home page, `/social/`, `/pricing/` and the legal pages (`/terms/`
   remembers Arabic. The automatic redirect ran for people but not for crawlers (by user agent), so one URL ended on two different
   pages: a sneaky-redirect / cloaking pattern. Crawlers are still not re-priced (they read the page as built, in Egypt's prices).
   `tests/countries.mjs` checks the bar, and that Googlebot and Bingbot from the USA end on the same URL as a person.
+- **Alt text (round 2).** Every `<img>` on a published page has an alt attribute (`build/check.mjs`), and the pictures that show
+  something say what: the hero phone's example tiles use `data/examples.json` `alt` prefixed «مثال: » / "Example: " (`ex.altPre`; the
+  three tiles `assets/landing.js` drops in later get theirs from `data-next-alt`), the hero story `hv.storyAlt`, the How it works
+  poster `hw.posterAlt`, the logo `logo.alt` ("Crier Studio"). A new example tile needs its alt in `data/examples.json` (the build fails
+  without it).
 
 ## Landing pages: home and /social/ (2026-11-15, approved by Adham, published 2026-11-16)
 

@@ -702,5 +702,9 @@
   "geo.label": "Language",
   "geo.hint": "You are in the USA: this page is also in English.",
   "geo.go": "Read it in English",
-  "geo.close": "Close"
+  "geo.close": "Close",
+  "ex.altPre": "Example: ",
+  "hv.storyAlt": "Example: A story with coffee beans spilling from a paper bag and a poll: hot or iced today?",
+  "hw.posterAlt": "A still from the How it works video, step 1: the package list on a phone. Choose your package and tap “Subscribe on WhatsApp”.",
+  "logo.alt": "Crier Studio"
 }

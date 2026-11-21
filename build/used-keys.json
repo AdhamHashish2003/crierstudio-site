@@ -1,5 +1,5 @@
 {
- "i18n_sha256": "1f2697718a9c60be3a3814d6dec4a8a35e9de38f492ab419faab2210018e2202",
+ "i18n_sha256": "0f1833198c937872bfc1d1bd4b2108cbcc439852265835d30900cfb8430bbc62",
  "used": [
   "about.contact.h",
   "about.contact.p",
@@ -111,6 +111,7 @@
   "e404.nav",
   "e404.p",
   "e404.title",
+  "ex.altPre",
   "f.choose",
   "f.consentErr",
   "f.country",
@@ -216,6 +217,7 @@
   "hv.pl.reel",
   "hv.pl.story",
   "hv.posts",
+  "hv.storyAlt",
   "hv.type",
   "hw.1l",
   "hw.1t",
@@ -234,6 +236,7 @@
   "hw.note",
   "hw.pause",
   "hw.play",
+  "hw.posterAlt",
   "hw.sub",
   "ind.other",
   "is.a.c1x",
@@ -284,6 +287,7 @@
   "leg.conv",
   "leg.homeAria",
   "leg.updated",
+  "logo.alt",
   "lp.close.h2",
   "lp.close.lead",
   "lp.close.pricing",

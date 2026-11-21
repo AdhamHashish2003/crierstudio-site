@@ -114,6 +114,12 @@ for (const l of LANGS) for (const p of PAGES) {
   ok(h.includes(`<html lang="${l}" dir="${l === 'ar' ? 'rtl' : 'ltr'}">`), `html lang/dir ${file}`);
   ok((h.match(/<link rel="alternate" hreflang="/g) || []).length === LANGS.length + 1, `hreflang ${file}`); // each language + x-default
   ok(/<title>[^<]{8,}<\/title>/.test(h) && /<meta name="description" content="[^"]{40,}">/.test(h), `title/description ${file}`);
+  // alt text (SEO round 2, 2026-11-20): every <img> on a published page has an alt attribute; the example posts, the hero story,
+  // the video poster and the logo describe what they show (alt="" is left only for purely decorative pictures, none today)
+  for (const m of h.matchAll(/<img\b[^>]*>/gi)) {
+    ok(/\salt="[^"]*"/.test(m[0]), `<img> without an alt attribute on ${file}: ${m[0].slice(0, 100)}`);
+    if (/src="\/assets\/(ex\/|video\/how-|h\/crier-logo-|crier-logo-)/.test(m[0])) ok(/\salt="[^"]+"/.test(m[0]), `<img> with an empty alt on ${file} (it shows content): ${m[0].slice(0, 100)}`);
+  }
   const headerNav = (h.match(/<nav class="main-nav"[\s\S]*?<\/nav>/) || [''])[0];
   // The header is Social · Sculptures · Pricing · Client portal; In-store stays in the footer.
   // (Sculptures only while SHOW_SCULPTURES is true in build/build.mjs; hidden, no page links to it)

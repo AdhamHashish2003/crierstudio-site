@@ -13,12 +13,12 @@
     var hv = document.getElementById('hv'); if (!hv || reduce || !canWatch) return;
     var grid = document.getElementById('hv-grid'), fol = document.getElementById('hv-fol'), posts = document.getElementById('hv-posts');
     var likes = document.getElementById('hv-likes'), cmts = document.getElementById('hv-cmts');
-    var next = (grid.getAttribute('data-next') || '').split(',').filter(Boolean), kfmt = hv.getAttribute('data-k') || '{n}K';
+    var next = (grid.getAttribute('data-next') || '').split(',').filter(Boolean), nextAlt = (grid.getAttribute('data-next-alt') || '').split('|'), kfmt = hv.getAttribute('data-k') || '{n}K';
     var DROPS = [3, 7.5, 12], F0 = 1.2, F1 = 3.8, T0 = 1.2, T1 = 15, STEP = 0.25;
     var inView = false, timer = null, n = 0, dropped = 0, shown = fol.textContent, nLikes = +likes.textContent || 0, nCmts = +cmts.textContent || 0, nPosts = +posts.textContent || 0;
     function set(el, v) { el.textContent = v; el.classList.remove('is-tick'); void el.offsetWidth; el.classList.add('is-tick'); }
     function drop(src) {
-      var img = new Image(); img.alt = ''; img.width = 240; img.height = 300; img.src = src;
+      var img = new Image(); img.alt = nextAlt[next.indexOf(src)] || ''; img.width = 240; img.height = 300; img.src = src;
       var go = function () {
         var tiles = [].slice.call(grid.children), from = tiles.map(function (el) { return el.getBoundingClientRect(); });
         var k = grid.offsetWidth ? grid.getBoundingClientRect().width / grid.offsetWidth : 1; // the phone is scaled as one piece
