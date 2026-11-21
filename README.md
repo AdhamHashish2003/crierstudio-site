@@ -4,6 +4,36 @@
 
 Published: the home page, `/social/`, `/pricing/` and the legal pages (`/terms/`, `/privacy/`, `/refund/`), each in Arabic (root) and English (`/en/`), plus `404.html`. The header and the footer both list only Social, Pricing and Your account (`NAV_FOOT = NAV` in `build/build.mjs`); the footer keeps the legal column, the email and the WhatsApp link. **Unpublished:** In-store, Samples, FAQ, About and Brand Deck joined Sculptures in `PARKED`: they are still built, into `_parked/<page>/` and `_parked/en/<page>/`, and every old URL of theirs (Arabic, English, `/ar/…`, `/es/…`, `/fr/…`, and the older `/physical/` and `/crier-deck/`) is a redirect stub to the home page in its language. They are out of the sitemap (12 URLs) and no page links to them (`build/check.mjs` and `tests/links.mjs` fail if one does). To bring a page back, take it out of `PARKED` and `PARKED_TO` and add its nav entry. Sections further down that describe those pages (In-store, Brand Deck, Samples, FAQ, About) describe the parked sources. The Brand Deck is gone from the published site too: its card left `/pricing/` and the legal pages no longer name it. The privacy page says the site has no forms (contact is WhatsApp, email and the client portal). `build/check.mjs` fails if a published page names the Brand Deck or describes a site form.
 
+## SEO batch (2026-11-20)
+
+- **Who the site speaks to.** Titles, descriptions, og:/twitter: tags and the Organization / ProfessionalService descriptions speak to
+  businesses across the Middle East and North Africa («الشرق الأوسط وشمال أفريقيا»), and to the USA on the English pages (the keys
+  `meta.t.*.all`, `meta.d.*.all` and `ld.org`; og:locale `ar_AR`). `areaServed` (`AREA_LD` in `build/build.mjs`) is Country EG, SA,
+  AE, US (the countries with their own price: data/pricing.json `funnel.countries`) plus `{"@type":"Place","name":"Middle East and
+  North Africa"}` (the Arabic page adds the Arabic name as `alternateName`).
+- **Old URLs: one map, one hop.** `REDIRECTS` in `build/build.mjs` is the only list of old URLs and the published page each one ends
+  on. From it the build writes (1) the stub pages (noindex, canonical to the final page, `<meta http-equiv="refresh" content="0; url=…">`,
+  and site.js, which keeps the query string and #hash), (2) `build/redirects.json`, and (3) `ops/cloudflare/redirect-rules.json`, the
+  Cloudflare Single Redirect rules (real 301s; 10 rules, the Free plan's limit), **prepared, not applied**: how to apply them is in
+  `ops/cloudflare/README.md`. `node tests/redirect-map.mjs` evaluates the rules for every stub and fails unless each lands on a sitemap
+  page in one hop, matching the stub. Since this batch the parked In-store, Brand Deck, `/physical/` and `/branddeck/` go to the home
+  page in their language and `/samples/` to `/social/`. Stubs no longer carry the language script (it made a second hop); a root stub
+  sends a visitor who chose English to the English page itself (site.js).
+- **/fiberglass/ is published again, unlisted.** The hand-made Fiberglass page (`fiberglass/index.html`, `noindex,nofollow`) is the
+  version from before commit 212bb12 (2026-11-14), which had moved it to `_parked/` and left a stub at its address; its images and
+  PDFs (`assets/fiberglass/`, `assets/fiberglass-a/`) are published again. It is in `UNLISTED` (build) and the `UNLISTED` allowlist
+  (`build/check.mjs`): never written by the build, no stub or redirect rule, not in the sitemap, and no page may link to it.
+- **Structured data.** `uploadDate` of the How it works video is a full date-time with the Cairo offset (`HOW_VIDEO_DATE`); every
+  BreadcrumbList has a name and each ListItem a position, a name and an absolute URL. `node tests/jsonld.mjs` checks the JSON-LD of
+  every sitemap page.
+- **IndexNow.** The key lives in ONE place, `build/indexnow.json` (`key`, `host`, `keyLocation`). The build writes `/<key>.txt` (the
+  key as its content) and deletes any other 32-hex `.txt` key file at the root, so rotating the key = change it there and rebuild.
+  **Post-deploy step** (after the deploy is live, so the key file answers): `node scripts/indexnow-ping.mjs` prints the payload (dry
+  run, the default); `node scripts/indexnow-ping.mjs --send` POSTs the sitemap's URLs to `https://api.indexnow.org/indexnow`
+  (`--url <url>` pings only some). Never run it with `--send` before the key file is live.
+- **Proposals.** `proposals/` holds drafts of new pages (services, a MENA landing page, optional country pages) for the owner. Not
+  built, not published (`_config.yml` excludes it), not in the sitemap.
+
 ## Landing pages: home and /social/ (2026-11-15, approved by Adham, published 2026-11-16)
 
 Owner: the home page (brand front door) and /social/ (packages and offer page for ad and social traffic) are redesigned as landing pages for mixed small businesses: `templates/home-v2.html` and `templates/social-v2.html` (CSS: the "New landing pages" block at the end of `templates/home.css`; `landingVars()` in `build/build.mjs`; keys `lp.*` and `sp.*`). Both use real-looking example posts for five made-up businesses (`assets/ex/`, listed in `data/examples.json`, from `~/Projects/crier/inputs/example-content/`; every image carries its own «مثال / Example» label and the page says they are examples). There is no switch any more: `V2` in `build/build.mjs` maps the home page and `/social/` to these templates, and `build/check.mjs` checks them. The home page's video and animated phone need a server with HTTP Range support to seek in tests (GitHub Pages has it; `python3 -m http.server` does not, so run `tests/landing-motion.mjs` against a Range-capable static server). On the new home page "How it works" sits right after the hero as a slot: `{{>how}}` in `templates/home-v2.html`, the partial `how` in `build/build.mjs`, which is the video section (`templates/how-video.html`); the hero is the animated phone (`{{>hero-v2}}`, `templates/hero-v2.html`). Both are described below.
@@ -41,11 +71,11 @@ One studio, two product lines. **Social** (`/social/`, was `/kit/`): the monthly
 - In-store source: `templates/in-store.html`, the illustrations `templates/instore-panels.html` (inline SVG from `design/reference/in-store-hero-B.html`, shared with the home teaser; `{{=sid}}` keeps SVG ids unique per page) and the `is.*` keys. Store Kit quantities are `[bracketed]` placeholders until Adham confirms them.
 - The Store Kit waitlist form posts to the same Launchpad intake as the order form (`site.js`, "In-store" block); field mapping and limits in `REVIEW-instore.md`.
 - Custom pieces has no form on the site. Since 2026-11-15 (owner: the portal quote sign-up is being removed) "Ask for a quote on WhatsApp" and "Already a client? Message us on WhatsApp" both open `wa.me/<number>` with "I would like a quote for a custom piece" in the page language (`is.q.wamsg`, `quoteHref` in `build/build.mjs`; email if `data/contact.json` has no number).
-- Moved URLs (`MOVED` in `build/build.mjs`): `/kit/` and `/snapshot/` -> `/social/`, `/physical/` -> `/in-store/#custom`, `/crier-deck/` -> `/brand-deck/`, in every language, as noindex stubs that keep the full query string and the visitor's #hash. Real 301s are Cloudflare Redirect Rules (steps in `REVIEW-instore.md`). `?product=kit`, `?product=social-kit` and `?product=snapshot` all select The Social Kit (package id `kit`).
+- Moved URLs (`MOVED` in `build/build.mjs`; since 2026-11-20 see "SEO batch" above: `/physical/` and `/crier-deck/` go home): `/kit/` and `/snapshot/` -> `/social/`, `/physical/` -> `/in-store/#custom`, `/crier-deck/` -> `/brand-deck/`, in every language, as noindex stubs that keep the full query string and the visitor's #hash. Real 301s are Cloudflare Redirect Rules (steps in `REVIEW-instore.md`). `?product=kit`, `?product=social-kit` and `?product=snapshot` all select The Social Kit (package id `kit`).
 
 ## Sculptures (2026-10-18)
 
-**Parked (2026-11-14).** Pages outside the current offer are no longer published: `/sculptures/` (built into `_parked/sculptures/` and `_parked/ar/sculptures/`), the hand-made `/fiberglass/` and `/branddeck/` + `/ar/branddeck/` (moved to `_parked/`; `build/branddeck-pages.mjs` writes there), the old studio deck and share-image page (`_parked/studio-deck/`, `_parked/social-preview.html`). Their old URLs are redirect stubs (`PARKED_TO` in `build/build.mjs`: sculptures and fiberglass to the home page, branddeck to /pricing/; `/assets/studio-deck/` and `/assets/social-preview.html` to the home page). `_parked/` and their image folders under `assets/` are excluded in `_config.yml`. The share image `og.png` is rendered from `build/og-image.html` by `node build/og-image.mjs`.
+**Parked (2026-11-14).** Pages outside the current offer are no longer published: `/sculptures/` (built into `_parked/sculptures/` and `_parked/ar/sculptures/`), the hand-made `/fiberglass/` (published again, unlisted, since 2026-11-20: see "SEO batch") and `/branddeck/` + `/ar/branddeck/` (moved to `_parked/`; `build/branddeck-pages.mjs` writes there), the old studio deck and share-image page (`_parked/studio-deck/`, `_parked/social-preview.html`). Their old URLs are redirect stubs (`PARKED_TO` in `build/build.mjs`: sculptures to the home page, branddeck to /pricing/ until 2026-11-20 and the home page since; `/assets/studio-deck/` and `/assets/social-preview.html` to the home page). `_parked/` and their image folders under `assets/` are excluded in `_config.yml`. The share image `og.png` is rendered from `build/og-image.html` by `node build/og-image.mjs`.
 
 `/sculptures/` (en, ar; `/es/` and `/fr/` get the usual redirect stubs): 24 fiberglass pieces in two collections (Origami, Animal forms) with filters and a lightbox (front, side, back, in a space), then "Send us your website" custom pieces. Header nav: Social · In-store · Sculptures · Pricing · Client portal; the footer lists Sculptures after In-store. Cream page body like In-store.
 
