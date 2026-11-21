@@ -621,8 +621,10 @@ const AREA_LD = (lang) => [...Object.keys(COUNTRIES).map(COUNTRY_LD), MENA_LD(la
 // / "Social media management") and where it is sold
 const SERVICE_LD = (lang) => ({ serviceType: t(lang, 'ld.servicetype'), areaServed: AREA_LD(lang) });
 // The home page's How it works video (templates/how-video.html) as a VideoObject. HOW_VIDEO_DATE is the day the video files were
-// published (git log -- assets/video/); change it when the video is re-rendered and republished.
-const HOW_VIDEO_DATE = '2026-11-15';
+// published (git log -- assets/video/); change it when the video is re-rendered and republished. A full ISO 8601 date-time with the
+// Cairo offset (Google wants a time zone): the current files are commit f763107, 2026-11-15 21:50 PST = 2026-11-16 07:50 in Cairo.
+const HOW_VIDEO_DATE = '2026-11-16T07:50:02+02:00';
+if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/.test(HOW_VIDEO_DATE)) throw new Error('HOW_VIDEO_DATE must be a full ISO 8601 date-time with an offset');
 const isoDur = (s) => `PT${Math.floor(s / 60) ? Math.floor(s / 60) + 'M' : ''}${Math.round(s % 60)}S`;
 function videoLd(lang) {
   const b = `${SITE}/assets/video/how-${lang}-1080`;
@@ -661,7 +663,9 @@ function jsonLd(lang, page, landing = false) {
     if (landing) nodes.push(videoLd(lang));
     nodes.push({ '@type': 'WebSite', '@id': SITE + '/#website', name: BRAND, alternateName: 'Crier', url: SITE + '/', inLanguage: lang, publisher: { '@id': orgId } });
   } else {
-    nodes.push({ '@type': 'BreadcrumbList', itemListElement: [
+    // BreadcrumbList (SEO batch 2026-11-20, Search Console "Unnamed item"): the list carries a name too, and every ListItem a position,
+    // a name and an absolute URL (tests/jsonld.mjs checks every page)
+    nodes.push({ '@type': 'BreadcrumbList', name: `${t(lang, 'crumb.label')}: ${t(lang, CRUMB_KEY[page])}`, itemListElement: [
       { '@type': 'ListItem', position: 1, name: t(lang, 'crumb.home'), item: urlFor(lang, 'index') },
       { '@type': 'ListItem', position: 2, name: t(lang, CRUMB_KEY[page]), item: urlFor(lang, page) }] });
     const provider = { '@type': 'Organization', name: BRAND, url: SITE + '/' };
@@ -679,7 +683,7 @@ function jsonLd(lang, page, landing = false) {
     if (page === 'sculptures') nodes.push({ '@type': 'Service', name: t(lang, 'nav.sculptures'), description: t(lang, 'meta.d.sculptures'), url: urlFor(lang, page), provider });
     if (page === 'pricing') {
       const items = SOCIAL.map((p) => ({ '@type': 'Service', name: pname(lang, p), provider, ...SERVICE_LD(lang), offers: offerNode(lang, p) })); // the Brand Deck left the pricing page with its own page (2026-11-15)
-      nodes.push({ '@type': 'ItemList', name: t(lang, 'pricing.h1'), itemListElement: items.map((item, i) => ({ '@type': 'ListItem', position: i + 1, item })) });
+      nodes.push({ '@type': 'ItemList', name: t(lang, 'pricing.h1'), itemListElement: items.map((item, i) => ({ '@type': 'ListItem', position: i + 1, name: item.name, item })) });
     }
     if (page === 'faq') {
       nodes.push({ '@type': 'FAQPage', inLanguage: lang, mainEntity: FAQ_ALL.map((i) => ({ '@type': 'Question', name: t(lang, `faq.${i}q`),
